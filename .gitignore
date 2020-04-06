@@ -1,0 +1,13 @@
+# Ignore python files
+__pycache__
+
+# Ignore dev kicad files
+*.kicad_pcb*
+*.pro
+fp-info-cache
+
+# Ignore VS Code
+.vscode
+
+# Ignore build
+build
