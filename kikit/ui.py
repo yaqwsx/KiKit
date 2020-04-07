@@ -12,7 +12,7 @@ def panelize():
 @click.command()
 @click.argument("input", type=click.Path(dir_okay=False))
 @click.argument("output", type=click.Path(dir_okay=False))
-@click.option("--sourcearea", "-s", type=(int, int, int, int), help="x y w h in millimeters")
+@click.option("--sourcearea", "-s", type=(float, float, float, float), help="x y w h in millimeters")
 def extractBoard(input, output, sourcearea):
     """
     Extract a single board out of a file
@@ -22,7 +22,7 @@ def extractBoard(input, output, sourcearea):
     panel = Panel()
     destination = wxPointMM(150, 100)
     area = wxRectMM(*sourcearea)
-    panel.appendBoard(input, destination, area, tolerance=fromMm(5), shrink=True)
+    panel.appendBoard(input, destination, area, tolerance=fromMm(2))
     panel.save(output)
 
 @click.command()
