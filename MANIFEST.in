@@ -1,0 +1,2 @@
+recursive-include kikit/resources *
+recursive-include doc *
