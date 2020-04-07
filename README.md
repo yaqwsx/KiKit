@@ -8,6 +8,14 @@ KiCAD workflow like:
 
 ![KiKit Promo](doc/resources/promo.jpg)
 
+## Installation
+
+KiKit is available as a [PyPi package](https://pypi.org/project/KiKit/), therefore, you can install it via pip:
+
+```
+pip3 install kikit
+```
+
 ## Why Should I Use It?
 
 Everything KiKit does can be also done via Pcbnew in KiCAD. But you have to do
