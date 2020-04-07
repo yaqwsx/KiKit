@@ -159,6 +159,13 @@ def expandRect(rect, offsetX, offsetY=None):
     return wxRect(rect.GetX() - offsetX, rect.GetY() - offsetY,
         rect.GetWidth() + 2 * offsetX, rect.GetHeight() + 2 * offsetY)
 
+def translateRect(rect, translation):
+    """
+    Given a wxRect return a new rect translated by transaltion (tuple-like object)
+    """
+    return wxRect(rect.GetX() + translation[0], rect.GetY() + translation[1],
+        rect.GetWidth(), rect.GetHeight())
+
 def normalizeRect(rect):
     """ If rectangle is specified via negative width/height, corrects it """
     if rect.GetHeight() < 0:
@@ -240,7 +247,8 @@ class Panel:
         Tolerance enlarges (even shrinked) source area - useful for inclusion of
         filled zones which can reach out of the board edges.
 
-        Returns bounding box (wxRect) of the extracted area.
+        Returns bounding box (wxRect) of the extracted area placed at the
+        destination.
         """
         board = LoadBoard(filename)
         self.boardCounter += 1
@@ -249,10 +257,13 @@ class Panel:
             sourceArea = findBoardBoundingBox(board)
         elif shrink:
             sourceArea = findBoardBoundingBox(board, sourceArea)
+        tightSourceArea = findBoardBoundingBox(board, expandRect(sourceArea, fromMm(1)))
         enlargedSourceArea = expandRect(sourceArea, tolerance)
         originPoint = getOriginCoord(origin, sourceArea)
-        translate = wxPoint(destination[0] - originPoint[0],
-                            destination[1] - originPoint[1])
+        translation = wxPoint(destination[0] - originPoint[0],
+                              destination[1] - originPoint[1])
+        tightSourceArea = translateRect(tightSourceArea, translation)
+
 
         self._makeNetNamesUnique(board)
 
@@ -263,15 +274,15 @@ class Panel:
 
         for module in modules:
             module.Rotate(originPoint, rotationAngle)
-            module.Move(translate)
+            module.Move(translation)
             appendItem(self.board, module)
         for track in tracks:
             track.Rotate(originPoint, rotationAngle)
-            track.Move(translate)
+            track.Move(translation)
             appendItem(self.board, track)
         for zone in zones:
             zone.Rotate(originPoint, rotationAngle)
-            zone.Move(translate)
+            zone.Move(translation)
             appendItem(self.board, zone)
         for netId in board.GetNetInfo().NetsByNetcode():
             self.board.Add(board.GetNetInfo().GetNetItem(netId))
@@ -279,13 +290,13 @@ class Panel:
         # Treat drawings differently since they contains board edges
         for drawing in drawings:
             drawing.Rotate(originPoint, rotationAngle)
-            drawing.Move(translate)
+            drawing.Move(translation)
         edges = [edge for edge in drawings if edge.GetLayerName() == "Edge.Cuts"]
         otherDrawings = [edge for edge in drawings if edge.GetLayerName() != "Edge.Cuts"]
         self.boardSubstrate.union(Substrate(edges))
         for drawing in otherDrawings:
             appendItem(self.board, drawing)
-        return sourceArea
+        return tightSourceArea
 
     def appendSubstrate(self, substrate, filletRadius=0):
         """
@@ -394,14 +405,18 @@ class Panel:
     def _placeBoardsInGrid(self, boardfile, rows, cols, destination, sourceArea, tolerance,
                   verSpace, horSpace):
         """
-        Create a grid of boards, return source board size
+        Create a grid of boards, return source board size aligned at the top
+        left corner
         """
         boardSize = wxRect(0, 0, 0, 0)
+        topLeftSize = None
         for i, j in product(range(rows), range(cols)):
             dest = self._boardGridPos(destination, i, j, boardSize, horSpace, verSpace)
             boardSize = self.appendBoard(boardfile, dest, sourceArea=sourceArea,
-                                         tolerance=tolerance, shrink=True, origin=Origin.TopLeft)
-        return boardSize
+                                         tolerance=tolerance, origin=Origin.TopLeft)
+            if not topLeftSize:
+                topLeftSize = boardSize
+        return topLeftSize
 
     def _singleTabSize(self, boardSize, expectedSize, spaceSize, last):
         """ Returns offset from board edge, and tab size"""
@@ -534,20 +549,21 @@ class Panel:
         """
         boardSize = self._placeBoardsInGrid(boardfile, rows, cols, destination,
                                     sourceArea, tolerance, verSpace, horSpace)
-        cuts = self._makeSingleInnerTabs(destination, rows, cols, boardSize,
+        gridDest = wxPoint(boardSize.GetX(), boardSize.GetY())
+        cuts = self._makeSingleInnerTabs(gridDest, rows, cols, boardSize,
                         verSpace, horSpace, verTabWidth, horTabWidth, radius)
 
         if outerVerTabThickness > 0:
-            cuts += self._makeSingleOuterVerTabs(destination, rows, cols, boardSize, verSpace,
+            cuts += self._makeSingleOuterVerTabs(gridDest, rows, cols, boardSize, verSpace,
                                     horSpace, verTabWidth, horTabWidth, radius,
                                     outerVerTabThickness, outerHorTabThickness)
 
         if outerHorTabThickness > 0:
-            cuts += self._makeSingleOuterHorTabs(destination, rows, cols, boardSize, verSpace,
+            cuts += self._makeSingleOuterHorTabs(gridDest, rows, cols, boardSize, verSpace,
                                     horSpace, verTabWidth, horTabWidth, radius,
                                     outerVerTabThickness, outerHorTabThickness)
 
-        return (wxRect(destination[0], destination[1],
+        return (wxRect(gridDest[0], gridDest[1],
                        cols * boardSize.GetWidth() + (cols - 1) * horSpace,
                        rows * boardSize.GetHeight() + (rows - 1) * verSpace),
                 cuts)

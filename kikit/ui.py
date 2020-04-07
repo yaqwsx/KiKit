@@ -30,7 +30,7 @@ def extractBoard(input, output, sourcearea):
 @click.argument("output", type=click.Path(dir_okay=False))
 @click.option("--space", "-s", type=float, help="Space between boards")
 @click.option("--gridsize", "-g", type=(int, int), help="Panel size <rows> <cols>")
-@click.option("--panelsize", "-p", type=(float, float), help="<width> <height>")
+@click.option("--panelsize", "-p", type=(float, float), help="<width> <height>", default=(None, None))
 @click.option("--tabwidth", type=float, default=0,
     help="Size of the bottom/up tabs, leave unset for full width")
 @click.option("--tabheight", type=float, default=0,
@@ -44,7 +44,9 @@ def extractBoard(input, output, sourcearea):
 def grid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
          mousebites, radius, sourcearea):
     """
-    Create a regular panel placed in a frame
+    Create a regular panel placed in a frame.
+
+    If you do not specify the panelsize, no frame is created
     """
     panel = Panel()
     rows, cols = gridsize
@@ -52,18 +54,25 @@ def grid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
         sourcearea = wxRectMM(*sourcearea)
     else:
         sourcearea = None
+    if panelsize[0]:
+        w, h = panelize
+        frame = True
+        oht, ovt = fromMm(space), fromMm(space)
+    else:
+        frame = False
+        oht, ovt = 0, 0
     psize, cuts = panel.makeGrid(input, rows, cols, wxPointMM(50, 50),
         sourceArea=sourcearea, tolerance=fromMm(5), radius=fromMm(radius),
         verSpace=fromMm(space), horSpace=fromMm(space),
         verTabWidth=fromMm(tabwidth), horTabWidth=fromMm(tabheight),
-        outerHorTabThickness=fromMm(space), outerVerTabThickness=fromMm(space))
+        outerHorTabThickness=oht, outerVerTabThickness=ovt)
     if vcuts:
         panel.makeVCuts(cuts)
     if mousebites[0]:
         drill, spacing = mousebites
         panel.makeMouseBites(cuts, fromMm(drill), fromMm(spacing))
-    w, h = panelsize
-    panel.makeFrame(psize, fromMm(w), fromMm(h), fromMm(space), radius=fromMm(radius))
+    if frame:
+        panel.makeFrame(psize, fromMm(w), fromMm(h), fromMm(space), radius=fromMm(radius))
     panel.save(output)
 
 
