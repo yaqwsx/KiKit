@@ -317,26 +317,33 @@ class Panel:
         """
         self.vVCuts.add(pos)
 
+    def _setVCutSegmentStyle(self, segment, layer):
+        segment.SetShape(STROKE_T.S_SEGMENT)
+        segment.SetLayer(layer)
+        segment.SetWidth(fromMm(0.4))
+
+    def _setVCutLabelStyle(self, label, layer):
+        label.SetText("V-CUT")
+        label.SetLayer(layer)
+        label.SetThickness(fromMm(0.4))
+        label.SetTextSize(pcbnew.wxSizeMM(2, 2))
+        label.SetHorizJustify(EDA_TEXT_HJUSTIFY_T.GR_TEXT_HJUSTIFY_LEFT)
+
     def _renderVCutV(self, layer=Layer.Cmts_User):
         """ return list of DRAWSEGMENT V-Cuts """
         bBox = self.boardSubstrate.boundingBox()
-        minY, maxY = bBox.GetY() - fromMm(10), bBox.GetY() + bBox.GetHeight() + fromMm(10)
+        minY, maxY = bBox.GetY() - fromMm(3), bBox.GetY() + bBox.GetHeight() + fromMm(3)
         segments = []
         for cut in self.vVCuts:
             segment = pcbnew.DRAWSEGMENT()
-            segment.SetShape(STROKE_T.S_SEGMENT)
-            segment.SetLayer(layer)
+            self._setVCutSegmentStyle(segment, layer)
             segment.SetStart(pcbnew.wxPoint(cut, minY))
             segment.SetEnd(pcbnew.wxPoint(cut, maxY))
             segments.append(segment)
 
             label = pcbnew.TEXTE_PCB(segment)
-            label.SetText("V-CUT")
-            label.SetLayer(layer)
-            label.SetThickness(fromMm(0.3))
+            self._setVCutLabelStyle(label, layer)
             label.SetPosition(wxPoint(cut, minY - fromMm(3)))
-            label.SetTextSize(pcbnew.wxSizeMM(3, 3))
-            label.SetHorizJustify(EDA_TEXT_HJUSTIFY_T.GR_TEXT_HJUSTIFY_LEFT)
             label.SetTextAngle(900)
             segments.append(label)
         return segments
@@ -344,23 +351,18 @@ class Panel:
     def _renderVCutH(self, layer=Layer.Cmts_User):
         """ return list of DRAWSEGMENT V-Cuts """
         bBox = self.boardSubstrate.boundingBox()
-        minX, maxX = bBox.GetX() - fromMm(10), bBox.GetX() + bBox.GetWidth() + fromMm(10)
+        minX, maxX = bBox.GetX() - fromMm(3), bBox.GetX() + bBox.GetWidth() + fromMm(3)
         segments = []
         for cut in self.hVCuts:
             segment = pcbnew.DRAWSEGMENT()
-            segment.SetShape(STROKE_T.S_SEGMENT)
-            segment.SetLayer(layer)
+            self._setVCutSegmentStyle(segment, layer)
             segment.SetStart(pcbnew.wxPoint(minX, cut))
             segment.SetEnd(pcbnew.wxPoint(maxX, cut))
             segments.append(segment)
 
             label = pcbnew.TEXTE_PCB(segment)
-            label.SetText("V-CUT")
-            label.SetLayer(layer)
-            label.SetThickness(fromMm(0.3))
+            self._setVCutLabelStyle(label, layer)
             label.SetPosition(wxPoint(maxX + fromMm(3), cut))
-            label.SetTextSize(pcbnew.wxSizeMM(3, 3))
-            label.SetHorizJustify(EDA_TEXT_HJUSTIFY_T.GR_TEXT_HJUSTIFY_LEFT)
             segments.append(label)
         return segments
 
