@@ -13,7 +13,7 @@ package:
 	python3 setup.py sdist bdist_wheel
 
 install: package
-	pip3 install --no-deps --force dist/KiKit-0.1.0-py3-none-any.whl
+	pip3 install --no-deps --force dist/*.whl
 
 release: package
 	twine upload dist/*
