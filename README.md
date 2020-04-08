@@ -52,3 +52,8 @@ KiKit](https://roboticsbrno.github.io/RB0002-BatteryPack).
 
 Read the [CLI documentation](doc/cli.md) and the [panelize
 documentation](doc/panelize.md).
+
+## How To Use It CI?
+
+To use KiKit in CI (e.g., Travis) you can use prepared Docker image
+`yaqwsx/kikit`. Also see [example `.travis.yml`](https://github.com/RoboticsBrno/RB0002-BatteryPack/blob/master/.travis.yml).
