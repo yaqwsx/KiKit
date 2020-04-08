@@ -8,6 +8,7 @@ the following commands available:
 
 - **export**: Export KiCAD boards
 - **panelize**: Create a simple predefined panel patterns
+- **present**: Create presentations - e.g. web page with auto-generated files
 
 ## Export commands
 
@@ -41,3 +42,20 @@ the following commands available:
   - `--radius FLOAT` Add a radius to inner corners (warning: slow)
   - `--sourcearea <FLOAT FLOAT FLOAT FLOAT>` `x y w h` in millimeters. If not
     specified, automatically detected
+
+## Present commands
+
+- `kikit present boardpage --name <pagename> -d <descriptionFile> -b <name
+  comment boadfile> -r <resource> --template <template> --repository <url>
+  <outputdir>` - generate single webpage providing board preview and a
+  possibility to download board files (gerbers and sources). See [an example of
+  such page](https://roboticsbrno.github.io/RB0002-BatteryPack).
+    - The description is a path to markdown file with the main page content.
+    - You can specify multiple resources via `-r` or `--resource`. Resources are
+      files, which will be copied to the output directory. Useful for images
+      referred from description
+    - You can specify multiple boards via `-b` or `--board`
+    - Template is an optional argument which is either a path to custom template
+      or a name of built-in templates (currently only one is one - `default`).
+      See [template documentation](present.md) for more information about
+      templates.
