@@ -24,7 +24,9 @@ setuptools.setup(
     install_requires=[
         "numpy",
         "shapely",
-        "click"
+        "click",
+        "markdown2",
+        "pybars3"
     ],
     zip_safe=False,
     include_package_data=True,

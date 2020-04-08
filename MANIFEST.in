@@ -1,2 +1,5 @@
 recursive-include kikit/resources *
+recursive-exclude kikit/resources package*.json src postcss.config.js tailwind.config.js
+prune kikit/resources/**/node_modules
 recursive-include doc *
+recursive-exclude doc *.xcf

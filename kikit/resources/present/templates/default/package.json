@@ -1,0 +1,20 @@
+{
+  "name": "boardoverview",
+  "version": "1.0.0",
+  "main": "postcss.config.js",
+  "dependencies": {},
+  "devDependencies": {
+    "@fullhuman/postcss-purgecss": "^2.1.0",
+    "cssnano": "^4.1.10",
+    "postcss": "^7.0.27",
+    "postcss-purgecss": "^2.0.3",
+    "tailwindcss": "^1.2.0"
+  },
+  "scripts": {
+    "build": "postcss src/styles.css -o css/styles.css"
+  },
+  "author": "",
+  "license": "ISC",
+  "keywords": [],
+  "description": ""
+}

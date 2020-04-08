@@ -8,6 +8,9 @@ from pcbnew import *
 @click.argument("boardfile", type=click.Path(dir_okay=False))
 @click.argument("outputdir", type=click.Path(file_okay=False), default=None)
 def gerber(boardfile, outputdir):
+    gerberImpl(boardfile, outputdir)
+
+def gerberImpl(boardfile, outputdir):
     """
     Export board to gerbers.
 

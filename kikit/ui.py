@@ -1,6 +1,7 @@
 import click
 import kikit.export as kiexport
 from kikit.panelize import Panel, fromMm, wxPointMM, wxRectMM
+from kikit.present import boardpage
 
 @click.group()
 def panelize():
@@ -90,10 +91,20 @@ export.add_command(kiexport.gerber)
 export.add_command(kiexport.dxf)
 
 @click.group()
+def present():
+    """
+    Prepare board presentation
+    """
+    pass
+
+present.add_command(boardpage)
+
+@click.group()
 def cli():
     pass
 cli.add_command(export)
 cli.add_command(panelize)
+cli.add_command(present)
 
 
 
