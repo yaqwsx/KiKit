@@ -10,6 +10,7 @@ doc/panelization.md: kikit/panelize.py scripts/panelizeDoc.py
 	PYTHONPATH=`pwd` python3 scripts/panelizeDoc.py > $@
 
 package:
+	rm dist/*
 	python3 setup.py sdist bdist_wheel
 
 install: package
