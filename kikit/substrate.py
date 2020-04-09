@@ -213,8 +213,8 @@ def commonCircle(a, b, c):
                      [b[0], b[1], 1],
                      [c[0], c[1], 1]])
     m11d = np.linalg.det(m11)
-    if m11d == 0:
-        return None
+    if np.isclose(m11d, 0):
+        return None, None, None
     m12 = np.matrix([[a[0]*a[0] + a[1]*a[1], a[1], 1],
                      [b[0]*b[0] + b[1]*b[1], b[1], 1],
                      [c[0]*c[0] + c[1]*c[1], c[1], 1]])
@@ -226,7 +226,11 @@ def commonCircle(a, b, c):
                      [c[0]*c[0] + c[1]*c[1], c[0], c[1]]])
     x = 0.5 * np.linalg.det(m12) / m11d
     y = -0.5 * np.linalg.det(m13) / m11d
-    r = np.sqrt(x*x + y*y + np.linalg.det(m14) / m11d)
+    r = x*x + y*y + np.linalg.det(m14) / m11d
+    if r < 0:
+        # Due to numerical imprecision, we can get an invalid radius
+        return None, None, None
+    r = np.sqrt(r)
     return (x, y, r)
 
 def cutOutline(point, linestring):
@@ -269,6 +273,81 @@ def extractPoint(collection):
             return x
     return None
 
+def edgeLineSegment(start, end):
+    segment = pcbnew.DRAWSEGMENT()
+    segment.SetShape(STROKE_T.S_SEGMENT)
+    segment.SetLayer(Layer.Edge_Cuts)
+    segment.SetStart(pcbnew.wxPoint(start[0], start[1]))
+    segment.SetEnd(pcbnew.wxPoint(end[0], end[1]))
+    return segment
+
+def edgeArcSegment(start, center, angle):
+    segment = pcbnew.DRAWSEGMENT()
+    segment.SetShape(STROKE_T.S_ARC)
+    segment.SetLayer(Layer.Edge_Cuts)
+    segment.SetArcStart(pcbnew.wxPoint(start[0], start[1]))
+    segment.SetCenter(pcbnew.wxPoint(center[0], center[1]))
+    segment.SetAngle(10 * angle)
+    return segment
+
+def lineToVec3D(a, b):
+    """
+    Get a 2D line specified by 2 points, return a 3D vector
+    """
+    return np.array([a[0] - b[0], a[1] - b[1], 0])
+
+def turnLeft(dir1, dir2):
+    """
+    Return true if the 2 3D vectors rotate to left
+    """
+    return np.cross(dir1, dir2)[2] < 0
+
+def reconstructArc(segments):
+    """
+    Takes a list of segments which should form and arc and returns KiCAD arc
+    """
+    assert(len(segments) >= 4)
+    l = len(segments)
+    x, y, r = commonCircle(segments[0], segments[l // 2], segments[-1])
+    startDir = lineToVec3D(segments[1], segments[0])
+    endDir = lineToVec3D(segments[-1], segments[-2])
+    radius1 = lineToVec3D(segments[0], [x, y])
+    radius2 = lineToVec3D(segments[-1], [x, y])
+
+    product = np.dot(radius1, radius2) / (np.linalg.norm(radius1) ** 2)
+    product = np.clip(product, -1, 1)
+    angle = np.arccos(product)
+
+    if turnLeft(startDir, radius1):
+        start = segments[0]
+        if turnLeft(startDir, endDir):
+            angle = 2 * np.pi - angle
+    else:
+        start = segments[-1]
+        if not turnLeft(startDir, endDir):
+            angle = 2 * np.pi - angle
+    return edgeArcSegment(start, (x, y), np.rad2deg(angle))
+
+def close(a, b):
+    """ Test if a and b are closer than 0.001 mm """
+    return abs(a - b) < pcbnew.FromMM(0.001)
+
+def arcSegmentsCloseEnough(points, r):
+    distances = []
+    angleThreshold = 360 / 60
+    lengthThreshold = (r * np.radians(angleThreshold)) ** 2
+    for a, b in zip(points, points[1:]):
+        dist = (a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2
+        if dist > lengthThreshold:
+            return False
+        distances.append(dist)
+    # Check that distances are more-less uniform
+    mean = np.sum(distances) / len(distances)
+    for val in distances:
+        if abs(val - mean) / mean > 0.5:
+            return False
+    return True
+
 class Substrate:
     """
     Represents (possibly multiple) PCB substrates reconstructed from a list of
@@ -308,16 +387,43 @@ class Substrate:
 
     def _serializeRing(self, ring):
         coords = list(ring.coords)
-        segments = []
-        # ToDo: Reconstruct arcs
-        for a, b in zip(coords, coords[1:]):
-            segment = pcbnew.DRAWSEGMENT()
-            segment.SetShape(STROKE_T.S_SEGMENT)
-            segment.SetLayer(Layer.Edge_Cuts)
-            segment.SetStart(pcbnew.wxPoint(a[0], a[1]))
-            segment.SetEnd(pcbnew.wxPoint(b[0], b[1]))
-            segments.append(segment)
-        return segments
+        edgeSegments = []
+        arcSize = 0
+        arcCandidateStart, arcCandidateEnd = 0, 0
+        while arcCandidateEnd != len(coords) - 1:
+            arcCandidateEnd += 1
+            arcLen = arcCandidateEnd - arcCandidateStart
+            # There has to be at least 4 points to detect an arc
+            if arcLen < 4:
+                continue
+            # Do we have an arc beginning?
+            x1, y1, r1 = commonCircle(*[coords[arcCandidateStart + x] for x in range(3)])
+            x2, y2, r2 = commonCircle(*[coords[arcCandidateStart + x + 1] for x in range(3)])
+            segments = coords[arcCandidateStart:arcCandidateStart + 4]
+            if (not x1 or not x2 or
+                not arcSegmentsCloseEnough(segments, r1) or
+                not close(x1, x2) or not close(y1, y2) or not close(r1, r2)):
+                edgeSegments.append(edgeLineSegment(
+                    coords[arcCandidateStart], coords[arcCandidateStart + 1]))
+                arcCandidateStart += 1
+                continue
+            # Arc in progress, move further while the arc matches
+            while True:
+                if arcCandidateEnd == len(coords) - 1:
+                    break
+                seg = segments[0:-2] + [coords[arcCandidateEnd + 1]]
+                x2, y2, r2 = commonCircle(*seg)
+                if (x1 is not None and
+                    arcSegmentsCloseEnough(coords[arcCandidateEnd-1:arcCandidateEnd + 2], r2) and
+                    close(x1, x2) and close(y1, y2) and close(r1, r2)):
+                    arcCandidateEnd += 1
+                else:
+                    break
+            edgeSegments.append(reconstructArc(coords[arcCandidateStart:arcCandidateEnd + 1]))
+            arcCandidateStart = arcCandidateEnd
+        for a, b in zip(coords[arcCandidateStart:], coords[arcCandidateStart + 1:]):
+            edgeSegments.append(edgeLineSegment(a, b))
+        return edgeSegments
 
     def boundingBox(self):
         minx, miny, maxx, maxy = self.substrates.bounds
