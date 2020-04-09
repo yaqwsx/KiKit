@@ -360,8 +360,8 @@ class Substrate:
         b, _ = shapely.ops.nearest_points(cut2, filletCenter)
         if not a or not b:
             return False
-        patch = Polygon([a, b, point]).difference(filletCenter.buffer(radius))
-        self.union(patch.buffer(pcbnew.FromMM(0.01)))
+        patch = Polygon([a, b, point]).buffer(pcbnew.FromMM(0.001)).difference(filletCenter.buffer(radius))
+        self.union(patch)
         return True
 
 
