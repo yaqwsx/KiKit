@@ -13,17 +13,20 @@ def toTuple(item):
         return item[0], item[1]
     raise NotImplementedError("toTuple for {} not implemented".format(type(item)))
 
+def roundPoint(point):
+    return pcbnew.wxPoint(round(point[0], -2), round(point[1], -2))
+
 def getStartPoint(geom):
     if geom.GetShape() in [STROKE_T.S_ARC, STROKE_T.S_CIRCLE]:
-        return geom.GetArcStart()
-    return geom.GetStart()
+        return roundPoint(geom.GetArcStart())
+    return roundPoint(geom.GetStart())
 
 def getEndPoint(geom):
     if geom.GetShape() == STROKE_T.S_ARC:
-        return geom.GetArcEnd()
+        return roundPoint(geom.GetArcEnd())
     if geom.GetShape() == STROKE_T.S_CIRCLE:
-        return geom.GetArcStart()
-    return geom.GetEnd()
+        return roundPoint(geom.GetArcStart())
+    return roundPoint(geom.GetEnd())
 
 class CoincidenceList(list):
     def getNeighbor(self, myIdx):
@@ -40,9 +43,9 @@ def findRing(startIdx, geometryList, coincidencePoints, unused):
     """
     unused[startIdx] = False
     ring = [startIdx]
-    if geometryList[startIdx].GetStart() == geometryList[startIdx].GetEnd():
+    if getStartPoint(geometryList[startIdx]) == getEndPoint(geometryList[startIdx]):
         return ring
-    currentPoint = geometryList[startIdx].GetEnd()
+    currentPoint = getEndPoint(geometryList[startIdx])
     while True:
         nextIdx = coincidencePoints[toTuple(currentPoint)].getNeighbor(ring[-1])
         assert(unused[nextIdx] or nextIdx == startIdx)
