@@ -56,7 +56,7 @@ def grid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
     else:
         sourcearea = None
     if panelsize[0]:
-        w, h = panelize
+        w, h = panelsize
         frame = True
         oht, ovt = fromMm(space), fromMm(space)
     else:
