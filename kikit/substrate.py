@@ -361,7 +361,7 @@ class Substrate:
         if not a or not b:
             return False
         patch = Polygon([a, b, point]).difference(filletCenter.buffer(radius))
-        self.union(patch)
+        self.union(patch.buffer(pcbnew.FromMM(0.01)))
         return True
 
 
