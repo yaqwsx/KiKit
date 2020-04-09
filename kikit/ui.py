@@ -29,7 +29,7 @@ def extractBoard(input, output, sourcearea):
 @click.command()
 @click.argument("input", type=click.Path(dir_okay=False))
 @click.argument("output", type=click.Path(dir_okay=False))
-@click.option("--space", "-s", type=float, help="Space between boards")
+@click.option("--space", "-s", type=float, default=0, help="Space between boards")
 @click.option("--gridsize", "-g", type=(int, int), help="Panel size <rows> <cols>")
 @click.option("--panelsize", "-p", type=(float, float), help="<width> <height>", default=(None, None))
 @click.option("--tabwidth", type=float, default=0,
