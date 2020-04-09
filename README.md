@@ -51,7 +51,7 @@ KiKit](https://roboticsbrno.github.io/RB0002-BatteryPack).
 ## How To Use It?
 
 Read the [CLI documentation](doc/cli.md) and the [panelize
-documentation](doc/panelize.md).
+documentation](doc/panelization.md).
 
 ## How To Use It CI?
 
