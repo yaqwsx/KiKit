@@ -9,6 +9,10 @@ KiCAD workflow like:
 
 ![KiKit Promo](doc/resources/promo.jpg)
 
+## Do You Enjoy KiKit?
+
+[![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/E1E2181LU)
+
 ## Installation
 
 KiKit is available as a [PyPi package](https://pypi.org/project/KiKit/), therefore, you can install it via pip:
