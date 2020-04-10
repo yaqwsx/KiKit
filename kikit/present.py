@@ -113,15 +113,15 @@ class Template:
             boardDesc["gerbers"] = os.path.join(dirPrefix, boardName + "-gerbers.zip")
             boardDesc["file"] = os.path.join(dirPrefix, boardName + ".kicad_pcb")
 
-            subprocess.run([pcbdraw, "--vcuts", "--silent", boardDesc["source"],
+            subprocess.check_call([pcbdraw, "--vcuts", "--silent", boardDesc["source"],
                 os.path.join(outputDirectory, boardDesc["front"])])
-            subprocess.run([pcbdraw, "--vcuts", "--silent", "--back", boardDesc["source"],
+            subprocess.check_call([pcbdraw, "--vcuts", "--silent", "--back", boardDesc["source"],
                 os.path.join(outputDirectory, boardDesc["back"])])
 
             tmp = tempfile.mkdtemp()
             export.gerberImpl(boardDesc["source"], tmp)
             gerbers = [os.path.join(tmp, x) for x in os.listdir(tmp)]
-            subprocess.run(["zip", "-j",
+            subprocess.check_call(["zip", "-j",
                 os.path.join(outputDirectory, boardDesc["gerbers"])] + gerbers)
             shutil.rmtree(tmp)
 
