@@ -99,6 +99,10 @@ class Template:
         Convert all boards to images and gerber exports. Enrich self.boards
         with paths of generated files
         """
+        pcbdraw = shutil.which("pcbdraw")
+        if not pcbdraw:
+            raise RuntimeError("PcbDraw needs to be installed in order to render boards")
+
         dirPrefix = "boards"
         boardDir = os.path.join(outputDirectory, dirPrefix)
         Path(boardDir).mkdir(parents=True, exist_ok=True)
@@ -109,9 +113,9 @@ class Template:
             boardDesc["gerbers"] = os.path.join(dirPrefix, boardName + "-gerbers.zip")
             boardDesc["file"] = os.path.join(dirPrefix, boardName + ".kicad_pcb")
 
-            subprocess.run(["pcbdraw", "--vcuts", "--silent", boardDesc["source"],
+            subprocess.run([pcbdraw, "--vcuts", "--silent", boardDesc["source"],
                 os.path.join(outputDirectory, boardDesc["front"])])
-            subprocess.run(["pcbdraw", "--vcuts", "--silent", "--back", boardDesc["source"],
+            subprocess.run([pcbdraw, "--vcuts", "--silent", "--back", boardDesc["source"],
                 os.path.join(outputDirectory, boardDesc["back"])])
 
             tmp = tempfile.mkdtemp()

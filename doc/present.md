@@ -5,6 +5,11 @@ boards. The main one is a simple page generator which can be used in continuous
 integration to build pages where your users and colleges can download the
 automatically generated panels.
 
+## Requirements
+
+In order to include PCB drawings in presentations you will need to install
+[PcbDraw](https://github.com/yaqwsx/PcbDraw).
+
 ## Template name/path resolution
 
 The template argument is either a name of built-it template or a path to a
