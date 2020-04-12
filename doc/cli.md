@@ -59,3 +59,8 @@ the following commands available:
       or a name of built-in templates (currently only one is one - `default`).
       See [template documentation](present.md) for more information about
       templates.
+
+## Modify commands
+
+- `kikit modify references --show/--hide --pattern <pattern> <board>` hide or
+  show all references on the board matching a regular pattern.
