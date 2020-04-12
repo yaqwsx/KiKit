@@ -37,7 +37,7 @@ def extractBoard(input, output, sourcearea):
     help="Size of the bottom/up tabs, leave unset for full width")
 @click.option("--tabheight", type=float, default=0,
     help="Size of the left/right tabs, leave unset for full height")
-@click.option("--vcuts", type=bool, help="Use V-cuts to separe the boards", default=False)
+@click.option("--vcuts", type=bool, help="Use V-cuts to separe the boards", is_flag=True)
 @click.option("--mousebites", type=(float, float), default=(None, None),
     help="Use mouse bites to separate the boards. Specify drill size and spacing")
 @click.option("--radius", type=float, default=0, help="Add a radius to inner corners (warning: slow)")
