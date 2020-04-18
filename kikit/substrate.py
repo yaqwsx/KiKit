@@ -289,6 +289,29 @@ def extractPoint(collection):
             return x
     return None
 
+def normalize(vector):
+    """ Return a vector with unit length """
+    vec = np.array([vector[0], vector[1]])
+    return vec / np.linalg.norm(vector)
+
+def makePerpendicular(vector):
+    """
+    Given a 2D vector, return a vector which is perpendicular to the input one
+    """
+    return np.array([vector[1], -vector[0]])
+
+def closestIntersectionPoint(origin, direction, outline, maxDistance):
+    testLine = LineString([origin, origin + direction * maxDistance])
+    inter = testLine.intersection(outline)
+    if inter.is_empty:
+        raise RuntimeError("No intersection found within given distance")
+    origin = Point(origin[0], origin[1])
+    if isinstance(inter, Point):
+        geoms = [inter]
+    else:
+        geoms = inter.geoms
+    return min([(g, origin.distance(g)) for g in geoms], key=lambda t: t[1])[0]
+
 class Substrate:
     """
     Represents (possibly multiple) PCB substrates reconstructed from a list of
@@ -387,6 +410,29 @@ class Substrate:
         self.union(patch)
         return True
 
+    def tab(self, origin, direction, width, maxHeight=pcbnew.FromMM(50)):
+        """
+        Create a tab for the substrate. The tab starts at the specified origin
+        (2D point) and tries to penetrate existing substrate in direction (a 2D
+        vector). The tab is constructed with given width. If the substrate is
+        not penetrated within maxHeight, exception is raised.
+
+        Returns a pair tab and cut outline. Add the tab it via
+        uion - batch adding of geometry is more efficient.
+        """
+        origin = np.array(origin)
+        direction = normalize(direction)
+        sideOriginA = origin + makePerpendicular(direction) * width / 2
+        sideOriginB = origin - makePerpendicular(direction) * width / 2
+        boundary = self.substrates.boundary
+        splitPointA = closestIntersectionPoint(sideOriginA, direction,
+            boundary, maxHeight)
+        splitPointB = closestIntersectionPoint(sideOriginB, direction,
+            boundary, maxHeight)
+        shiftedOutline = cutOutline(splitPointB, boundary)
+        tabFace = splitLine(shiftedOutline, splitPointA)[0]
+        tab = Polygon(list(tabFace.coords) + [sideOriginA, sideOriginB])
+        return tab, tabFace
 
 
 def showPolygon(polygon):
