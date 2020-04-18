@@ -64,7 +64,7 @@ print("""
 
 ### Simple grid
 
-The following example creates 3 x 3 grid of boards in a frame separated by V-CUTS.
+The following example creates a 3 x 3 grid of boards in a frame separated by V-CUTS.
 
 ```
 panel = Panel()
