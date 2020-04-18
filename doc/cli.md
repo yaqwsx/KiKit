@@ -36,12 +36,24 @@ the following commands available:
   - `-p, --panelsize <FLOAT FLOAT>` `<width> <height>` in millimeters
   - `--tabwidth FLOAT` Size of the bottom/up tabs, leave unset for full width
   - `--tabheight FLOAT` Size of the left/right tabs, leave unset for full height
+  - `--htabs INT` Number of horizontal tabs per board
+  - `--vtabs INT` Number of vertical tabs per board
   - `--vcuts BOOLEAN` Use V-cuts to separate the boards
-  - `--mousebites <FLOAT FLOAT>` Use mouse bites to separate the boards. Specify
-    drill size and spacing in millimeters.
-  - `--radius FLOAT` Add a radius to inner corners (warning: slow)
+  - `--mousebites <FLOAT FLOAT FLOAT>` Use mouse bites to separate the boards.
+    Specify drill size, spacing and offset in millimeters. If you are unsure
+    about offset value, use 0.25 mm
+  - `--radius FLOAT` Add a radius to inner corners to simulate radius of the
+    mill
   - `--sourcearea <FLOAT FLOAT FLOAT FLOAT>` `x y w h` in millimeters. If not
     specified, automatically detected
+  - `--rotation <FLOAT>` Rotate the source board in degrees.
+- `kikit panelize tightgrid [options] <input> <output>` - create a panel just
+  like `grid`, but the the panel is full and there is a milled slot around
+  perimeter of the boards. Takes the same arguments as `grid` with few
+  exceptions:
+  - `-w, --slotwidth <FLOAT>` specify the slot size
+  - `-p, --panelsize <FLOAT FLOAT>` `<width> <height>` in millimeters, required.
+
 
 ## Present commands
 

@@ -1,6 +1,6 @@
 import click
 import kikit.export as kiexport
-from kikit.panelize import Panel, fromMm, wxPointMM, wxRectMM
+from kikit.panelize import Panel, fromMm, wxPointMM, wxRectMM, fromDegrees
 from kikit.present import boardpage
 from kikit.modify import references
 
@@ -37,14 +37,21 @@ def extractBoard(input, output, sourcearea):
     help="Size of the bottom/up tabs, leave unset for full width")
 @click.option("--tabheight", type=float, default=0,
     help="Size of the left/right tabs, leave unset for full height")
+@click.option("--htabs", type=int, default=1,
+    help="Number of horizontal tabs for each board")
+@click.option("--vtabs", type=int, default=1,
+    help="Number of vertical tabs for each board")
 @click.option("--vcuts", type=bool, help="Use V-cuts to separe the boards", is_flag=True)
-@click.option("--mousebites", type=(float, float), default=(None, None),
-    help="Use mouse bites to separate the boards. Specify drill size and spacing")
-@click.option("--radius", type=float, default=0, help="Add a radius to inner corners (warning: slow)")
+@click.option("--vcutcurves", type=bool, help="Use V-cuts to approximate curves using starting and ending point", is_flag=True)
+@click.option("--mousebites", type=(float, float, float), default=(None, None, None),
+    help="Use mouse bites to separate the boards. Specify drill size, spacing and offset from cutedge (use 0.25 mm if unsure)")
+@click.option("--radius", type=float, default=0, help="Add a radius to inner corners")
+@click.option("--rotation", type=float, default=0,
+    help="Rotate input board (in degrees)")
 @click.option("--sourcearea", type=(float, float, float, float),
     help="x y w h in millimeters. If not specified, automatically detected", default=(None, None, None, None))
 def grid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
-         mousebites, radius, sourcearea):
+         mousebites, radius, sourcearea, vcutcurves, htabs, vtabs, rotation):
     """
     Create a regular panel placed in a frame.
 
@@ -64,22 +71,78 @@ def grid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
         frame = False
         oht, ovt = 0, 0
     psize, cuts = panel.makeGrid(input, rows, cols, wxPointMM(50, 50),
-        sourceArea=sourcearea, tolerance=fromMm(5), radius=fromMm(radius),
+        sourceArea=sourcearea, tolerance=fromMm(5),
         verSpace=fromMm(space), horSpace=fromMm(space),
         verTabWidth=fromMm(tabwidth), horTabWidth=fromMm(tabheight),
-        outerHorTabThickness=oht, outerVerTabThickness=ovt)
+        outerHorTabThickness=oht, outerVerTabThickness=ovt,
+        horTabCount=htabs, verTabCount=vtabs, rotation=fromDegrees(rotation))
     if vcuts:
-        panel.makeVCuts(cuts)
+        panel.makeVCuts(cuts, vcutcurves)
     if mousebites[0]:
-        drill, spacing = mousebites
-        panel.makeMouseBites(cuts, fromMm(drill), fromMm(spacing))
+        drill, spacing, offset = mousebites
+        panel.makeMouseBites(cuts, fromMm(drill), fromMm(spacing), fromMm(offset))
     if frame:
-        panel.makeFrame(psize, fromMm(w), fromMm(h), fromMm(space), radius=fromMm(radius))
+        panel.makeFrame(psize, fromMm(w), fromMm(h), fromMm(space))
+    panel.addMillFillets(fromMm(radius))
+    panel.save(output)
+
+@click.command()
+@click.argument("input", type=click.Path(dir_okay=False))
+@click.argument("output", type=click.Path(dir_okay=False))
+@click.option("--space", "-s", type=float, default=2, help="Space between boards")
+@click.option("--slotwidth", "-w", type=float, default=2, help="Milled slot width")
+@click.option("--gridsize", "-g", type=(int, int), help="Panel size <rows> <cols>")
+@click.option("--panelsize", "-p", type=(float, float), help="<width> <height>", default=(None, None))
+@click.option("--tabwidth", type=float, default=0,
+    help="Size of the bottom/up tabs, leave unset for full width")
+@click.option("--tabheight", type=float, default=0,
+    help="Size of the left/right tabs, leave unset for full height")
+@click.option("--htabs", type=int, default=1,
+    help="Number of horizontal tabs for each board")
+@click.option("--vtabs", type=int, default=1,
+    help="Number of vertical tabs for each board")
+@click.option("--vcuts", type=bool, help="Use V-cuts to separe the boards", is_flag=True)
+@click.option("--vcutcurves", type=bool, help="Use V-cuts to approximate curves using starting and ending point", is_flag=True)
+@click.option("--mousebites", type=(float, float, float), default=(None, None, None),
+    help="Use mouse bites to separate the boards. Specify drill size, spacing and offset from cutedge (use 0.25 mm if unsure)")
+@click.option("--radius", type=float, default=0, help="Add a radius to inner corners")
+@click.option("--rotation", type=float, default=0,
+    help="Rotate input board (in degrees)")
+@click.option("--sourcearea", type=(float, float, float, float),
+    help="x y w h in millimeters. If not specified, automatically detected", default=(None, None, None, None))
+def tightgrid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
+         mousebites, radius, sourcearea, vcutcurves, htabs, vtabs, rotation, slotwidth):
+    """
+    Create a regular panel placed in a frame by milling a slot around the
+    boards' perimeters.
+    """
+    panel = Panel()
+    rows, cols = gridsize
+    if sourcearea[0]:
+        sourcearea = wxRectMM(*sourcearea)
+    else:
+        sourcearea = None
+    w, h = panelsize
+    if 2 * radius > 1.1 * slotwidth:
+        raise RuntimeError("The slot is too narrow for given radius (it has to be at least 10% larger")
+    psize, cuts = panel.makeTightGrid(input, rows, cols, wxPointMM(50, 50),
+        verSpace=fromMm(space), horSpace=fromMm(space),
+        slotWidth=fromMm(slotwidth), width=fromMm(w), height=fromMm(h),
+        sourceArea=sourcearea, tolerance=fromMm(5),
+        verTabWidth=fromMm(tabwidth), horTabWidth=fromMm(tabwidth),
+        verTabCount=htabs, horTabCount=vtabs, rotation=fromDegrees(rotation))
+    if vcuts:
+        panel.makeVCuts(cuts, vcutcurves)
+    if mousebites[0]:
+        drill, spacing, offset = mousebites
+        panel.makeMouseBites(cuts, fromMm(drill), fromMm(spacing), fromMm(offset))
+    panel.addMillFillets(fromMm(radius))
     panel.save(output)
 
 
 panelize.add_command(extractBoard)
 panelize.add_command(grid)
+panelize.add_command(tightgrid)
 
 @click.group()
 def export():

@@ -71,11 +71,11 @@ panel = Panel()
 size, cuts = panel.makeGrid("test.kicad_pcb", 4, 3, wxPointMM(100, 40),
             tolerance=fromMm(5), verSpace=fromMm(5), horSpace=fromMm(5),
             outerHorTabThickness=fromMm(3), outerVerTabThickness=fromMm(3),
-            verTabWidth=fromMm(15), horTabWidth=fromMm(8),
-            radius=fromMm(1))
+            verTabWidth=fromMm(15), horTabWidth=fromMm(8))
 panel.makeVCuts(cuts)
 # alternative: panel.makeMouseBites(cuts, diameter=fromMm(0.5), spacing=fromMm(1))
 panel.makeFrame(size, fromMm(100), fromMm(100), fromMm(3), radius=fromMm(1))
+panel.addMillFillets(fromMm(1))
 panel.save("out.kicad_pcb")
 ```
 """)

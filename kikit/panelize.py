@@ -17,6 +17,9 @@ KIKIT_LIB = os.path.join(PKG_BASE, "resources/kikit.pretty")
 def fromDegrees(angle):
     return angle * 10
 
+def fromKicadAngle(angle):
+    return angle / 10
+
 def fromMm(mm):
     """Convert millimeters to KiCAD internal units"""
     return pcbnew.FromMM(mm)
@@ -113,18 +116,24 @@ def getBBoxWithoutContours(edge):
     edge.SetWidth(width)
     return bBox
 
-def findBoardBoundingBox(board, sourceArea=None):
+def findBoundingBox(edges):
     """
-    Returns a bounding box (wxRect) of all Edge.Cuts items either in
-    specified source area (wxRect) or in the whole board
+    Return a bounding box of all drawings in edges
     """
-    edges = collectEdges(board, "Edge.Cuts", sourceArea)
     if len(edges) == 0:
         raise RuntimeError("No board edges found")
     boundingBox = getBBoxWithoutContours(edges[0])
     for edge in edges[1:]:
         boundingBox = combineBoundingBoxes(boundingBox, getBBoxWithoutContours(edge))
     return boundingBox
+
+def findBoardBoundingBox(board, sourceArea=None):
+    """
+    Returns a bounding box (wxRect) of all Edge.Cuts items either in
+    specified source area (wxRect) or in the whole board
+    """
+    edges = collectEdges(board, "Edge.Cuts", sourceArea)
+    return findBoundingBox(edges)
 
 def collectNetNames(board):
     return [str(x) for x in board.GetNetInfo().NetsByName() if len(str(x)) > 0]
@@ -264,13 +273,10 @@ class Panel:
             sourceArea = findBoardBoundingBox(board)
         elif shrink:
             sourceArea = findBoardBoundingBox(board, sourceArea)
-        tightSourceArea = findBoardBoundingBox(board, expandRect(sourceArea, fromMm(1)))
         enlargedSourceArea = expandRect(sourceArea, tolerance)
         originPoint = getOriginCoord(origin, sourceArea)
         translation = wxPoint(destination[0] - originPoint[0],
                               destination[1] - originPoint[1])
-        tightSourceArea = translateRect(tightSourceArea, translation)
-
 
         self._makeNetNamesUnique(board)
 
@@ -303,7 +309,7 @@ class Panel:
         self.boardSubstrate.union(Substrate(edges, bufferOutline))
         for drawing in otherDrawings:
             appendItem(self.board, drawing)
-        return tightSourceArea
+        return findBoundingBox(edges)
 
     def appendSubstrate(self, substrate):
         """
@@ -399,7 +405,7 @@ class Panel:
                        destination[1] + i * (boardSize.GetHeight() + verSpace))
 
     def _placeBoardsInGrid(self, boardfile, rows, cols, destination, sourceArea, tolerance,
-                  verSpace, horSpace):
+                  verSpace, horSpace, rotation):
         """
         Create a grid of boards, return source board size aligned at the top
         left corner
@@ -409,7 +415,7 @@ class Panel:
         for i, j in product(range(rows), range(cols)):
             dest = self._boardGridPos(destination, i, j, boardSize, horSpace, verSpace)
             boardSize = self.appendBoard(boardfile, dest, sourceArea=sourceArea,
-                                         tolerance=tolerance, origin=Origin.TopLeft)
+                                         tolerance=tolerance, origin=Origin.TopLeft, rotationAngle=rotation)
             if not topLeftSize:
                 topLeftSize = boardSize
         return topLeftSize
@@ -554,7 +560,7 @@ class Panel:
     def makeGrid(self, boardfile, rows, cols, destination, sourceArea=None,
                  tolerance=0, verSpace=0, horSpace=0, verTabCount=1,
                  horTabCount=1, verTabWidth=0, horTabWidth=0,
-                 outerVerTabThickness=0, outerHorTabThickness=0):
+                 outerVerTabThickness=0, outerHorTabThickness=0, rotation=0):
         """
         Creates a grid of boards (row x col) as a panel at given destination
         separated by V-CUTS. The source can be either extracted automatically or
@@ -570,7 +576,7 @@ class Panel:
         makeMouseBites.
         """
         boardSize = self._placeBoardsInGrid(boardfile, rows, cols, destination,
-                                    sourceArea, tolerance, verSpace, horSpace)
+                                    sourceArea, tolerance, verSpace, horSpace, rotation)
         gridDest = wxPoint(boardSize.GetX(), boardSize.GetY())
         tabs, cuts = [], []
 
@@ -606,13 +612,13 @@ class Panel:
     def makeTightGrid(self, boardfile, rows, cols, destination, verSpace,
                       horSpace, slotWidth, width, height, sourceArea=None,
                       tolerance=0, verTabWidth=0, horTabWidth=0,
-                      verTabCount=1, horTabCount=1):
+                      verTabCount=1, horTabCount=1, rotation=0):
         """
         Creates a grid of boards just like `makeGrid`, however, it creates a
         milled slot around perimeter of each board and 4 tabs.
         """
         boardSize = self._placeBoardsInGrid(boardfile, rows, cols, destination,
-                                    sourceArea, tolerance, verSpace, horSpace)
+                                    sourceArea, tolerance, verSpace, horSpace, rotation)
         gridDest = wxPoint(boardSize.GetX(), boardSize.GetY())
         panelSize = wxRect(destination[0], destination[1],
                        cols * boardSize.GetWidth() + (cols - 1) * horSpace,
@@ -644,6 +650,8 @@ class Panel:
 
         tabs = list([t.buffer(fromMm(0.001), join_style=2) for t in tabs])
         self.appendSubstrate(tabs)
+
+        self.boardSubstrate.removeIslands()
 
         return (outerRect, cuts)
 
@@ -721,4 +729,3 @@ class Panel:
         given radius.
         """
         self.boardSubstrate.millFillets(millRadius)
-

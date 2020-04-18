@@ -359,12 +359,14 @@ class Substrate:
         coords = list(ring.coords)
         segments = []
         # ToDo: Reconstruct arcs
+        if coords[0] != coords[-1]:
+            raise RuntimeError("Ring is incomplete")
         for a, b in zip(coords, coords[1:]):
             segment = pcbnew.DRAWSEGMENT()
             segment.SetShape(STROKE_T.S_SEGMENT)
             segment.SetLayer(Layer.Edge_Cuts)
-            segment.SetStart(pcbnew.wxPoint(a[0], a[1]))
-            segment.SetEnd(pcbnew.wxPoint(b[0], b[1]))
+            segment.SetStart(roundPoint(a))
+            segment.SetEnd(roundPoint(b))
             segments.append(segment)
         return segments
 
@@ -448,10 +450,29 @@ class Substrate:
         if millRadius > 0:
             self.substrates = self.substrates.buffer(millRadius).buffer(-millRadius)
 
+    def removeIslands(self):
+        """
+        Removes all islads - pieces of substrate fully contained within outline
+        of another board
+        """
+        mainland = []
+        for i, substrate in enumerate(self.substrates.geoms):
+            ismainland = True
+            for j, otherSubstrate in enumerate(self.substrates.geoms):
+                if j == i:
+                    continue
+                if Polygon(otherSubstrate.exterior.coords).contains(substrate):
+                    ismainland = False
+                    break
+            if ismainland:
+                mainland.append(substrate)
+        self.substrates = shapely.geometry.collection.GeometryCollection(mainland)
+
 
 def showPolygon(polygon):
     import matplotlib.pyplot as plt
 
+    plt.axis('equal')
     x,y = polygon.exterior.xy
     plt.fill(x,y)
     for inter in polygon.interiors:
@@ -462,6 +483,7 @@ def showPolygon(polygon):
 def showPolygons(polygons):
     import matplotlib.pyplot as plt
 
+    plt.axis('equal')
     for polygon in polygons:
         x,y = polygon.exterior.xy
         plt.fill(x,y, zorder=1)

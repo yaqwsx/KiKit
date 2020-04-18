@@ -17,7 +17,7 @@ single panel. You can append boards, add substrate pieces, make cuts or add
 holes to the panel. Once you finish, you have to save the panel to a file.
 ```
 appendBoard(self, filename, destination, sourceArea=None, origin=Origin.Center, 
-            rotationAngle=0, shrink=False, tolerance=0)
+            rotationAngle=0, shrink=False, tolerance=0, bufferOutline=1000)
 ```
 Appends a board to the panel.
 
@@ -32,29 +32,31 @@ coarse source area and automatically shrink it if shrink is True.
 Tolerance enlarges (even shrinked) source area - useful for inclusion of
 filled zones which can reach out of the board edges.
 
-Returns bounding box (wxRect) of the extracted area.
+Returns bounding box (wxRect) of the extracted area placed at the
+destination.
 ```
 save(self, filename)
 ```
 Saves the panel to a file.
 ```
-appendSubstrate(self, substrate, filletRadius=0)
+appendSubstrate(self, substrate)
 ```
-Append a piece of substrate to the panel. Substrate can be either wxRect
-or Shapely polygon. Newly appended corners can be rounded by specifying
-non-zero filletRadius.
+Append a piece of substrate or a list of pieces to the panel. Substrate
+can be either wxRect or Shapely polygon. Newly appended corners can be
+rounded by specifying non-zero filletRadius.
 ```
 makeGrid(self, boardfile, rows, cols, destination, sourceArea=None, tolerance=0, 
-         radius=0, verSpace=0, horSpace=0, verTabWidth=0, horTabWidth=0, 
-         outerVerTabThickness=0, outerHorTabThickness=0)
+         verSpace=0, horSpace=0, verTabCount=1, horTabCount=1, verTabWidth=0, 
+         horTabWidth=0, outerVerTabThickness=0, outerHorTabThickness=0, 
+         rotation=0)
 ```
 Creates a grid of boards (row x col) as a panel at given destination
-separated by V-CUTS. The source can be either extract automatically of
+separated by V-CUTS. The source can be either extracted automatically or
 from given sourceArea. There can be a spacing between the individual
 board (verSpacing, horSpacing) and the tab width can be adjusted
-(verTabWidth, horTabWidth). Also the user can control whether append the
-outer tabs (e.g. to connect it to a frame) by setting outerVerTabsWidth
-and outerHorTabsWidth.
+(verTabWidth, horTabWidth). Also, the user can control whether to append
+the outer tabs (e.g. to connect it to a frame) by setting
+outerVerTabsWidth and outerHorTabsWidth.
 
 Returns a tuple - wxRect with the panel bounding box (excluding
 outerTabs) and a list of cuts (list of lines) to make. You can use the
@@ -62,23 +64,26 @@ list to either create a V-CUTS via makeVCuts or mouse bites via
 makeMouseBites.
 ```
 makeTightGrid(self, boardfile, rows, cols, destination, verSpace, horSpace, 
-              slotWidth, width, height, sourceArea=None, tolerance=0, radius=0, 
-              verTabWidth=0, horTabWidth=0)
+              slotWidth, width, height, sourceArea=None, tolerance=0, 
+              verTabWidth=0, horTabWidth=0, verTabCount=1, horTabCount=1, 
+              rotation=0)
 ```
 Creates a grid of boards just like `makeGrid`, however, it creates a
 milled slot around perimeter of each board and 4 tabs.
 ```
-makeFrame(self, innerArea, width, height, offset, radius=0)
+makeFrame(self, innerArea, width, height, offset)
 ```
 Adds a frame around given `innerArea` (`wxRect`), which can be obtained,
 e.g., by `makeGrid`, with given `width` and `height`. Space with width
 `offset` is added around the `innerArea`.
 ```
-makeVCuts(self, cuts)
+makeVCuts(self, cuts, boundCurves=False)
 ```
-Take a list of lines to cut and performs V-CUTS
+Take a list of lines to cut and performs V-CUTS. When boundCurves is
+set, approximate curved cuts by a line from the first and last point.
+Otherwise, raise an exception.
 ```
-makeMouseBites(self, cuts, diameter, spacing)
+makeMouseBites(self, cuts, diameter, spacing, offset=250000)
 ```
 Take a list of cuts and perform mouse bites.
 ```
@@ -98,11 +103,11 @@ panel = Panel()
 size, cuts = panel.makeGrid("test.kicad_pcb", 4, 3, wxPointMM(100, 40),
             tolerance=fromMm(5), verSpace=fromMm(5), horSpace=fromMm(5),
             outerHorTabThickness=fromMm(3), outerVerTabThickness=fromMm(3),
-            verTabWidth=fromMm(15), horTabWidth=fromMm(8),
-            radius=fromMm(1))
+            verTabWidth=fromMm(15), horTabWidth=fromMm(8))
 panel.makeVCuts(cuts)
 # alternative: panel.makeMouseBites(cuts, diameter=fromMm(0.5), spacing=fromMm(1))
 panel.makeFrame(size, fromMm(100), fromMm(100), fromMm(3), radius=fromMm(1))
+panel.addMillFillets(fromMm(1))
 panel.save("out.kicad_pcb")
 ```
 
