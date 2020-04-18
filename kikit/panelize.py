@@ -197,6 +197,11 @@ def rectToRing(rect):
         (rect.GetX(), rect.GetY() + rect.GetHeight())
     ]
 
+def roundPoint(point, precision=-4):
+    if isinstance(point, Point):
+        return Point(round(point.x, precision), round(point.y, precision))
+    return Point(round(point[0], precision), round(point[1], precision))
+
 class Panel:
     """
     Basic interface for panel building. Instance of this class represents a
@@ -671,7 +676,7 @@ class Panel:
         Otherwise, raise an exception.
         """
         for cut in cuts:
-            if len(cut.coords) > 2 and not boundCurves:
+            if len(cut.simplify(fromMm(0.01)).coords) > 2 and not boundCurves:
                 raise RuntimeError("Cannot V-Cut a curve")
             start = roundPoint(cut.coords[0])
             end = roundPoint(cut.coords[-1])
@@ -680,7 +685,6 @@ class Panel:
             elif start.y == end.y or (abs(start.y - end.y) <= fromMm(0.5) and boundCurves):
                 self.addVCutH((start.y + end.y) / 2)
             else:
-                print(start, end)
                 raise RuntimeError("Cannot perform V-Cut which is not horizontal or vertical")
 
     def makeMouseBites(self, cuts, diameter, spacing, offset=fromMm(0.25)):
@@ -688,11 +692,15 @@ class Panel:
         Take a list of cuts and perform mouse bites.
         """
         for cut in cuts:
+            cut = cut.simplify(fromMm(0.001)) # Remove self-intersecting geometry
             offsetCut = cut.parallel_offset(offset, "left")
             length = offsetCut.length
             count = int(length / spacing) + 1
             for i in range(count):
-                hole = offsetCut.interpolate( i * length / (count - 1) )
+                if count == 1:
+                    hole = offsetCut.interpolate(0.5, normalized=True)
+                else:
+                    hole = offsetCut.interpolate( i * length / (count - 1) )
                 self.addNPTHole(wxPoint(hole.x, hole.y), diameter)
 
     def addNPTHole(self, position, diameter):
@@ -705,7 +713,7 @@ class Panel:
         for pad in module.Pads():
             pad.SetDrillSize(pcbnew.wxSize(diameter, diameter))
             pad.SetSize(pcbnew.wxSize(diameter, diameter))
-        self.board.Add(module)        self.board.Add(module)
+        self.board.Add(module)
 
     def addMillFillets(self, millRadius):
         """
