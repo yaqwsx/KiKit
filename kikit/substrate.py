@@ -229,13 +229,28 @@ def commonCircle(a, b, c):
     r = np.sqrt(x*x + y*y + np.linalg.det(m14) / m11d)
     return (x, y, r)
 
-def cutOutline(point, linestring):
+def splitLine(linestring, point, tolerance=pcbnew.FromMM(0.01)):
+    splitted = split(linestring, point.buffer(tolerance, resolution=1))
+    if len(splitted) != 3:
+        print(splitted)
+        raise RuntimeError("Expected 3 segments in line spitting")
+    p1 = LineString(list(splitted[0].coords) + [point])
+    p2 = LineString([point] + list(splitted[2].coords))
+    return shapely.geometry.collection.GeometryCollection([p1, p2])
+
+def cutOutline(point, linestring, segmentLimit=None, tolerance=pcbnew.FromMM(0.001)):
     """
     Given a point finds an entity in (multi)linestring which goes through the
-    point. Then returns the string starting and ending in that point
+    point.
+
+    It is possible to restrict the number of segments used by specifying
+    segmentLimit.
+
+    When segment limit is passed, return a tuple of the string starting and
+    ending in that point. When no limit is passed returns a single string.
     """
-    LEN_LIMIT = 40 # Should be roughly equal to half the circular segments,
-                    # may prevent from finding a solution
+    if not isinstance(point, Point):
+        point = Point(point[0], point[1])
     if isinstance(linestring, LineString):
         geom = [linestring]
     elif isinstance(linestring, MultiLineString):
@@ -243,15 +258,20 @@ def cutOutline(point, linestring):
     else:
         raise RuntimeError("Unknown geometry '{}' passed".format(type(linestring)))
     for string in geom:
-        if not string.intersects(point):
+        bufferedPoint = point.buffer(tolerance, resolution=1)
+        splitted = split(string, bufferedPoint)
+        if len(splitted) == 1 and not Point(splitted[0].coords[0]).intersects(bufferedPoint):
             continue
-        splitted = split(string, point)
-        if len(splitted) > 1:
+        if len(splitted) == 3:
+            string = LineString([point] + list(splitted[2].coords) + splitted[0].coords[1:])
+        elif len(splitted) == 2:
             string = LineString(list(splitted[1].coords) + splitted[0].coords[1:])
         else:
             string = splitted[0]
-        limit1 = max(1, len(string.coords) - LEN_LIMIT)
-        limit2 = min(LEN_LIMIT, len(string.coords) - 1)
+        if segmentLimit is None:
+            return string
+        limit1 = max(1, len(string.coords) - segmentLimit)
+        limit2 = min(segmentLimit, len(string.coords) - 1)
         return LineString(string.coords[limit1:]), LineString(string.coords[:limit2])
     return None, None
 
@@ -347,7 +367,10 @@ class Substrate:
         """
         if radius == 0:
             return
-        cut1, cut2 = cutOutline(point, self.substrates.boundary)
+        LEN_LIMIT = 40 # Should be roughly equal to half the circular segments,
+                    # may prevent from finding a solution
+        cut1, cut2 = cutOutline(point, self.substrates.boundary, LEN_LIMIT,
+            tolerance=pcbnew.FromMM(0.02))
         if not cut1 or not cut2:
             # The point does not intersect any outline
             return False
