@@ -440,6 +440,14 @@ class Substrate:
         tab = Polygon(list(tabFace.coords) + [sideOriginA, sideOriginB])
         return tab, tabFace
 
+    def millFillets(self, millRadius):
+        """
+        Add fillets to inner conernes which will be produced a by mill with
+        given radius.
+        """
+        if millRadius > 0:
+            self.substrates = self.substrates.buffer(millRadius).buffer(-millRadius)
+
 
 def showPolygon(polygon):
     import matplotlib.pyplot as plt

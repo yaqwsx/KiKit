@@ -705,4 +705,12 @@ class Panel:
         for pad in module.Pads():
             pad.SetDrillSize(pcbnew.wxSize(diameter, diameter))
             pad.SetSize(pcbnew.wxSize(diameter, diameter))
-        self.board.Add(module)
+        self.board.Add(module)        self.board.Add(module)
+
+    def addMillFillets(self, millRadius):
+        """
+        Add fillets to inner conernes which will be produced a by mill with
+        given radius.
+        """
+        self.boardSubstrate.millFillets(millRadius)
+
