@@ -13,8 +13,8 @@ def toTuple(item):
         return item[0], item[1]
     raise NotImplementedError("toTuple for {} not implemented".format(type(item)))
 
-def roundPoint(point):
-    return pcbnew.wxPoint(round(point[0], -2), round(point[1], -2))
+def roundPoint(point, precision=-2):
+    return pcbnew.wxPoint(round(point[0], precision), round(point[1], precision))
 
 def getStartPoint(geom):
     if geom.GetShape() in [STROKE_T.S_ARC, STROKE_T.S_CIRCLE]:
@@ -356,7 +356,7 @@ class Substrate:
         return items
 
     def _serializeRing(self, ring):
-        coords = list(ring.coords)
+        coords = list(ring.simplify(pcbnew.FromMM(0.001)).coords)
         segments = []
         # ToDo: Reconstruct arcs
         if coords[0] != coords[-1]:
