@@ -317,16 +317,22 @@ class Substrate:
     Represents (possibly multiple) PCB substrates reconstructed from a list of
     geometry
     """
-    def __init__(self, geometryList):
+    def __init__(self, geometryList, bufferDistance=0):
         polygons = [toShapely(ring, geometryList) for ring in extractRings(geometryList)]
         self.substrates = unary_union(substratesFrom(polygons))
+        self.substrates = self.substrates.buffer(bufferDistance)
+        if not self.substrates.is_empty:
+            self.substrates = shapely.ops.orient(self.substrates)
 
     def union(self, other):
         """
-        Appends a substrate or a polygon. If there is a common intersection,
-        with existing substrate, it will be merged into a single substrate.
+        Appends a substrate, polygon or list of polygons. If there is a common
+        intersection, with existing substrate, it will be merged into a single
+        substrate.
         """
-        if isinstance(other, Substrate):
+        if isinstance(other, list):
+            self.substrates = unary_union([self.substrates] + other)
+        elif isinstance(other, Substrate):
             self.substrates = unary_union([self.substrates, other.substrates])
         else:
             self.substrates = unary_union([self.substrates, other])
