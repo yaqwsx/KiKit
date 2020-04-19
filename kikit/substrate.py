@@ -463,6 +463,8 @@ class Substrate:
         Removes all islads - pieces of substrate fully contained within outline
         of another board
         """
+        if isinstance(self.substrates, Polygon):
+            return
         mainland = []
         for i, substrate in enumerate(self.substrates.geoms):
             ismainland = True
