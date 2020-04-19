@@ -211,6 +211,21 @@ def roundPoint(point, precision=-4):
         return Point(round(point.x, precision), round(point.y, precision))
     return Point(round(point[0], precision), round(point[1], precision))
 
+def undoTransformation(point, rotation, origin, translation):
+    """
+    We apply a transformation "Rotate around origin and then translate" when
+    placing a board. Given a point and original transformation parameters,
+    return the original point position.
+    """
+    # Abuse PcbNew to do so
+    segment = pcbnew.DRAWSEGMENT()
+    segment.SetShape(STROKE_T.S_SEGMENT)
+    segment.SetStart(wxPoint(point[0], point[1]))
+    segment.SetEnd(wxPoint(0, 0))
+    segment.Move(wxPoint(-translation[0], -translation[1]))
+    segment.Rotate(origin, -rotation)
+    return segment.GetStart()
+
 class Panel:
     """
     Basic interface for panel building. Instance of this class represents a
@@ -306,7 +321,11 @@ class Panel:
             drawing.Move(translation)
         edges = [edge for edge in drawings if edge.GetLayerName() == "Edge.Cuts"]
         otherDrawings = [edge for edge in drawings if edge.GetLayerName() != "Edge.Cuts"]
-        self.boardSubstrate.union(Substrate(edges, bufferOutline))
+        try:
+            self.boardSubstrate.union(Substrate(edges, bufferOutline))
+        except substrate.PositionError as e:
+            point = undoTransformation(e.point, rotationAngle, originPoint, translation)
+            raise substrate.PositionError(filename + ": " + e.origMessage, point)
         for drawing in otherDrawings:
             appendItem(self.board, drawing)
         return findBoundingBox(edges)

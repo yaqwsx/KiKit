@@ -8,6 +8,12 @@ from itertools import product
 
 from kikit.defs import STROKE_T, Layer
 
+class PositionError(RuntimeError):
+    def __init__(self, message, point):
+        super().__init__(message.format(pcbnew.ToMM(point[0]), pcbnew.ToMM(point[1])))
+        self.point = point
+        self.origMessage = message
+
 def toTuple(item):
     if isinstance(item, pcbnew.wxPoint):
         return item[0], item[1]
@@ -65,15 +71,17 @@ def extractRings(geometryList):
     """
     coincidencePoints = {}
     for i, geom in enumerate(geometryList):
-        start = toTuple(getStartPoint(geom))
+        start = toTuple(roundPoint(getStartPoint(geom)))
         coincidencePoints.setdefault(start, CoincidenceList()).append(i)
-        end = toTuple(getEndPoint(geom))
+        end = toTuple(roundPoint(getEndPoint(geom)))
         coincidencePoints.setdefault(end, CoincidenceList()).append(i)
     for point, items in coincidencePoints.items():
-        if len(items) != 2:
-            raise RuntimeError("Wrong number of entities ({}) at [{}, {}]".format(
-                len(items), pcbnew.ToMM(point[0]), pcbnew.ToMM(point[1])
-            ))
+        l = len(items)
+        if l == 1:
+            raise PositionError("Discontinuous outline at [{}, {}]", point)
+        if l == 2:
+            continue
+        raise PositionError("Multiple outlines ({}) at [{}, {}]".format(l), point)
 
     rings = []
     unused = [True] * len(geometryList)
