@@ -4,10 +4,14 @@
 
 all: doc package
 
-doc: doc/panelization.md
+doc: doc/panelization.md doc/examples.md
 
 doc/panelization.md: kikit/panelize.py scripts/panelizeDoc.py
 	PYTHONPATH=`pwd` python3 scripts/panelizeDoc.py > $@
+
+doc/examples.md: scripts/exampleDoc.py
+	pcbdraw --silent doc/resources/conn.kicad_pcb doc/resources/conn.png
+	PYTHONPATH=`pwd` python3 scripts/exampleDoc.py > $@
 
 package:
 	rm dist/*

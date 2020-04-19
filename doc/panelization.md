@@ -10,6 +10,45 @@ the functions and objects the native KiCAD Python API offers, e.g.: `wxPoint(arg
 
 
 
+## Basic Concepts
+
+The `panelize.Panel` class holds a panel under construction. Basically it is
+`pcbnew.BOARD` without outlines. The outlines are held separately as
+`shapely.MultiPolygon` so we can easily merge pieces of a substrate, add cuts
+and export it back to `pcbnew.BOARD`.
+
+## Tabs
+
+There are two ways to create tabs: generate a piece of a substrate by hand, or
+use tab generator.
+
+To generate a piece of a substrate, create a shapely.Polygon. Then add the piece
+of substrate via `panelize.Panel.appendSubstrate`. This method also accepts a
+`wxRect` for convenience.
+
+The tab generator is available via `panelize.Panel.boardSubstrate.tab`. This
+method takes an origin point, direction, and tab width. It tries to build a tab
+by extruding a tab with the given width in the given direction and stops when it
+reaches an existing substrate. It returns a tuple - the tab substrate and a
+piece of the outline of the original board, which was removed by the tab. Then
+add the piece of a substrate via `panelize.Panel.appendSubstrate`. This design
+choice was made as batch adding of substrates is more efficient. Therefore, you
+are advised to first generate all the tabs and then append them to the board.
+
+## Cuts
+
+All methods constructing panels do not create cuts directly, instead, they
+return them. This allows the users to decided how to perform the cuts - e.g.,
+mouse bites, V-Cuts, silk-screen...
+
+The cuts are represented by `shapely.LineString`. The string is oriented - a
+positive side of the string should face the inner side of the board. This is
+important when, e.g., offsetting mouse bites.
+
+To perform the cuts, see methods of the `panelize.Panel` class below.
+
+
+
 ## Panel class
 
 Basic interface for panel building. Instance of this class represents a
@@ -96,7 +135,7 @@ diameter.
 
 ### Simple grid
 
-The following example creates 3 x 3 grid of boards in a frame separated by V-CUTS.
+The following example creates a 3 x 3 grid of boards in a frame separated by V-CUTS.
 
 ```
 panel = Panel()

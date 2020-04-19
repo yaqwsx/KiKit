@@ -3,11 +3,12 @@
 KiKit is a Python library and CLI tool to automate several tasks in a standard
 KiCAD workflow like:
 
-- panelization of the boards
+- panelization of the boards (see [examples](doc/examples.md))
 - exporting manufacturing data
-- building board presentation pages
+- building board presentation pages (see [an example presentation page generated
+  by KiKit](https://roboticsbrno.github.io/RB0002-BatteryPack))
 
-![KiKit Promo](doc/resources/promo.jpg)
+![KiKit Promo](https://github.com/yaqwsx/KiKit/blob/master/doc/resources/promo.jpg?raw=true)
 
 ## Do You Enjoy KiKit?
 
@@ -23,11 +24,11 @@ pip3 install kikit
 
 ## Why Should I Use It?
 
-Everything KiKit does can also be done via Pcbnew in KiCAD. However, you have to
-do it manually. One of the common scenarios is creation of panels. Most of the
-tutorials on the internet guide you to use the "append board" functionality of
-Pcbnew. However, this approach is labour-intensive, error-prone and whenever you
-change the board, you have to do it again.
+Everything KiKit does, can also be done via Pcbnew in KiCAD. However, you have
+to do it manually. One of the common scenarios is the creation of panels. Most
+of the tutorials on the internet guide you to use the "append board"
+functionality of Pcbnew. However, this approach is labour-intensive, error-prone
+and whenever, you change the board, you have to do it again.
 
 With KiKit you just call a CLI command if you have a simple layout (e.g., a
 grid) or write few Python instructions like "place board here", "add bridge
@@ -46,6 +47,7 @@ KiKit](https://roboticsbrno.github.io/RB0002-BatteryPack).
 ## Feature List
 
 - create panels by appending boards and pieces of substrate (bridges)
+- supports board with arbitrary shapes
 - easily create mouse-bites/V-CUTS
 - compared to hand-creation of panels, your panels will pass DRC (as tracks from
   different instances of the same board have distinct nets when using KiKit)
@@ -55,7 +57,8 @@ KiKit](https://roboticsbrno.github.io/RB0002-BatteryPack).
 ## How To Use It?
 
 Read the [CLI documentation](doc/cli.md) and the [panelize
-documentation](doc/panelization.md).
+documentation](doc/panelization.md). Also don't miss the
+[examples](doc/examples.md).
 
 ## How To Use It CI?
 

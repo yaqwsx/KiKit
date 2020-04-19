@@ -1,4 +1,8 @@
 import inspect
+import tempfile
+import subprocess
+import shutil
+import os
 
 def header(func):
     signature = inspect.signature(func)
@@ -24,3 +28,20 @@ def printHeader(func):
 
 def printHelp(x):
     print(inspect.getdoc(x))
+
+def runBoardExample(name, args):
+    """
+    Run kikit CLI command with args - omitting the output file name. Prints a
+    markdown with the command and includes a generated board image
+    """
+    dirname = tempfile.mkdtemp()
+    output = os.path.join(dirname, "x.kicad_pcb")
+    realArgs = ["python3", "-m", "kikit.ui"] + args + [output]
+    fakeArgs = ["kikit"] + args + ["panel.kicad_pcb"]
+    subprocess.run(realArgs, check=True)
+    subprocess.run(["pcbdraw", "--vcuts", "--silent", output,
+            "doc/resources/{}.png".format(name)], check=True)
+    print("```\n{}\n```".format(" ".join(fakeArgs)))
+    print("![{0}](resources/{0}.png)".format(name))
+    shutil.rmtree(dirname)
+
