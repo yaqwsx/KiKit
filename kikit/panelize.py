@@ -451,17 +451,17 @@ class Panel:
         height = rows * boardSize.GetHeight() + (rows - 1) * verSpace
         polygons = []
         cuts = []
-        if horSpace >0:
-            for i in range(cols - 1):
-                pos = (i + 1) * boardSize.GetWidth() + i * horSpace
-                tl = destination + wxPoint(pos, -outerVerSpace)
-                tr = destination + wxPoint(pos + horSpace, -outerVerSpace)
-                br = destination + wxPoint(pos + horSpace, height + outerVerSpace)
-                bl = destination + wxPoint(pos, height + outerVerSpace)
+        for i in range(cols - 1):
+            pos = (i + 1) * boardSize.GetWidth() + i * horSpace
+            tl = destination + wxPoint(pos, -outerVerSpace)
+            tr = destination + wxPoint(pos + horSpace, -outerVerSpace)
+            br = destination + wxPoint(pos + horSpace, height + outerVerSpace)
+            bl = destination + wxPoint(pos, height + outerVerSpace)
+            if horSpace > 0:
                 polygon = Polygon([tl, tr, br, bl])
                 polygons.append(polygon)
                 cuts.append(LineString([tl, bl]))
-                cuts.append(LineString([br, tr]))
+            cuts.append(LineString([br, tr]))
         if outerHorSpace > 0:
             # Outer tabs
             polygons.append(Polygon([
@@ -493,17 +493,17 @@ class Panel:
         height = rows * boardSize.GetHeight() + (rows - 1) * verSpace
         polygons = []
         cuts = []
-        if verSpace > 0:
-            for i in range(rows - 1):
-                pos = (i + 1) * boardSize.GetHeight() + i * verSpace
-                tl = destination + wxPoint(-outerHorSpace, pos)
-                tr = destination + wxPoint(width + outerHorSpace, pos)
-                br = destination + wxPoint(width + outerHorSpace, pos + verSpace)
-                bl = destination + wxPoint(-outerHorSpace, pos + verSpace)
+        for i in range(rows - 1):
+            pos = (i + 1) * boardSize.GetHeight() + i * verSpace
+            tl = destination + wxPoint(-outerHorSpace, pos)
+            tr = destination + wxPoint(width + outerHorSpace, pos)
+            br = destination + wxPoint(width + outerHorSpace, pos + verSpace)
+            bl = destination + wxPoint(-outerHorSpace, pos + verSpace)
+            if verSpace > 0:
                 polygon = Polygon([tl, tr, br, bl])
                 polygons.append(polygon)
                 cuts.append(LineString([tr, tl]))
-                cuts.append(LineString([bl, br]))
+            cuts.append(LineString([bl, br]))
         if outerVerSpace > 0:
             # Outer tabs
             polygons.append(Polygon([
