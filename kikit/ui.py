@@ -141,7 +141,7 @@ def tightgrid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vc
             verSpace=fromMm(space), horSpace=fromMm(space),
             slotWidth=fromMm(slotwidth), width=fromMm(w), height=fromMm(h),
             sourceArea=sourcearea, tolerance=fromMm(5),
-            verTabWidth=fromMm(tabwidth), horTabWidth=fromMm(tabwidth),
+            verTabWidth=fromMm(tabwidth), horTabWidth=fromMm(tabheight),
             verTabCount=htabs, horTabCount=vtabs, rotation=fromDegrees(rotation))
         if vcuts:
             panel.makeVCuts(cuts, vcutcurves)

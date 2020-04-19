@@ -645,12 +645,12 @@ class Panel:
 
         tabs, cuts = [], []
         t, c = self._makeVerGridTabs(gridDest, rows, cols, boardSize,
-                verSpace, horSpace, slotWidth, slotWidth, verTabCount,
+                verSpace, horSpace, verTabWidth, horTabWidth, verTabCount,
                 horTabCount, slotWidth, slotWidth)
         tabs += t
         cuts += c
         t, c = self._makeHorGridTabs(gridDest, rows, cols, boardSize,
-                verSpace, horSpace, slotWidth, slotWidth, verTabCount,
+                verSpace, horSpace, verTabWidth, horTabWidth, verTabCount,
                 horTabCount, slotWidth, slotWidth)
         tabs += t
         cuts += c
