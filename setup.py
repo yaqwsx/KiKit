@@ -11,7 +11,7 @@ setuptools.setup(
     version="0.2.4",
     author="Jan Mrázek",
     author_email="email@honzamrazek.cz",
-    description="Automatization for KiCAD boards",
+    description="Automation for KiCAD boards",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/yaqwsx/KiKit",
