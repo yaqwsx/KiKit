@@ -3,6 +3,7 @@ import kikit.export as kiexport
 from kikit.panelize import Panel, fromMm, wxPointMM, wxRectMM, fromDegrees
 from kikit.present import boardpage
 from kikit.modify import references
+import sys
 
 @click.group()
 def panelize():
@@ -21,11 +22,16 @@ def extractBoard(input, output, sourcearea):
 
     The extracted board is placed in the middle of the sheet
     """
-    panel = Panel()
-    destination = wxPointMM(150, 100)
-    area = wxRectMM(*sourcearea)
-    panel.appendBoard(input, destination, area, tolerance=fromMm(2))
-    panel.save(output)
+    try:
+        panel = Panel()
+        destination = wxPointMM(150, 100)
+        area = wxRectMM(*sourcearea)
+        panel.appendBoard(input, destination, area, tolerance=fromMm(2))
+        panel.save(output)
+    except Exception as e:
+        sys.stderr.write("An error occurred: " + str(e) + "\n")
+        sys.stderr.write("No output files produced\n")
+        sys.exit(1)
 
 @click.command()
 @click.argument("input", type=click.Path(dir_okay=False))
@@ -57,34 +63,39 @@ def grid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
 
     If you do not specify the panelsize, no frame is created
     """
-    panel = Panel()
-    rows, cols = gridsize
-    if sourcearea[0]:
-        sourcearea = wxRectMM(*sourcearea)
-    else:
-        sourcearea = None
-    if panelsize[0]:
-        w, h = panelsize
-        frame = True
-        oht, ovt = fromMm(space), fromMm(space)
-    else:
-        frame = False
-        oht, ovt = 0, 0
-    psize, cuts = panel.makeGrid(input, rows, cols, wxPointMM(50, 50),
-        sourceArea=sourcearea, tolerance=fromMm(5),
-        verSpace=fromMm(space), horSpace=fromMm(space),
-        verTabWidth=fromMm(tabwidth), horTabWidth=fromMm(tabheight),
-        outerHorTabThickness=oht, outerVerTabThickness=ovt,
-        horTabCount=htabs, verTabCount=vtabs, rotation=fromDegrees(rotation))
-    if vcuts:
-        panel.makeVCuts(cuts, vcutcurves)
-    if mousebites[0]:
-        drill, spacing, offset = mousebites
-        panel.makeMouseBites(cuts, fromMm(drill), fromMm(spacing), fromMm(offset))
-    if frame:
-        panel.makeFrame(psize, fromMm(w), fromMm(h), fromMm(space))
-    panel.addMillFillets(fromMm(radius))
-    panel.save(output)
+    try:
+        panel = Panel()
+        rows, cols = gridsize
+        if sourcearea[0]:
+            sourcearea = wxRectMM(*sourcearea)
+        else:
+            sourcearea = None
+        if panelsize[0]:
+            w, h = panelsize
+            frame = True
+            oht, ovt = fromMm(space), fromMm(space)
+        else:
+            frame = False
+            oht, ovt = 0, 0
+        psize, cuts = panel.makeGrid(input, rows, cols, wxPointMM(50, 50),
+            sourceArea=sourcearea, tolerance=fromMm(5),
+            verSpace=fromMm(space), horSpace=fromMm(space),
+            verTabWidth=fromMm(tabwidth), horTabWidth=fromMm(tabheight),
+            outerHorTabThickness=oht, outerVerTabThickness=ovt,
+            horTabCount=htabs, verTabCount=vtabs, rotation=fromDegrees(rotation))
+        if vcuts:
+            panel.makeVCuts(cuts, vcutcurves)
+        if mousebites[0]:
+            drill, spacing, offset = mousebites
+            panel.makeMouseBites(cuts, fromMm(drill), fromMm(spacing), fromMm(offset))
+        if frame:
+            panel.makeFrame(psize, fromMm(w), fromMm(h), fromMm(space))
+        panel.addMillFillets(fromMm(radius))
+        panel.save(output)
+    except Exception as e:
+        sys.stderr.write("An error occurred: " + str(e) + "\n")
+        sys.stderr.write("No output files produced\n")
+        sys.exit(1)
 
 @click.command()
 @click.argument("input", type=click.Path(dir_okay=False))
@@ -116,29 +127,33 @@ def tightgrid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vc
     Create a regular panel placed in a frame by milling a slot around the
     boards' perimeters.
     """
-    panel = Panel()
-    rows, cols = gridsize
-    if sourcearea[0]:
-        sourcearea = wxRectMM(*sourcearea)
-    else:
-        sourcearea = None
-    w, h = panelsize
-    if 2 * radius > 1.1 * slotwidth:
-        raise RuntimeError("The slot is too narrow for given radius (it has to be at least 10% larger")
-    psize, cuts = panel.makeTightGrid(input, rows, cols, wxPointMM(50, 50),
-        verSpace=fromMm(space), horSpace=fromMm(space),
-        slotWidth=fromMm(slotwidth), width=fromMm(w), height=fromMm(h),
-        sourceArea=sourcearea, tolerance=fromMm(5),
-        verTabWidth=fromMm(tabwidth), horTabWidth=fromMm(tabwidth),
-        verTabCount=htabs, horTabCount=vtabs, rotation=fromDegrees(rotation))
-    if vcuts:
-        panel.makeVCuts(cuts, vcutcurves)
-    if mousebites[0]:
-        drill, spacing, offset = mousebites
-        panel.makeMouseBites(cuts, fromMm(drill), fromMm(spacing), fromMm(offset))
-    panel.addMillFillets(fromMm(radius))
-    panel.save(output)
-
+    try:
+        panel = Panel()
+        rows, cols = gridsize
+        if sourcearea[0]:
+            sourcearea = wxRectMM(*sourcearea)
+        else:
+            sourcearea = None
+        w, h = panelsize
+        if 2 * radius > 1.1 * slotwidth:
+            raise RuntimeError("The slot is too narrow for given radius (it has to be at least 10% larger")
+        psize, cuts = panel.makeTightGrid(input, rows, cols, wxPointMM(50, 50),
+            verSpace=fromMm(space), horSpace=fromMm(space),
+            slotWidth=fromMm(slotwidth), width=fromMm(w), height=fromMm(h),
+            sourceArea=sourcearea, tolerance=fromMm(5),
+            verTabWidth=fromMm(tabwidth), horTabWidth=fromMm(tabwidth),
+            verTabCount=htabs, horTabCount=vtabs, rotation=fromDegrees(rotation))
+        if vcuts:
+            panel.makeVCuts(cuts, vcutcurves)
+        if mousebites[0]:
+            drill, spacing, offset = mousebites
+            panel.makeMouseBites(cuts, fromMm(drill), fromMm(spacing), fromMm(offset))
+        panel.addMillFillets(fromMm(radius))
+        panel.save(output)
+    except Exception as e:
+        sys.stderr.write("An error occurred: " + str(e) + "\n")
+        sys.stderr.write("No output files produced\n")
+        sys.exit(1)
 
 panelize.add_command(extractBoard)
 panelize.add_command(grid)

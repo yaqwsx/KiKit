@@ -1,5 +1,6 @@
 import click
 from pathlib import Path
+import sys
 import os
 import json
 import glob
@@ -194,16 +195,20 @@ def boardpage(outdir, description, board, resource, template, repository, name):
     Build a board presentation page based on markdown description and include
     download links for board sources and gerbers.
     """
-    Path(outdir).mkdir(parents=True, exist_ok=True)
-    template = readTemplate(template)
-    template.addDescriptionFile(description)
-    template.setRepository(repository)
-    template.setName(name)
-    for r in resource:
-        template.addResource(r)
-    for name, comment, file in board:
-        template.addBoard(name, comment, file)
-    template.render(outdir)
+    try:
+        Path(outdir).mkdir(parents=True, exist_ok=True)
+        template = readTemplate(template)
+        template.addDescriptionFile(description)
+        template.setRepository(repository)
+        template.setName(name)
+        for r in resource:
+            template.addResource(r)
+        for name, comment, file in board:
+            template.addBoard(name, comment, file)
+        template.render(outdir)
+    except Exception as e:
+        sys.stderr.write("An error occurred: " + str(e) + "\n")
+        sys.exit(1)
 
 
 
