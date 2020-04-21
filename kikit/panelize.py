@@ -48,7 +48,7 @@ def getOriginCoord(origin, bBox):
     if origin == Origin.BottomLeft:
         return wxPoint(bBox.GetX(), bBox.GetY() + bBox.GetHeight())
     if origin == Origin.BottomRight:
-        return wxPoint(bBox.GetX() + bBox.GetWidth(), bbox.GetY() + bBox.GetHeight())
+        return wxPoint(bBox.GetX() + bBox.GetWidth(), bBox.GetY() + bBox.GetHeight())
 
 
 def fitsIn(what, where):
