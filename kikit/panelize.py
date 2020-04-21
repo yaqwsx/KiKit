@@ -2,6 +2,7 @@ from pcbnew import GetBoard, LoadBoard, FromMM, ToMM, wxPoint, wxRect, wxRectMM,
 import pcbnew
 from enum import Enum, IntEnum
 from shapely.geometry import Polygon, MultiPolygon, Point, LineString
+from shapely.prepared import prep
 import shapely
 from itertools import product
 import numpy as np
@@ -718,6 +719,7 @@ class Panel:
         """
         Take a list of cuts and perform mouse bites.
         """
+        bloatedSubstrate = prep(self.boardSubstrate.substrates.buffer(fromMm(0.1)))
         for cut in cuts:
             cut = cut.simplify(fromMm(0.001)) # Remove self-intersecting geometry
             offsetCut = cut.parallel_offset(offset, "left")
@@ -728,7 +730,8 @@ class Panel:
                     hole = offsetCut.interpolate(0.5, normalized=True)
                 else:
                     hole = offsetCut.interpolate( i * length / (count - 1) )
-                self.addNPTHole(wxPoint(hole.x, hole.y), diameter)
+                if bloatedSubstrate.contains(hole.buffer(0.8 * diameter / 2)):
+                    self.addNPTHole(wxPoint(hole.x, hole.y), diameter)
 
     def addNPTHole(self, position, diameter):
         """

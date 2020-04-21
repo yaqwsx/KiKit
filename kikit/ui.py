@@ -83,6 +83,7 @@ def grid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
             verTabWidth=fromMm(tabwidth), horTabWidth=fromMm(tabheight),
             outerHorTabThickness=oht, outerVerTabThickness=ovt,
             horTabCount=htabs, verTabCount=vtabs, rotation=fromDegrees(rotation))
+        panel.addMillFillets(fromMm(radius))
         if vcuts:
             panel.makeVCuts(cuts, vcutcurves)
         if mousebites[0]:
@@ -90,7 +91,6 @@ def grid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
             panel.makeMouseBites(cuts, fromMm(drill), fromMm(spacing), fromMm(offset))
         if frame:
             panel.makeFrame(psize, fromMm(w), fromMm(h), fromMm(space))
-        panel.addMillFillets(fromMm(radius))
         panel.save(output)
     except Exception as e:
         sys.stderr.write("An error occurred: " + str(e) + "\n")
@@ -143,12 +143,12 @@ def tightgrid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vc
             sourceArea=sourcearea, tolerance=fromMm(5),
             verTabWidth=fromMm(tabwidth), horTabWidth=fromMm(tabheight),
             verTabCount=htabs, horTabCount=vtabs, rotation=fromDegrees(rotation))
+        panel.addMillFillets(fromMm(radius))
         if vcuts:
             panel.makeVCuts(cuts, vcutcurves)
         if mousebites[0]:
             drill, spacing, offset = mousebites
             panel.makeMouseBites(cuts, fromMm(drill), fromMm(spacing), fromMm(offset))
-        panel.addMillFillets(fromMm(radius))
         panel.save(output)
     except Exception as e:
         sys.stderr.write("An error occurred: " + str(e) + "\n")
