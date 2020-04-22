@@ -4,7 +4,7 @@ from enum import Enum, IntEnum
 from shapely.geometry import Polygon, MultiPolygon, Point, LineString
 from shapely.prepared import prep
 import shapely
-from itertools import product
+from itertools import product, chain
 import numpy as np
 import os
 
@@ -69,9 +69,9 @@ def combineBoundingBoxes(a, b):
     return wxRect(topLeft, bottomRight)
 
 def collectEdges(board, layerName, sourceArea=None):
-    """ Collect edges in sourceArea on given layer """
+    """ Collect edges in sourceArea on given layer including modules """
     edges = []
-    for edge in board.GetDrawings():
+    for edge in chain(board.GetDrawings(), *[m.GraphicalItems() for m in board.GetModules()]):
         if edge.GetLayerName() != layerName:
             continue
         if not sourceArea or fitsIn(edge.GetBoundingBox(), sourceArea):
@@ -227,6 +227,19 @@ def undoTransformation(point, rotation, origin, translation):
     segment.Rotate(origin, -rotation)
     return segment.GetStart()
 
+def removeCutsFromModule(module):
+    """
+    Find all graphical items in the module, remove them and return them as a
+    list
+    """
+    edges = []
+    for edge in module.GraphicalItems():
+        if edge.GetLayerName() != "Edge.Cuts":
+            continue
+        module.Remove(edge)
+        edges.append(edge)
+    return edges
+
 class Panel:
     """
     Basic interface for panel building. Instance of this class represents a
@@ -301,9 +314,11 @@ class Panel:
         tracks = collectItems(board.GetTracks(), enlargedSourceArea)
         zones = collectItems(board.Zones(), enlargedSourceArea)
 
+        edges = []
         for module in modules:
             module.Rotate(originPoint, rotationAngle)
             module.Move(translation)
+            edges += removeCutsFromModule(module)
             appendItem(self.board, module)
         for track in tracks:
             track.Rotate(originPoint, rotationAngle)
@@ -320,7 +335,7 @@ class Panel:
         for drawing in drawings:
             drawing.Rotate(originPoint, rotationAngle)
             drawing.Move(translation)
-        edges = [edge for edge in drawings if edge.GetLayerName() == "Edge.Cuts"]
+        edges += [edge for edge in drawings if edge.GetLayerName() == "Edge.Cuts"]
         otherDrawings = [edge for edge in drawings if edge.GetLayerName() != "Edge.Cuts"]
         try:
             self.boardSubstrate.union(Substrate(edges, bufferOutline))
