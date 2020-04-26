@@ -734,7 +734,7 @@ class Panel:
         """
         Take a list of cuts and perform mouse bites.
         """
-        bloatedSubstrate = prep(self.boardSubstrate.substrates.buffer(fromMm(0.1)))
+        bloatedSubstrate = prep(self.boardSubstrate.substrates.buffer(fromMm(diameter/2)))
         for cut in cuts:
             cut = cut.simplify(fromMm(0.001)) # Remove self-intersecting geometry
             offsetCut = cut.parallel_offset(offset, "left")
