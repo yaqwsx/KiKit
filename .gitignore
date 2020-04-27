@@ -17,3 +17,6 @@ KiKit.egg-info
 # Pycharm 
 venv/
 .idea/
+
+# pytest
+.pytest_cache/
