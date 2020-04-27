@@ -13,3 +13,7 @@ fp-info-cache
 build
 dist
 KiKit.egg-info
+
+# Pycharm 
+venv/
+.idea/
