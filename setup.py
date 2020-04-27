@@ -26,7 +26,8 @@ setuptools.setup(
         "shapely",
         "click",
         "markdown2",
-        "pybars3"
+        "pybars3",
+        "matplotlib",
     ],
     zip_safe=False,
     include_package_data=True,
