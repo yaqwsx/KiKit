@@ -25,3 +25,13 @@ release: package
 
 clean:
 	rm -rf dist build
+
+test:
+	poetry run pytest
+
+poetry-install:
+	poetry install
+
+poetry-shell:
+	poetry shell
+
