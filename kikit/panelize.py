@@ -1,16 +1,13 @@
-from pcbnew import GetBoard, LoadBoard, FromMM, ToMM, wxPoint, wxRect, wxRectMM, wxPointMM
+from pcbnew import LoadBoard, ToMM, wxPoint, wxRect
 import pcbnew
-from enum import Enum, IntEnum
 from shapely.geometry import Polygon, MultiPolygon, Point, LineString
 from shapely.prepared import prep
-import shapely
 from itertools import product, chain
-import numpy as np
 import os
 
 from kikit import substrate
 from kikit.substrate import Substrate
-from kikit.defs import STROKE_T, Layer, EDA_TEXT_HJUSTIFY_T
+from kikit.defs import STROKE_T, Layer, EDA_TEXT_HJUSTIFY_T, Origin
 
 PKG_BASE = os.path.dirname(__file__)
 KIKIT_LIB = os.path.join(PKG_BASE, "resources/kikit.pretty")
@@ -28,13 +25,6 @@ def fromMm(mm):
 def toMm(kiUnits):
     """Convert KiCAD internal units to millimeters"""
     return pcbnew.ToMM(kiUnits)
-
-class Origin(Enum):
-    Center = 0
-    TopLeft = 1
-    TopRight = 2
-    BottomLeft = 3
-    BottomRight = 4
 
 def getOriginCoord(origin, bBox):
     """Returns real coordinates (wxPoint) of the origin for given bounding box"""

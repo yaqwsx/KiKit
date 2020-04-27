@@ -40,3 +40,9 @@ class EDA_TEXT_VJUSTIFY_T(IntEnum):
     GR_TEXT_VJUSTIFY_CENTER = 0
     GR_TEXT_VJUSTIFY_BOTTOM = 1
 
+class Origin(IntEnum):
+    Center = 0
+    TopLeft = 1
+    TopRight = 2
+    BottomLeft = 3
+    BottomRight = 4
