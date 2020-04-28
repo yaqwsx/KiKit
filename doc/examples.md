@@ -16,7 +16,9 @@ kikit panelize extractboard --sourcearea 100 50 100 100 doc/resources/conn.kicad
 
 We extract our board into a new file. This command is usefull when you designed
 multiple boards in a single file (e.g., to have shared schematic for board
-sandwiches). The `sourcearea` specifies X, Y, width and height in millimeters.
+sandwiches). The `sourcearea` is given as a rectangle. You should specify X, Y
+coordinates of upper left corner width and height in millimeters. Also note,
+that only board items which fully fit inside this rectangle are extracted.
 
 
 # Panelize
