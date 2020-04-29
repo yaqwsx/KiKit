@@ -796,6 +796,22 @@ class Panel:
             pad.SetSize(pcbnew.wxSize(diameter, diameter))
         self.board.Add(module)
 
+    def addFiducial(self, position, copperDiameter, openingDiameter, bottom=False):
+        """
+        Add fiducial, i.e round copper pad with solder mask opening to the position (`wxPoint`), 
+        with given copperDiameter and openingDiameter. By setting bottom to True, the fiducial
+        is placed on bottom side.
+        """
+        module = pcbnew.PCB_IO().FootprintLoad(KIKIT_LIB, "Fiducial")
+        module.SetPosition(position)
+        if(bottom):
+            module.Flip(position)
+        for pad in module.Pads():
+            pad.SetSize(pcbnew.wxSize(copperDiameter, copperDiameter))
+            pad.SetLocalSolderMaskMargin(int((openingDiameter - copperDiameter) / 2))
+            pad.SetLocalClearance(int((openingDiameter - copperDiameter) / 2))
+        self.board.Add(module)
+    
     def addMillFillets(self, millRadius):
         """
         Add fillets to inner conernes which will be produced a by mill with
