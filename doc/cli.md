@@ -44,9 +44,13 @@ the following commands available:
     about the offset value, use 0.25 mm
   - `--radius FLOAT` Add a radius to inner corners to simulate radius of the
     mill
-  - `--sourcearea <FLOAT FLOAT FLOAT FLOAT>` `x y w h` in millimeters. If not
-    specified, automatically detected
+  - `--sourcearea <FLOAT FLOAT FLOAT FLOAT>` `x y w h` in millimeters. A
+    rectangle specified by a top left corner and its width and height. If not
+    specified, automatically detected.
   - `--rotation <FLOAT>` Rotate the source board in degrees.
+  - `--tolerance <FLOAT>` Distance in millimeters by which the source area is
+    expanded when copying board items. See more details in [panelization
+    doc](panelization.md).
 - `kikit panelize tightgrid [options] <input> <output>` - create a panel just
   like `grid`, but the panel is full and there is a milled slot around the
   perimeter of the boards. Takes the same arguments as `grid` with few

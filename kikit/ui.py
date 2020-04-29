@@ -56,8 +56,11 @@ def extractBoard(input, output, sourcearea):
     help="Rotate input board (in degrees)")
 @click.option("--sourcearea", type=(float, float, float, float),
     help="x y w h in millimeters. If not specified, automatically detected", default=(None, None, None, None))
+@click.option("--tolerance", type=float, default=5,
+    help="Include items <tolerance> millimeters out of board outline")
 def grid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
-         mousebites, radius, sourcearea, vcutcurves, htabs, vtabs, rotation):
+         mousebites, radius, sourcearea, vcutcurves, htabs, vtabs, rotation,
+         tolerance):
     """
     Create a regular panel placed in a frame.
 
@@ -77,8 +80,9 @@ def grid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
         else:
             frame = False
             oht, ovt = 0, 0
+        tolerance = fromMm(tolerance)
         psize, cuts = panel.makeGrid(input, rows, cols, wxPointMM(50, 50),
-            sourceArea=sourcearea, tolerance=fromMm(5),
+            sourceArea=sourcearea, tolerance=tolerance,
             verSpace=fromMm(space), horSpace=fromMm(space),
             verTabWidth=fromMm(tabwidth), horTabWidth=fromMm(tabheight),
             outerHorTabThickness=oht, outerVerTabThickness=ovt,
@@ -121,8 +125,11 @@ def grid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
     help="Rotate input board (in degrees)")
 @click.option("--sourcearea", type=(float, float, float, float),
     help="x y w h in millimeters. If not specified, automatically detected", default=(None, None, None, None))
+@click.option("--tolerance", type=float, default=5,
+    help="Include items <tolerance> millimeters out of board outline")
 def tightgrid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
-         mousebites, radius, sourcearea, vcutcurves, htabs, vtabs, rotation, slotwidth):
+         mousebites, radius, sourcearea, vcutcurves, htabs, vtabs, rotation, slotwidth,
+         tolerance):
     """
     Create a regular panel placed in a frame by milling a slot around the
     boards' perimeters.
@@ -137,10 +144,11 @@ def tightgrid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vc
         w, h = panelsize
         if 2 * radius > 1.1 * slotwidth:
             raise RuntimeError("The slot is too narrow for given radius (it has to be at least 10% larger")
+        tolerance = fromMm(tolerance)
         psize, cuts = panel.makeTightGrid(input, rows, cols, wxPointMM(50, 50),
             verSpace=fromMm(space), horSpace=fromMm(space),
             slotWidth=fromMm(slotwidth), width=fromMm(w), height=fromMm(h),
-            sourceArea=sourcearea, tolerance=fromMm(5),
+            sourceArea=sourcearea, tolerance=tolerance,
             verTabWidth=fromMm(tabwidth), horTabWidth=fromMm(tabheight),
             verTabCount=htabs, horTabCount=vtabs, rotation=fromDegrees(rotation))
         panel.addMillFillets(fromMm(radius))

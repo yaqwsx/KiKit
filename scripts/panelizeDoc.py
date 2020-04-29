@@ -65,6 +65,15 @@ important when, e.g., offsetting mouse bites.
 
 To perform the cuts, see methods of the `panelize.Panel` class below.
 
+## Source Area And Tolerance
+
+When placing a board, you might specify source area -- a rectangle from which
+the components are extracted. If no source area is specified, the smallest
+bounding box of all Edge.Cuts is taken.
+
+Only components that fully fit inside source area are copied to the panel. To
+include components sticking out of the board outline, you can specify tolerance
+-- a distance by which the source area is expanded when copying components.
 """
 )
 
