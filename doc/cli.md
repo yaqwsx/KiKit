@@ -51,6 +51,10 @@ the following commands available:
   - `--tolerance <FLOAT>` Distance in millimeters by which the source area is
     expanded when copying board items. See more details in [panelization
     doc](panelization.md).
+  - `--renamenet <string>`, `--renameref <string>` Rename pattern for nets and
+    references. String can contain `{n}` for the current board sequence number
+    and `{orig}` original name of net/reference. If not specified, nets are
+    renamed to `Board_{n}-{orig}`, references are unchanged.
 - `kikit panelize tightgrid [options] <input> <output>` - create a panel just
   like `grid`, but the panel is full and there is a milled slot around the
   perimeter of the boards. Takes the same arguments as `grid` with few

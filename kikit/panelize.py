@@ -15,6 +15,9 @@ from kikit.defs import STROKE_T, Layer, EDA_TEXT_HJUSTIFY_T
 PKG_BASE = os.path.dirname(__file__)
 KIKIT_LIB = os.path.join(PKG_BASE, "resources/kikit.pretty")
 
+def identity(x):
+    return x
+
 def fromDegrees(angle):
     return angle * 10
 
@@ -240,6 +243,37 @@ def removeCutsFromModule(module):
         edges.append(edge)
     return edges
 
+def renameNets(board, renamer):
+    """
+    Given a board and renaming function (taking original name, returning new
+    name) renames the nets
+    """
+    originalNetNames = collectNetNames(board)
+    netinfo = board.GetNetInfo()
+
+    newNetMapping = { "": netinfo.GetNetItem("") }
+    for name in originalNetNames:
+        newNet = pcbnew.NETINFO_ITEM(board, renamer(name))
+        newNetMapping[name] = newNet
+        board.Add(newNet)
+
+    remapNets(board.GetPads(), newNetMapping)
+    remapNets(board.GetTracks(), newNetMapping)
+    remapNets(board.Zones(), newNetMapping)
+
+    for name in originalNetNames:
+        if name != "":
+            board.RemoveNative(netinfo.GetNetItem(name))
+
+def renameRefs(board, renamer):
+    """
+    Given a board and renaming function (taking original name, returning new
+    name) renames the references
+    """
+    for module in board.GetModules():
+        ref = module.Reference().GetText()
+        module.Reference().SetText(renamer(ref))
+
 class Panel:
     """
     Basic interface for panel building. Instance of this class represents a
@@ -277,7 +311,8 @@ class Panel:
 
     def appendBoard(self, filename, destination, sourceArea=None,
                     origin=Origin.Center, rotationAngle=0, shrink=False,
-                    tolerance=0, bufferOutline=fromMm(0.001)):
+                    tolerance=0, bufferOutline=fromMm(0.001), netRenamer=None,
+                    refRenamer=None):
         """
         Appends a board to the panel.
 
@@ -291,6 +326,10 @@ class Panel:
         coarse source area and automatically shrink it if shrink is True.
         Tolerance enlarges (even shrinked) source area - useful for inclusion of
         filled zones which can reach out of the board edges.
+
+        You can also specify functions which will rename the net and ref names.
+        By default, nets are renamed to "Board_{n}-{orig}", refs are unchanged.
+        The renamers are given board seq number and original name
 
         Returns bounding box (wxRect) of the extracted area placed at the
         destination.
@@ -307,7 +346,11 @@ class Panel:
         translation = wxPoint(destination[0] - originPoint[0],
                               destination[1] - originPoint[1])
 
-        self._makeNetNamesUnique(board)
+        if netRenamer is None:
+            netRenamer = lambda x, y: self._uniquePrefix() + y
+        renameNets(board, lambda x: netRenamer(self.boardCounter, x))
+        if refRenamer is not None:
+            renameRefs(board, lambda x: refRenamer(self.boardCounter, x))
 
         drawings = collectItems(board.GetDrawings(), enlargedSourceArea)
         modules = collectItems(board.GetModules(), enlargedSourceArea)
@@ -416,31 +459,12 @@ class Panel:
             segments.append(label)
         return segments
 
-    def _makeNetNamesUnique(self, board):
-        prefix = self._uniquePrefix()
-        originalNetNames = collectNetNames(board)
-        netinfo = board.GetNetInfo()
-
-        newNetMapping = { "": netinfo.GetNetItem("") }
-        for name in originalNetNames:
-            newNet = pcbnew.NETINFO_ITEM(board, prefix + name)
-            newNetMapping[name] = newNet
-            board.Add(newNet)
-
-        remapNets(board.GetPads(), newNetMapping)
-        remapNets(board.GetTracks(), newNetMapping)
-        remapNets(board.Zones(), newNetMapping)
-
-        for name in originalNetNames:
-            if name != "":
-                board.RemoveNative(netinfo.GetNetItem(name))
-
     def _boardGridPos(self, destination, i, j, boardSize, horSpace, verSpace):
         return wxPoint(destination[0] + j * (boardSize.GetWidth() + horSpace),
                        destination[1] + i * (boardSize.GetHeight() + verSpace))
 
     def _placeBoardsInGrid(self, boardfile, rows, cols, destination, sourceArea, tolerance,
-                  verSpace, horSpace, rotation):
+                  verSpace, horSpace, rotation, netRenamer, refRenamer):
         """
         Create a grid of boards, return source board size aligned at the top
         left corner
@@ -450,7 +474,9 @@ class Panel:
         for i, j in product(range(rows), range(cols)):
             dest = self._boardGridPos(destination, i, j, boardSize, horSpace, verSpace)
             boardSize = self.appendBoard(boardfile, dest, sourceArea=sourceArea,
-                                         tolerance=tolerance, origin=Origin.TopLeft, rotationAngle=rotation)
+                                         tolerance=tolerance, origin=Origin.TopLeft,
+                                         rotationAngle=rotation, netRenamer=netRenamer,
+                                         refRenamer=refRenamer)
             if not topLeftSize:
                 topLeftSize = boardSize
         return topLeftSize
@@ -595,7 +621,9 @@ class Panel:
     def makeGrid(self, boardfile, rows, cols, destination, sourceArea=None,
                  tolerance=0, verSpace=0, horSpace=0, verTabCount=1,
                  horTabCount=1, verTabWidth=0, horTabWidth=0,
-                 outerVerTabThickness=0, outerHorTabThickness=0, rotation=0):
+                 outerVerTabThickness=0, outerHorTabThickness=0, rotation=0,
+                 netRenamePattern="Board_{n}-{orig}",
+                 refRenamePattern="Board_{n}-{orig}"):
         """
         Creates a grid of boards (row x col) as a panel at given destination
         separated by V-CUTS. The source can be either extracted automatically or
@@ -610,8 +638,11 @@ class Panel:
         list to either create a V-CUTS via makeVCuts or mouse bites via
         makeMouseBites.
         """
+        netRenamer = lambda x, y: netRenamePattern.format(n=x, orig=y)
+        refRenamer = lambda x, y: refRenamePattern.format(n=x, orig=y)
         boardSize = self._placeBoardsInGrid(boardfile, rows, cols, destination,
-                                    sourceArea, tolerance, verSpace, horSpace, rotation)
+                                    sourceArea, tolerance, verSpace, horSpace,
+                                    rotation, netRenamer, refRenamer)
         gridDest = wxPoint(boardSize.GetX(), boardSize.GetY())
         tabs, cuts = [], []
 
@@ -647,13 +678,18 @@ class Panel:
     def makeTightGrid(self, boardfile, rows, cols, destination, verSpace,
                       horSpace, slotWidth, width, height, sourceArea=None,
                       tolerance=0, verTabWidth=0, horTabWidth=0,
-                      verTabCount=1, horTabCount=1, rotation=0):
+                      verTabCount=1, horTabCount=1, rotation=0,
+                      netRenamePattern="Board_{n}-{orig}",
+                      refRenamePattern="Board_{n}-{orig}"):
         """
         Creates a grid of boards just like `makeGrid`, however, it creates a
         milled slot around perimeter of each board and 4 tabs.
         """
+        netRenamer = lambda x, y: netRenamePattern.format(n=x, orig=y)
+        refRenamer = lambda x, y: refRenamePattern.format(n=x, orig=y)
         boardSize = self._placeBoardsInGrid(boardfile, rows, cols, destination,
-                                    sourceArea, tolerance, verSpace, horSpace, rotation)
+                                    sourceArea, tolerance, verSpace, horSpace,
+                                    rotation, netRenamer, refRenamer)
         gridDest = wxPoint(boardSize.GetX(), boardSize.GetY())
         panelSize = wxRect(destination[0], destination[1],
                        cols * boardSize.GetWidth() + (cols - 1) * horSpace,
@@ -734,7 +770,7 @@ class Panel:
         """
         Take a list of cuts and perform mouse bites.
         """
-        bloatedSubstrate = prep(self.boardSubstrate.substrates.buffer(fromMm(diameter/2)))
+        bloatedSubstrate = prep(self.boardSubstrate.substrates.buffer(fromMm(0.01)))
         for cut in cuts:
             cut = cut.simplify(fromMm(0.001)) # Remove self-intersecting geometry
             offsetCut = cut.parallel_offset(offset, "left")
@@ -745,7 +781,7 @@ class Panel:
                     hole = offsetCut.interpolate(0.5, normalized=True)
                 else:
                     hole = offsetCut.interpolate( i * length / (count - 1) )
-                if bloatedSubstrate.contains(hole.buffer(0.8 * diameter / 2)):
+                if bloatedSubstrate.intersects(hole.buffer(0.8 * diameter / 2)):
                     self.addNPTHole(wxPoint(hole.x, hole.y), diameter)
 
     def addNPTHole(self, position, diameter):

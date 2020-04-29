@@ -58,9 +58,13 @@ def extractBoard(input, output, sourcearea):
     help="x y w h in millimeters. If not specified, automatically detected", default=(None, None, None, None))
 @click.option("--tolerance", type=float, default=5,
     help="Include items <tolerance> millimeters out of board outline")
+@click.option("--renamenet", type=str, default="Board_{n}-{orig}",
+    help="Rename pattern for nets. You can use '{n}' for board sequential number and '{orig}' for original net name")
+@click.option("--renameref", type=str, default="{orig}",
+    help="Rename pattern for references. You can use '{n}' for board sequential number and '{orig}' for original reference name")
 def grid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
          mousebites, radius, sourcearea, vcutcurves, htabs, vtabs, rotation,
-         tolerance):
+         tolerance, renamenet, renameref):
     """
     Create a regular panel placed in a frame.
 
@@ -86,7 +90,8 @@ def grid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
             verSpace=fromMm(space), horSpace=fromMm(space),
             verTabWidth=fromMm(tabwidth), horTabWidth=fromMm(tabheight),
             outerHorTabThickness=oht, outerVerTabThickness=ovt,
-            horTabCount=htabs, verTabCount=vtabs, rotation=fromDegrees(rotation))
+            horTabCount=htabs, verTabCount=vtabs, rotation=fromDegrees(rotation),
+            netRenamePattern=renamenet, refRenamePattern=renameref)
         panel.addMillFillets(fromMm(radius))
         if vcuts:
             panel.makeVCuts(cuts, vcutcurves)
@@ -107,11 +112,11 @@ def grid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
 @click.option("--space", "-s", type=float, default=2, help="Space between boards")
 @click.option("--slotwidth", "-w", type=float, default=2, help="Milled slot width")
 @click.option("--gridsize", "-g", type=(int, int), help="Panel size <rows> <cols>")
-@click.option("--panelsize", "-p", type=(float, float), help="<width> <height>", default=(None, None))
-@click.option("--tabwidth", type=float, default=0,
-    help="Size of the bottom/up tabs, leave unset for full width")
-@click.option("--tabheight", type=float, default=0,
-    help="Size of the left/right tabs, leave unset for full height")
+@click.option("--panelsize", "-p", type=(float, float), help="<width> <height>", required=True)
+@click.option("--tabwidth", type=float, default=5,
+    help="Size of the bottom/up tabs")
+@click.option("--tabheight", type=float, default=5,
+    help="Size of the left/right tabs")
 @click.option("--htabs", type=int, default=1,
     help="Number of horizontal tabs for each board")
 @click.option("--vtabs", type=int, default=1,
@@ -127,9 +132,13 @@ def grid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
     help="x y w h in millimeters. If not specified, automatically detected", default=(None, None, None, None))
 @click.option("--tolerance", type=float, default=5,
     help="Include items <tolerance> millimeters out of board outline")
+@click.option("--renamenet", type=str, default="Board_{n}-{orig}",
+    help="Rename pattern for nets. You can use '{n}' for board sequential number and '{orig}' for original net name")
+@click.option("--renameref", type=str, default="{orig}",
+    help="Rename pattern for references. You can use '{n}' for board sequential number and '{orig}' for original reference name")
 def tightgrid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
          mousebites, radius, sourcearea, vcutcurves, htabs, vtabs, rotation, slotwidth,
-         tolerance):
+         tolerance, renamenet, renameref):
     """
     Create a regular panel placed in a frame by milling a slot around the
     boards' perimeters.
@@ -150,7 +159,8 @@ def tightgrid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vc
             slotWidth=fromMm(slotwidth), width=fromMm(w), height=fromMm(h),
             sourceArea=sourcearea, tolerance=tolerance,
             verTabWidth=fromMm(tabwidth), horTabWidth=fromMm(tabheight),
-            verTabCount=htabs, horTabCount=vtabs, rotation=fromDegrees(rotation))
+            verTabCount=htabs, horTabCount=vtabs, rotation=fromDegrees(rotation),
+            netRenamePattern=renamenet, refRenamePattern=renameref)
         panel.addMillFillets(fromMm(radius))
         if vcuts:
             panel.makeVCuts(cuts, vcutcurves)
