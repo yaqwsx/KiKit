@@ -110,6 +110,10 @@ printHelp(panelize.Panel.makeMouseBites)
 printHeader(panelize.Panel.addNPTHole)
 printHelp(panelize.Panel.addNPTHole)
 
+printHeader(panelize.Panel.addFiducial)
+printHelp(panelize.Panel.addFiducial)
+
+
 print("""
 ## Examples
 

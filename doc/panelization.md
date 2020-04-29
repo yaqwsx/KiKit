@@ -65,7 +65,8 @@ single panel. You can append boards, add substrate pieces, make cuts or add
 holes to the panel. Once you finish, you have to save the panel to a file.
 ```
 appendBoard(self, filename, destination, sourceArea=None, origin=Origin.Center, 
-            rotationAngle=0, shrink=False, tolerance=0, bufferOutline=1000)
+            rotationAngle=0, shrink=False, tolerance=0, bufferOutline=1000, 
+            netRenamer=None, refRenamer=None)
 ```
 Appends a board to the panel.
 
@@ -79,6 +80,10 @@ rotation (origin it is placed to destination). It is possible to specify
 coarse source area and automatically shrink it if shrink is True.
 Tolerance enlarges (even shrinked) source area - useful for inclusion of
 filled zones which can reach out of the board edges.
+
+You can also specify functions which will rename the net and ref names.
+By default, nets are renamed to "Board_{n}-{orig}", refs are unchanged.
+The renamers are given board seq number and original name
 
 Returns bounding box (wxRect) of the extracted area placed at the
 destination.
@@ -96,7 +101,8 @@ rounded by specifying non-zero filletRadius.
 makeGrid(self, boardfile, rows, cols, destination, sourceArea=None, tolerance=0, 
          verSpace=0, horSpace=0, verTabCount=1, horTabCount=1, verTabWidth=0, 
          horTabWidth=0, outerVerTabThickness=0, outerHorTabThickness=0, 
-         rotation=0)
+         rotation=0, netRenamePattern=Board_{n}-{orig}, 
+         refRenamePattern=Board_{n}-{orig})
 ```
 Creates a grid of boards (row x col) as a panel at given destination
 separated by V-CUTS. The source can be either extracted automatically or
@@ -114,7 +120,8 @@ makeMouseBites.
 makeTightGrid(self, boardfile, rows, cols, destination, verSpace, horSpace, 
               slotWidth, width, height, sourceArea=None, tolerance=0, 
               verTabWidth=0, horTabWidth=0, verTabCount=1, horTabCount=1, 
-              rotation=0)
+              rotation=0, netRenamePattern=Board_{n}-{orig}, 
+              refRenamePattern=Board_{n}-{orig})
 ```
 Creates a grid of boards just like `makeGrid`, however, it creates a
 milled slot around perimeter of each board and 4 tabs.
@@ -139,6 +146,12 @@ addNPTHole(self, position, diameter)
 ```
 Add a drilled non-plated hole to the position (`wxPoint`) with given
 diameter.
+```
+addFiducial(self, position, copperDiameter, openingDiameter, bottom=False)
+```
+Add fiducial, i.e round copper pad with solder mask opening to the position (`wxPoint`), 
+with given copperDiameter and openingDiameter. By setting bottom to True, the fiducial
+is placed on bottom side.
 
 ## Examples
 
