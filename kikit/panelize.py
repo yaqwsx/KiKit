@@ -274,6 +274,14 @@ def renameRefs(board, renamer):
         ref = module.Reference().GetText()
         module.Reference().SetText(renamer(ref))
 
+def isBoardEdge(edge):
+    """
+    Decide whether the drawing is a board edge or not.
+
+    The rule is: all drawings on Edge.Cuts layer are edges.
+    """
+    return isinstance(edge, pcbnew.DRAWSEGMENT) and edge.GetLayerName() == "Edge.Cuts"
+
 class Panel:
     """
     Basic interface for panel building. Instance of this class represents a
@@ -378,8 +386,8 @@ class Panel:
         for drawing in drawings:
             drawing.Rotate(originPoint, rotationAngle)
             drawing.Move(translation)
-        edges += [edge for edge in drawings if edge.GetLayerName() == "Edge.Cuts"]
-        otherDrawings = [edge for edge in drawings if edge.GetLayerName() != "Edge.Cuts"]
+        edges += [edge for edge in drawings if isBoardEdge(edge)]
+        otherDrawings = [edge for edge in drawings if not isBoardEdge(edge)]
         try:
             self.boardSubstrate.union(Substrate(edges, bufferOutline))
         except substrate.PositionError as e:
@@ -798,7 +806,7 @@ class Panel:
 
     def addFiducial(self, position, copperDiameter, openingDiameter, bottom=False):
         """
-        Add fiducial, i.e round copper pad with solder mask opening to the position (`wxPoint`), 
+        Add fiducial, i.e round copper pad with solder mask opening to the position (`wxPoint`),
         with given copperDiameter and openingDiameter. By setting bottom to True, the fiducial
         is placed on bottom side.
         """
@@ -811,7 +819,7 @@ class Panel:
             pad.SetLocalSolderMaskMargin(int((openingDiameter - copperDiameter) / 2))
             pad.SetLocalClearance(int((openingDiameter - copperDiameter) / 2))
         self.board.Add(module)
-    
+
     def addMillFillets(self, millRadius):
         """
         Add fillets to inner conernes which will be produced a by mill with
