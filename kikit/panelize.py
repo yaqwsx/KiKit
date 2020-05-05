@@ -654,25 +654,27 @@ class Panel:
         gridDest = wxPoint(boardSize.GetX(), boardSize.GetY())
         tabs, cuts = [], []
 
-        if verTabWidth == 0:
-            t, c = self._makeFullVerticalTabs(gridDest, rows, cols,
-                boardSize, verSpace, horSpace, outerVerTabThickness, outerHorTabThickness)
-        else:
-            t, c = self._makeVerGridTabs(gridDest, rows, cols, boardSize,
-                verSpace, horSpace, verTabWidth, horTabWidth, verTabCount,
-                horTabCount, outerVerTabThickness, outerHorTabThickness)
-        tabs += t
-        cuts += c
+        if verTabCount != 0:
+            if verTabWidth == 0:
+                t, c = self._makeFullVerticalTabs(gridDest, rows, cols,
+                    boardSize, verSpace, horSpace, outerVerTabThickness, outerHorTabThickness)
+            else:
+                t, c = self._makeVerGridTabs(gridDest, rows, cols, boardSize,
+                    verSpace, horSpace, verTabWidth, horTabWidth, verTabCount,
+                    horTabCount, outerVerTabThickness, outerHorTabThickness)
+            tabs += t
+            cuts += c
 
-        if horTabWidth == 0:
-            t, c = self._makeFullHorizontalTabs(gridDest, rows, cols,
-                boardSize, verSpace, horSpace, outerVerTabThickness, outerHorTabThickness)
-        else:
-            t, c = self._makeHorGridTabs(gridDest, rows, cols, boardSize,
-                verSpace, horSpace, verTabWidth, horTabWidth, verTabCount,
-                horTabCount, outerVerTabThickness, outerHorTabThickness)
-        tabs += t
-        cuts += c
+        if horTabCount != 0:
+            if horTabWidth == 0:
+                t, c = self._makeFullHorizontalTabs(gridDest, rows, cols,
+                    boardSize, verSpace, horSpace, outerVerTabThickness, outerHorTabThickness)
+            else:
+                t, c = self._makeHorGridTabs(gridDest, rows, cols, boardSize,
+                    verSpace, horSpace, verTabWidth, horTabWidth, verTabCount,
+                    horTabCount, outerVerTabThickness, outerHorTabThickness)
+            tabs += t
+            cuts += c
 
         tabs = list([t.buffer(fromMm(0.001), join_style=2) for t in tabs])
         self.appendSubstrate(tabs)
@@ -704,16 +706,18 @@ class Panel:
                        rows * boardSize.GetHeight() + (rows - 1) * verSpace)
 
         tabs, cuts = [], []
-        t, c = self._makeVerGridTabs(gridDest, rows, cols, boardSize,
-                verSpace, horSpace, verTabWidth, horTabWidth, verTabCount,
-                horTabCount, slotWidth, slotWidth)
-        tabs += t
-        cuts += c
-        t, c = self._makeHorGridTabs(gridDest, rows, cols, boardSize,
-                verSpace, horSpace, verTabWidth, horTabWidth, verTabCount,
-                horTabCount, slotWidth, slotWidth)
-        tabs += t
-        cuts += c
+        if verTabCount != 0:
+            t, c = self._makeVerGridTabs(gridDest, rows, cols, boardSize,
+                    verSpace, horSpace, verTabWidth, horTabWidth, verTabCount,
+                    horTabCount, slotWidth, slotWidth)
+            tabs += t
+            cuts += c
+        if horTabCount != 0:
+            t, c = self._makeHorGridTabs(gridDest, rows, cols, boardSize,
+                    verSpace, horSpace, verTabWidth, horTabWidth, verTabCount,
+                    horTabCount, slotWidth, slotWidth)
+            tabs += t
+            cuts += c
 
         xDiff = (width - panelSize.GetWidth()) // 2
         if xDiff < 0:
@@ -730,7 +734,8 @@ class Panel:
         tabs = list([t.buffer(fromMm(0.001), join_style=2) for t in tabs])
         self.appendSubstrate(tabs)
 
-        self.boardSubstrate.removeIslands()
+        if verTabCount != 0 or horTabCount != 0:
+            self.boardSubstrate.removeIslands()
 
         return (outerRect, cuts)
 
@@ -826,3 +831,32 @@ class Panel:
         given radius.
         """
         self.boardSubstrate.millFillets(millRadius)
+
+    def layerToTabs(self, layerName, tabWidth):
+        """
+        Take all line drawsegments from the given layer and convert them to
+        tabs.
+
+        The tabs are created by placing a tab origin into the line starting
+        point and spanning the tab in the line direction up to the line length.
+        Therefore, it is necessary that the line is long enough to penetarete
+        the boardoutline.
+
+        The lines are deleted from panel.
+
+        Returns list of tabs substrates and a list of cuts to perform.
+        """
+        lines = [element for element in self.board.GetDrawings()
+                    if isinstance(element, pcbnew.DRAWSEGMENT) and
+                       element.GetShape() == STROKE_T.S_SEGMENT and
+                       element.GetLayerName() == layerName]
+        tabs, cuts = [], []
+        for line in lines:
+            origin = line.GetStart()
+            direction = line.GetEnd() - line.GetStart()
+            tab, cut = self.boardSubstrate.tab(origin, direction, tabWidth,
+                line.GetLength())
+            tabs.append(tab)
+            cuts.append(cut)
+            self.board.Remove(line)
+        return tabs, cuts

@@ -114,9 +114,22 @@ runBoardExample("panel7",
 
 print(
 """
-Lastly, you can also rotate the input board. Might not be usefull for
+You can also rotate the input board. Might not be usefull for
 rectangular boards, but if you have a circular or oddly shaped board...
 """
 )
 runBoardExample("panel8",
     ["panelize", "grid", "--space", "2", "--gridsize", "2", "2", "--tabwidth", "3", "--tabheight", "3", "--mousebites", "0.5", "1", "0.25", "--radius", "1", "--panelsize", "80", "80", "--rotation", "45", "doc/resources/conn.kicad_pcb"])
+
+print(
+"""
+Sometimes you mind find yourself in need for precise tab placement. This can be
+easily done. Just draw a line in one of KiCAD layers (be careful, the
+orientation matters - the line has to target the board substrate) and specify
+option `--tabsfrom`. Don't forget to disable automatically generated tabs by
+specifying `--vtabs 0` and `--htabs 0`. See for yourself, there are some lines
+already prepared for you in `conn.kicad_pcb`
+"""
+)
+runBoardExample("panel9",
+    ["panelize", "tightgrid", "--slotwidth", "2.5", "--space", "8", "--gridsize", "2", "2", "--htabs", "0", "--vtabs", "0", "--tabsfrom", "Eco2.User", "3", "--tabsfrom", "Eco1.User", "5", "--mousebites", "0.5", "1", "0.25", "--radius", "1", "--panelsize", "80", "80", "doc/resources/conn.kicad_pcb"])

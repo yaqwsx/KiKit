@@ -149,7 +149,7 @@ diameter.
 ```
 addFiducial(self, position, copperDiameter, openingDiameter, bottom=False)
 ```
-Add fiducial, i.e round copper pad with solder mask opening to the position (`wxPoint`), 
+Add fiducial, i.e round copper pad with solder mask opening to the position (`wxPoint`),
 with given copperDiameter and openingDiameter. By setting bottom to True, the fiducial
 is placed on bottom side.
 

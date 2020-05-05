@@ -62,9 +62,11 @@ def extractBoard(input, output, sourcearea):
     help="Rename pattern for nets. You can use '{n}' for board sequential number and '{orig}' for original net name")
 @click.option("--renameref", type=str, default="{orig}",
     help="Rename pattern for references. You can use '{n}' for board sequential number and '{orig}' for original reference name")
+@click.option("--tabsfrom", type=(str, float), multiple=True,
+    help="Create tabs from lines in given layer. You probably want to specify --vtabs=0 and --htabs=0. Format <layer name> <tab width>")
 def grid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
          mousebites, radius, sourcearea, vcutcurves, htabs, vtabs, rotation,
-         tolerance, renamenet, renameref):
+         tolerance, renamenet, renameref, tabsfrom):
     """
     Create a regular panel placed in a frame.
 
@@ -92,6 +94,12 @@ def grid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
             outerHorTabThickness=oht, outerVerTabThickness=ovt,
             horTabCount=htabs, verTabCount=vtabs, rotation=fromDegrees(rotation),
             netRenamePattern=renamenet, refRenamePattern=renameref)
+        tabs = []
+        for layer, width in tabsfrom:
+            tab, cut = panel.layerToTabs(layer, fromMm(width))
+            cuts += cut
+            tabs += tab
+        panel.appendSubstrate(tabs)
         panel.addMillFillets(fromMm(radius))
         if vcuts:
             panel.makeVCuts(cuts, vcutcurves)
@@ -136,9 +144,11 @@ def grid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
     help="Rename pattern for nets. You can use '{n}' for board sequential number and '{orig}' for original net name")
 @click.option("--renameref", type=str, default="{orig}",
     help="Rename pattern for references. You can use '{n}' for board sequential number and '{orig}' for original reference name")
+@click.option("--tabsfrom", type=(str, float), multiple=True,
+    help="Create tabs from lines in given layer. You probably want to specify --vtabs=0 and --htabs=0. Format <layer name> <tab width>")
 def tightgrid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
          mousebites, radius, sourcearea, vcutcurves, htabs, vtabs, rotation, slotwidth,
-         tolerance, renamenet, renameref):
+         tolerance, renamenet, renameref, tabsfrom):
     """
     Create a regular panel placed in a frame by milling a slot around the
     boards' perimeters.
@@ -161,6 +171,12 @@ def tightgrid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vc
             verTabWidth=fromMm(tabwidth), horTabWidth=fromMm(tabheight),
             verTabCount=htabs, horTabCount=vtabs, rotation=fromDegrees(rotation),
             netRenamePattern=renamenet, refRenamePattern=renameref)
+        tabs = []
+        for layer, width in tabsfrom:
+            tab, cut = panel.layerToTabs(layer, fromMm(width))
+            cuts += cut
+            tabs += tab
+        panel.appendSubstrate(tabs)
         panel.addMillFillets(fromMm(radius))
         if vcuts:
             panel.makeVCuts(cuts, vcutcurves)
