@@ -3,6 +3,7 @@ import tempfile
 import subprocess
 import shutil
 import os
+import sys
 
 def header(func):
     signature = inspect.signature(func)
@@ -38,9 +39,14 @@ def runBoardExample(name, args):
     output = os.path.join(dirname, "x.kicad_pcb")
     realArgs = ["python3", "-m", "kikit.ui"] + args + [output]
     fakeArgs = ["kikit"] + args + ["panel.kicad_pcb"]
-    subprocess.run(realArgs, check=True)
-    subprocess.run(["pcbdraw", "--vcuts", "--silent", output,
-            "doc/resources/{}.png".format(name)], check=True)
+    try:
+        subprocess.run(realArgs, check=True, capture_output=True)
+        subprocess.run(["pcbdraw", "--vcuts", "--silent", output,
+                "doc/resources/{}.png".format(name)], check=True, capture_output=True)
+    except subprocess.CalledProcessError as e:
+        print("Command: " + " ".join(e.cmd), file=sys.stderr)
+        print("Stdout: " + e.stdout.decode("utf8"), file=sys.stderr)
+        sys.exit(1)
     print("```\n{}\n```".format(" ".join(fakeArgs)))
     print("![{0}](resources/{0}.png)".format(name))
     shutil.rmtree(dirname)
