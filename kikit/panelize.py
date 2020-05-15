@@ -344,6 +344,7 @@ class Panel:
         """
         board = LoadBoard(filename)
         self.boardCounter += 1
+        self.board.SetCopperLayerCount( max(self.board.GetCopperLayerCount(), board.GetCopperLayerCount() ) )
 
         if not sourceArea:
             sourceArea = findBoardBoundingBox(board)
