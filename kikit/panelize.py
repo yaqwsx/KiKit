@@ -676,16 +676,15 @@ class Panel:
         e.g., by `makeGrid`, with given `width` and `height`. Space with width
         `offset` is added around the `innerArea`.
         """
-        innerArea = expandRect(innerArea, offset)
-        innerArea = expandRect(innerArea, -fromMm(0.01))
-        xDiff = (width - innerArea.GetWidth()) // 2
+        innerAreaExpanded = expandRect(innerArea, offset-fromMm(0.01))
+        xDiff = (width - innerAreaExpanded.GetWidth()) // 2
         if xDiff < 0:
             raise RuntimeError("The frame is to small")
-        yDiff = (height - innerArea.GetHeight()) // 2
+        yDiff = (height - innerAreaExpanded.GetHeight()) // 2
         if yDiff < 0:
             raise RuntimeError("The frame is to small")
-        innerRing = rectToRing(innerArea)
-        outerRect = expandRect(innerArea, xDiff, yDiff)
+        innerRing = rectToRing(innerAreaExpanded)
+        outerRect = expandRect(innerAreaExpanded, xDiff, yDiff)
         outerRing = rectToRing(outerRect)
         polygon = Polygon(outerRing, [innerRing])
         self.appendSubstrate(polygon)
