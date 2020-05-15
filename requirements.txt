@@ -1,0 +1,6 @@
+click==7.1.2
+markdown2==2.3.9
+numpy==1.18.4
+pybars3==0.9.7
+PyMeta3==0.5.1
+Shapely==1.7.0
