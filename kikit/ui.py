@@ -113,7 +113,8 @@ def grid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
             drill, spacing, offset = mousebites
             panel.makeMouseBites(cuts, fromMm(drill), fromMm(spacing), fromMm(offset))
         if frame:
-            panel.makeFrame(psize, fromMm(w), fromMm(h), fromMm(space))
+            (_, frame_cuts) = panel.makeFrame(psize, fromMm(w), fromMm(h), fromMm(space))
+            cuts += frame_cuts
         panel.addMillFillets(fromMm(radius))
         panel.save(output)
     except Exception as e:
