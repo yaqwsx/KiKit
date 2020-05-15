@@ -760,8 +760,20 @@ class Panel:
         outerRect = expandRect(innerAreaExpanded, xDiff, yDiff)
         outerRing = rectToRing(outerRect)
         polygon = Polygon(outerRing, [innerRing])
+        cuts = self.makeFrameCuts( innerArea, innerAreaExpanded, outerRect )
         self.appendSubstrate(polygon)
-        return outerRect
+        return (outerRect, cuts)
+
+    def makeFrameCuts(self, innerArea, innerAreaExpanded, outerArea ):
+        x_coords = [ innerArea.GetX(),
+                     innerArea.GetX() + innerArea.GetWidth() ]
+        y_coords = sorted([ innerAreaExpanded.GetY(),
+                            innerAreaExpanded.GetY() + innerAreaExpanded.GetHeight(), 
+                            outerArea.GetY(),
+                            outerArea.GetY() + outerArea.GetHeight() ])
+        cuts =  [ [(x_coord, y_coords[0]), (x_coord, y_coords[1])] for x_coord in x_coords ]
+        cuts += [ [(x_coord, y_coords[2]), (x_coord, y_coords[3])] for x_coord in x_coords ]
+        return map(LineString, cuts)
 
     def makeVCuts(self, cuts, boundCurves=False):
         """
