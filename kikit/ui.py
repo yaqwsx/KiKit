@@ -100,7 +100,6 @@ def grid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
             cuts += cut
             tabs += tab
         panel.appendSubstrate(tabs)
-        panel.addMillFillets(fromMm(radius))
         if vcuts:
             panel.makeVCuts(cuts, vcutcurves)
         if mousebites[0]:
@@ -108,6 +107,7 @@ def grid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
             panel.makeMouseBites(cuts, fromMm(drill), fromMm(spacing), fromMm(offset))
         if frame:
             panel.makeFrame(psize, fromMm(w), fromMm(h), fromMm(space))
+        panel.addMillFillets(fromMm(radius))
         panel.save(output)
     except Exception as e:
         sys.stderr.write("An error occurred: " + str(e) + "\n")
