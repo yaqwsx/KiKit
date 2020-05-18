@@ -22,6 +22,16 @@ KiKit is available as a [PyPi package](https://pypi.org/project/KiKit/), therefo
 pip3 install kikit
 ```
 
+If you would like to test the upstream version (which can have more features
+implemented but is not guaranteed to be fully tested), you can install it via:
+
+```
+pip3 install git+https://github.com/yaqwsx/KiKit@master
+```
+
+Note that if you have a stable version installed, you need to add `--force` to
+upgrade it to upstream.
+
 ## Why Should I Use It?
 
 Everything KiKit does, can also be done via Pcbnew in KiCAD. However, you have
