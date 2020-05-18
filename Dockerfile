@@ -7,8 +7,9 @@ ENV DISPLAY=unix:0.0
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-      kicad kicad-libraries zip inkscape make git librsvg2-bin librsvg2-dev \
-      python3 python3-pip python3-cairo python3-wheel python3-setuptools python3-gi python3-gi-cairo
+      kicad kicad-libraries zip inkscape make git libmagickwand-dev \
+      python3 python3-pip python3-wheel python3-setuptools inkscape \
+      libgraphicsmagick1-dev libmagickcore-dev
 
 RUN pip3 install Pcbdraw KiKit
 
