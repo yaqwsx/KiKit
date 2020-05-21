@@ -298,6 +298,7 @@ class Panel:
                                             # Draw it just before saving
         self.hVCuts = set() # Keep V-cuts as numbers and append them just before saving
         self.vVCuts = set() # to make them truly span the whole panel
+        self.copperLayerCount = None
 
     def save(self, filename):
         """
@@ -344,7 +345,8 @@ class Panel:
         """
         board = LoadBoard(filename)
         self.boardCounter += 1
-        self.board.SetCopperLayerCount( max(self.board.GetCopperLayerCount(), board.GetCopperLayerCount() ) )
+        self.inheritCopperLayers(board)
+
 
         if not sourceArea:
             sourceArea = findBoardBoundingBox(board)
@@ -861,3 +863,16 @@ class Panel:
             cuts.append(cut)
             self.board.Remove(line)
         return tabs, cuts
+
+    def inheritCopperLayers(self, board):
+        """
+        Update the panel's layer count to match the design being panelized.
+        Raise an error if this is attempted twice with inconsistent layer count
+        boards.
+        """
+        if(self.copperLayerCount is None):
+            self.copperLayerCount = board.GetCopperLayerCount()
+            self.board.SetCopperLayerCount(self.copperLayerCount)
+
+        elif(self.copperLayerCount != board.GetCopperLayerCount()):
+            raise RuntimeError("Attempting to panelize boards together of mixed layer counts")
