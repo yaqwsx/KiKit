@@ -13,6 +13,3 @@ fp-info-cache
 build
 dist
 KiKit.egg-info
-
-# Ignore venv
-venv/*
