@@ -687,11 +687,12 @@ class Panel:
         outerRect = expandRect(innerAreaExpanded, xDiff, yDiff)
         outerRing = rectToRing(outerRect)
         polygon = Polygon(outerRing, [innerRing])
-        cuts = self.makeFrameCuts( innerArea, innerAreaExpanded, outerRect )
+        frame_cuts_v = self.makeFrameCutsV( innerArea, innerAreaExpanded, outerRect )
+        frame_cuts_h = self.makeFrameCutsH( innerArea, innerAreaExpanded, outerRect )
         self.appendSubstrate(polygon)
-        return (outerRect, cuts)
+        return (outerRect, frame_cuts_v, frame_cuts_h)
 
-    def makeFrameCuts(self, innerArea, innerAreaExpanded, outerArea ):
+    def makeFrameCutsV(self, innerArea, innerAreaExpanded, outerArea ):
         x_coords = [ innerArea.GetX(),
                      innerArea.GetX() + innerArea.GetWidth() ]
         y_coords = sorted([ innerAreaExpanded.GetY(),
@@ -700,6 +701,17 @@ class Panel:
                             outerArea.GetY() + outerArea.GetHeight() ])
         cuts =  [ [(x_coord, y_coords[0]), (x_coord, y_coords[1])] for x_coord in x_coords ]
         cuts += [ [(x_coord, y_coords[2]), (x_coord, y_coords[3])] for x_coord in x_coords ]
+        return map(LineString, cuts)
+
+    def makeFrameCutsH(self, innerArea, innerAreaExpanded, outerArea ):
+        y_coords = [ innerArea.GetY(),
+                     innerArea.GetY() + innerArea.GetHeight() ]
+        x_coords = sorted([ innerAreaExpanded.GetX(),
+                            innerAreaExpanded.GetX() + innerAreaExpanded.GetWidth(), 
+                            outerArea.GetX(),
+                            outerArea.GetX() + outerArea.GetWidth() ])
+        cuts =  [ [(x_coords[0], y_coord), (x_coords[1], y_coord)] for y_coord in y_coords ]
+        cuts += [ [(x_coords[2], y_coord), (x_coords[3], y_coord)] for y_coord in y_coords ]
         return map(LineString, cuts)
 
     def makeVCuts(self, cuts, boundCurves=False):
