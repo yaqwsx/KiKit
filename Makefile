@@ -14,7 +14,7 @@ doc/examples.md: scripts/exampleDoc.py
 	PYTHONPATH=`pwd` python3 scripts/exampleDoc.py > $@
 
 package:
-	rm dist/*
+	rm -f dist/*
 	python3 setup.py sdist bdist_wheel
 
 install: package

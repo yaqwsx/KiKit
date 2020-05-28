@@ -6,10 +6,16 @@ __pycache__
 *.pro
 fp-info-cache
 
-# Ignore VS Code
+# Ignore IDEs/editors
 .vscode
+.idea
 
 # Ignore build
 build
 dist
 KiKit.egg-info
+
+# Ignore venv
+venv
+
+
