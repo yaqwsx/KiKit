@@ -3,6 +3,7 @@ import kikit.export as kiexport
 from kikit.panelize import Panel, fromMm, wxPointMM, wxRectMM, fromDegrees
 from kikit.present import boardpage
 from kikit.modify import references
+from kikit.stencil import stencil
 import sys
 
 def validateSpaceRadius(space, radius):
@@ -235,7 +236,7 @@ cli.add_command(export)
 cli.add_command(panelize)
 cli.add_command(present)
 cli.add_command(modify)
-
+cli.add_command(stencil)
 
 
 if __name__ == '__main__':

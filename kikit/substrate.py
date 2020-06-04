@@ -6,6 +6,8 @@ import pcbnew
 from enum import IntEnum
 from itertools import product
 
+from kikit.common import *
+
 from kikit.defs import STROKE_T, Layer
 
 class PositionError(RuntimeError):
@@ -297,17 +299,6 @@ def extractPoint(collection):
             return x
     return None
 
-def normalize(vector):
-    """ Return a vector with unit length """
-    vec = np.array([vector[0], vector[1]])
-    return vec / np.linalg.norm(vector)
-
-def makePerpendicular(vector):
-    """
-    Given a 2D vector, return a vector which is perpendicular to the input one
-    """
-    return np.array([vector[1], -vector[0]])
-
 def closestIntersectionPoint(origin, direction, outline, maxDistance):
     testLine = LineString([origin, origin + direction * maxDistance])
     inter = testLine.intersection(outline)
@@ -477,7 +468,6 @@ class Substrate:
             if ismainland:
                 mainland.append(substrate)
         self.substrates = shapely.geometry.collection.GeometryCollection(mainland)
-
 
 def showPolygon(polygon):
     import matplotlib.pyplot as plt
