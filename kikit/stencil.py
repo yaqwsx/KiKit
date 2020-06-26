@@ -209,7 +209,7 @@ def mirrorX(linestring, origin):
     return [(2 * origin - x, y) for x, y in linestring]
 
 def makeRegister(board, jigFrameSize, jigThickness, pcbThickness,
-                 outerBorder, innerBorder, tolerance, top):
+                 outerBorder, innerBorder, tolerance, topSide):
     bBox = findBoardBoundingBox(board)
     centerpoint = rectCenter(bBox)
 
@@ -218,18 +218,20 @@ def makeRegister(board, jigFrameSize, jigThickness, pcbThickness,
 
     outerPolygon, holes = createOuterPolygon(board, jigFrameSize, outerBorder)
     outerRing = outerPolygon.exterior.coords
-    if top:
+    if topSide:
         outerRing = mirrorX(outerRing, centerpoint[0])
     body = solid.linear_extrude(height=top, convexity=10)(solid.polygon(
         outerRing))
 
     innerRing = createOffsetPolygon(board, - innerBorder).exterior.coords
-    if top:
+    if topSide:
+        print("top")
         innerRing = mirrorX(innerRing, centerpoint[0])
     innerCutout = solid.utils.down(jigThickness)(
         solid.linear_extrude(height=3 * jigThickness, convexity=10)(solid.polygon(innerRing)))
     registerRing = createOffsetPolygon(board, tolerance).exterior.coords
-    if top:
+    if topSide:
+        print("top")
         registerRing = mirrorX(registerRing, centerpoint[0])
     registerCutout = solid.utils.up(jigThickness - pcbThickness)(
         solid.linear_extrude(height=jigThickness, convexity=10)(solid.polygon(registerRing)))
@@ -246,6 +248,7 @@ def makeTopRegister(board, jigFrameSize, jigThickness, pcbThickness,
     """
     Create a SolidPython representation of the top register
     """
+    print("Top")
     return makeRegister(board, jigFrameSize, jigThickness, pcbThickness,
             outerBorder, innerBorder, tolerance, True)
 
@@ -255,6 +258,7 @@ def makeBottomRegister(board, jigFrameSize, jigThickness, pcbThickness,
     """
     Create a SolidPython representation of the top register
     """
+    print("Bottom")
     return makeRegister(board, jigFrameSize, jigThickness, pcbThickness,
             outerBorder, innerBorder, tolerance, False)
 
