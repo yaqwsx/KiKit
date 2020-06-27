@@ -39,3 +39,31 @@ If you want to preserve your narrow internal slots:
 - don't specify `--radius` at all
 - specify smaller `--radius` but make sure that your fabrication house supports
   such small tools.
+
+## My mouse bites are inside the board, what should I do about it?
+
+KiKit's mouse bites offset specifies how much should be the mouse bites put
+**inside** the board. The recommended value is 0.25 mm (read about it [in this
+blog post](https://blogs.mentor.com/tom-hausherr/blog/tag/mouse-bite/)). Why is
+it so? When you break the tab, there will be rough edges. By putting the mouse
+bites inside the board, these rough edges won't be sticking outside the designed
+board outline. When you want to fit your board in a tight enclosure, you don't
+have to perform manual deburing. Since it is considered a good practice, KiKit
+makes this the positive direction so you don't have to put minus everywhere.
+
+If you don't want to put mouse bites inside your board, just specify zero or
+negative offset.
+
+## I want to use KiKit on Windows and I get various errors
+
+Unfortunately, KiCAD includes it's own version of Python interpreter on Windows.
+That means that the `pcbnew` module is not installed for your system Python
+installation. The KiCAD's Python does not allow to install libraries with binary
+dependencies, therefore you cannot install KiKit in it.
+
+I have plans for solving this issue, unfortunately, I cannot implement them
+until KiCAD on Windows migrate to Python 3 which should come with 6.0 release.
+
+Until then you have two options to use KiKit on Windows:
+- use the pre-built [Docker image](https://hub.docker.com/r/yaqwsx/kikit) with KiKit
+- install KiCAD and KiKit inside [WSL](https://docs.microsoft.com/en-us/windows/wsl/about)
