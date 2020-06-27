@@ -446,8 +446,10 @@ class Substrate:
         Add fillets to inner conernes which will be produced a by mill with
         given radius.
         """
-        if millRadius > 0:
-            self.substrates = self.substrates.buffer(millRadius).buffer(-millRadius)
+        epsilon = fromMm(0.01)
+        if millRadius < epsilon:
+            raise RuntimeError("Cannot make smaller radius than 0.01 mm")
+        self.substrates = self.substrates.buffer(millRadius - epsilon).buffer(-millRadius).buffer(epsilon)
 
     def removeIslands(self):
         """
