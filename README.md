@@ -70,6 +70,11 @@ Read the [CLI documentation](doc/cli.md) and the [panelize
 documentation](doc/panelization.md). Also don't miss the
 [examples](doc/examples.md).
 
+## KiKit Is Broken or Does Not Work as Expected
+
+Please, first check [FAQ](doc/faq.md). If you have not found answer for your
+problem there, feel free to open an issue on GitHub.
+
 ## How To Use It CI?
 
 To use KiKit in CI (e.g., Travis) you can use prepared Docker image
