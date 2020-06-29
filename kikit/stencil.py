@@ -4,7 +4,7 @@ import numpy as np
 from kikit.common import *
 from kikit.defs import *
 from kikit.substrate import Substrate
-from kikit.export import gerberImpl
+from kikit.export import gerberImpl, pasteDxfExport
 import solid
 import solid.utils
 import subprocess
@@ -268,6 +268,22 @@ def renderScad(infile, outfile):
     subprocess.check_call(["openscad", "-o", outfile, infile])
 
 
+def removeComponents(board, references):
+    """
+    Remove components with references from the board. References is a list of
+    strings
+    """
+    for module in board.GetModules():
+        if module.GetReference() in references:
+            board.Remove(module)
+
+def parseReferences(dStr):
+    """
+    Parse comma separated list of component references to a list
+    """
+    return [x.strip() for x in dStr.split(",") if len(x.strip()) > 0]
+
+
 from pathlib import Path
 import os
 
@@ -284,13 +300,18 @@ import os
     help="Register borders in mm: <outer> <inner>")
 @click.option("--tolerance", type=float, default=0.05,
     help="Enlarges the register by the tolerance value")
+@click.option("--ignore", type=str, default="",
+    help="Comma separated list of components references to exclude from the stencil")
 def create(inputboard, outputdir, jigsize, jigthickness, pcbthickness,
-           registerborder, tolerance):
+           registerborder, tolerance, ignore):
     """
     Create stencil and register elements for manual paste dispensing jig.
     See more details at: ToDo
     """
     board = pcbnew.LoadBoard(inputboard)
+    refs = parseReferences(ignore)
+    removeComponents(board, refs)
+
     Path(outputdir).mkdir(parents=True, exist_ok=True)
 
     jigsize = (fromMm(jigsize[0]), fromMm(jigsize[1]))
@@ -327,6 +348,73 @@ def create(inputboard, outputdir, jigsize, jigthickness, pcbthickness,
     solid.scad_render_to_file(bottomRegister, bottomRegisterFile)
     renderScad(bottomRegisterFile, os.path.join(outputdir, "bottomRegister.stl"))
 
+def printedStencilSubstrate(outlineDxf, thickness, frameHeight, frameWidth, frameClearance):
+    bodyOffset = solid.utils.up(0) if frameWidth + frameClearance == 0 else solid.offset(r=frameWidth + frameClearance)
+    body = solid.linear_extrude(height=thickness + frameHeight)(
+        bodyOffset(solid.import_dxf(outlineDxf)))
+    boardOffset = solid.utils.up(0) if frameClearance == 0 else solid.offset(r=frameClearance)
+    board = solid.utils.up(thickness)(
+        solid.linear_extrude(height=thickness + frameHeight)(
+            boardOffset(solid.import_dxf(outlineDxf))))
+    return body - board
+
+def printedStencil(outlineDxf, holesDxf, thickness, frameHeight, frameWidth,
+                   frameClearance, enlargeHoles, front):
+    zScale = -1 if front else 1
+    xRotate = 180 if front else 0
+    substrate = solid.scale([1, 1, zScale])(printedStencilSubstrate(outlineDxf,
+        thickness, frameHeight, frameWidth, frameClearance))
+    holesOffset = solid.utils.up(0) if enlargeHoles == 0 else solid.offset(delta=enlargeHoles)
+    holes = solid.linear_extrude(height=4*thickness, center=True)(
+        holesOffset(solid.import_dxf(holesDxf)))
+    return solid.rotate(a=xRotate, v=[1, 0, 0])(substrate - holes)
+
+@click.command()
+@click.argument("inputBoard", type=click.Path(dir_okay=False))
+@click.argument("outputDir", type=click.Path(dir_okay=True))
+@click.option("--pcbthickness", type=float, default=1.6,
+    help="PCB thickness in mm")
+@click.option("--thickness", type=float, default=0.15,
+    help="Stencil thickness in mm. Defines amount of paste dispensed")
+@click.option("--framewidth", type=float, default=1,
+    help="Register frame width")
+@click.option("--ignore", type=str, default="",
+    help="Comma separated list of components references to exclude from the stencil")
+@click.option("--frameclearance", type=float, default=0,
+    help="Clearance for the stencil register in milimeters")
+@click.option("--enlargeholes", type=float, default=0,
+    help="Enlarge pad holes by x mm")
+def createPrinted(inputboard, outputdir, pcbthickness, thickness, framewidth,
+                  ignore, frameclearance, enlargeholes):
+    """
+    Create a 3D printed self-registering stencil.
+    """
+    board = pcbnew.LoadBoard(inputboard)
+    refs = parseReferences(ignore)
+    removeComponents(board, refs)
+    Path(outputdir).mkdir(parents=True, exist_ok=True)
+
+    # We create the stencil based on DXF export. Using it avoids the necessity
+    # to interpret KiCAD PAD shapes which constantly change with newer and newer
+    # versions.
+    height = min(pcbthickness, max(0.5, pcbthickness - 0.3))
+    bottomPaste, topPaste, outline = pasteDxfExport(board, outputdir)
+    topStencil = printedStencil(outline, topPaste, thickness, height,
+        framewidth, frameclearance, enlargeholes, True)
+    bottomStencil = printedStencil(outline, bottomPaste, thickness, height,
+        framewidth, frameclearance, enlargeholes, False)
+
+    bottomStencilFile = os.path.join(outputdir, "bottomStencil.scad")
+    solid.scad_render_to_file(bottomStencil, bottomStencilFile,
+        file_header=f'$fa = 0.4; $fs = 0.4;', include_orig_code=True)
+    renderScad(bottomStencilFile, os.path.join(outputdir, "bottomStencil.stl"))
+
+    topStencilFile = os.path.join(outputdir, "topStencil.scad")
+    solid.scad_render_to_file(topStencil, topStencilFile,
+        file_header=f'$fa = 0.4; $fs = 0.4;', include_orig_code=True)
+    renderScad(topStencilFile, os.path.join(outputdir, "topStencil.stl"))
+
+
 @click.group()
 def stencil():
     """
@@ -334,3 +422,4 @@ def stencil():
     """
     pass
 stencil.add_command(create)
+stencil.add_command(createPrinted)

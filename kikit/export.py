@@ -131,6 +131,36 @@ def gerberImpl(boardfile, outputdir, plot_plan=fullGerberPlotPlan, drilling=True
     print('create job file {}'.format(job_fn))
     jobfile_writer.CreateJobFile(job_fn)
 
+def pasteDxfExport(board, plotDir):
+    pctl = PLOT_CONTROLLER(board)
+    popt = pctl.GetPlotOptions()
+
+    popt.SetOutputDirectory(plotDir)
+    popt.SetAutoScale(False)
+    popt.SetScale(1)
+    popt.SetMirror(False)
+    popt.SetExcludeEdgeLayer(True)
+    popt.SetScale(1)
+    popt.SetDXFPlotUnits(DXF_PLOTTER.DXF_UNIT_MILLIMETERS)
+    popt.SetDXFPlotPolygonMode(False)
+
+    plot_plan = [
+        # name, id, comment
+        ("PasteBottom", B_Paste, "Paste Bottom"),
+        ("PasteTop", F_Paste, "Paste top"),
+        ("EdgeCuts", Edge_Cuts, "Edges"),
+    ]
+
+    output = []
+    for name, id, comment in plot_plan:
+        pctl.SetLayer(id)
+        pctl.OpenPlotfile(name, PLOT_FORMAT_DXF, comment)
+        output.append(pctl.GetPlotFileName())
+        if pctl.PlotLayer() == False:
+            print("plot error")
+    pctl.ClosePlot()
+    return tuple(output)
+
 @click.command()
 @click.argument("boardfile", type=click.Path(dir_okay=False))
 @click.argument("outputdir", type=click.Path(file_okay=False), default=None)
@@ -151,29 +181,4 @@ def dxf(boardfile, outputdir):
 
     board = LoadBoard(boardfile)
 
-    pctl = PLOT_CONTROLLER(board)
-    popt = pctl.GetPlotOptions()
-
-    popt.SetOutputDirectory(plotDir)
-    popt.SetAutoScale(False)
-    popt.SetScale(1)
-    popt.SetMirror(False)
-    popt.SetExcludeEdgeLayer(True)
-    popt.SetScale(1)
-    popt.SetDXFPlotUnits(DXF_PLOTTER.DXF_UNIT_MILLIMETERS)
-    popt.SetDXFPlotPolygonMode(False)
-
-    plot_plan = [
-        # name, id, comment
-        ("PasteBottom", B_Paste, "Paste Bottom"),
-        ("PasteTop", F_Paste, "Paste top"),
-        ("EdgeCuts", Edge_Cuts, "Edges"),
-    ]
-
-    for name, id, comment in plot_plan:
-        pctl.SetLayer(id)
-        pctl.OpenPlotfile(name, PLOT_FORMAT_DXF, comment)
-        print('plot {}'.format(pctl.GetPlotFileName()))
-        if pctl.PlotLayer() == False:
-            print("plot error")
-    pctl.ClosePlot()
+    pasteDxfExport(board, plotDir)
