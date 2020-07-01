@@ -8,7 +8,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="KiKit",
-    version="0.5",
+    version="0.5.2",
     author="Jan Mrázek",
     author_email="email@honzamrazek.cz",
     description="Automation for KiCAD boards",
@@ -26,7 +26,8 @@ setuptools.setup(
         "shapely",
         "click",
         "markdown2",
-        "pybars3"
+        "pybars3",
+        "solidpython"
     ],
     zip_safe=False,
     include_package_data=True,
