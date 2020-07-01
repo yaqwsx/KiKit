@@ -306,7 +306,7 @@ def create(inputboard, outputdir, jigsize, jigthickness, pcbthickness,
            registerborder, tolerance, ignore):
     """
     Create stencil and register elements for manual paste dispensing jig.
-    See more details at: ToDo
+    See more details at: https://github.com/yaqwsx/KiKit/blob/master/doc/stencil.md
     """
     board = pcbnew.LoadBoard(inputboard)
     refs = parseReferences(ignore)

@@ -63,12 +63,15 @@ KiKit](https://roboticsbrno.github.io/RB0002-BatteryPack).
   different instances of the same board have distinct nets when using KiKit)
 - if you have multiple boards in a single file, you can split them
 - automated export of gerber files
+- [3D printed self-registering solder paste stencils](doc/stencil.md)
+- [steel stencils with alignment jig](doc/stencil.md)
 
 ## How To Use It?
 
 Read the [CLI documentation](doc/cli.md) and the [panelize
 documentation](doc/panelization.md). Also don't miss the
-[examples](doc/examples.md).
+[examples](doc/examples.md). If you are interested in generating solder paste
+stencils, see [Stencil documentation](doc/stencil.md)
 
 ## KiKit Is Broken or Does Not Work as Expected
 
