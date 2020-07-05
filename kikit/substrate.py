@@ -448,7 +448,7 @@ class Substrate:
         """
         epsilon = fromMm(0.01)
         if millRadius < epsilon:
-            raise RuntimeError("Cannot make smaller radius than 0.01 mm")
+            return
         self.substrates = self.substrates.buffer(millRadius - epsilon).buffer(-millRadius).buffer(epsilon)
 
     def removeIslands(self):
