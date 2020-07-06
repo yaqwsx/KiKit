@@ -55,13 +55,14 @@ def gerberImpl(boardfile, outputdir, plot_plan=fullGerberPlotPlan, drilling=True
     popt.SetAutoScale(False)
     popt.SetScale(1)
     popt.SetMirror(False)
-    popt.SetUseGerberAttributes(True)
+    popt.SetUseGerberAttributes(False)
     popt.SetIncludeGerberNetlistInfo(True)
     popt.SetCreateGerberJobFile(True)
     popt.SetUseGerberProtelExtensions(False)
-    popt.SetExcludeEdgeLayer(False)
+    popt.SetExcludeEdgeLayer(True)
     popt.SetScale(1)
     popt.SetUseAuxOrigin(True)
+    popt.SetUseGerberX2format(False)
 
     # This by gerbers only
     popt.SetSubtractMaskFromSilk(False)
@@ -111,8 +112,9 @@ def gerberImpl(boardfile, outputdir, plot_plan=fullGerberPlotPlan, drilling=True
         offset = wxPoint(0,0)
         # False to generate 2 separate drill files (one for plated holes, one for non plated holes)
         # True to generate only one drill file
-        mergeNPTH = False
+        mergeNPTH = True
         drlwriter.SetOptions(mirror, minimalHeader, offset, mergeNPTH)
+        drlwriter.SetRouteModeForOvalHoles(False)
 
         metricFmt = True
         drlwriter.SetFormat(metricFmt)
