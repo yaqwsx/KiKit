@@ -8,7 +8,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="KiKit",
-    version="0.5.2",
+    version="0.5.3",
     author="Jan Mrázek",
     author_email="email@honzamrazek.cz",
     description="Automation for KiCAD boards",
