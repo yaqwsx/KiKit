@@ -42,3 +42,8 @@ class EDA_TEXT_VJUSTIFY_T(IntEnum):
     GR_TEXT_VJUSTIFY_CENTER = 0
     GR_TEXT_VJUSTIFY_BOTTOM = 1
 
+class MODULE_ATTR_T(IntEnum):
+    MOD_DEFAULT = 0,
+    MOD_CMS     = 1
+    MOD_VIRTUAL = 2
+

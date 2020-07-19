@@ -4,6 +4,7 @@ from kikit.panelize import Panel, fromMm, wxPointMM, wxRectMM, fromDegrees
 from kikit.present import boardpage
 from kikit.modify import references
 from kikit.stencil import stencil
+from kikit.fab import fab
 from kikit import __version__
 import sys
 
@@ -260,7 +261,7 @@ cli.add_command(panelize)
 cli.add_command(present)
 cli.add_command(modify)
 cli.add_command(stencil)
-
+cli.add_command(fab)
 
 if __name__ == '__main__':
     cli()

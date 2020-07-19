@@ -8,6 +8,7 @@ from kikit.export import gerberImpl, pasteDxfExport
 import solid
 import solid.utils
 import subprocess
+from kikit.common import removeComponents, parseReferences
 
 from shapely.geometry import Point
 
@@ -266,22 +267,6 @@ def renderScad(infile, outfile):
     infile = os.path.abspath(infile)
     outfile = os.path.abspath(outfile)
     subprocess.check_call(["openscad", "-o", outfile, infile])
-
-
-def removeComponents(board, references):
-    """
-    Remove components with references from the board. References is a list of
-    strings
-    """
-    for module in board.GetModules():
-        if module.GetReference() in references:
-            board.Remove(module)
-
-def parseReferences(dStr):
-    """
-    Parse comma separated list of component references to a list
-    """
-    return [x.strip() for x in dStr.split(",") if len(x.strip()) > 0]
 
 
 from pathlib import Path

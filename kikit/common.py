@@ -117,3 +117,18 @@ def br(rect):
 def bl(rect):
     """ Return bottom left corner of rect """
     return wxPoint(rect.GetX(), rect.GetY() + rect.GetHeight())
+
+def removeComponents(board, references):
+    """
+    Remove components with references from the board. References is a list of
+    strings
+    """
+    for module in board.GetModules():
+        if module.GetReference() in references:
+            board.Remove(module)
+
+def parseReferences(dStr):
+    """
+    Parse comma separated list of component references to a list
+    """
+    return [x.strip() for x in dStr.split(",") if len(x.strip()) > 0]
