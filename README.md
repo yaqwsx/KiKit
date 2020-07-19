@@ -62,7 +62,7 @@ KiKit](https://roboticsbrno.github.io/RB0002-BatteryPack).
 - compared to hand-creation of panels, your panels will pass DRC (as tracks from
   different instances of the same board have distinct nets when using KiKit)
 - if you have multiple boards in a single file, you can split them
-- automated export of gerber files
+- [automated export of gerbers and assembly data](doc/fabrication.md)
 - [3D printed self-registering solder paste stencils](doc/stencil.md)
 - [steel stencils with alignment jig](doc/stencil.md)
 
