@@ -1,4 +1,6 @@
 recursive-include kikit/resources *
 recursive-exclude kikit/resources package*.json src postcss.config.js tailwind.config.js
 prune kikit/resources/**/node_modules
-recursive-exclude doc *
+recursive-exclude doc *include versioneer.py
+include kikit/_version.py
+include versioneer.py

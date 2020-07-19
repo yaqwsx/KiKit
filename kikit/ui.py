@@ -4,6 +4,7 @@ from kikit.panelize import Panel, fromMm, wxPointMM, wxRectMM, fromDegrees
 from kikit.present import boardpage
 from kikit.modify import references
 from kikit.stencil import stencil
+from kikit import __version__
 import sys
 
 def validateSpaceRadius(space, radius):
@@ -237,8 +238,10 @@ def modify():
 modify.add_command(references)
 
 @click.group()
+@click.version_option(__version__)
 def cli():
     pass
+
 cli.add_command(export)
 cli.add_command(panelize)
 cli.add_command(present)

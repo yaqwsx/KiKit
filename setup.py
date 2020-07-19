@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import setuptools
+import versioneer
+
 
 
 with open("README.md", "r") as fh:
@@ -8,7 +10,8 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="KiKit",
-    version="0.5.3",
+    version=versioneer.get_version(),
+    cmdclass=versioneer.get_cmdclass(),
     author="Jan Mrázek",
     author_email="email@honzamrazek.cz",
     description="Automation for KiCAD boards",
@@ -27,7 +30,8 @@ setuptools.setup(
         "click",
         "markdown2",
         "pybars3",
-        "solidpython"
+        "solidpython",
+        "versioneer"
     ],
     zip_safe=False,
     include_package_data=True,
