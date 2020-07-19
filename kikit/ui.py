@@ -44,7 +44,7 @@ def extractBoard(input, output, sourcearea):
 @click.argument("input", type=click.Path(dir_okay=False))
 @click.argument("output", type=click.Path(dir_okay=False))
 @click.option("--space", "-s", type=float, default=0, help="Space between boards")
-@click.option("--gridsize", "-g", type=(int, int), help="Panel size <rows> <cols>")
+@click.option("--gridsize", "-g", type=(int, int), default=(-1, -1), help="Panel size <rows> <cols>")
 @click.option("--panelsize", "-p", type=(float, float), help="<width> <height>", default=(None, None))
 @click.option("--tabwidth", type=float, default=0,
     help="Size of the bottom/up tabs, leave unset for full width")
@@ -85,6 +85,8 @@ def grid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
     try:
         panel = Panel()
         rows, cols = gridsize
+        if rows == -1 or cols == -1:
+            raise RuntimeError("Gridsize is mandatory. Please specify the --gridsize option.")
         if sourcearea[0]:
             sourcearea = wxRectMM(*sourcearea)
         else:
@@ -134,7 +136,7 @@ def grid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
 @click.argument("output", type=click.Path(dir_okay=False))
 @click.option("--space", "-s", type=float, default=2, help="Space between boards")
 @click.option("--slotwidth", "-w", type=float, default=2, help="Milled slot width")
-@click.option("--gridsize", "-g", type=(int, int), help="Panel size <rows> <cols>")
+@click.option("--gridsize", "-g", type=(int, int), default=(-1, -1), help="Panel size <rows> <cols>")
 @click.option("--panelsize", "-p", type=(float, float), help="<width> <height>", required=True)
 @click.option("--tabwidth", type=float, default=5,
     help="Size of the bottom/up tabs")
@@ -171,6 +173,8 @@ def tightgrid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vc
     try:
         panel = Panel()
         rows, cols = gridsize
+        if rows == -1 or cols == -1:
+            raise RuntimeError("Gridsize is mandatory. Please specify the --gridsize option.")
         if sourcearea[0]:
             sourcearea = wxRectMM(*sourcearea)
         else:
