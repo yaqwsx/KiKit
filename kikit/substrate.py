@@ -311,6 +311,16 @@ def closestIntersectionPoint(origin, direction, outline, maxDistance):
         geoms = inter.geoms
     return min([(g, origin.distance(g)) for g in geoms], key=lambda t: t[1])[0]
 
+def linestringToKicad(linestring):
+    """
+    Convert Shapely linestring to KiCAD's linechain
+    """
+    lineChain = pcbnew.SHAPE_LINE_CHAIN()
+    lineChain.SetClosed(True)
+    for c in linestring.coords:
+        lineChain.Append(int(c[0]), int(c[1]))
+    return lineChain
+
 class Substrate:
     """
     Represents (possibly multiple) PCB substrates reconstructed from a list of
@@ -470,6 +480,12 @@ class Substrate:
             if ismainland:
                 mainland.append(substrate)
         self.substrates = shapely.geometry.collection.GeometryCollection(mainland)
+
+    def isSinglePiece(self):
+        """
+        Decide whether the substrate consists of a single piece
+        """
+        return isinstance(self.substrates, Polygon)
 
 def showPolygon(polygon):
     import matplotlib.pyplot as plt
