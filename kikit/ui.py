@@ -106,7 +106,8 @@ def grid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
             verTabWidth=fromMm(tabwidth), horTabWidth=fromMm(tabheight),
             outerHorTabThickness=oht, outerVerTabThickness=ovt,
             horTabCount=htabs, verTabCount=vtabs, rotation=fromDegrees(rotation),
-            netRenamePattern=renamenet, refRenamePattern=renameref)
+            netRenamePattern=renamenet, refRenamePattern=renameref,
+            forceOuterCuts=frame)
         tabs = []
         for layer, width in tabsfrom:
             tab, cut = panel.layerToTabs(layer, fromMm(width))

@@ -420,7 +420,8 @@ class Panel:
         return topLeftSize
 
     def _makeFullHorizontalTabs(self, destination, rows, cols, boardSize,
-                                verSpace, horSpace, outerVerSpace, outerHorSpace):
+                                verSpace, horSpace, outerVerSpace, outerHorSpace,
+                                forceOuterCuts):
         """
         Crate full tabs for given grid.
 
@@ -442,6 +443,7 @@ class Panel:
                 polygons.append(polygon)
                 cuts.append(LineString([tl, bl]))
             cuts.append(LineString([br, tr]))
+
         if outerHorSpace > 0:
             # Outer tabs
             polygons.append(Polygon([
@@ -454,7 +456,7 @@ class Panel:
                 destination + wxPoint(width, -outerVerSpace),
                 destination + wxPoint(width, height + outerVerSpace),
                 destination + wxPoint(width + outerHorSpace, height + outerVerSpace)]))
-
+        if forceOuterCuts or outerHorSpace > 0:
             cuts.append(LineString([destination + wxPoint(0, height + outerVerSpace),
                 destination + wxPoint(0, -outerVerSpace)]))
             cuts.append(LineString([destination + wxPoint(width, -outerVerSpace),
@@ -462,7 +464,8 @@ class Panel:
         return polygons, cuts
 
     def _makeFullVerticalTabs(self, destination, rows, cols, boardSize,
-                                   verSpace, horSpace, outerVerSpace, outerHorSpace):
+                              verSpace, horSpace, outerVerSpace, outerHorSpace,
+                              forceOuterCuts):
         """
         Crate full tabs for given grid.
 
@@ -496,6 +499,7 @@ class Panel:
                 destination + wxPoint(-outerHorSpace, height + outerVerSpace),
                 destination + wxPoint(outerHorSpace + width, height + outerVerSpace),
                 destination + wxPoint(outerHorSpace + width, height)]))
+        if forceOuterCuts or outerVerSpace > 0:
             cuts.append(LineString([destination + wxPoint(-outerHorSpace, 0),
                 destination + wxPoint(width + outerHorSpace, 0)]))
             cuts.append(LineString([destination + wxPoint(width + outerHorSpace, height),
@@ -560,6 +564,7 @@ class Panel:
                  tolerance=0, verSpace=0, horSpace=0, verTabCount=1,
                  horTabCount=1, verTabWidth=0, horTabWidth=0,
                  outerVerTabThickness=0, outerHorTabThickness=0, rotation=0,
+                 forceOuterCuts=False,
                  netRenamePattern="Board_{n}-{orig}",
                  refRenamePattern="Board_{n}-{orig}"):
         """
@@ -587,7 +592,8 @@ class Panel:
         if verTabCount != 0:
             if verTabWidth == 0:
                 t, c = self._makeFullVerticalTabs(gridDest, rows, cols,
-                    boardSize, verSpace, horSpace, outerVerTabThickness, outerHorTabThickness)
+                    boardSize, verSpace, horSpace, outerVerTabThickness,outerHorTabThickness,
+                    forceOuterCuts)
             else:
                 t, c = self._makeVerGridTabs(gridDest, rows, cols, boardSize,
                     verSpace, horSpace, verTabWidth, horTabWidth, verTabCount,
@@ -598,7 +604,8 @@ class Panel:
         if horTabCount != 0:
             if horTabWidth == 0:
                 t, c = self._makeFullHorizontalTabs(gridDest, rows, cols,
-                    boardSize, verSpace, horSpace, outerVerTabThickness, outerHorTabThickness)
+                    boardSize, verSpace, horSpace, outerVerTabThickness, outerHorTabThickness,
+                    forceOuterCuts)
             else:
                 t, c = self._makeHorGridTabs(gridDest, rows, cols, boardSize,
                     verSpace, horSpace, verTabWidth, horTabWidth, verTabCount,
@@ -696,7 +703,7 @@ class Panel:
         x_coords = [ innerArea.GetX(),
                      innerArea.GetX() + innerArea.GetWidth() ]
         y_coords = sorted([ innerAreaExpanded.GetY(),
-                            innerAreaExpanded.GetY() + innerAreaExpanded.GetHeight(), 
+                            innerAreaExpanded.GetY() + innerAreaExpanded.GetHeight(),
                             outerArea.GetY(),
                             outerArea.GetY() + outerArea.GetHeight() ])
         cuts =  [ [(x_coord, y_coords[0]), (x_coord, y_coords[1])] for x_coord in x_coords ]
@@ -707,7 +714,7 @@ class Panel:
         y_coords = [ innerArea.GetY(),
                      innerArea.GetY() + innerArea.GetHeight() ]
         x_coords = sorted([ innerAreaExpanded.GetX(),
-                            innerAreaExpanded.GetX() + innerAreaExpanded.GetWidth(), 
+                            innerAreaExpanded.GetX() + innerAreaExpanded.GetWidth(),
                             outerArea.GetX(),
                             outerArea.GetX() + outerArea.GetWidth() ])
         cuts =  [ [(x_coords[0], y_coord), (x_coords[1], y_coord)] for y_coord in y_coords ]
