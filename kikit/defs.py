@@ -3,6 +3,8 @@ from enum import Enum, IntEnum
 # These classes miss in the exported interface
 
 class Layer(IntEnum):
+    F_Cu = 0
+    B_Cu = 31
     B_Adhes = 32
     F_Adhes = 33
     B_Paste = 34

@@ -73,10 +73,11 @@ def extractBoard(input, output, sourcearea):
     help="Create tabs from lines in given layer. You probably want to specify --vtabs=0 and --htabs=0. Format <layer name> <tab width>")
 @click.option("--framecutV", type=bool, help="Insert vertical cuts through the frame", is_flag=True)
 @click.option("--framecutH", type=bool, help="Insert horizontal cuts through the frame", is_flag=True)
+@click.option("--copperfill/--nocopperfill", help="Fill unsed areas of the panel with copper")
 
 def grid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
          mousebites, radius, sourcearea, vcutcurves, htabs, vtabs, rotation,
-         tolerance, renamenet, renameref, tabsfrom, framecutv, framecuth):
+         tolerance, renamenet, renameref, tabsfrom, framecutv, framecuth, copperfill):
     """
     Create a regular panel placed in a frame.
 
@@ -126,6 +127,8 @@ def grid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
             drill, spacing, offset = mousebites
             panel.makeMouseBites(cuts, fromMm(drill), fromMm(spacing), fromMm(offset))
         panel.addMillFillets(fromMm(radius))
+        if copperfill:
+            panel.copperFillNonBoardAreas()
         panel.save(output)
     except Exception as e:
         sys.stderr.write("An error occurred: " + str(e) + "\n")
@@ -164,9 +167,10 @@ def grid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
     help="Rename pattern for references. You can use '{n}' for board sequential number and '{orig}' for original reference name")
 @click.option("--tabsfrom", type=(str, float), multiple=True,
     help="Create tabs from lines in given layer. You probably want to specify --vtabs=0 and --htabs=0. Format <layer name> <tab width>")
+@click.option("--copperfill/--nocopperfill", help="Fill unsed areas of the panel with copper")
 def tightgrid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
          mousebites, radius, sourcearea, vcutcurves, htabs, vtabs, rotation, slotwidth,
-         tolerance, renamenet, renameref, tabsfrom):
+         tolerance, renamenet, renameref, tabsfrom, copperfill):
     """
     Create a regular panel placed in a frame by milling a slot around the
     boards' perimeters.
@@ -204,6 +208,8 @@ def tightgrid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vc
         if mousebites[0]:
             drill, spacing, offset = mousebites
             panel.makeMouseBites(cuts, fromMm(drill), fromMm(spacing), fromMm(offset))
+        if copperfill:
+            panel.copperFillNonBoardAreas()
         panel.save(output)
     except Exception as e:
         sys.stderr.write("An error occurred: " + str(e) + "\n")

@@ -9,7 +9,7 @@ import numpy as np
 import os
 
 from kikit import substrate
-from kikit.substrate import Substrate
+from kikit.substrate import Substrate, linestringToKicad
 from kikit.defs import STROKE_T, Layer, EDA_TEXT_HJUSTIFY_T
 
 from kikit.common import *
@@ -212,6 +212,10 @@ def isBoardEdge(edge):
     """
     return isinstance(edge, pcbnew.DRAWSEGMENT) and edge.GetLayerName() == "Edge.Cuts"
 
+def increaseZonePriorities(board, amount=1):
+    for zone in board.Zones():
+        zone.SetPriority(zone.GetPriority() + amount)
+
 class Panel:
     """
     Basic interface for panel building. Instance of this class represents a
@@ -223,12 +227,14 @@ class Panel:
         Initializes empty panel.
         """
         self.board = pcbnew.BOARD()
+        self.substrates = [] # Substrates of the individual boards; e.g. for masking
         self.boardCounter = 0
         self.boardSubstrate = Substrate([]) # Keep substrate in internal representation,
                                             # Draw it just before saving
         self.hVCuts = set() # Keep V-cuts as numbers and append them just before saving
         self.vVCuts = set() # to make them truly span the whole panel
         self.copperLayerCount = None
+        self.zonesToRefill = pcbnew.ZONE_CONTAINERS()
 
     def save(self, filename):
         """
@@ -239,6 +245,8 @@ class Panel:
         vcuts = self._renderVCutH() + self._renderVCutV()
         for cut in vcuts:
             self.board.Add(cut)
+        fillerTool = pcbnew.ZONE_FILLER(self.board)
+        fillerTool.Fill(self.zonesToRefill)
         self.board.Save(filename)
         for edge in collectEdges(self.board, "Edge.Cuts"):
             self.board.Remove(edge)
@@ -271,7 +279,7 @@ class Panel:
         The renamers are given board seq number and original name
 
         Returns bounding box (wxRect) of the extracted area placed at the
-        destination.
+        destination and the extracted substrate of the board.
         """
         board = LoadBoard(filename)
         thickness = board.GetDesignSettings().GetBoardThickness()
@@ -285,7 +293,6 @@ class Panel:
                                  f"thickness of the panel ({toMm(panelThickness)}) mm")
         self.boardCounter += 1
         self.inheritCopperLayers(board)
-
 
         if not sourceArea:
             sourceArea = findBoardBoundingBox(board)
@@ -331,7 +338,9 @@ class Panel:
         edges += [edge for edge in drawings if isBoardEdge(edge)]
         otherDrawings = [edge for edge in drawings if not isBoardEdge(edge)]
         try:
-            self.boardSubstrate.union(Substrate(edges, bufferOutline))
+            substrate = Substrate(edges, bufferOutline)
+            self.boardSubstrate.union(substrate)
+            self.substrates.append(substrate)
         except substrate.PositionError as e:
             point = undoTransformation(e.point, rotationAngle, originPoint, translation)
             raise substrate.PositionError(filename + ": " + e.origMessage, point)
@@ -845,3 +854,29 @@ class Panel:
 
         elif(self.copperLayerCount != board.GetCopperLayerCount()):
             raise RuntimeError("Attempting to panelize boards together of mixed layer counts")
+
+    def copperFillNonBoardAreas(self):
+        """
+        Fill top and bottom layers with copper on unused areas of the panel
+        (frame, rails and tabs)
+        """
+        if not self.boardSubstrate.isSinglePiece():
+            raise RuntimeError("The substrate has to be a single piece to fill unused areas")
+        increaseZonePriorities(self.board)
+
+        zoneContainer = pcbnew.ZONE_CONTAINER(self.board)
+        boundary = self.boardSubstrate.exterior().boundary
+        zoneContainer.Outline().AddOutline(linestringToKicad(boundary))
+        for substrate in self.substrates:
+            boundary = substrate.exterior().boundary
+            zoneContainer.Outline().AddHole(linestringToKicad(boundary))
+        zoneContainer.SetPriority(0)
+
+        zoneContainer.SetLayer(Layer.F_Cu)
+        self.board.Add(zoneContainer)
+        self.zonesToRefill.append(zoneContainer)
+
+        zoneContainer = zoneContainer.Duplicate()
+        zoneContainer.SetLayer(Layer.B_Cu)
+        self.board.Add(zoneContainer)
+        self.zonesToRefill.append(zoneContainer)
