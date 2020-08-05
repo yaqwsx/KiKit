@@ -14,6 +14,9 @@ from kikit.defs import STROKE_T, Layer, EDA_TEXT_HJUSTIFY_T
 
 from kikit.common import *
 
+class PanelError(RuntimeError):
+    pass
+
 def identity(x):
     return x
 
@@ -271,6 +274,15 @@ class Panel:
         destination.
         """
         board = LoadBoard(filename)
+        thickness = board.GetDesignSettings().GetBoardThickness()
+        if self.boardCounter == 0:
+            self.board.GetDesignSettings().SetBoardThickness(thickness)
+        else:
+            panelThickness = self.board.GetDesignSettings().GetBoardThickness()
+            if panelThickness != thickness:
+                raise PanelError(f"Cannot append board {filename} as its " \
+                                 f"thickness ({toMm(thickness)} mm) differs from " \
+                                 f"thickness of the panel ({toMm(panelThickness)}) mm")
         self.boardCounter += 1
         self.inheritCopperLayers(board)
 
