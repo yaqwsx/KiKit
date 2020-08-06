@@ -1,3 +1,4 @@
+
 # Examples
 
 This document will show you several examples of KiKit CLI for panelization. We
@@ -32,8 +33,30 @@ kikit panelize grid --gridsize 2 2 --vcuts doc/resources/conn.kicad_pcb panel.ki
 
 We specified that we want 2x2 panel, no space between board and separate them by
 V-cuts. Note, that due to the rounded corners, this panel cannot be
-manufactured. We will fix it later. Not let's see how the same panel will look
-like with mouse bites instead:
+manufactured. We will fix it later.
+
+One side note - if you try it with your own board some components might be gone.
+KiKit respects the KiCAD component selection criteria. When you specify an input
+rectangle, only the components that **fully fit** inside the input rectangle are
+selected. This however take in account **both name and value labels** (even when
+they are hidden).
+
+When you do not specify the source are explicitly, KiKit takes the board outline
+bounding box as the source area. Therefore, by default, components outside the
+board substrate are not copied to panel.
+
+Note that this is intended behavior; for once it is consistent with KiCAD
+behavior of user selection and also it allows to easily ignore surrounding
+comments and drawings in the board sheet (it makes no sense to have 12 same
+copies of the notes around the board).
+
+How to include the missing components?
+- specify the source area explicitly to include all your components
+- specify `--tolerance 10` to enlarge the board outline bounding box by e.g. 10
+  mm. The default value is 5 mm.
+
+Now back to our example. Let's see how the same panel will look like with mouse
+bites instead:
 
 ```
 kikit panelize grid --gridsize 2 2 --mousebites 0.5 1 0 doc/resources/conn.kicad_pcb panel.kicad_pcb
@@ -102,7 +125,7 @@ kikit panelize grid --space 2 --gridsize 2 2 --tabwidth 3 --tabheight 3 --mouseb
 ```
 ![panel8](resources/panel8.png)
 
-Sometimes you mind find yourself in need for precise tab placement. This can be
+Sometimes you might find yourself in a need for precise tab placement. This can be
 easily done. Just draw a line in one of KiCAD layers (be careful, the
 orientation matters - the line has to target the board substrate) and specify
 option `--tabsfrom`. Don't forget to disable automatically generated tabs by
@@ -113,3 +136,14 @@ already prepared for you in `conn.kicad_pcb`
 kikit panelize tightgrid --slotwidth 2.5 --space 8 --gridsize 2 2 --htabs 0 --vtabs 0 --tabsfrom Eco2.User 3 --tabsfrom Eco1.User 5 --mousebites 0.5 1 0.25 --radius 1 --panelsize 80 80 doc/resources/conn.kicad_pcb panel.kicad_pcb
 ```
 ![panel9](resources/panel9.png)
+
+Especially when you work with flex PCBs it makes sense to leave copper on
+non-functional parts of the panel to make it stiffer. It might also make sense
+to leave on traditional PCBs as it reduces the amount of etching. To do so,
+simply specify `--copperfill`. Here is one of the examples above with a copper
+fill:
+
+```
+kikit panelize grid --space 3 --gridsize 2 2 --tabwidth 18 --tabheight 10 --vcuts --radius 1 --panelsize 70 55 --copperfill doc/resources/conn.kicad_pcb panel.kicad_pcb
+```
+![panel10](resources/panel10.png)

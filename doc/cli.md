@@ -55,6 +55,8 @@ the following commands available:
     references. String can contain `{n}` for the current board sequence number
     and `{orig}` original name of net/reference. If not specified, nets are
     renamed to `Board_{n}-{orig}`, references are unchanged.
+  - `--copperfill` Fill the unused areas of the panel (frame, rails, tabs) with
+    copper. Reduces amount of etching and makes flex PCBs stiffer.
 - `kikit panelize tightgrid [options] <input> <output>` - create a panel just
   like `grid`, but the panel is full and there is a milled slot around the
   perimeter of the boards. Takes the same arguments as `grid` with few
