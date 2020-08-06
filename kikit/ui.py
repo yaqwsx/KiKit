@@ -8,6 +8,8 @@ from kikit import __version__
 import sys
 
 def validateSpaceRadius(space, radius):
+    if space == 0:
+        return
     if space < 2 * radius:
         raise RuntimeError(f"Fillet radius ({radius} mm) has to be greater than " \
                            f"space between boards ({space} mm)")
