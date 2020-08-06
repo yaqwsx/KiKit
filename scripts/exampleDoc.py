@@ -113,13 +113,34 @@ runBoardExample("panel5",
 
 print(
 """
-If you want, you can also add a frame around the panel via `--panelsize`. Panel
-size takes width and height in millimeters. This works both with mousebites and
-V-cuts.
+If you want, you can also add rails to the panel. Rails are suitable for placing
+tooling holes and fiducials, which are required by some assembly houses.
+
+The rails can be added by either `--railsTb <width>` (for top and bottom rails)
+or by `--railsLr <widht>` (for left and right rails). The rails work with both;
+mousebites and V-cuts.
+
+Then you can add fiducials to the top-left, bottom-left and top-right corner via
+`--fiducials <horizontalOffset> <verticalOffset> <copperDiameter>
+<openingDiameter>`. Similarly, you can add tooling holes via `--tooling
+<horizontalOffset> <verticalOffset> <diameter>`.
 """)
 
 runBoardExample("panel6",
-    ["panelize", "grid", "--space", "3", "--gridsize", "2", "2", "--tabwidth", "18", "--tabheight", "10", "--vcuts", "--radius", "1", "--panelsize", "70", "55", "doc/resources/conn.kicad_pcb"])
+    ["panelize", "grid", "--space", "3", "--gridsize", "2", "2", "--tabwidth", "18", "--tabheight", "10", "--vcuts", "--radius", "1", "--railsTb", "5", "--fiducials", "10", "2.5", "1", "2", "--tooling", "5", "2.5", "1.5", "doc/resources/conn.kicad_pcb"])
+
+print(
+"""
+If you want to get a full frame around a board, don't use combination of top and
+bottom rails. It will generate a correct shape, however, it won't generate cuts
+to easily break the frame. Instead, use the "--panelsize <width> <height>"
+option in combination with `--framecutH` or `--framecutV` to add the cuts in the
+corners of the frame. Note that in the following example we use mousebites to
+see the frame cuts
+""")
+
+runBoardExample("panel7",
+    ["panelize", "grid", "--space", "3", "--gridsize", "2", "2", "--tabwidth", "5", "--tabheight", "5", "--mousebites", "0.5", "1", "0", "--radius", "1", "--panelsize", "75", "58", "--framecutH", "--fiducials", "10", "2.5", "1", "2", "--tooling", "5", "2.5", "1.5", "doc/resources/conn.kicad_pcb"])
 
 print(
 """
@@ -131,7 +152,7 @@ you want to separate by V-cuts (by cutting a little bit to their interior). In
 that case don't forget to specify `--vcutcurves` to approximate curvature cuts
 via a straight V-cut. Back to `tightgrid`:
 """)
-runBoardExample("panel7",
+runBoardExample("panel8",
     ["panelize", "tightgrid", "--slotwidth", "2.5", "--space", "8", "--gridsize", "2", "2", "--tabwidth", "15", "--tabheight", "8", "--mousebites", "0.5", "1", "0.25", "--radius", "1", "--panelsize", "80", "60", "doc/resources/conn.kicad_pcb"])
 
 print(
@@ -140,7 +161,7 @@ You can also rotate the input board. Might not be usefull for
 rectangular boards, but if you have a circular or oddly shaped board...
 """
 )
-runBoardExample("panel8",
+runBoardExample("panel9",
     ["panelize", "grid", "--space", "2", "--gridsize", "2", "2", "--tabwidth", "3", "--tabheight", "3", "--mousebites", "0.5", "1", "0.25", "--radius", "1", "--panelsize", "80", "80", "--rotation", "45", "doc/resources/conn.kicad_pcb"])
 
 print(
@@ -153,7 +174,7 @@ specifying `--vtabs 0` and `--htabs 0`. See for yourself, there are some lines
 already prepared for you in `conn.kicad_pcb`
 """
 )
-runBoardExample("panel9",
+runBoardExample("panel10",
     ["panelize", "tightgrid", "--slotwidth", "2.5", "--space", "8", "--gridsize", "2", "2", "--htabs", "0", "--vtabs", "0", "--tabsfrom", "Eco2.User", "3", "--tabsfrom", "Eco1.User", "5", "--mousebites", "0.5", "1", "0.25", "--radius", "1", "--panelsize", "80", "80", "doc/resources/conn.kicad_pcb"])
 
 print(
@@ -166,5 +187,5 @@ fill:
 """
 )
 
-runBoardExample("panel10",
+runBoardExample("panel11",
     ["panelize", "grid", "--space", "3", "--gridsize", "2", "2", "--tabwidth", "18", "--tabheight", "10", "--vcuts", "--radius", "1", "--panelsize", "70", "55", "--copperfill", "doc/resources/conn.kicad_pcb"])
