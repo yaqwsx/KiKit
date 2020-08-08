@@ -101,8 +101,8 @@ rounded by specifying non-zero filletRadius.
 makeGrid(self, boardfile, rows, cols, destination, sourceArea=None, tolerance=0, 
          verSpace=0, horSpace=0, verTabCount=1, horTabCount=1, verTabWidth=0, 
          horTabWidth=0, outerVerTabThickness=0, outerHorTabThickness=0, 
-         rotation=0, forceOuterCuts=False, netRenamePattern=Board_{n}-{orig}, 
-         refRenamePattern=Board_{n}-{orig})
+         rotation=0, forceOuterCutsH=False, forceOuterCutsV=False, 
+         netRenamePattern=Board_{n}-{orig}, refRenamePattern=Board_{n}-{orig})
 ```
 Creates a grid of boards (row x col) as a panel at given destination
 separated by V-CUTS. The source can be either extracted automatically or

@@ -1,7 +1,7 @@
 from pcbnew import GetBoard, LoadBoard, FromMM, ToMM, wxPoint, wxRect, wxRectMM, wxPointMM
 import pcbnew
 from enum import Enum, IntEnum
-from shapely.geometry import Polygon, MultiPolygon, Point, LineString
+from shapely.geometry import Polygon, MultiPolygon, Point, LineString, box
 from shapely.prepared import prep
 import shapely
 from itertools import product, chain
@@ -585,7 +585,7 @@ class Panel:
                  tolerance=0, verSpace=0, horSpace=0, verTabCount=1,
                  horTabCount=1, verTabWidth=0, horTabWidth=0,
                  outerVerTabThickness=0, outerHorTabThickness=0, rotation=0,
-                 forceOuterCuts=False,
+                 forceOuterCutsH=False, forceOuterCutsV=False,
                  netRenamePattern="Board_{n}-{orig}",
                  refRenamePattern="Board_{n}-{orig}"):
         """
@@ -614,7 +614,7 @@ class Panel:
             if verTabWidth == 0:
                 t, c = self._makeFullVerticalTabs(gridDest, rows, cols,
                     boardSize, verSpace, horSpace, outerVerTabThickness,outerHorTabThickness,
-                    forceOuterCuts)
+                    forceOuterCutsV)
             else:
                 t, c = self._makeVerGridTabs(gridDest, rows, cols, boardSize,
                     verSpace, horSpace, verTabWidth, horTabWidth, verTabCount,
@@ -626,7 +626,7 @@ class Panel:
             if horTabWidth == 0:
                 t, c = self._makeFullHorizontalTabs(gridDest, rows, cols,
                     boardSize, verSpace, horSpace, outerVerTabThickness, outerHorTabThickness,
-                    forceOuterCuts)
+                    forceOuterCutsH)
             else:
                 t, c = self._makeHorGridTabs(gridDest, rows, cols, boardSize,
                     verSpace, horSpace, verTabWidth, horTabWidth, verTabCount,
@@ -720,6 +720,26 @@ class Panel:
         self.appendSubstrate(polygon)
         return (outerRect, frame_cuts_v, frame_cuts_h)
 
+    def makeRailsTb(self, thickness):
+        """
+        Adds a rail to top and bottom.
+        """
+        minx, miny, maxx, maxy = self.boardSubstrate.bounds()
+        topRail = box(minx, maxy - fromMm(0.001), maxx, maxy + thickness)
+        bottomRail = box(minx, miny + fromMm(0.001), maxx, miny - thickness)
+        self.appendSubstrate(topRail)
+        self.appendSubstrate(bottomRail)
+
+    def makeRailsLr(self, thickness):
+        """
+        Adds a rail to left and right.
+        """
+        minx, miny, maxx, maxy = self.boardSubstrate.bounds()
+        leftRail = box(minx - thickness + fromMm(0.001), miny, minx, maxy)
+        rightRail = box(maxx - fromMm(0.001), miny, maxx + thickness, maxy)
+        self.appendSubstrate(leftRail)
+        self.appendSubstrate(rightRail)
+
     def makeFrameCutsV(self, innerArea, innerAreaExpanded, outerArea ):
         x_coords = [ innerArea.GetX(),
                      innerArea.GetX() + innerArea.GetWidth() ]
@@ -805,6 +825,37 @@ class Panel:
             pad.SetLocalSolderMaskMargin(int((openingDiameter - copperDiameter) / 2))
             pad.SetLocalClearance(int((openingDiameter - copperDiameter) / 2))
         self.board.Add(module)
+
+    def addFiducials(self, horizontalOffset, verticalOffset, copperDiameter, openingDiameter):
+        """
+        Add 3 fiducials to the top-left, top-right and bottom-left corner of the
+        board. This function expects there is enough space on the
+        board/frame/rail to place the feature.
+
+        The offsets are measured from the outer edges of the substrate.
+        """
+        minx, miny, maxx, maxy = self.boardSubstrate.bounds()
+        topLeft= wxPoint(minx + horizontalOffset, miny + verticalOffset)
+        topRight = wxPoint(maxx - horizontalOffset, miny + verticalOffset)
+        bottomLeft = wxPoint(minx + horizontalOffset, maxy - verticalOffset)
+        for pos in [topLeft, topRight, bottomLeft]:
+            self.addFiducial(pos, copperDiameter, openingDiameter, False)
+            self.addFiducial(pos, copperDiameter, openingDiameter, True)
+
+    def addTooling(self, horizontalOffset, verticalOffset, diameter):
+        """
+        Add 3 tooling holes to the top-left, top-right and bottom-left corner of
+        the board. This function expects there is enough space on the
+        board/frame/rail to place the feature.
+
+        The offsets are measured from the outer edges of the substrate.
+        """
+        minx, miny, maxx, maxy = self.boardSubstrate.bounds()
+        topLeft= wxPoint(minx + horizontalOffset, miny + verticalOffset)
+        topRight = wxPoint(maxx - horizontalOffset, miny + verticalOffset)
+        bottomLeft = wxPoint(minx + horizontalOffset, maxy - verticalOffset)
+        for pos in [topLeft, topRight, bottomLeft]:
+            self.addNPTHole(pos, diameter)
 
     def addMillFillets(self, millRadius):
         """

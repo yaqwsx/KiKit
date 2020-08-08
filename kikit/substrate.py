@@ -333,6 +333,9 @@ class Substrate:
         if not self.substrates.is_empty:
             self.substrates = shapely.ops.orient(self.substrates)
 
+    def bounds(self):
+        return self.substrates.bounds
+
     def union(self, other):
         """
         Appends a substrate, polygon or list of polygons. If there is a common

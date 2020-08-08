@@ -48,7 +48,12 @@ def extractBoard(input, output, sourcearea):
 @click.argument("output", type=click.Path(dir_okay=False))
 @click.option("--space", "-s", type=float, default=0, help="Space between boards")
 @click.option("--gridsize", "-g", type=(int, int), default=(-1, -1), help="Panel size <rows> <cols>")
-@click.option("--panelsize", "-p", type=(float, float), help="<width> <height>", default=(None, None))
+@click.option("--panelsize", "-p", type=(float, float), default=(None, None),
+    help="Add a frame to a panel. The argument specifies it size as <width> <height>")
+@click.option("--railsTb", type=float, default=None,
+    help="Add bottom and top rail. Specify its thickness in mm")
+@click.option("--railsLr", type=float, default=None,
+    help="Add left and right rail. Specify its thickness in mm")
 @click.option("--tabwidth", type=float, default=0,
     help="Size of the bottom/up tabs, leave unset for full width")
 @click.option("--tabheight", type=float, default=0,
@@ -77,10 +82,14 @@ def extractBoard(input, output, sourcearea):
 @click.option("--framecutV", type=bool, help="Insert vertical cuts through the frame", is_flag=True)
 @click.option("--framecutH", type=bool, help="Insert horizontal cuts through the frame", is_flag=True)
 @click.option("--copperfill/--nocopperfill", help="Fill unsed areas of the panel with copper")
-
+@click.option("--tooling", type=(float, float, float), default=(None, None, None),
+    help="Add tooling holes to corners of the panel. Specify <horizontalOffset> <verticalOffset> <diameter>.")
+@click.option("--fiducials", type=(float, float, float, float), default=(None, None, None, None),
+    help="Add fiducials holes to corners of the panel. Specify <horizontalOffset> <verticalOffset> <copperDiameter> <openingDiameter>.")
 def grid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
          mousebites, radius, sourcearea, vcutcurves, htabs, vtabs, rotation,
-         tolerance, renamenet, renameref, tabsfrom, framecutv, framecuth, copperfill):
+         tolerance, renamenet, renameref, tabsfrom, framecutv, framecuth,
+         copperfill, railstb, railslr, tooling, fiducials):
     """
     Create a regular panel placed in a frame.
 
@@ -102,6 +111,15 @@ def grid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
         else:
             frame = False
             oht, ovt = 0, 0
+        if railstb:
+            frame = False
+            railstb = fromMm(railstb)
+            ovt = fromMm(space)
+        if railslr:
+            frame = False
+            railslr = fromMm(railslr)
+            oht = fromMm(space)
+
         validateSpaceRadius(space, radius)
         tolerance = fromMm(tolerance)
         psize, cuts = panel.makeGrid(input, rows, cols, wxPointMM(50, 50),
@@ -111,7 +129,7 @@ def grid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
             outerHorTabThickness=oht, outerVerTabThickness=ovt,
             horTabCount=htabs, verTabCount=vtabs, rotation=fromDegrees(rotation),
             netRenamePattern=renamenet, refRenamePattern=renameref,
-            forceOuterCuts=frame)
+            forceOuterCutsV=railslr or frame, forceOuterCutsH=railstb or frame)
         tabs = []
         for layer, width in tabsfrom:
             tab, cut = panel.layerToTabs(layer, fromMm(width))
@@ -126,6 +144,16 @@ def grid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
                 cuts += frame_cuts_v
             if framecuth:
                 cuts += frame_cuts_h
+        if railslr:
+            panel.makeRailsLr(railslr)
+        if railstb:
+            panel.makeRailsTb(railstb)
+        if fiducials[0] is not None:
+            hOffset, vOffset, copperDia, openingDia = tuple(map(fromMm, fiducials))
+            panel.addFiducials(hOffset, vOffset, copperDia, openingDia)
+        if tooling[0] is not None:
+            hOffset, vOffset, dia = tuple(map(fromMm, tooling))
+            panel.addTooling(hOffset, vOffset, dia)
         if mousebites[0]:
             drill, spacing, offset = mousebites
             panel.makeMouseBites(cuts, fromMm(drill), fromMm(spacing), fromMm(offset))
@@ -171,9 +199,13 @@ def grid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
 @click.option("--tabsfrom", type=(str, float), multiple=True,
     help="Create tabs from lines in given layer. You probably want to specify --vtabs=0 and --htabs=0. Format <layer name> <tab width>")
 @click.option("--copperfill/--nocopperfill", help="Fill unsed areas of the panel with copper")
+@click.option("--tooling", type=(float, float, float), default=(None, None, None),
+    help="Add tooling holes to corners of the panel. Specify <horizontalOffset> <verticalOffset> <diameter>.")
+@click.option("--fiducials", type=(float, float, float, float), default=(None, None, None, None),
+    help="Add fiducials holes to corners of the panel. Specify <horizontalOffset> <verticalOffset> <copperDiameter> <openingDiameter>.")
 def tightgrid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
          mousebites, radius, sourcearea, vcutcurves, htabs, vtabs, rotation, slotwidth,
-         tolerance, renamenet, renameref, tabsfrom, copperfill):
+         tolerance, renamenet, renameref, tabsfrom, copperfill, fiducials, tooling):
     """
     Create a regular panel placed in a frame by milling a slot around the
     boards' perimeters.
@@ -208,6 +240,12 @@ def tightgrid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vc
         panel.addMillFillets(fromMm(radius))
         if vcuts:
             panel.makeVCuts(cuts, vcutcurves)
+        if fiducials[0] is not None:
+            hOffset, vOffset, copperDia, openingDia = tuple(map(fromMm, fiducials))
+            panel.addFiducials(hOffset, vOffset, copperDia, openingDia)
+        if tooling[0] is not None:
+            hOffset, vOffset, dia = tuple(map(fromMm, tooling))
+            panel.addTooling(hOffset, vOffset, dia)
         if mousebites[0]:
             drill, spacing, offset = mousebites
             panel.makeMouseBites(cuts, fromMm(drill), fromMm(spacing), fromMm(offset))

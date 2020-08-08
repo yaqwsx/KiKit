@@ -95,14 +95,34 @@ kikit panelize grid --space 3 --gridsize 2 2 --tabwidth 3 --tabheight 3 --htabs 
 ```
 ![panel5](resources/panel5.png)
 
-If you want, you can also add a frame around the panel via `--panelsize`. Panel
-size takes width and height in millimeters. This works both with mousebites and
-V-cuts.
+If you want, you can also add rails to the panel. Rails are suitable for placing
+tooling holes and fiducials, which are required by some assembly houses.
+
+The rails can be added by either `--railsTb <width>` (for top and bottom rails)
+or by `--railsLr <widht>` (for left and right rails). The rails work with both;
+mousebites and V-cuts.
+
+Then you can add fiducials to the top-left, bottom-left and top-right corner via
+`--fiducials <horizontalOffset> <verticalOffset> <copperDiameter>
+<openingDiameter>`. Similarly, you can add tooling holes via `--tooling
+<horizontalOffset> <verticalOffset> <diameter>`.
 
 ```
-kikit panelize grid --space 3 --gridsize 2 2 --tabwidth 18 --tabheight 10 --vcuts --radius 1 --panelsize 70 55 doc/resources/conn.kicad_pcb panel.kicad_pcb
+kikit panelize grid --space 3 --gridsize 2 2 --tabwidth 18 --tabheight 10 --vcuts --radius 1 --railsTb 5 --fiducials 10 2.5 1 2 --tooling 5 2.5 1.5 doc/resources/conn.kicad_pcb panel.kicad_pcb
 ```
 ![panel6](resources/panel6.png)
+
+If you want to get a full frame around a board, don't use combination of top and
+bottom rails. It will generate a correct shape, however, it won't generate cuts
+to easily break the frame. Instead, use the "--panelsize <width> <height>"
+option in combination with `--framecutH` or `--framecutV` to add the cuts in the
+corners of the frame. Note that in the following example we use mousebites to
+see the frame cuts
+
+```
+kikit panelize grid --space 3 --gridsize 2 2 --tabwidth 5 --tabheight 5 --mousebites 0.5 1 0 --radius 1 --panelsize 75 58 --framecutH --fiducials 10 2.5 1 2 --tooling 5 2.5 1.5 doc/resources/conn.kicad_pcb panel.kicad_pcb
+```
+![panel7](resources/panel7.png)
 
 This was the `grid` command. There is also command `tightgrid` which works
 similarly, but instead of adding tabs and frames around the board, in places a
@@ -115,7 +135,7 @@ via a straight V-cut. Back to `tightgrid`:
 ```
 kikit panelize tightgrid --slotwidth 2.5 --space 8 --gridsize 2 2 --tabwidth 15 --tabheight 8 --mousebites 0.5 1 0.25 --radius 1 --panelsize 80 60 doc/resources/conn.kicad_pcb panel.kicad_pcb
 ```
-![panel7](resources/panel7.png)
+![panel8](resources/panel8.png)
 
 You can also rotate the input board. Might not be usefull for
 rectangular boards, but if you have a circular or oddly shaped board...
@@ -123,7 +143,7 @@ rectangular boards, but if you have a circular or oddly shaped board...
 ```
 kikit panelize grid --space 2 --gridsize 2 2 --tabwidth 3 --tabheight 3 --mousebites 0.5 1 0.25 --radius 1 --panelsize 80 80 --rotation 45 doc/resources/conn.kicad_pcb panel.kicad_pcb
 ```
-![panel8](resources/panel8.png)
+![panel9](resources/panel9.png)
 
 Sometimes you might find yourself in a need for precise tab placement. This can be
 easily done. Just draw a line in one of KiCAD layers (be careful, the
@@ -135,7 +155,7 @@ already prepared for you in `conn.kicad_pcb`
 ```
 kikit panelize tightgrid --slotwidth 2.5 --space 8 --gridsize 2 2 --htabs 0 --vtabs 0 --tabsfrom Eco2.User 3 --tabsfrom Eco1.User 5 --mousebites 0.5 1 0.25 --radius 1 --panelsize 80 80 doc/resources/conn.kicad_pcb panel.kicad_pcb
 ```
-![panel9](resources/panel9.png)
+![panel10](resources/panel10.png)
 
 Especially when you work with flex PCBs it makes sense to leave copper on
 non-functional parts of the panel to make it stiffer. It might also make sense
@@ -146,4 +166,4 @@ fill:
 ```
 kikit panelize grid --space 3 --gridsize 2 2 --tabwidth 18 --tabheight 10 --vcuts --radius 1 --panelsize 70 55 --copperfill doc/resources/conn.kicad_pcb panel.kicad_pcb
 ```
-![panel10](resources/panel10.png)
+![panel11](resources/panel11.png)
