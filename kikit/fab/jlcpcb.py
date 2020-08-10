@@ -91,13 +91,13 @@ def collectPosData(board, correctionFields=["JLCPCB_CORRECTION"], bom=None,
              layerToSide(module.GetLayer()),
              moduleOrientation(module, getCompensation(module))) for module in modules]
 
-def collectBom(components, lscsField):
+def collectBom(components, lscsField, ignore):
     bom = {}
     for c in components:
         if c["unit"] != 1:
             continue
         reference = c["reference"]
-        if reference.startswith("#PWR") or reference.startswith("#FL"):
+        if reference.startswith("#PWR") or reference.startswith("#FL") or reference in ignore:
             continue
         cType = (
             getField(c, "Value"),
@@ -139,8 +139,8 @@ def jlcpcb(board, outputdir, assembly, schematic, forcesmd, ignore, field,
     Prepare fabrication files for JLCPCB including their assembly service
     """
     loadedBoard = pcbnew.LoadBoard(board)
-    refs = parseReferences(ignore)
-    removeComponents(loadedBoard, refs)
+    refsToIgnore = parseReferences(ignore)
+    removeComponents(loadedBoard, refsToIgnore)
     Path(outputdir).mkdir(parents=True, exist_ok=True)
 
     gerberdir = os.path.join(outputdir, "gerber")
@@ -154,7 +154,7 @@ def jlcpcb(board, outputdir, assembly, schematic, forcesmd, ignore, field,
         raise RuntimeError("When outputing assembly data, schematic is required")
     correctionFields = [x.strip() for x in corrections.split(",")]
     components = extractComponents(schematic)
-    bom = collectBom(components, field)
+    bom = collectBom(components, field, refsToIgnore)
 
     missingFields = False
     for type, references in bom.items():
