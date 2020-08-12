@@ -31,10 +31,8 @@ def modulePosition(module, placeOffset, compensation):
     return pos
 
 def moduleX(module, placeOffset, compensation):
-    pos = modulePosition(module, placeOffset, compensation)
-    if module.GetLayer() == pcbnew.B_Cu:
-        return -toMm(pos[0])
-    return toMm(pos[0])
+    # JLC PCB does not require mirrored X when the components are on the bottom side
+    return toMm(modulePosition(module, placeOffset, compensation)[0])
 
 def moduleY(module, placeOffset, compensation):
     return -toMm(modulePosition(module, placeOffset, compensation)[1])
