@@ -338,9 +338,9 @@ class Panel:
         edges += [edge for edge in drawings if isBoardEdge(edge)]
         otherDrawings = [edge for edge in drawings if not isBoardEdge(edge)]
         try:
-            substrate = Substrate(edges, bufferOutline)
-            self.boardSubstrate.union(substrate)
-            self.substrates.append(substrate)
+            s = Substrate(edges, bufferOutline)
+            self.boardSubstrate.union(s)
+            self.substrates.append(s)
         except substrate.PositionError as e:
             point = undoTransformation(e.point, rotationAngle, originPoint, translation)
             raise substrate.PositionError(filename + ": " + e.origMessage, point)
