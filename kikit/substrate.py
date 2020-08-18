@@ -66,13 +66,25 @@ def findRing(startIdx, geometryList, coincidencePoints, unused):
             return ring
         ring.append(nextIdx)
 
+def isValidDrawsegment(g):
+    """
+    Currently, we are aware of a single case of an invalid drawsegment -- line
+    with zero length. Unfortunately, KiCAD does not discard such lines when
+    saving. Therefore, we have to check it.
+    """
+    return g.GetShape() != pcbnew.S_SEGMENT or g.GetLength() > 0
+
 def extractRings(geometryList):
     """
     Walks a list of DRAWSEGMENT entities and produces a lists of continuous
     rings returned as list of list of indices from the geometryList.
     """
     coincidencePoints = {}
+    invalidGeometry = []
     for i, geom in enumerate(geometryList):
+        if not isValidDrawsegment(geom):
+            invalidGeometry.append(i)
+            continue
         start = toTuple(roundPoint(getStartPoint(geom)))
         coincidencePoints.setdefault(start, CoincidenceList()).append(i)
         end = toTuple(roundPoint(getEndPoint(geom)))
@@ -87,6 +99,8 @@ def extractRings(geometryList):
 
     rings = []
     unused = [True] * len(geometryList)
+    for invalidIdx in invalidGeometry:
+        unused[invalidIdx] = False
     while any(unused):
         start = getUnused(unused)
         rings.append(findRing(start, geometryList, coincidencePoints, unused))
