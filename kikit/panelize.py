@@ -659,7 +659,7 @@ class Panel:
                                     sourceArea, tolerance, verSpace, horSpace,
                                     rotation, netRenamer, refRenamer)
         gridDest = wxPoint(boardSize.GetX(), boardSize.GetY())
-        panelSize = wxRect(destination[0], destination[1],
+        panelSize = wxRect(gridDest[0], gridDest[1],
                        cols * boardSize.GetWidth() + (cols - 1) * horSpace,
                        rows * boardSize.GetHeight() + (rows - 1) * verSpace)
 
