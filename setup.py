@@ -30,7 +30,9 @@ setuptools.setup(
         "click",
         "markdown2",
         "pybars3",
-        "solidpython",
+        "solidpython"
+    ],
+    setup_requires=[
         "versioneer"
     ],
     zip_safe=False,
