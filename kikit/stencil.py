@@ -3,7 +3,7 @@ from pcbnew import wxPoint
 import numpy as np
 from kikit.common import *
 from kikit.defs import *
-from kikit.substrate import Substrate
+from kikit.substrate import Substrate, extractRings, toShapely
 from kikit.export import gerberImpl, pasteDxfExport
 import solid
 import solid.utils
@@ -226,13 +226,11 @@ def makeRegister(board, jigFrameSize, jigThickness, pcbThickness,
 
     innerRing = createOffsetPolygon(board, - innerBorder).exterior.coords
     if topSide:
-        print("top")
         innerRing = mirrorX(innerRing, centerpoint[0])
     innerCutout = solid.utils.down(jigThickness)(
         solid.linear_extrude(height=3 * jigThickness, convexity=10)(solid.polygon(innerRing)))
     registerRing = createOffsetPolygon(board, tolerance).exterior.coords
     if topSide:
-        print("top")
         registerRing = mirrorX(registerRing, centerpoint[0])
     registerCutout = solid.utils.up(jigThickness - pcbThickness)(
         solid.linear_extrude(height=jigThickness, convexity=10)(solid.polygon(registerRing)))
@@ -343,7 +341,32 @@ def printedStencilSubstrate(outlineDxf, thickness, frameHeight, frameWidth, fram
             boardOffset(solid.import_dxf(outlineDxf))))
     return body - board
 
-def printedStencil(outlineDxf, holesDxf, thickness, frameHeight, frameWidth,
+def getComponents(board, references):
+    """
+    Return a list of components based on designator
+    """
+    return [m for m in board.GetModules() if m.GetReference() in references]
+
+def collectEdges(module, layerName):
+    """
+    Return all edges on given layer in given module
+    """
+    return [e for e in module.GraphicalItems() if e.GetLayerName() == layerName]
+
+def extractComponentPolygons(modules, srcLayer):
+    """
+    Return a list of shapely polygons with holes for already placed components.
+    The source layer defines the geometry on which the cutout is computed.
+    Usually it a font or back courtyard
+    """
+    polygons = []
+    for m in modules:
+       edges = collectEdges(m, srcLayer)
+       for ring in extractRings(edges):
+           polygons.append(toShapely(ring, edges))
+    return polygons
+
+def printedStencil(outlineDxf, holesDxf, extraHoles, thickness, frameHeight, frameWidth,
                    frameClearance, enlargeHoles, front):
     zScale = -1 if front else 1
     xRotate = 180 if front else 0
@@ -352,7 +375,12 @@ def printedStencil(outlineDxf, holesDxf, thickness, frameHeight, frameWidth,
     holesOffset = solid.utils.up(0) if enlargeHoles == 0 else solid.offset(delta=enlargeHoles)
     holes = solid.linear_extrude(height=4*thickness, center=True)(
         holesOffset(solid.import_dxf(holesDxf)))
-    return solid.rotate(a=xRotate, v=[1, 0, 0])(substrate - holes)
+    substrate -= holes
+    for h in extraHoles:
+        substrate -= solid.scale([toMm(1), -toMm(1), 1])(
+                solid.linear_extrude(height=4*thickness, center=True)(
+                    solid.polygon(h.exterior.coords)))
+    return solid.rotate(a=xRotate, v=[1, 0, 0])(substrate)
 
 @click.command()
 @click.argument("inputBoard", type=click.Path(dir_okay=False))
@@ -365,17 +393,20 @@ def printedStencil(outlineDxf, holesDxf, thickness, frameHeight, frameWidth,
     help="Register frame width")
 @click.option("--ignore", type=str, default="",
     help="Comma separated list of components references to exclude from the stencil")
+@click.option("--cutout", type=str, default="",
+    help="Comma separated list of components references to cutout from the stencil based on the courtyard")
 @click.option("--frameclearance", type=float, default=0,
     help="Clearance for the stencil register in milimeters")
 @click.option("--enlargeholes", type=float, default=0,
     help="Enlarge pad holes by x mm")
 def createPrinted(inputboard, outputdir, pcbthickness, thickness, framewidth,
-                  ignore, frameclearance, enlargeholes):
+                  ignore, cutout, frameclearance, enlargeholes):
     """
     Create a 3D printed self-registering stencil.
     """
     board = pcbnew.LoadBoard(inputboard)
     refs = parseReferences(ignore)
+    cutoutComponents = getComponents(board, parseReferences(cutout))
     removeComponents(board, refs)
     Path(outputdir).mkdir(parents=True, exist_ok=True)
 
@@ -384,10 +415,12 @@ def createPrinted(inputboard, outputdir, pcbthickness, thickness, framewidth,
     # versions.
     height = min(pcbthickness, max(0.5, pcbthickness - 0.3))
     bottomPaste, topPaste, outline = pasteDxfExport(board, outputdir)
-    topStencil = printedStencil(outline, topPaste, thickness, height,
+    topCutout = extractComponentPolygons(cutoutComponents, "F.CrtYd")
+    bottomCutout = extractComponentPolygons(cutoutComponents, "B.CrtYd")
+    topStencil = printedStencil(outline, topPaste, topCutout, thickness, height,
         framewidth, frameclearance, enlargeholes, True)
-    bottomStencil = printedStencil(outline, bottomPaste, thickness, height,
-        framewidth, frameclearance, enlargeholes, False)
+    bottomStencil = printedStencil(outline, bottomPaste, bottomCutout, thickness,
+        height, framewidth, frameclearance, enlargeholes, False)
 
     bottomStencilFile = os.path.join(outputdir, "bottomStencil.scad")
     solid.scad_render_to_file(bottomStencil, bottomStencilFile,
