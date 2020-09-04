@@ -3,7 +3,7 @@ from pcbnew import wxPoint
 import numpy as np
 from kikit.common import *
 from kikit.defs import *
-from kikit.substrate import Substrate, extractRings, toShapely
+from kikit.substrate import Substrate, extractRings, toShapely, linestringToKicad
 from kikit.export import gerberImpl, pasteDxfExport
 import solid
 import solid.utils
@@ -266,6 +266,28 @@ def renderScad(infile, outfile):
     outfile = os.path.abspath(outfile)
     subprocess.check_call(["openscad", "-o", outfile, infile])
 
+def shapelyToSHAPE_POLY_SET(polygon):
+    p = pcbnew.SHAPE_POLY_SET()
+    print(polygon.exterior)
+    p.AddOutline(linestringToKicad(polygon.exterior))
+    return p
+
+def cutoutComponents(board, components):
+    topCutout = extractComponentPolygons(components, "F.CrtYd")
+    for polygon in topCutout:
+        zone = pcbnew.DRAWSEGMENT()
+        zone.SetShape(STROKE_T.S_POLYGON)
+        zone.SetPolyShape(shapelyToSHAPE_POLY_SET(polygon))
+        zone.SetLayer(Layer.F_Paste)
+        board.Add(zone)
+    bottomCutout = extractComponentPolygons(components, "B.CrtYd")
+    for polygon in bottomCutout:
+        zone = pcbnew.DRAWSEGMENT()
+        zone.SetShape(STROKE_T.S_POLYGON)
+        zone.SetPolyShape(shapelyToSHAPE_POLY_SET(polygon))
+        zone.SetLayer(Layer.B_Paste)
+        board.Add(zone)
+
 
 from pathlib import Path
 import os
@@ -285,8 +307,10 @@ import os
     help="Enlarges the register by the tolerance value")
 @click.option("--ignore", type=str, default="",
     help="Comma separated list of components references to exclude from the stencil")
+@click.option("--cutout", type=str, default="",
+    help="Comma separated list of components references to cutout from the stencil based on the courtyard")
 def create(inputboard, outputdir, jigsize, jigthickness, pcbthickness,
-           registerborder, tolerance, ignore):
+           registerborder, tolerance, ignore, cutout):
     """
     Create stencil and register elements for manual paste dispensing jig.
     See more details at: https://github.com/yaqwsx/KiKit/blob/master/doc/stencil.md
@@ -299,6 +323,7 @@ def create(inputboard, outputdir, jigsize, jigthickness, pcbthickness,
 
     jigsize = (fromMm(jigsize[0]), fromMm(jigsize[1]))
     addJigFrame(board, jigsize)
+    cutoutComponents(board, getComponents(board, parseReferences(cutout)))
 
     stencilFile = os.path.join(outputdir, "stencil.kicad_pcb")
     board.Save(stencilFile)
@@ -347,7 +372,7 @@ def getComponents(board, references):
     """
     return [m for m in board.GetModules() if m.GetReference() in references]
 
-def collectEdges(module, layerName):
+def collectModuleEdges(module, layerName):
     """
     Return all edges on given layer in given module
     """
@@ -361,7 +386,7 @@ def extractComponentPolygons(modules, srcLayer):
     """
     polygons = []
     for m in modules:
-       edges = collectEdges(m, srcLayer)
+       edges = collectModuleEdges(m, srcLayer)
        for ring in extractRings(edges):
            polygons.append(toShapely(ring, edges))
     return polygons
