@@ -10,6 +10,20 @@ KiKit provides two ways to generate stencils:
 - files for manufacturing steel stencils in a fabrication house with 3D printed
   aligning jig.
 
+# Special Options For Both Types of Stencils
+
+KiKit allows you to ignore components from the stencil by specifying `--ignore`
+followed by a comma separated list of components' references to exclude. Pads of
+these components will not appear in the stencil. This is useful, when you do not
+want to populate all components.
+
+The second common option is `--cutout` followed by a comma separated lists of
+components' references. For these components, the stencil will contain a cutout
+based on the component courtyard. This is useful when you have already
+pre-populated board and you want to populate more components -- e.g., when your
+assembly house does not have a special IC and you populate it yourself and also,
+when you do a board repair.
+
 # 3D Printed Stencils
 
 I wrote [a blog post about the 3D printed self-registering
