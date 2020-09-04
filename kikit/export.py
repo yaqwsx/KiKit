@@ -137,7 +137,7 @@ def pasteDxfExport(board, plotDir):
     pctl = PLOT_CONTROLLER(board)
     popt = pctl.GetPlotOptions()
 
-    popt.SetOutputDirectory(plotDir)
+    popt.SetOutputDirectory(os.path.abspath(plotDir))
     popt.SetAutoScale(False)
     popt.SetScale(1)
     popt.SetMirror(False)
