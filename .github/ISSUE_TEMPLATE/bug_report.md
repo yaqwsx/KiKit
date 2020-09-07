@@ -7,6 +7,8 @@ assignees: ''
 
 ---
 
+<!--- Please, make sure that you read FAQ (https://github.com/yaqwsx/KiKit/blob/master/doc/faq.md) before submitting an issue -->
+
 **Describe the bug**: A clear and concise description of what the bug is.
 
 **Expected behavior**: A clear and concise description of what you expected to happen.
