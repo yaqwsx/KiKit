@@ -17,15 +17,22 @@ KiKit will generate two extra files: `bom.csv` (bill of materials) and `pos.csv`
 (component placement). Use these two files when ordering the PCB assembly.
 
 The files above will include all components on the board. You can override the
-default field name with option `--field`. You can exclude some of the components
-by specifying `--ignore <comma separated list of references>`. By default, KiKit
-will export only components with SMD footprints (see footprint properties in the
-footprint editor). You can override this by specifying `--forceSMD`: KiKit will
-then include all components that have only SMD pins and will ignore the
-footprint flag. Also, if a component misses the order code field, KiKit will
-show warning. When you pass option `--missingError`, KiKit will fail when there
-is a component with missing order code. This might be useful in case when you
-run KiKit in CI and you want to fail the build.
+default field name with option `--field`. This option accepts a comma separated
+list of names. The first found field is used. This can be used, e.g., for
+configuration of the board via resistors. You can put field "LCSC" for all
+components, then add fields "CFG1_LCSC" and "CFG2_LCSC" for some components.
+Then invoke KiKit with option `--field CFG1_LCSC,LCSC` for configuration 1 or
+`--field CFG2_LCSC,LCSC` for configuration 2.
+
+You can exclude some of the components by specifying `--ignore <comma separated
+list of references>`. By default, KiKit will export only components with SMD
+footprints (see footprint properties in the footprint editor). You can override
+this by specifying `--forceSMD`: KiKit will then include all components that
+have only SMD pins and will ignore the footprint flag. Also, if a component
+misses the order code field, KiKit will show warning. When you pass option
+`--missingError`, KiKit will fail when there is a component with missing order
+code. This might be useful in case when you run KiKit in CI and you want to fail
+the build.
 
 Note that when you order SMD assembly for a panel, you should specify panelized
 board and the original schematics of a single board.

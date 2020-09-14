@@ -89,7 +89,7 @@ def collectPosData(board, correctionFields=["JLCPCB_CORRECTION"], bom=None,
              layerToSide(module.GetLayer()),
              moduleOrientation(module, getCompensation(module))) for module in modules]
 
-def collectBom(components, lscsField, ignore):
+def collectBom(components, lscsFields, ignore):
     bom = {}
     for c in components:
         if c["unit"] != 1:
@@ -97,10 +97,15 @@ def collectBom(components, lscsField, ignore):
         reference = c["reference"]
         if reference.startswith("#PWR") or reference.startswith("#FL") or reference in ignore:
             continue
+        orderCode = None
+        for fieldName in lscsFields:
+            orderCode = getField(c, fieldName)
+            if orderCode is not None:
+                break
         cType = (
             getField(c, "Value"),
             getField(c, "Footprint"),
-            getField(c, lscsField)
+            orderCode
         )
         bom[cType] = bom.get(cType, []) + [reference]
     return bom
@@ -127,7 +132,8 @@ def bomToCsv(bomData, filename):
 @click.option("--schematic", type=click.Path(dir_okay=False), help="Board schematics (required for assembly files)")
 @click.option("--forceSMD", is_flag=True, help="Force include all components having only SMD pads")
 @click.option("--ignore", type=str, default="", help="Comma separated list of designators to exclude from SMT assembly")
-@click.option("--field", type=str, default="LCSC", help="Name of component field with LCSC order code")
+@click.option("--field", type=str, default="LCSC",
+    help="Comma separated list of component fields field with LCSC order code. First existing field is used")
 @click.option("--corrections", type=str, default="JLCPCB_CORRECTION",
     help="Comma separated list of component fields with the correction value. First existing field is used")
 @click.option("--missingError/--missingWarn", help="If a non-ignored component misses LCSC field, fail")
@@ -152,7 +158,8 @@ def jlcpcb(board, outputdir, assembly, schematic, forcesmd, ignore, field,
         raise RuntimeError("When outputing assembly data, schematic is required")
     correctionFields = [x.strip() for x in corrections.split(",")]
     components = extractComponents(schematic)
-    bom = collectBom(components, field, refsToIgnore)
+    ordercodeFields = [x.strip() for x in field.split(",")]
+    bom = collectBom(components, ordercodeFields, refsToIgnore)
 
     missingFields = False
     for type, references in bom.items():
