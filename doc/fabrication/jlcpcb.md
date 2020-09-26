@@ -12,7 +12,7 @@ number of layers.
 ## Assembly
 
 If you would also like to use the SMD assembly service, you have to specify
-`--assembly` option and also provide the board `--schematics <schematics_file>`.
+`--assembly` option and also provide the board `--schematic <schematics_file>`.
 KiKit will generate two extra files: `bom.csv` (bill of materials) and `pos.csv`
 (component placement). Use these two files when ordering the PCB assembly.
 
