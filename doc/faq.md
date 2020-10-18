@@ -54,6 +54,10 @@ makes this the positive direction so you don't have to put minus everywhere.
 If you don't want to put mouse bites inside your board, just specify zero or
 negative offset.
 
+## I get error `ModuleNotFoundError: No module named 'pcbnew'`
+
+See the following question
+
 ## I want to use KiKit on Windows and I get various errors
 
 Unfortunately, KiCAD includes it's own version of Python interpreter on Windows.
@@ -67,3 +71,6 @@ until KiCAD on Windows migrate to Python 3 which should come with 6.0 release.
 Until then you have two options to use KiKit on Windows:
 - use the pre-built [Docker image](https://hub.docker.com/r/yaqwsx/kikit) with KiKit
 - install KiCAD and KiKit inside [WSL](https://docs.microsoft.com/en-us/windows/wsl/about)
+
+Both of these procedures are described in the [installation
+document](installation.md).
