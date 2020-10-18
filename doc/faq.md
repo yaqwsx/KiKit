@@ -44,12 +44,14 @@ If you want to preserve your narrow internal slots:
 
 KiKit's mouse bites offset specifies how much should be the mouse bites put
 **inside** the board. The recommended value is 0.25 mm (read about it [in this
-blog post](https://blogs.mentor.com/tom-hausherr/blog/tag/mouse-bite/)). Why is
-it so? When you break the tab, there will be rough edges. By putting the mouse
-bites inside the board, these rough edges won't be sticking outside the designed
-board outline. When you want to fit your board in a tight enclosure, you don't
-have to perform manual deburing. Since it is considered a good practice, KiKit
-makes this the positive direction so you don't have to put minus everywhere.
+blog
+post](https://web.archive.org/web/20150415040424/http://blogs.mentor.com/tom-hausherr/blog/tag/mouse-bite/)).
+Why is it so? When you break the tab, there will be rough edges. By putting the
+mouse bites inside the board, these rough edges won't be sticking outside the
+designed board outline. When you want to fit your board in a tight enclosure,
+you don't have to perform manual deburing. Since it is considered a good
+practice, KiKit makes this the positive direction so you don't have to put minus
+everywhere.
 
 If you don't want to put mouse bites inside your board, just specify zero or
 negative offset.
