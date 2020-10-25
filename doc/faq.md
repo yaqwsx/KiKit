@@ -4,8 +4,7 @@
 
 KiKit respects the KiCAD component selection criteria. When you specify an input
 rectangle, only the components that **fully fit** inside the input rectangle are
-selected. This however take in account **both name and value labels** (even when
-they are hidden).
+selected. This however take in account **both name and value labels**.
 
 When you do not specify the source are explicitly, KiKit takes the board outline
 bounding box as the source area. Therefore, by default, components outside the

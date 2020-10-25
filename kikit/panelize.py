@@ -310,7 +310,7 @@ class Panel:
             renameRefs(board, lambda x: refRenamer(self.boardCounter, x))
 
         drawings = collectItems(board.GetDrawings(), enlargedSourceArea)
-        modules = collectItems(board.GetModules(), enlargedSourceArea)
+        modules = collectModules(board.GetModules(), enlargedSourceArea)
         tracks = collectItems(board.GetTracks(), enlargedSourceArea)
         zones = collectItems(board.Zones(), enlargedSourceArea)
 
