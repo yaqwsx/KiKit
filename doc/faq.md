@@ -75,3 +75,19 @@ Until then you have two options to use KiKit on Windows:
 
 Both of these procedures are described in the [installation
 document](installation.md).
+
+## I would like to make a panel out of different designs, but there is no such option in help
+
+KiKit supports such feature. But it is not available from CLI. You have to write
+a simple Python script describing the panel and use KiKit as a library. An
+example of such a script can be found
+[here](https://github.com/RoboticsBrno/RB0002-BatteryPack/blob/baa010a6cda7d175eb96d8e656043b8ac2444515/scripts/panelizeBattery.py).
+Also, please refer to the [panelization
+documentation](https://github.com/yaqwsx/KiKit/blob/master/doc/panelization.md).
+
+If you wonder why is it in such way: there are infinitely many ways to panel
+your design. A single CLI/UI will not fit them all and also even for the simple
+cases, it would be enormous and painful to use. Much better idea is to use a
+language to specify the panel. But why reinvent the wheel and design a custom
+language when we can use Python? It integrates well with other tools and many
+people already know it.
