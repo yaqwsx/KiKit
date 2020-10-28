@@ -21,6 +21,9 @@ The reason for that is packaging of KiCAD on these platforms. There are some
 plans for overcoming this issue, but they cannot be applied until KiCAD 6 is
 released.
 
+If you have multiple KiCAD versions installed, see the section "Choosing KiCAD
+version".
+
 ## Running KiKit in Windows Subsystem for Linux
 
 This method is applicable only on Windows.
@@ -70,3 +73,45 @@ topis](https://forums.docker.com/t/volume-mounts-in-windows-does-not-work/10693/
 
 If you want to use Makefile for your projects, the preferable way is to invoke
 `make` inside the container and to invoke docker from make.
+
+# Choosing KiCAD version
+
+When you have multiple versions of KiCAD installed, it might be desirable to run
+KiKit with one or another (e.g., to not convert your designs into new format).
+
+KiKit loads the Python API directly via a module, so which module is loaded
+(which KiCAD version is used) follows standard Python conversion. Therefore, to
+choose a particular KiCAD version, just specify the environmental variable
+`PYTHONPATH`. The path have to point to a folder containing the module
+(`pcbnew.py` file).
+
+The most common on linux are:
+
+```
+stable: /usr/lib/python3/dist-packages/pcbn
+nightly: /usr/lib/kicad-nightly/lib/python3/dist-packages/
+```
+
+E.g., to run KiKit with nightly, run:
+
+```
+PYTHONPATH=/usr/lib/kicad-nightly/lib/python3/dist-packages/ kikit
+```
+
+To run KiKit with a KiCAD you compiled (and not installed):
+
+```
+PYTHONPATH=path-to-sources/build/pcbnew kikit
+```
+
+This also works when you invoke `make` as environmental variables are
+propagated:
+
+```
+PYTHONPATH=/usr/lib/kicad-nightly/lib/python3/dist-packages/ make
+```
+
+Note that KiKit currently supports only KiCAD v5.0 up to v5.1.7. This support
+for nightly (v5.99) and v6 is work in progress and all the features might not
+work. The final support for KiCAD 6 will be introduced after KiCAD 6 release
+candidates is available.

@@ -91,3 +91,8 @@ cases, it would be enormous and painful to use. Much better idea is to use a
 language to specify the panel. But why reinvent the wheel and design a custom
 language when we can use Python? It integrates well with other tools and many
 people already know it.
+
+# How do I run KiKit with KiCAD nightly?
+
+See section "Choosing KiCAD version" in [the installation
+guide](installation.md).
