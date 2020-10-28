@@ -11,6 +11,7 @@ import subprocess
 from kikit.common import removeComponents, parseReferences
 
 from shapely.geometry import Point
+from kikit import pcbnew_compatibility
 
 
 OUTER_BORDER = fromMm(7.5)
@@ -25,7 +26,7 @@ def addBottomCounterpart(board, item):
     board.Add(item)
 
 def addRoundedCorner(board, center, start, end, thickness):
-    corner = pcbnew.DRAWSEGMENT()
+    corner = pcbnew.PCB_SHAPE()
     corner.SetShape(STROKE_T.S_ARC)
     corner.SetCenter(wxPoint(center[0], center[1]))
     corner.SetArcStart(wxPoint(start[0], start[1]))
@@ -39,7 +40,7 @@ def addRoundedCorner(board, center, start, end, thickness):
     addBottomCounterpart(board, corner)
 
 def addLine(board, start, end, thickness):
-    line = pcbnew.DRAWSEGMENT()
+    line = pcbnew.PCB_SHAPE()
     line.SetShape(STROKE_T.S_SEGMENT)
     line.SetStart(wxPoint(start[0], start[1]))
     line.SetEnd(wxPoint(end[0], end[1]))
@@ -119,7 +120,7 @@ def addFrame(board, rect, bridgeWidth, bridgeSpacing, clearance):
             addBite(board, wxPoint(x2, end), wxPoint(0, 1), wxPoint(-1, 0), clearance)
 
 def addHole(board, position, radius):
-    circle = pcbnew.DRAWSEGMENT()
+    circle = pcbnew.PCB_SHAPE()
     circle.SetShape(STROKE_T.S_CIRCLE)
     circle.SetCenter(wxPoint(position[0], position[1]))
     circle.SetArcStart(wxPoint(position[0], position[1]) + wxPoint(radius/2, 0))
@@ -274,14 +275,14 @@ def shapelyToSHAPE_POLY_SET(polygon):
 def cutoutComponents(board, components):
     topCutout = extractComponentPolygons(components, "F.CrtYd")
     for polygon in topCutout:
-        zone = pcbnew.DRAWSEGMENT()
+        zone = pcbnew.PCB_SHAPE()
         zone.SetShape(STROKE_T.S_POLYGON)
         zone.SetPolyShape(shapelyToSHAPE_POLY_SET(polygon))
         zone.SetLayer(Layer.F_Paste)
         board.Add(zone)
     bottomCutout = extractComponentPolygons(components, "B.CrtYd")
     for polygon in bottomCutout:
-        zone = pcbnew.DRAWSEGMENT()
+        zone = pcbnew.PCB_SHAPE()
         zone.SetShape(STROKE_T.S_POLYGON)
         zone.SetPolyShape(shapelyToSHAPE_POLY_SET(polygon))
         zone.SetLayer(Layer.B_Paste)

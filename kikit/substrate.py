@@ -9,6 +9,7 @@ from itertools import product
 from kikit.common import *
 
 from kikit.defs import STROKE_T, Layer
+from kikit import pcbnew_compatibility
 
 class PositionError(RuntimeError):
     def __init__(self, message, point):
@@ -66,9 +67,9 @@ def findRing(startIdx, geometryList, coincidencePoints, unused):
             return ring
         ring.append(nextIdx)
 
-def isValidDrawsegment(g):
+def isValidPcbShape(g):
     """
-    Currently, we are aware of a single case of an invalid drawsegment -- line
+    Currently, we are aware of a single case of an invalid pcb_shape -- line
     with zero length. Unfortunately, KiCAD does not discard such lines when
     saving. Therefore, we have to check it.
     """
@@ -76,13 +77,13 @@ def isValidDrawsegment(g):
 
 def extractRings(geometryList):
     """
-    Walks a list of DRAWSEGMENT entities and produces a lists of continuous
+    Walks a list of PCB_SHAPE entities and produces a lists of continuous
     rings returned as list of list of indices from the geometryList.
     """
     coincidencePoints = {}
     invalidGeometry = []
     for i, geom in enumerate(geometryList):
-        if not isValidDrawsegment(geom):
+        if not isValidPcbShape(geom):
             invalidGeometry.append(i)
             continue
         start = toTuple(roundPoint(getStartPoint(geom)))
@@ -140,7 +141,7 @@ def approximateArc(arc, endWith):
 
 def toShapely(ring, geometryList):
     """
-    Take a list indices representing a ring from DRAWSEGMENT entities and
+    Take a list indices representing a ring from PCB_SHAPE entities and
     convert them into a shapely polygon. The segments are expected to be
     continuous. Arcs & other are broken down into lines.
     """
@@ -366,7 +367,7 @@ class Substrate:
 
     def serialize(self):
         """
-        Produces a list of DRAWSEGMENT on the Edge.Cuts layer
+        Produces a list of PCB_SHAPE on the Edge.Cuts layer
         """
         if isinstance(self.substrates, MultiPolygon):
             geoms = self.substrates.geoms
@@ -388,7 +389,7 @@ class Substrate:
         if coords[0] != coords[-1]:
             raise RuntimeError("Ring is incomplete")
         for a, b in zip(coords, coords[1:]):
-            segment = pcbnew.DRAWSEGMENT()
+            segment = pcbnew.PCB_SHAPE()
             segment.SetShape(STROKE_T.S_SEGMENT)
             segment.SetLayer(Layer.Edge_Cuts)
             segment.SetStart(roundPoint(a))

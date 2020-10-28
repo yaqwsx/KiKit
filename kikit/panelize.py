@@ -11,6 +11,7 @@ import os
 from kikit import substrate
 from kikit.substrate import Substrate, linestringToKicad
 from kikit.defs import STROKE_T, Layer, EDA_TEXT_HJUSTIFY_T
+from kikit import pcbnew_compatibility
 
 from kikit.common import *
 
@@ -152,7 +153,7 @@ def undoTransformation(point, rotation, origin, translation):
     return the original point position.
     """
     # Abuse PcbNew to do so
-    segment = pcbnew.DRAWSEGMENT()
+    segment = pcbnew.PCB_SHAPE()
     segment.SetShape(STROKE_T.S_SEGMENT)
     segment.SetStart(wxPoint(point[0], point[1]))
     segment.SetEnd(wxPoint(0, 0))
@@ -210,7 +211,7 @@ def isBoardEdge(edge):
 
     The rule is: all drawings on Edge.Cuts layer are edges.
     """
-    return isinstance(edge, pcbnew.DRAWSEGMENT) and edge.GetLayerName() == "Edge.Cuts"
+    return isinstance(edge, pcbnew.PCB_SHAPE) and edge.GetLayerName() == "Edge.Cuts"
 
 def increaseZonePriorities(board, amount=1):
     for zone in board.Zones():
@@ -382,18 +383,18 @@ class Panel:
         label.SetHorizJustify(EDA_TEXT_HJUSTIFY_T.GR_TEXT_HJUSTIFY_LEFT)
 
     def _renderVCutV(self, layer=Layer.Cmts_User):
-        """ return list of DRAWSEGMENT V-Cuts """
+        """ return list of PCB_SHAPE V-Cuts """
         bBox = self.boardSubstrate.boundingBox()
         minY, maxY = bBox.GetY() - fromMm(3), bBox.GetY() + bBox.GetHeight() + fromMm(3)
         segments = []
         for cut in self.vVCuts:
-            segment = pcbnew.DRAWSEGMENT()
+            segment = pcbnew.PCB_SHAPE()
             self._setVCutSegmentStyle(segment, layer)
             segment.SetStart(pcbnew.wxPoint(cut, minY))
             segment.SetEnd(pcbnew.wxPoint(cut, maxY))
             segments.append(segment)
 
-            label = pcbnew.TEXTE_PCB(segment)
+            label = pcbnew.PCB_TEXT(segment)
             self._setVCutLabelStyle(label, layer)
             label.SetPosition(wxPoint(cut, minY - fromMm(3)))
             label.SetTextAngle(900)
@@ -401,18 +402,18 @@ class Panel:
         return segments
 
     def _renderVCutH(self, layer=Layer.Cmts_User):
-        """ return list of DRAWSEGMENT V-Cuts """
+        """ return list of PCB_SHAPE V-Cuts """
         bBox = self.boardSubstrate.boundingBox()
         minX, maxX = bBox.GetX() - fromMm(3), bBox.GetX() + bBox.GetWidth() + fromMm(3)
         segments = []
         for cut in self.hVCuts:
-            segment = pcbnew.DRAWSEGMENT()
+            segment = pcbnew.PCB_SHAPE()
             self._setVCutSegmentStyle(segment, layer)
             segment.SetStart(pcbnew.wxPoint(minX, cut))
             segment.SetEnd(pcbnew.wxPoint(maxX, cut))
             segments.append(segment)
 
-            label = pcbnew.TEXTE_PCB(segment)
+            label = pcbnew.PCB_TEXT(segment)
             self._setVCutLabelStyle(label, layer)
             label.SetPosition(wxPoint(maxX + fromMm(3), cut))
             segments.append(label)
@@ -866,7 +867,7 @@ class Panel:
 
     def layerToTabs(self, layerName, tabWidth):
         """
-        Take all line drawsegments from the given layer and convert them to
+        Take all line pcbshapes from the given layer and convert them to
         tabs.
 
         The tabs are created by placing a tab origin into the line starting
@@ -879,7 +880,7 @@ class Panel:
         Returns list of tabs substrates and a list of cuts to perform.
         """
         lines = [element for element in self.board.GetDrawings()
-                    if isinstance(element, pcbnew.DRAWSEGMENT) and
+                    if isinstance(element, pcbnew.PCB_SHAPE) and
                        element.GetShape() == STROKE_T.S_SEGMENT and
                        element.GetLayerName() == layerName]
         tabs, cuts = [], []
