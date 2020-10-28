@@ -4,12 +4,14 @@ import click
 @click.argument("board", type=click.Path(dir_okay=False, exists=True))
 @click.option("--show/--hide", "-s", help="Show/hide references mathing a pattern")
 @click.option("--pattern", "-p", type=str, help="Regular expression for references")
-def references(**kwargs):
+def references(board, show, pattern):
     """
     Show or hide references on the board matching a pattern.
     """
     from kikit import modify
-    return modify.references(**kwargs)
+    b = pcbnew.LoadBoard(board)
+    modify.references(b, show, pattern)
+    b.Save(board)
 
 @click.group()
 def modify():
