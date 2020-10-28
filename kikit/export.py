@@ -1,14 +1,7 @@
 # Based on https://github.com/KiCad/kicad-source-mirror/blob/master/demos/python_scripts_examples/gen_gerber_and_drill_files_board.py
 import sys
 import os
-import click
 from pcbnew import *
-
-@click.command()
-@click.argument("boardfile", type=click.Path(dir_okay=False))
-@click.argument("outputdir", type=click.Path(file_okay=False), default=None)
-def gerber(boardfile, outputdir):
-    gerberImpl(boardfile, outputdir)
 
 fullGerberPlotPlan = [
     # name, id, comment
@@ -163,17 +156,7 @@ def pasteDxfExport(board, plotDir):
     pctl.ClosePlot()
     return tuple(output)
 
-@click.command()
-@click.argument("boardfile", type=click.Path(dir_okay=False))
-@click.argument("outputdir", type=click.Path(file_okay=False), default=None)
-def dxf(boardfile, outputdir):
-    """
-    Export board edges and pads to DXF.
-
-    If no output dir is specified, use working directory.
-
-    This command is designed for building 3D printed stencils
-    """
+def dxfImpl(boardfile, outputdir):
     basename = os.path.dirname(boardfile)
     if outputdir:
         plotDir = outputdir
