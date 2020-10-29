@@ -14,11 +14,11 @@ doc/examples.md: scripts/exampleDoc.py
 	PYTHONPATH=`pwd` python3 scripts/exampleDoc.py > $@
 
 package:
-	rm -f dist/*
-	python3 setup.py sdist bdist_wheel
+	rm -f dist/* build/*
+	python3 setup.py sdist --formats=gztar,zip
 
 install: package
-	pip3 install --no-deps --force dist/*.whl
+	pip3 install --no-deps --force dist/*.tar.gz
 
 release: package
 	twine upload dist/*
