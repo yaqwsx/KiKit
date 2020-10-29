@@ -121,6 +121,8 @@ class HideReferencesPlugin(pcbnew.ActionPlugin):
         finally:
             dialog.Destroy()
 
+plugin = HideReferencesPlugin
+
 if __name__ == "__main__":
     # Run test dialog
     app = wx.App()

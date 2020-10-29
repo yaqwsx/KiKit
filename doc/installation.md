@@ -7,7 +7,9 @@ just have to install KiCAD and then install KiKit via Pip:
 pip install KiKit # Use pip or pip3 based on your distribution
 ```
 
-Then you are ready to use it. There are two optional dependencies:
+Then you are ready to use it. Note that if you would like to use GUI plugins in
+KiCAD, you have enable them. See section "Enabling plugins". Also, there are two
+optional dependencies:
 
 - PcbDraw - to be able to export presentation pages (install it via `pip install
   PcbDraw`)
@@ -23,6 +25,20 @@ released.
 
 If you have multiple KiCAD versions installed, see the section "Choosing KiCAD
 version".
+
+## Enabling plugins
+
+KiKit comes with GUI plugins for KiCAD. These plugins are not enable by default
+and you have to enable them. There is an utility `kikit-plugin` which allows you
+to select which plugins you want to enable.
+
+First, use `kikit-plugin list` to see all available plugins.
+
+Then you can enable, e.g., all plugins by: `kikit-plugin enable --all` or
+selected plugins by their identifier, e.g., `kikit-plugin enable
+hideReferences`. Note that if you want to enable multiple plugins, you have to
+specify them all at once. Also, the changes will take effect after restarting
+PcbNew.
 
 ## Running KiKit in Windows Subsystem for Linux
 

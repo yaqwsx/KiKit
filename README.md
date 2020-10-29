@@ -65,6 +65,8 @@ KiKit](https://roboticsbrno.github.io/RB0002-BatteryPack).
 - [automated export of gerbers and assembly data](doc/fabrication.md)
 - [3D printed self-registering solder paste stencils](doc/stencil.md)
 - [steel stencils with alignment jig](doc/stencil.md)
+- create powerfull shell scrips or Makefiles which automates your workflow...
+- ...or invoke the functionality via [GUI in KiCAD](doc/plugins.md).
 
 ## How To Use It?
 

@@ -39,7 +39,8 @@ setuptools.setup(
     include_package_data=True,
     entry_points = {
         "console_scripts": [
-            "kikit=kikit.ui:cli"
+            "kikit=kikit.ui:cli",
+            "kikit-plugin=kikit.plugin:cli"
         ],
     }
 )
