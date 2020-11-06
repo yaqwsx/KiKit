@@ -17,13 +17,34 @@ fullGerberPlotPlan = [
     ("CmtUser", Cmts_User, "V-CUT")
 ]
 
+exportSettingsJlcpcb = {
+    "UseGerberProtelExtensions": False,
+    "UseAuxOrigin": True,
+    "ExcludeEdgeLayer": False,
+    "MinimalHeader": False,
+    "NoSuffix": False,
+    "MergeNPTH": True,
+    "ZerosFormat": GENDRILL_WRITER_BASE.DECIMAL_FORMAT,
+}
+
+exportSettingsPcbway = {
+    "UseGerberProtelExtensions": True,
+    "UseAuxOrigin": False,
+    "ExcludeEdgeLayer": True,
+    "MinimalHeader": True,
+    "NoSuffix": True,
+    "MergeNPTH": False,
+    "ZerosFormat": GENDRILL_WRITER_BASE.SUPPRESS_LEADING,
+}
+
+
 def hasCopper(plotPlan):
     for _, layer, _ in plotPlan:
         if layer in [F_Cu, B_Cu]:
             return True
     return False
 
-def gerberImpl(boardfile, outputdir, plot_plan=fullGerberPlotPlan, drilling=True):
+def gerberImpl(boardfile, outputdir, plot_plan=fullGerberPlotPlan, drilling=True, settings=exportSettingsJlcpcb):
     """
     Export board to gerbers.
 
@@ -51,10 +72,10 @@ def gerberImpl(boardfile, outputdir, plot_plan=fullGerberPlotPlan, drilling=True
     popt.SetUseGerberAttributes(False)
     popt.SetIncludeGerberNetlistInfo(True)
     popt.SetCreateGerberJobFile(True)
-    popt.SetUseGerberProtelExtensions(False)
-    popt.SetExcludeEdgeLayer(True)
+    popt.SetUseGerberProtelExtensions(settings["UseGerberProtelExtensions"])
+    popt.SetExcludeEdgeLayer(settings["ExcludeEdgeLayer"])
     popt.SetScale(1)
-    popt.SetUseAuxOrigin(True)
+    popt.SetUseAuxOrigin(settings["UseAuxOrigin"])
     popt.SetUseGerberX2format(False)
 
     # This by gerbers only
@@ -72,7 +93,8 @@ def gerberImpl(boardfile, outputdir, plot_plan=fullGerberPlotPlan, drilling=True
             popt.SetSkipPlotNPTH_Pads(False)
 
         pctl.SetLayer(id)
-        pctl.OpenPlotfile(name, PLOT_FORMAT_GERBER, comment)
+        suffix = "" if settings["NoSuffix"] else name
+        pctl.OpenPlotfile(suffix, PLOT_FORMAT_GERBER, comment)
         print('plot {}'.format(pctl.GetPlotFileName()))
         jobfile_writer.AddGbrFile(id, os.path.basename(pctl.GetPlotFileName()))
         if pctl.PlotLayer() == False:
@@ -101,16 +123,17 @@ def gerberImpl(boardfile, outputdir, plot_plan=fullGerberPlotPlan, drilling=True
         drlwriter.SetMapFileFormat(PLOT_FORMAT_PDF)
 
         mirror = False
-        minimalHeader = False
+        minimalHeader = settings["MinimalHeader"]
         offset = board.GetDesignSettings().m_AuxOrigin
         # False to generate 2 separate drill files (one for plated holes, one for non plated holes)
         # True to generate only one drill file
-        mergeNPTH = True
+        mergeNPTH = settings["MergeNPTH"]
         drlwriter.SetOptions(mirror, minimalHeader, offset, mergeNPTH)
         drlwriter.SetRouteModeForOvalHoles(False)
 
         metricFmt = True
-        drlwriter.SetFormat(metricFmt)
+        zerosFmt = settings["ZerosFormat"]
+        drlwriter.SetFormat(metricFmt, zerosFmt)
         genDrl = True
         genMap = True
         print('create drill and map files in {}'.format(pctl.GetPlotDirName()))
