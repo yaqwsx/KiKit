@@ -11,6 +11,7 @@ command for each supported fabrication house.
 Note: click on the name of the manufacturer to see corresponding documentation:
 
 - [JLC PCB](fabrication/jlcpcb.md): board manufacturing, SMD assembly. [https://jlcpcb.com/](https://jlcpcb.com/)
+- [PCBWay](fabrication/pcbway.md): board manufacturing, assembly. [https://www.pcbway.com/](https://www.pcbway.com/)
 
 ## Adding New Fabrication Houses
 
