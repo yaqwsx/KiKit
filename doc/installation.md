@@ -26,6 +26,14 @@ released.
 If you have multiple KiCAD versions installed, see the section "Choosing KiCAD
 version".
 
+If you would like to use the upstream (unstable) version of KiKit, you can
+install it directly from GitHub:
+
+```
+pip3 install git+https://github.com/yaqwsx/KiKit@master
+```
+
+
 ## Enabling plugins
 
 KiKit comes with GUI plugins for KiCAD. These plugins are not enable by default
