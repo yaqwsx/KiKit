@@ -26,6 +26,7 @@ def extractBoard(input, output, sourcearea):
     """
     # Hide the import in the function to make KiKit start faster
     from kikit.panelize import Panel, fromMm, wxPointMM, wxRectMM, fromDegrees
+    import sys
     try:
         panel = Panel()
         destination = wxPointMM(150, 100)
@@ -91,6 +92,7 @@ def grid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
     """
     # Hide the import in the function to make KiKit start faster
     from kikit.panelize import Panel, fromMm, wxPointMM, wxRectMM, fromDegrees
+    import sys
     try:
         panel = Panel()
         rows, cols = gridsize
@@ -208,6 +210,7 @@ def tightgrid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vc
     """
     # Hide the import in the function to make KiKit start faster
     from kikit.panelize import Panel, fromMm, wxPointMM, wxRectMM, fromDegrees
+    import sys
     try:
         panel = Panel()
         rows, cols = gridsize
