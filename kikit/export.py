@@ -2,6 +2,7 @@
 import sys
 import os
 from pcbnew import *
+from kikit import pcbnew_compatibility
 
 fullGerberPlotPlan = [
     # name, id, comment
@@ -44,7 +45,7 @@ def gerberImpl(boardfile, outputdir, plot_plan=fullGerberPlotPlan, drilling=True
     popt.SetOutputDirectory(plotDir)
 
     popt.SetPlotFrameRef(False)
-    popt.SetLineWidth(FromMM(0.35))
+    popt.SetSketchPadLineWidth(FromMM(0.35))
     popt.SetAutoScale(False)
     popt.SetScale(1)
     popt.SetMirror(False)
