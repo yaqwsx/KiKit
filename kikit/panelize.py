@@ -378,7 +378,7 @@ class Panel:
     def _setVCutLabelStyle(self, label, layer):
         label.SetText("V-CUT")
         label.SetLayer(layer)
-        label.SetThickness(fromMm(0.4))
+        label.SetTextThickness(fromMm(0.4))
         label.SetTextSize(pcbnew.wxSizeMM(2, 2))
         label.SetHorizJustify(EDA_TEXT_HJUSTIFY_T.GR_TEXT_HJUSTIFY_LEFT)
 
