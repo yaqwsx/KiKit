@@ -183,17 +183,20 @@ def renameNets(board, renamer):
     netinfo = board.GetNetInfo()
 
     newNetMapping = { "": netinfo.GetNetItem("") }
+    newNames = set()
     for name in originalNetNames:
-        newNet = pcbnew.NETINFO_ITEM(board, renamer(name))
+        newName = renamer(name)
+        newNet = pcbnew.NETINFO_ITEM(board, newName)
         newNetMapping[name] = newNet
         board.Add(newNet)
+        newNames.add(newName)
 
     remapNets(board.GetPads(), newNetMapping)
     remapNets(board.GetTracks(), newNetMapping)
     remapNets(board.Zones(), newNetMapping)
 
     for name in originalNetNames:
-        if name != "":
+        if name != "" and name not in newNames:
             board.RemoveNative(netinfo.GetNetItem(name))
 
 def renameRefs(board, renamer):
