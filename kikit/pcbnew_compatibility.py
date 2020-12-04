@@ -11,6 +11,12 @@ def getVersion():
         # KiCAD 5 does not have such function, assume it version 5.something
         return 5, 0
 
+def boardGetProperties(self):
+    return {}
+
+def boardSetProperties(self, p):
+    pass
+
 def isV6(version):
     if version[0] == 5 and version[1] == 99:
         return True
@@ -26,3 +32,7 @@ if not isV6(pcbnewVersion):
     pcbnew.FP_TEXT = pcbnew.TEXTE_MODULE
     pcbnew.PCB_PLOT_PARAMS.SetSketchPadLineWidth = pcbnew.PCB_PLOT_PARAMS.SetLineWidth
     pcbnew.PCB_TEXT.SetTextThickness = pcbnew.PCB_TEXT.SetThickness
+
+    # Add board properties
+    pcbnew.BOARD.GetProperties = boardGetProperties
+    pcbnew.BOARD.SetProperties = boardSetProperties
