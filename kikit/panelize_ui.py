@@ -31,6 +31,8 @@ def extractBoard(input, output, sourcearea):
         panel = Panel()
         destination = wxPointMM(150, 100)
         area = wxRectMM(*sourcearea)
+        panel.inheritDesignSettings(input)
+        panel.inheritProperties(input)
         panel.appendBoard(input, destination, area, tolerance=fromMm(2))
         panel.save(output)
     except Exception as e:
@@ -95,6 +97,8 @@ def grid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
     import sys
     try:
         panel = Panel()
+        panel.inheritDesignSettings(input)
+        panel.inheritProperties(input)
         rows, cols = gridsize
         if rows == -1 or cols == -1:
             raise RuntimeError("Gridsize is mandatory. Please specify the --gridsize option.")
@@ -213,6 +217,8 @@ def tightgrid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vc
     import sys
     try:
         panel = Panel()
+        panel.inheritDesignSettings(input)
+        panel.inheritProperties(input)
         rows, cols = gridsize
         if rows == -1 or cols == -1:
             raise RuntimeError("Gridsize is mandatory. Please specify the --gridsize option.")

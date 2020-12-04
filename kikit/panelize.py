@@ -260,6 +260,32 @@ class Panel:
     def _uniquePrefix(self):
         return "Board_{}-".format(self.boardCounter)
 
+    def inheritDesignSettings(self, boardFilename):
+        """
+        Inherit design settings from the given board specified by a filename
+        """
+        b = pcbnew.LoadBoard(boardFilename)
+        self.setDesignSettings(b.GetDesignSettings())
+
+    def setDesignSettings(self, designSettings):
+        """
+        Set design settings
+        """
+        self.board.SetDesignSettings(designSettings)
+
+    def inheritProperties(self, boardFilename):
+        """
+        Inherit text properties from a board specified by a properties
+        """
+        b = pcbnew.LoadBoard(boardFilename)
+        self.setDesignSettings(b.GetDesignSettings())
+
+    def setProperties(self, properties):
+        """
+        Set text properties cached in the board
+        """
+        self.board.SetProperties(designSettings)
+
     def appendBoard(self, filename, destination, sourceArea=None,
                     origin=Origin.Center, rotationAngle=0, shrink=False,
                     tolerance=0, bufferOutline=fromMm(0.001), netRenamer=None,
