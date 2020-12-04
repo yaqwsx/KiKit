@@ -76,7 +76,7 @@ def collectPosData(board, correctionFields, posFilter=lambda x : True,
             field = getField(bom[module.GetReference()], fieldName)
             if field is not None:
                 break
-        if field is None:
+        if field is None or field == "":
             return 0, 0, 0
         try:
             return parseCompensation(field)
