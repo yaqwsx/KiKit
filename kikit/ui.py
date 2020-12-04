@@ -1,5 +1,6 @@
 import click
-from kikit import panelize_ui, export_ui, present_ui, stencil_ui, modify_ui, fab_ui
+from kikit import (panelize_ui, export_ui, present_ui, stencil_ui,
+    modify_ui, fab_ui, drc_ui)
 from kikit import __version__
 import sys
 
@@ -14,6 +15,7 @@ cli.add_command(present_ui.present)
 cli.add_command(modify_ui.modify)
 cli.add_command(stencil_ui.stencil)
 cli.add_command(fab_ui.fab)
+cli.add_command(drc_ui.drc)
 
 if __name__ == '__main__':
     cli()
