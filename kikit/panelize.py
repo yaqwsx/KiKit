@@ -948,7 +948,7 @@ class Panel:
             raise RuntimeError("The substrate has to be a single piece to fill unused areas")
         increaseZonePriorities(self.board)
 
-        zoneContainer = pcbnew.ZONE_CONTAINER(self.board)
+        zoneContainer = pcbnew.ZONES(self.board)
         boundary = self.boardSubstrate.exterior().boundary
         zoneContainer.Outline().AddOutline(linestringToKicad(boundary))
         for substrate in self.substrates:
