@@ -10,6 +10,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="KiKit",
+    python_requires='>3.7',
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass(),
     author="Jan Mrázek",
