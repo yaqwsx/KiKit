@@ -1,0 +1,12 @@
+name: 'Setup KiCAD'
+description: 'Set up a specific version of KiCAD'
+author: 'Jan "yaqwsx" Mrázek'
+inputs:
+  kicad-version:
+    description: "Version of KiCAD, currently supported v5, nightly"
+    default: 'v5'
+runs:
+  using: 'composite'
+  steps:
+    - run: '.github/actions/setup-kicad/setup.sh ${{ inputs.kicad-version }}'
+      shell: bash
