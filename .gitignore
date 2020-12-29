@@ -2,6 +2,8 @@
 __pycache__
 
 # Ignore dev kicad files
+*.kicad_pro*
+*.kicad_prl*
 *.kicad_pcb*
 *.pro
 fp-info-cache

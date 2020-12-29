@@ -1,8 +1,8 @@
 
 
-.PHONY: doc clean package release
+.PHONY: doc clean package release test
 
-all: doc package
+all: doc package test
 
 doc: doc/panelization.md doc/examples.md
 
@@ -22,6 +22,12 @@ install: package
 
 release: package
 	twine upload dist/*
+
+test: build/test $(shell find kikit -type f)
+	cd build/test && bats ../../test/system
+
+build/test:
+	mkdir -p $@
 
 clean:
 	rm -rf dist build

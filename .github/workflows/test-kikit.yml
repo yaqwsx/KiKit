@@ -1,18 +1,21 @@
 name: test-kikit
-on: [push]
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 3 * * *'
 jobs:
   test:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
       - uses: ./.github/actions/setup-kicad
       - name: Install dependencies and KiKit
         run: |
           sudo apt-get install --yes --no-install-recommends \
             zip inkscape make git libmagickwand-dev \
             libgraphicsmagick1-dev libmagickcore-dev \
-            openscad
-          python -m pip install PcbDraw
-          python -m pip install -e .
-      - run: kikit --help
+            openscad bats
+          sudo python -m pip install PcbDraw
+          sudo python -m pip install -e .
+      - run: make test

@@ -1,4 +1,4 @@
-import pcbnew
+from kikit.pcbnew_compatibility import pcbnew
 import re
 
 def references(board, show, pattern):

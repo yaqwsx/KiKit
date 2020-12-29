@@ -9,7 +9,7 @@ def references(board, show, pattern):
     Show or hide references on the board matching a pattern.
     """
     from kikit import modify
-    b = pcbnew.LoadBoard(board)
+    b = modify.pcbnew.LoadBoard(board)
     modify.references(b, show, pattern)
     b.Save(board)
 
