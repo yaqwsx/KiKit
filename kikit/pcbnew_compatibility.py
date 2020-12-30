@@ -32,7 +32,12 @@ if not isV6(pcbnewVersion):
     pcbnew.FP_TEXT = pcbnew.TEXTE_MODULE
     pcbnew.PCB_PLOT_PARAMS.SetSketchPadLineWidth = pcbnew.PCB_PLOT_PARAMS.SetLineWidth
     pcbnew.PCB_TEXT.SetTextThickness = pcbnew.PCB_TEXT.SetThickness
-    pcbnew.ZONES = pcbnew.ZONE_CONTAINER
+    pcbnew.ZONE = pcbnew.ZONE_CONTAINER
+    pcbnew.ZONES = pcbnew.ZONE_CONTAINERS
+    pcbnew.DXF_UNITS_MILLIMETERS = pcbnew.DXF_PLOTTER.DXF_UNIT_MILLIMETERS
+
+    # Introduce renamed functions
+    pcbnew.BOARD.GetFootprints = pcbnew.BOARD.GetModules
 
     # Add board properties
     pcbnew.BOARD.GetProperties = boardGetProperties

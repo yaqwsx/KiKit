@@ -1,8 +1,8 @@
 # Based on https://github.com/KiCad/kicad-source-mirror/blob/master/demos/python_scripts_examples/gen_gerber_and_drill_files_board.py
 import sys
 import os
+from kikit.pcbnew_compatibility import pcbnew
 from pcbnew import *
-from kikit import pcbnew_compatibility
 
 fullGerberPlotPlan = [
     # name, id, comment
@@ -160,7 +160,7 @@ def pasteDxfExport(board, plotDir):
     popt.SetMirror(False)
     popt.SetExcludeEdgeLayer(True)
     popt.SetScale(1)
-    popt.SetDXFPlotUnits(DXF_PLOTTER.DXF_UNIT_MILLIMETERS)
+    popt.SetDXFPlotUnits(DXF_UNITS_MILLIMETERS)
     popt.SetDXFPlotPolygonMode(False)
 
     plot_plan = [

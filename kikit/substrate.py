@@ -2,14 +2,13 @@ from shapely.geometry import Polygon, MultiPolygon, LineString, MultiLineString,
 from shapely.ops import unary_union, split
 import shapely
 import numpy as np
-import pcbnew
+from kikit.pcbnew_compatibility import pcbnew
 from enum import IntEnum
 from itertools import product
 
 from kikit.common import *
 
 from kikit.defs import STROKE_T, Layer
-from kikit import pcbnew_compatibility
 
 class PositionError(RuntimeError):
     def __init__(self, message, point):

@@ -1,13 +1,13 @@
 import csv
-import pcbnew
+from  kikit.pcbnew_compatibility import pcbnew
 from math import sin, cos, radians
 from kikit.common import *
 from kikit.defs import MODULE_ATTR_T
 from kikit.eeshema import getField
 
 
-def hasNonSMDPins(module):
-    for pad in module.Pads():
+def hasNonSMDPins(footprint):
+    for pad in footprint.Pads():
         if pad.GetAttribute() != pcbnew.PAD_ATTRIB_SMD:
             return True
     return False
@@ -22,16 +22,16 @@ def layerToSide(layer):
         return "B"
     raise RuntimeError(f"Got component with invalid layer {layer}")
 
-def modulePosition(module, placeOffset, compensation):
-    pos = module.GetPosition() - placeOffset
-    angle = -radians(module.GetOrientation() / 10.0)
+def footprintPosition(footprint, placeOffset, compensation):
+    pos = footprint.GetPosition() - placeOffset
+    angle = -radians(footprint.GetOrientation() / 10.0)
     x = compensation[0] * cos(angle) - compensation[1] * sin(angle)
     y = compensation[0] * sin(angle) + compensation[1] * cos(angle)
     pos += wxPoint(fromMm(x), fromMm(y))
     return pos
 
-def moduleOrientation(module, compensation):
-    return module.GetOrientation() / 10 + compensation[2]
+def footprintOrientation(footprint, compensation):
+    return footprint.GetOrientation() / 10 + compensation[2]
 
 def parseCompensation(compensation):
     comps = [float(x) for x in compensation.split(";")]
@@ -39,17 +39,17 @@ def parseCompensation(compensation):
         raise FormatError(f"Invalid format of compensation '{compensation}'")
     return comps
 
-def defaultModuleX(module, placeOffset, compensation):
-    # Overwrite when module requires mirrored X when components are on the bottom side
-    return toMm(modulePosition(module, placeOffset, compensation)[0])
+def defaultFootprintX(footprint, placeOffset, compensation):
+    # Overwrite when footprint requires mirrored X when components are on the bottom side
+    return toMm(footprintPosition(footprint, placeOffset, compensation)[0])
 
-def defaultModuleY(module, placeOffset, compensation):
-    return -toMm(modulePosition(module, placeOffset, compensation)[1])
+def defaultFootprintY(footprint, placeOffset, compensation):
+    return -toMm(footprintPosition(footprint, placeOffset, compensation)[1])
 
 def collectPosData(board, correctionFields, posFilter=lambda x : True,
-                   moduleX=defaultModuleX, moduleY=defaultModuleY, bom=None):
+                   footprintX=defaultFootprintX, footprintY=defaultFootprintY, bom=None):
     """
-    Extract position data of the modules.
+    Extract position data of the footprints.
 
     If the optional BOM contains fields "<FABNAME>_CORRECTION" in format
     '<X>;<Y>;<ROTATION>' these corrections of component origin and rotation are
@@ -61,19 +61,19 @@ def collectPosData(board, correctionFields, posFilter=lambda x : True,
         bom = {}
     else:
         bom = { comp["reference"]: comp for comp in bom }
-    modules = []
+    footprints = []
     placeOffset = board.GetDesignSettings().m_AuxOrigin
-    for module in board.GetModules():
-        if module.GetAttributes() & MODULE_ATTR_T.MOD_VIRTUAL:
+    for footprint in board.GetFootprints():
+        if footprint.GetAttributes() & MODULE_ATTR_T.MOD_VIRTUAL:
             continue
-        if (posFilter(module)):
-            modules.append(module)
-    def getCompensation(module):
-        if module.GetReference() not in bom:
+        if (posFilter(footprint)):
+            footprints.append(footprint)
+    def getCompensation(footprint):
+        if footprint.GetReference() not in bom:
             return 0, 0, 0
         field = None
         for fieldName in correctionFields:
-            field = getField(bom[module.GetReference()], fieldName)
+            field = getField(bom[footprint.GetReference()], fieldName)
             if field is not None:
                 break
         if field is None or field == "":
@@ -81,12 +81,12 @@ def collectPosData(board, correctionFields, posFilter=lambda x : True,
         try:
             return parseCompensation(field)
         except FormatError as e:
-            raise FormatError(f"{module.GetReference()}: {e}")
-    return [(module.GetReference(),
-             moduleX(module, placeOffset, getCompensation(module)),
-             moduleY(module, placeOffset, getCompensation(module)),
-             layerToSide(module.GetLayer()),
-             moduleOrientation(module, getCompensation(module))) for module in modules]
+            raise FormatError(f"{footprint.GetReference()}: {e}")
+    return [(footprint.GetReference(),
+             footprintX(footprint, placeOffset, getCompensation(footprint)),
+             footprintY(footprint, placeOffset, getCompensation(footprint)),
+             layerToSide(footprint.GetLayer()),
+             footprintOrientation(footprint, getCompensation(footprint))) for footprint in footprints]
 
 def posDataToFile(posData, filename):
     with open(filename, "w", newline="") as csvfile:

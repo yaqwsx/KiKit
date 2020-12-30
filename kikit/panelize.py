@@ -1,5 +1,7 @@
-from pcbnew import GetBoard, LoadBoard, FromMM, ToMM, wxPoint, wxRect, wxRectMM, wxPointMM
-import pcbnew
+from kikit import pcbnew_compatibility
+from kikit.pcbnew_compatibility import pcbnew
+from pcbnew import (GetBoard, LoadBoard,
+    FromMM, ToMM, wxPoint, wxRect, wxRectMM, wxPointMM)
 from enum import Enum, IntEnum
 from shapely.geometry import Polygon, MultiPolygon, Point, LineString, box
 from shapely.prepared import prep
@@ -11,7 +13,6 @@ import os
 from kikit import substrate
 from kikit.substrate import Substrate, linestringToKicad
 from kikit.defs import STROKE_T, Layer, EDA_TEXT_HJUSTIFY_T
-from kikit import pcbnew_compatibility
 
 from kikit.common import *
 
@@ -49,7 +50,7 @@ def appendItem(board, item):
     """
     try:
         newItem = item.Duplicate()
-    except TypeError: # Module has overridden the method, cannot be called directly
+    except TypeError: # Footprint has overridden the method, cannot be called directly
         newItem = pcbnew.Cast_to_BOARD_ITEM(item).Duplicate().Cast()
     board.Add(newItem)
 
@@ -60,9 +61,9 @@ def transformArea(board, sourceArea, translate, origin, rotationAngle):
     for drawing in collectItems(board.GetDrawings(), sourceArea):
         drawing.Rotate(origin, rotationAngle)
         drawing.Move(translate)
-    for module in collectItems(board.GetModules(), sourceArea):
-        module.Rotate(origin, rotationAngle)
-        module.Move(translate)
+    for footprint in collectItems(board.GetFootprints(), sourceArea):
+        footprint.Rotate(origin, rotationAngle)
+        footprint.Move(translate)
     for track in collectItems(board.GetTracks(), sourceArea):
         track.Rotate(origin, rotationAngle)
         track.Move(translate)
@@ -161,16 +162,16 @@ def undoTransformation(point, rotation, origin, translation):
     segment.Rotate(origin, -rotation)
     return segment.GetStart()
 
-def removeCutsFromModule(module):
+def removeCutsFromFootprint(footprint):
     """
-    Find all graphical items in the module, remove them and return them as a
+    Find all graphical items in the footprint, remove them and return them as a
     list
     """
     edges = []
-    for edge in module.GraphicalItems():
+    for edge in footprint.GraphicalItems():
         if edge.GetLayerName() != "Edge.Cuts":
             continue
-        module.Remove(edge)
+        footprint.Remove(edge)
         edges.append(edge)
     return edges
 
@@ -204,9 +205,9 @@ def renameRefs(board, renamer):
     Given a board and renaming function (taking original name, returning new
     name) renames the references
     """
-    for module in board.GetModules():
-        ref = module.Reference().GetText()
-        module.Reference().SetText(renamer(ref))
+    for footprint in board.GetFootprints():
+        ref = footprint.Reference().GetText()
+        footprint.Reference().SetText(renamer(ref))
 
 def isBoardEdge(edge):
     """
@@ -238,7 +239,7 @@ class Panel:
         self.hVCuts = set() # Keep V-cuts as numbers and append them just before saving
         self.vVCuts = set() # to make them truly span the whole panel
         self.copperLayerCount = None
-        self.zonesToRefill = pcbnew.ZONE_CONTAINERS()
+        self.zonesToRefill = pcbnew.ZONES()
 
     def save(self, filename):
         """
@@ -340,16 +341,16 @@ class Panel:
             renameRefs(board, lambda x: refRenamer(self.boardCounter, x))
 
         drawings = collectItems(board.GetDrawings(), enlargedSourceArea)
-        modules = collectModules(board.GetModules(), enlargedSourceArea)
+        footprints = collectFootprints(board.GetFootprints(), enlargedSourceArea)
         tracks = collectItems(board.GetTracks(), enlargedSourceArea)
         zones = collectItems(board.Zones(), enlargedSourceArea)
 
         edges = []
-        for module in modules:
-            module.Rotate(originPoint, rotationAngle)
-            module.Move(translation)
-            edges += removeCutsFromModule(module)
-            appendItem(self.board, module)
+        for footprint in footprints:
+            footprint.Rotate(originPoint, rotationAngle)
+            footprint.Move(translation)
+            edges += removeCutsFromFootprint(footprint)
+            appendItem(self.board, footprint)
         for track in tracks:
             track.Rotate(originPoint, rotationAngle)
             track.Move(translation)
@@ -948,7 +949,7 @@ class Panel:
             raise RuntimeError("The substrate has to be a single piece to fill unused areas")
         increaseZonePriorities(self.board)
 
-        zoneContainer = pcbnew.ZONES(self.board)
+        zoneContainer = pcbnew.ZONE(self.board)
         boundary = self.boardSubstrate.exterior().boundary
         zoneContainer.Outline().AddOutline(linestringToKicad(boundary))
         for substrate in self.substrates:

@@ -1,5 +1,5 @@
 import click
-import pcbnew
+from kikit.pcbnew_compatibility import pcbnew
 import csv
 import os
 import re
@@ -13,20 +13,20 @@ from kikit.export import gerberImpl, exportSettingsPcbway
 
 def collectSolderTypes(board):
     result = {}
-    for module in board.GetModules():
-        if module.GetAttributes() & MODULE_ATTR_T.MOD_VIRTUAL:
+    for footprint in board.GetFootprints():
+        if footprint.GetAttributes() & MODULE_ATTR_T.MOD_VIRTUAL:
             continue
-        if hasNonSMDPins(module):
-            result[module.GetReference()] = "thru-hole"
+        if hasNonSMDPins(footprint):
+            result[footprint.GetReference()] = "thru-hole"
         else:
-            result[module.GetReference()] = "SMD"
+            result[footprint.GetReference()] = "SMD"
 
     return result
 
 def addVirtualToRefsToIgnore(refsToIgnore, board):
-    for module in board.GetModules():
-        if module.GetAttributes() & MODULE_ATTR_T.MOD_VIRTUAL:
-            refsToIgnore.append(module.GetReference())
+    for footprint in board.GetFootprints():
+        if footprint.GetAttributes() & MODULE_ATTR_T.MOD_VIRTUAL:
+            refsToIgnore.append(footprint.GetReference())
 
 def collectBom(components, manufacturerFields, partNumberFields,
                descriptionFields, notesFields, typeFields, footprintFields,

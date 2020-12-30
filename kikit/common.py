@@ -1,4 +1,4 @@
-import pcbnew
+from kikit.pcbnew_compatibility import pcbnew
 from pcbnew import wxPoint, wxRect
 import os
 from itertools import product, chain
@@ -39,9 +39,9 @@ def combineBoundingBoxes(a, b):
     return wxRect(topLeft, bottomRight)
 
 def collectEdges(board, layerName, sourceArea=None):
-    """ Collect edges in sourceArea on given layer including modules """
+    """ Collect edges in sourceArea on given layer including footprints """
     edges = []
-    for edge in chain(board.GetDrawings(), *[m.GraphicalItems() for m in board.GetModules()]):
+    for edge in chain(board.GetDrawings(), *[m.GraphicalItems() for m in board.GetFootprints()]):
         if edge.GetLayerName() != layerName:
             continue
         if not sourceArea or fitsIn(edge.GetBoundingBox(), sourceArea):
@@ -52,8 +52,8 @@ def collectItems(boardCollection, sourceArea):
     """ Returns a list of board items fully contained in the source area """
     return list([x for x in boardCollection if fitsIn(x.GetBoundingBox(), sourceArea)])
 
-def collectModules(boardCollection, sourceArea):
-    """ Returns a list of board modules fully contained in the source area ignoring reference a value label"""
+def collectFootprints(boardCollection, sourceArea):
+    """ Returns a list of board footprints fully contained in the source area ignoring reference a value label"""
     return list([x for x in boardCollection if fitsIn(x.GetFootprintRect(), sourceArea)])
 
 
@@ -127,7 +127,7 @@ def removeComponents(board, references):
     Remove components with references from the board. References is a list of
     strings
     """
-    for module in board.GetModules():
+    for module in board.GetFootprints():
         if module.GetReference() in references:
             board.Remove(module)
 

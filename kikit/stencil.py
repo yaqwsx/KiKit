@@ -1,4 +1,4 @@
-import pcbnew
+from kikit.pcbnew_compatibility import pcbnew
 from pcbnew import wxPoint
 import numpy as np
 from kikit.common import *
@@ -11,7 +11,6 @@ import subprocess
 from kikit.common import removeComponents, parseReferences
 
 from shapely.geometry import Point
-from kikit import pcbnew_compatibility
 
 
 OUTER_BORDER = fromMm(7.5)
@@ -349,23 +348,23 @@ def getComponents(board, references):
     """
     Return a list of components based on designator
     """
-    return [m for m in board.GetModules() if m.GetReference() in references]
+    return [f for f in board.GetFootprints() if f.GetReference() in references]
 
-def collectModuleEdges(module, layerName):
+def collectFootprintEdges(footprint, layerName):
     """
-    Return all edges on given layer in given module
+    Return all edges on given layer in given footprint
     """
-    return [e for e in module.GraphicalItems() if e.GetLayerName() == layerName]
+    return [e for e in footprint.GraphicalItems() if e.GetLayerName() == layerName]
 
-def extractComponentPolygons(modules, srcLayer):
+def extractComponentPolygons(footprints, srcLayer):
     """
     Return a list of shapely polygons with holes for already placed components.
     The source layer defines the geometry on which the cutout is computed.
     Usually it a font or back courtyard
     """
     polygons = []
-    for m in modules:
-       edges = collectModuleEdges(m, srcLayer)
+    for f in footprints:
+       edges = collectFootprintEdges(f, srcLayer)
        for ring in extractRings(edges):
            polygons.append(toShapely(ring, edges))
     return polygons

@@ -1,4 +1,4 @@
-import pcbnew
+from kikit.pcbnew_compatibility import pcbnew
 import wx
 import re
 from kikit import modify
@@ -86,9 +86,9 @@ class HideReferencesDialog(wx.Dialog):
                 self.matchingText.SetLabel("")
             else:
                 refs = []
-                for module in self.board.GetModules():
-                    if regex.match(module.GetReference()):
-                        refs.append(module.GetReference())
+                for footprint in self.board.GetFootprints():
+                    if regex.match(footprint.GetReference()):
+                        refs.append(footprint.GetReference())
                 if len(refs) > 1:
                     self.matchingText.SetLabel(", ".join(refs))
                 else:

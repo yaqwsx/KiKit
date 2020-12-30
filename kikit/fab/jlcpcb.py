@@ -1,5 +1,5 @@
 import click
-import pcbnew
+from kikit.pcbnew_compatibility import pcbnew
 import csv
 import os
 import sys
