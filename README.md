@@ -10,13 +10,14 @@ KiCAD workflow like:
 
 ![KiKit Promo](https://github.com/yaqwsx/KiKit/blob/master/doc/resources/promo.jpg?raw=true)
 
-## Do You Enjoy KiKit?
+## Do You Enjoy KiKit or Does It Save You Time?
 
 [![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/E1E2181LU)
 
 ## Installation
 
-KiKit is available as a [PyPi package](https://pypi.org/project/KiKit/), therefore, you can install it via pip:
+KiKit is available as a [PyPi package](https://pypi.org/project/KiKit/),
+therefore, you can install it via pip:
 
 ```
 pip3 install kikit
@@ -85,6 +86,11 @@ stencils, see [Stencil documentation](doc/stencil.md)
 
 Please, first check [FAQ](doc/faq.md). If you have not found answer for your
 problem there, feel free to open an issue on GitHub.
+
+If you would like to have a feature in KiKit that is currently not on a roadmap,
+or if you need to prepare custom panelization script (e.g., multi-design panels,
+panels with specific arrangement), you can consider hiring me to do the job.
+Just reach out to me via e-mail and we can discuss further details.
 
 ## How To Use It CI?
 
