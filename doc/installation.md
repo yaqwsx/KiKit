@@ -88,6 +88,7 @@ following command:
 
 ```
 docker run -it -w /kikit -v $(pwd):/kikit yaqwsx/kikit /bin/bash
+docker run -it -w /kikit -v %cd%:/kikit yaqwsx/kikit /bin/bash
 ```
 
 This will run a new terminal inside the docker container. You can issue any
