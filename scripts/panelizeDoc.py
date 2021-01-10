@@ -7,7 +7,7 @@ Generate documentation in markdown format for panelization
 from kikit import panelize
 from kikit.doc import header, printHelp, printHeader
 
-from pcbnew_compatibility import pcbnew
+from kikit.pcbnew_compatibility import pcbnew
 
 print(
 """

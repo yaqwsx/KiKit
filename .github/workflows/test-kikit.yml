@@ -19,3 +19,6 @@ jobs:
           sudo python -m pip install PcbDraw
           sudo python -m pip install -e .
       - run: make test
+      - run: make doc
+      - run: sudo make package
+

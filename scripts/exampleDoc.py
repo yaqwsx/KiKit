@@ -6,7 +6,7 @@ Generate documentation in markdown format for examples
 
 from kikit.doc import runBoardExample
 
-from pcbnew_compatibility import pcbnew
+from kikit.pcbnew_compatibility import pcbnew
 
 print(
 """
