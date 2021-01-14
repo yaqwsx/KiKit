@@ -83,7 +83,7 @@ def extractBoard(input, output, sourcearea):
     help="Add tooling holes to corners of the panel. Specify <horizontalOffset> <verticalOffset> <diameter>.")
 @click.option("--fiducials", type=(float, float, float, float), default=(None, None, None, None),
     help="Add fiducials holes to corners of the panel. Specify <horizontalOffset> <verticalOffset> <copperDiameter> <openingDiameter>.")
-def grid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
+def grid(input, output, space, hspace, vspace, gridsize, panelsize, tabwidth, tabheight, vcuts,
          mousebites, radius, sourcearea, vcutcurves, htabs, vtabs, rotation,
          tolerance, renamenet, renameref, tabsfrom, framecutv, framecuth,
          copperfill, railstb, railslr, tooling, fiducials):
@@ -96,6 +96,10 @@ def grid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
     from kikit.panelize import Panel, fromMm, wxPointMM, wxRectMM, fromDegrees
     import sys
     try:
+        if hspace is None:
+            hspace = space
+        if vspace is None:
+            vspace = space
         panel = Panel()
         panel.inheritDesignSettings(input)
         panel.inheritProperties(input)
@@ -109,24 +113,25 @@ def grid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
         if panelsize[0]:
             w, h = panelsize
             frame = True
-            oht, ovt = fromMm(space), fromMm(space)
+            oht, ovt = fromMm(hspace), fromMm(vspace)
         else:
             frame = False
             oht, ovt = 0, 0
         if railstb:
             frame = False
             railstb = fromMm(railstb)
-            ovt = fromMm(space)
+            ovt = fromMm(vspace)
         if railslr:
             frame = False
             railslr = fromMm(railslr)
-            oht = fromMm(space)
+            oht = fromMm(hspace)
 
-        validateSpaceRadius(space, radius)
+        validateSpaceRadius(vspace, radius)
+        validateSpaceRadius(hspace, radius)
         tolerance = fromMm(tolerance)
         psize, cuts = panel.makeGrid(input, rows, cols, wxPointMM(50, 50),
             sourceArea=sourcearea, tolerance=tolerance,
-            verSpace=fromMm(space), horSpace=fromMm(space),
+            verSpace=fromMm(vspace), horSpace=fromMm(hspace),
             verTabWidth=fromMm(tabwidth), horTabWidth=fromMm(tabheight),
             outerHorTabThickness=oht, outerVerTabThickness=ovt,
             horTabCount=htabs, verTabCount=vtabs, rotation=fromDegrees(rotation),
