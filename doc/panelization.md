@@ -102,6 +102,7 @@ makeGrid(self, boardfile, rows, cols, destination, sourceArea=None, tolerance=0,
          verSpace=0, horSpace=0, verTabCount=1, horTabCount=1, verTabWidth=0, 
          horTabWidth=0, outerVerTabThickness=0, outerHorTabThickness=0, 
          rotation=0, forceOuterCutsH=False, forceOuterCutsV=False, 
+         placementClass=<class 'kikit.panelize.BasicGridPosition'>, 
          netRenamePattern=Board_{n}-{orig}, refRenamePattern=Board_{n}-{orig})
 ```
 Creates a grid of boards (row x col) as a panel at given destination
@@ -120,7 +121,9 @@ makeMouseBites.
 makeTightGrid(self, boardfile, rows, cols, destination, verSpace, horSpace, 
               slotWidth, width, height, sourceArea=None, tolerance=0, 
               verTabWidth=0, horTabWidth=0, verTabCount=1, horTabCount=1, 
-              rotation=0, netRenamePattern=Board_{n}-{orig}, 
+              rotation=0, 
+              placementClass=<class 'kikit.panelize.BasicGridPosition'>, 
+              netRenamePattern=Board_{n}-{orig}, 
               refRenamePattern=Board_{n}-{orig})
 ```
 Creates a grid of boards just like `makeGrid`, however, it creates a

@@ -22,6 +22,51 @@ class PanelError(RuntimeError):
 def identity(x):
     return x
 
+class BasicGridPosition:
+    """
+    Specify board position in the grid. This class
+    """
+    def __init__(self, destination, boardSize, horSpace, verSpace):
+        self.destination = destination
+        self.boardSize = boardSize
+        self.horSpace = horSpace
+        self.verSpace = verSpace
+
+    def position(self, i, j):
+        return wxPoint(self.destination[0] + j * (self.boardSize.GetWidth() + self.horSpace),
+                       self.destination[1] + i * (self.boardSize.GetHeight() + self.verSpace))
+
+    def rotation(self, i, j):
+        return 0
+
+class OddEvenRowsPosition(BasicGridPosition):
+    """
+    Rotate boards by 180° for every row
+    """
+    def rotation(self, i, j):
+        if i % 2 == 0:
+            return 0
+        return 1800
+
+class OddEvenColumnPosition(BasicGridPosition):
+    """
+    Rotate boards by 180° for every column
+    """
+    def rotation(self, i, j):
+        if j % 2 == 0:
+            return 0
+        return 1800
+
+class OddEvenRowsColumnsPosition(BasicGridPosition):
+    """
+    Rotate boards by 180 for every row and column
+    """
+    def rotation(self, i, j):
+        if (i * j) % 2 == 0:
+            return 0
+        return 1800
+
+
 class Origin(Enum):
     Center = 0
     TopLeft = 1
@@ -449,24 +494,25 @@ class Panel:
             segments.append(label)
         return segments
 
-    def _boardGridPos(self, destination, i, j, boardSize, horSpace, verSpace):
-        return wxPoint(destination[0] + j * (boardSize.GetWidth() + horSpace),
-                       destination[1] + i * (boardSize.GetHeight() + verSpace))
-
     def _placeBoardsInGrid(self, boardfile, rows, cols, destination, sourceArea, tolerance,
-                  verSpace, horSpace, rotation, netRenamer, refRenamer):
+                  verSpace, horSpace, rotation, netRenamer, refRenamer,
+                  placementClass):
         """
         Create a grid of boards, return source board size aligned at the top
         left corner
         """
         boardSize = wxRect(0, 0, 0, 0)
         topLeftSize = None
+        placement = placementClass(destination, boardSize, horSpace, verSpace)
         for i, j in product(range(rows), range(cols)):
-            dest = self._boardGridPos(destination, i, j, boardSize, horSpace, verSpace)
-            boardSize = self.appendBoard(boardfile, dest, sourceArea=sourceArea,
-                                         tolerance=tolerance, origin=Origin.TopLeft,
-                                         rotationAngle=rotation, netRenamer=netRenamer,
-                                         refRenamer=refRenamer)
+            placement.boardSize = boardSize
+            dest = placement.position(i, j)
+            boardRotation = rotation + placement.rotation(i, j)
+            boardSize = self.appendBoard(
+                boardfile, dest, sourceArea=sourceArea,
+                tolerance=tolerance, origin=Origin.Center,
+                rotationAngle=boardRotation, netRenamer=netRenamer,
+                refRenamer=refRenamer)
             if not topLeftSize:
                 topLeftSize = boardSize
         return topLeftSize
@@ -567,11 +613,13 @@ class Panel:
 
     def _makeVerGridTabs(self, destination, rows, cols, boardSize, verSpace,
                       horSpace, verTabWidth, horTabWidth, verTabCount,
-                      horTabCount, outerVerTabThickness, outerHorTabThickness):
+                      horTabCount, outerVerTabThickness, outerHorTabThickness,
+                      placementClass):
+        placement = placementClass(destination, boardSize, horSpace, verSpace)
         polygons = []
         cuts = []
         for i, j in product(range(rows), range(cols)):
-            dest = self._boardGridPos(destination, i, j, boardSize, horSpace, verSpace)
+            dest = placement.position(i, j)
             if (i != 0 and verSpace > 0) or outerVerTabThickness > 0: # Add tabs to the top side
                 tabThickness = outerVerTabThickness if i == 0 else verSpace / 2
                 for tabPos in self._tabSpacing(boardSize.GetWidth(), verTabCount):
@@ -590,11 +638,13 @@ class Panel:
 
     def _makeHorGridTabs(self, destination, rows, cols, boardSize, verSpace,
                       horSpace, verTabWidth, horTabWidth, verTabCount,
-                      horTabCount, outerVerTabThickness, outerHorTabThickness):
+                      horTabCount, outerVerTabThickness, outerHorTabThickness,
+                      placementClass):
+        placement = placementClass(destination, boardSize, horSpace, verSpace)
         polygons = []
         cuts = []
         for i, j in product(range(rows), range(cols)):
-            dest = self._boardGridPos(destination, i, j, boardSize, horSpace, verSpace)
+            dest = placement.position(i, j)
             if (j != 0 and horSpace > 0) or outerHorTabThickness > 0: # Add tabs to the left side
                 tabThickness = outerHorTabThickness if j == 0 else horSpace / 2
                 for tabPos in self._tabSpacing(boardSize.GetHeight(), horTabCount):
@@ -617,6 +667,7 @@ class Panel:
                  horTabCount=1, verTabWidth=0, horTabWidth=0,
                  outerVerTabThickness=0, outerHorTabThickness=0, rotation=0,
                  forceOuterCutsH=False, forceOuterCutsV=False,
+                 placementClass=BasicGridPosition,
                  netRenamePattern="Board_{n}-{orig}",
                  refRenamePattern="Board_{n}-{orig}"):
         """
@@ -637,7 +688,7 @@ class Panel:
         refRenamer = lambda x, y: refRenamePattern.format(n=x, orig=y)
         boardSize = self._placeBoardsInGrid(boardfile, rows, cols, destination,
                                     sourceArea, tolerance, verSpace, horSpace,
-                                    rotation, netRenamer, refRenamer)
+                                    rotation, netRenamer, refRenamer, placementClass)
         gridDest = wxPoint(boardSize.GetX(), boardSize.GetY())
         tabs, cuts = [], []
 
@@ -649,7 +700,8 @@ class Panel:
             else:
                 t, c = self._makeVerGridTabs(gridDest, rows, cols, boardSize,
                     verSpace, horSpace, verTabWidth, horTabWidth, verTabCount,
-                    horTabCount, outerVerTabThickness, outerHorTabThickness)
+                    horTabCount, outerVerTabThickness, outerHorTabThickness,
+                    placementClass)
             tabs += t
             cuts += c
 
@@ -661,11 +713,12 @@ class Panel:
             else:
                 t, c = self._makeHorGridTabs(gridDest, rows, cols, boardSize,
                     verSpace, horSpace, verTabWidth, horTabWidth, verTabCount,
-                    horTabCount, outerVerTabThickness, outerHorTabThickness)
+                    horTabCount, outerVerTabThickness, outerHorTabThickness,
+                    placementClass)
             tabs += t
             cuts += c
 
-        tabs = list([t.buffer(fromMm(0.001), join_style=2) for t in tabs])
+        tabs = list([t.buffer(fromMm(0.01), join_style=2) for t in tabs])
         self.appendSubstrate(tabs)
 
         return (wxRect(gridDest[0], gridDest[1],
@@ -678,6 +731,7 @@ class Panel:
                       horSpace, slotWidth, width, height, sourceArea=None,
                       tolerance=0, verTabWidth=0, horTabWidth=0,
                       verTabCount=1, horTabCount=1, rotation=0,
+                      placementClass=BasicGridPosition,
                       netRenamePattern="Board_{n}-{orig}",
                       refRenamePattern="Board_{n}-{orig}"):
         """
@@ -688,7 +742,7 @@ class Panel:
         refRenamer = lambda x, y: refRenamePattern.format(n=x, orig=y)
         boardSize = self._placeBoardsInGrid(boardfile, rows, cols, destination,
                                     sourceArea, tolerance, verSpace, horSpace,
-                                    rotation, netRenamer, refRenamer)
+                                    rotation, netRenamer, refRenamer, placementClass)
         gridDest = wxPoint(boardSize.GetX(), boardSize.GetY())
         panelSize = wxRect(gridDest[0], gridDest[1],
                        cols * boardSize.GetWidth() + (cols - 1) * horSpace,
@@ -698,13 +752,13 @@ class Panel:
         if verTabCount != 0:
             t, c = self._makeVerGridTabs(gridDest, rows, cols, boardSize,
                     verSpace, horSpace, verTabWidth, horTabWidth, verTabCount,
-                    horTabCount, slotWidth, slotWidth)
+                    horTabCount, slotWidth, slotWidth, placementClass)
             tabs += t
             cuts += c
         if horTabCount != 0:
             t, c = self._makeHorGridTabs(gridDest, rows, cols, boardSize,
                     verSpace, horSpace, verTabWidth, horTabWidth, verTabCount,
-                    horTabCount, slotWidth, slotWidth)
+                    horTabCount, slotWidth, slotWidth, placementClass)
             tabs += t
             cuts += c
 
@@ -720,7 +774,7 @@ class Panel:
         frame = frame.difference(self.boardSubstrate.exterior().buffer(slotWidth))
         self.appendSubstrate(frame)
 
-        tabs = list([t.buffer(fromMm(0.001), join_style=2) for t in tabs])
+        tabs = list([t.buffer(fromMm(0.01), join_style=2) for t in tabs])
         self.appendSubstrate(tabs)
 
         if verTabCount != 0 or horTabCount != 0:

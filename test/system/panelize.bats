@@ -86,6 +86,27 @@ load common
         $RES/conn.kicad_pcb panel9.kicad_pcb
 }
 
+@test "Grid with alternation" {
+    kikit panelize grid \
+        --space 2 --gridsize 2 2 \
+        --tabwidth 3 --tabheight 3 \
+        --mousebites 0.5 1 0.25 \
+        --radius 1 --panelsize 80 80 --alternation rows \
+        $RES/conn.kicad_pcb panel-alternationRows.kicad_pcb
+    kikit panelize grid \
+        --space 2 --gridsize 2 2 \
+        --tabwidth 3 --tabheight 3 \
+        --mousebites 0.5 1 0.25 \
+        --radius 1 --panelsize 80 80 --alternation cols \
+        $RES/conn.kicad_pcb panel-alternationCols.kicad_pcb
+    kikit panelize grid \
+        --space 2 --gridsize 2 2 \
+        --tabwidth 3 --tabheight 3 \
+        --mousebites 0.5 1 0.25 \
+        --radius 1 --panelsize 80 80 --alternation rowsCols \
+        $RES/conn.kicad_pcb panel-alternationRowsCols.kicad_pcb
+}
+
 @test "Tightgrid with custom tab positions" {
     kikit panelize tightgrid \
         --slotwidth 2.5 --space 8 --gridsize 2 2 \

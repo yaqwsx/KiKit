@@ -166,6 +166,20 @@ runBoardExample("panel9",
 
 print(
 """
+Especially for irregular shaped board it might make sense to rotate boards by
+180° based on their position in the grid. It could allow you to pack the boards
+more closely. Also, if you create a panel out of boards that have e.g., a
+connector on one side, it makes sense to rotate the second column by 180° so the
+connectors are facing out of the panel. You can do so by specifying the
+`--alternation` option. This options allows you to rotate board in every second
+column (`cols`), every second row (`rows`) or combination of both:
+"""
+)
+runBoardExample("panel10",
+    ["panelize", "grid", "--space", "2", "--gridsize", "2", "2", "--tabwidth", "3", "--tabheight", "3", "--mousebites", "0.5", "1", "0.25", "--radius", "1", "--panelsize", "80", "80", "--alternation", "cols", "doc/resources/conn.kicad_pcb"])
+
+print(
+"""
 Sometimes you might find yourself in a need for precise tab placement. This can be
 easily done. Just draw a line in one of KiCAD layers (be careful, the
 orientation matters - the line has to target the board substrate) and specify
@@ -174,7 +188,7 @@ specifying `--vtabs 0` and `--htabs 0`. See for yourself, there are some lines
 already prepared for you in `conn.kicad_pcb`
 """
 )
-runBoardExample("panel10",
+runBoardExample("panel11",
     ["panelize", "tightgrid", "--slotwidth", "2.5", "--space", "8", "--gridsize", "2", "2", "--htabs", "0", "--vtabs", "0", "--tabsfrom", "Eco2.User", "3", "--tabsfrom", "Eco1.User", "5", "--mousebites", "0.5", "1", "0.25", "--radius", "1", "--panelsize", "80", "80", "doc/resources/conn.kicad_pcb"])
 
 print(
@@ -187,5 +201,5 @@ fill:
 """
 )
 
-runBoardExample("panel11",
+runBoardExample("panel12",
     ["panelize", "grid", "--space", "3", "--gridsize", "2", "2", "--tabwidth", "18", "--tabheight", "10", "--vcuts", "--radius", "1", "--panelsize", "70", "55", "--copperfill", "doc/resources/conn.kicad_pcb"])

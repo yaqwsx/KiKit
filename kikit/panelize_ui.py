@@ -7,6 +7,21 @@ def validateSpaceRadius(space, radius):
         raise RuntimeError(f"Fillet radius ({radius} mm) has to be greater than " \
                            f"space between boards ({space} mm)")
 
+def getPlacementClass(name):
+    from kikit.panelize import (BasicGridPosition, OddEvenColumnPosition,
+        OddEvenRowsPosition, OddEvenRowsColumnsPosition)
+    mapping = {
+        "none": BasicGridPosition,
+        "rows": OddEvenRowsPosition,
+        "cols": OddEvenColumnPosition,
+        "rowsCols": OddEvenRowsColumnsPosition
+    }
+    try:
+        return mapping[name]
+    except KeyError:
+        raise RuntimeError(f"Invalid alternation option '{name}' passed. " +
+            "Valid options are: " + ", ".join(mapping.keys()))
+
 @click.group()
 def panelize():
     """
@@ -83,10 +98,12 @@ def extractBoard(input, output, sourcearea):
     help="Add tooling holes to corners of the panel. Specify <horizontalOffset> <verticalOffset> <diameter>.")
 @click.option("--fiducials", type=(float, float, float, float), default=(None, None, None, None),
     help="Add fiducials holes to corners of the panel. Specify <horizontalOffset> <verticalOffset> <copperDiameter> <openingDiameter>.")
+@click.option("--alternation", type=str, default="none",
+    help="Rotate the boards based on their positions in the grid. Valid options: default, rows, cols, rowsCols")
 def grid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
          mousebites, radius, sourcearea, vcutcurves, htabs, vtabs, rotation,
          tolerance, renamenet, renameref, tabsfrom, framecutv, framecuth,
-         copperfill, railstb, railslr, tooling, fiducials):
+         copperfill, railstb, railslr, tooling, fiducials, alternation):
     """
     Create a regular panel placed in a frame.
 
@@ -121,6 +138,7 @@ def grid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
             frame = False
             railslr = fromMm(railslr)
             oht = fromMm(space)
+        placementClass = getPlacementClass(alternation)
 
         validateSpaceRadius(space, radius)
         tolerance = fromMm(tolerance)
@@ -131,7 +149,8 @@ def grid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
             outerHorTabThickness=oht, outerVerTabThickness=ovt,
             horTabCount=htabs, verTabCount=vtabs, rotation=fromDegrees(rotation),
             netRenamePattern=renamenet, refRenamePattern=renameref,
-            forceOuterCutsV=railstb or frame, forceOuterCutsH=railslr or frame)
+            forceOuterCutsV=railstb or frame, forceOuterCutsH=railslr or frame,
+            placementClass=placementClass)
         tabs = []
         for layer, width in tabsfrom:
             tab, cut = panel.layerToTabs(layer, fromMm(width))
@@ -205,9 +224,12 @@ def grid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
     help="Add tooling holes to corners of the panel. Specify <horizontalOffset> <verticalOffset> <diameter>.")
 @click.option("--fiducials", type=(float, float, float, float), default=(None, None, None, None),
     help="Add fiducials holes to corners of the panel. Specify <horizontalOffset> <verticalOffset> <copperDiameter> <openingDiameter>.")
+@click.option("--alternation", type=str, default="none",
+    help="Rotate the boards based on their positions in the grid. Valid options: default, rows, cols, rowsCols")
 def tightgrid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
          mousebites, radius, sourcearea, vcutcurves, htabs, vtabs, rotation, slotwidth,
-         tolerance, renamenet, renameref, tabsfrom, copperfill, fiducials, tooling):
+         tolerance, renamenet, renameref, tabsfrom, copperfill, fiducials, tooling,
+         alternation):
     """
     Create a regular panel placed in a frame by milling a slot around the
     boards' perimeters.
@@ -227,6 +249,7 @@ def tightgrid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vc
         else:
             sourcearea = None
         w, h = panelsize
+        placementClass = getPlacementClass(alternation)
         validateSpaceRadius(space, radius)
         if 2 * radius > 1.1 * slotwidth:
             raise RuntimeError("The slot is too narrow for given radius (it has to be at least 10% larger")
@@ -237,7 +260,8 @@ def tightgrid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vc
             sourceArea=sourcearea, tolerance=tolerance,
             verTabWidth=fromMm(tabwidth), horTabWidth=fromMm(tabheight),
             verTabCount=htabs, horTabCount=vtabs, rotation=fromDegrees(rotation),
-            netRenamePattern=renamenet, refRenamePattern=renameref)
+            netRenamePattern=renamenet, refRenamePattern=renameref,
+            placementClass=placementClass)
         tabs = []
         for layer, width in tabsfrom:
             tab, cut = panel.layerToTabs(layer, fromMm(width))
