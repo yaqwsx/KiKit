@@ -135,18 +135,18 @@ def grid(input, output, space, hspace, vspace, gridsize, panelsize, tabwidth,
         if panelsize[0]:
             w, h = panelsize
             frame = True
-            oht, ovt = fromMm(space), fromMm(space)
+            oht, ovt = fromMm(hspace), fromMm(vspace)
         else:
             frame = False
             oht, ovt = 0, 0
         if railstb:
             frame = False
             railstb = fromMm(railstb)
-            ovt = fromMm(space)
+            ovt = fromMm(vspace)
         if railslr:
             frame = False
             railslr = fromMm(railslr)
-            oht = fromMm(space)
+            oht = fromMm(hspace)
         placementClass = getPlacementClass(alternation)
 
         validateSpaceRadius(vspace, radius)
