@@ -58,7 +58,12 @@ def extractBoard(input, output, sourcearea):
 @click.command()
 @click.argument("input", type=click.Path(dir_okay=False))
 @click.argument("output", type=click.Path(dir_okay=False))
-@click.option("--space", "-s", type=float, default=0, help="Space between boards")
+@click.option("--hspace", type=float, default=None,
+    help="Horizontal space between boards. This option has a precedenc over --space")
+@click.option("--vspace", type=float, default=None,
+    help="Horizontal space between boards. This option has a precedenc over --space")
+@click.option("--space", "-s", type=float, default=2,
+    help="Space between boards. This option is overriden by --hspace and --vspace if specified")
 @click.option("--gridsize", "-g", type=(int, int), default=(-1, -1), help="Panel size <rows> <cols>")
 @click.option("--panelsize", "-p", type=(float, float), default=(None, None),
     help="Add a frame to a panel. The argument specifies it size as <width> <height>")
@@ -100,10 +105,10 @@ def extractBoard(input, output, sourcearea):
     help="Add fiducials holes to corners of the panel. Specify <horizontalOffset> <verticalOffset> <copperDiameter> <openingDiameter>.")
 @click.option("--alternation", type=str, default="none",
     help="Rotate the boards based on their positions in the grid. Valid options: default, rows, cols, rowsCols")
-def grid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
-         mousebites, radius, sourcearea, vcutcurves, htabs, vtabs, rotation,
-         tolerance, renamenet, renameref, tabsfrom, framecutv, framecuth,
-         copperfill, railstb, railslr, tooling, fiducials, alternation):
+def grid(input, output, space, hspace, vspace, gridsize, panelsize, tabwidth,
+         tabheight, vcuts, mousebites, radius, sourcearea, vcutcurves, htabs,
+         vtabs, rotation, tolerance, renamenet, renameref, tabsfrom, framecutv,
+         framecuth, copperfill, railstb, railslr, tooling, fiducials, alternation):
     """
     Create a regular panel placed in a frame.
 
@@ -119,6 +124,10 @@ def grid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
         rows, cols = gridsize
         if rows == -1 or cols == -1:
             raise RuntimeError("Gridsize is mandatory. Please specify the --gridsize option.")
+        if hspace is None:
+            hspace = space
+        if vspace is None:
+            vspace = space
         if sourcearea[0]:
             sourcearea = wxRectMM(*sourcearea)
         else:
@@ -140,11 +149,12 @@ def grid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
             oht = fromMm(space)
         placementClass = getPlacementClass(alternation)
 
-        validateSpaceRadius(space, radius)
+        validateSpaceRadius(vspace, radius)
+        validateSpaceRadius(hspace, radius)
         tolerance = fromMm(tolerance)
         psize, cuts = panel.makeGrid(input, rows, cols, wxPointMM(50, 50),
             sourceArea=sourcearea, tolerance=tolerance,
-            verSpace=fromMm(space), horSpace=fromMm(space),
+            verSpace=fromMm(vspace), horSpace=fromMm(hspace),
             verTabWidth=fromMm(tabwidth), horTabWidth=fromMm(tabheight),
             outerHorTabThickness=oht, outerVerTabThickness=ovt,
             horTabCount=htabs, verTabCount=vtabs, rotation=fromDegrees(rotation),
@@ -190,7 +200,12 @@ def grid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
 @click.command()
 @click.argument("input", type=click.Path(dir_okay=False))
 @click.argument("output", type=click.Path(dir_okay=False))
-@click.option("--space", "-s", type=float, default=2, help="Space between boards")
+@click.option("--hspace", type=float, default=None,
+    help="Horizontal space between boards. This option has a precedenc over --space")
+@click.option("--vspace", type=float, default=None,
+    help="Horizontal space between boards. This option has a precedenc over --space")
+@click.option("--space", "-s", type=float, default=2,
+    help="Space between boards. This option is overriden by --hspace and --vspace if specified")
 @click.option("--slotwidth", "-w", type=float, default=2, help="Milled slot width")
 @click.option("--gridsize", "-g", type=(int, int), default=(-1, -1), help="Panel size <rows> <cols>")
 @click.option("--panelsize", "-p", type=(float, float), help="<width> <height>", required=True)
@@ -226,9 +241,10 @@ def grid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
     help="Add fiducials holes to corners of the panel. Specify <horizontalOffset> <verticalOffset> <copperDiameter> <openingDiameter>.")
 @click.option("--alternation", type=str, default="none",
     help="Rotate the boards based on their positions in the grid. Valid options: default, rows, cols, rowsCols")
-def tightgrid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vcuts,
-         mousebites, radius, sourcearea, vcutcurves, htabs, vtabs, rotation, slotwidth,
-         tolerance, renamenet, renameref, tabsfrom, copperfill, fiducials, tooling,
+def tightgrid(input, output, space, hspace, vspace, gridsize, panelsize,
+         tabwidth, tabheight, vcuts, mousebites, radius, sourcearea, vcutcurves,
+         htabs, vtabs, rotation, slotwidth, tolerance, renamenet, renameref,
+         tabsfrom, copperfill, fiducials, tooling,
          alternation):
     """
     Create a regular panel placed in a frame by milling a slot around the
@@ -244,18 +260,23 @@ def tightgrid(input, output, space, gridsize, panelsize, tabwidth, tabheight, vc
         rows, cols = gridsize
         if rows == -1 or cols == -1:
             raise RuntimeError("Gridsize is mandatory. Please specify the --gridsize option.")
+        if hspace is None:
+            hspace = space
+        if vspace is None:
+            vspace = space
         if sourcearea[0]:
             sourcearea = wxRectMM(*sourcearea)
         else:
             sourcearea = None
         w, h = panelsize
         placementClass = getPlacementClass(alternation)
-        validateSpaceRadius(space, radius)
+        validateSpaceRadius(vspace, radius)
+        validateSpaceRadius(hspace, radius)
         if 2 * radius > 1.1 * slotwidth:
             raise RuntimeError("The slot is too narrow for given radius (it has to be at least 10% larger")
         tolerance = fromMm(tolerance)
         psize, cuts = panel.makeTightGrid(input, rows, cols, wxPointMM(50, 50),
-            verSpace=fromMm(space), horSpace=fromMm(space),
+            verSpace=fromMm(vspace), horSpace=fromMm(hspace),
             slotWidth=fromMm(slotwidth), width=fromMm(w), height=fromMm(h),
             sourceArea=sourcearea, tolerance=tolerance,
             verTabWidth=fromMm(tabwidth), horTabWidth=fromMm(tabheight),
