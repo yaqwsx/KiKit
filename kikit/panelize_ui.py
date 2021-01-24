@@ -1,7 +1,7 @@
 import click
 
 def validateSpaceRadius(space, radius):
-    if space == 0:
+    if space <= 0:
         return
     if space < 2 * radius:
         raise RuntimeError(f"Fillet radius ({radius} mm) should to be less than " \
