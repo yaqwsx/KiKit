@@ -4,8 +4,8 @@ def validateSpaceRadius(space, radius):
     if space == 0:
         return
     if space < 2 * radius:
-        raise RuntimeError(f"Fillet radius ({radius} mm) has to be greater than " \
-                           f"space between boards ({space} mm)")
+        raise RuntimeError(f"Fillet radius ({radius} mm) should to be less than " \
+                           f"half space between boards ({space} mm).")
 
 def getPlacementClass(name):
     from kikit.panelize import (BasicGridPosition, OddEvenColumnPosition,
