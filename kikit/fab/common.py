@@ -31,7 +31,7 @@ def footprintPosition(footprint, placeOffset, compensation):
     return pos
 
 def footprintOrientation(footprint, compensation):
-    return footprint.GetOrientation() / 10 + compensation[2]
+    return (footprint.GetOrientation() / 10 + compensation[2]) % 360
 
 def parseCompensation(compensation):
     comps = [float(x) for x in compensation.split(";")]
