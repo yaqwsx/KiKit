@@ -16,7 +16,11 @@ def collectBom(components, lscsFields, ignore):
         if c["unit"] != 1:
             continue
         reference = c["reference"]
-        if reference.startswith("#PWR") or reference.startswith("#FL") or reference in ignore:
+        if reference.startswith("#PWR") or reference.startswith("#FL"):
+            continue
+        if reference in ignore:
+            continue
+        if getField(c, "JLCPCB_IGNORE") is not None:
             continue
         orderCode = None
         for fieldName in lscsFields:
@@ -39,10 +43,7 @@ def bomToCsv(bomData, filename):
             value, footprint, lcsc = cType
             writer.writerow([value, ",".join(references), footprint, lcsc])
 
-def genPosFilter(forceSmd):
-    return lambda module : module.GetAttributes() & MODULE_ATTR_T.MOD_CMS or (forceSmd and not hasNonSMDPins(module))
-
-def exportJlcpcb(board, outputdir, assembly, schematic, forcesmd, ignore, field,
+def exportJlcpcb(board, outputdir, assembly, schematic, ignore, field,
            corrections, missingerror):
     """
     Prepare fabrication files for JLCPCB including their assembly service
@@ -76,6 +77,6 @@ def exportJlcpcb(board, outputdir, assembly, schematic, forcesmd, ignore, field,
     if missingFields and missingerror:
         sys.exit("There are components with missing ordercode, aborting")
 
-    posData = collectPosData(loadedBoard, correctionFields, posFilter=genPosFilter(forcesmd), bom=components)
+    posData = collectPosData(loadedBoard, correctionFields, bom=components)
     posDataToFile(posData, os.path.join(outputdir, "pos.csv"))
     bomToCsv(bom, os.path.join(outputdir, "bom.csv"))
