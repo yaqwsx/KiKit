@@ -5,6 +5,7 @@ from kikit.common import *
 from kikit.defs import *
 from kikit.substrate import Substrate, extractRings, toShapely, linestringToKicad
 from kikit.export import gerberImpl, pasteDxfExport
+from kikit.export import exportSettingsJlcpcb as exportSettings
 import solid
 import solid.utils
 import subprocess
@@ -311,8 +312,9 @@ def create(inputboard, outputdir, jigsize, jigthickness, pcbthickness,
         ("PasteBottom", pcbnew.B_Paste, "Paste Bottom"),
         ("PasteTop", pcbnew.F_Paste, "Paste top"),
     ]
+    exportSettings["ExcludeEdgeLayer"] = True
     gerberDir = os.path.join(outputdir, "gerber")
-    gerberImpl(stencilFile, gerberDir, plotPlan, False)
+    gerberImpl(stencilFile, gerberDir, plotPlan, False, exportSettings)
     gerbers = [os.path.join(gerberDir, x) for x in os.listdir(gerberDir)]
     subprocess.check_call(["zip", "-j",
         os.path.join(outputdir, "gerbers.zip")] + gerbers)
