@@ -46,7 +46,7 @@ def noFilter(footprint):
     return True
 
 def exportJlcpcb(board, outputdir, assembly, schematic, ignore, field,
-           corrections, missingerror, nametemplate, drc):
+           corrections, correctionpatterns, missingerror, nametemplate, drc):
     """
     Prepare fabrication files for JLCPCB including their assembly service
     """
@@ -75,7 +75,7 @@ def exportJlcpcb(board, outputdir, assembly, schematic, ignore, field,
     bom = collectBom(components, ordercodeFields, refsToIgnore)
 
     posData = collectPosData(loadedBoard, correctionFields,
-        bom=components, posFilter=noFilter)
+        bom=components, posFilter=noFilter, correctionFile=correctionpatterns)
     boardReferences = set([x[0] for x in posData])
     bom = {key: [v for v in val if v in boardReferences] for key, val in bom.items()}
     bom = {key: val for key, val in bom.items() if len(val) > 0}
