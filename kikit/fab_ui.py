@@ -23,6 +23,7 @@ def fabCommand(f):
     help="Comma separated list of component fields field with LCSC order code. First existing field is used")
 @click.option("--corrections", type=str, default="JLCPCB_CORRECTION",
     help="Comma separated list of component fields with the correction value. First existing field is used")
+@click.option("--correctionpatterns", type=click.Path(dir_okay=False))
 @click.option("--missingError/--missingWarn", help="If a non-ignored component misses LCSC field, fail")
 def jlcpcb(**kwargs):
     """
@@ -48,6 +49,7 @@ def jlcpcb(**kwargs):
 @click.option("--ignore", type=str, default="", help="Comma separated list of designators to exclude from SMT assembly")
 @click.option("--corrections", type=str, default="PCBWAY_CORRECTION",
     help="Comma separated list of component fields with the correction value. First existing field is used")
+@click.option("--correctionpatterns", type=click.Path(dir_okay=False))
 @click.option("--manufacturer", type=str, default="Manufacturer",
     help="Comma separated list of fields to extract manufacturer name from. First existing field is used.")
 @click.option("--partNumber", type=str, default="PartNumber",
