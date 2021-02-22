@@ -895,7 +895,7 @@ class Panel:
             pad.SetSize(pcbnew.wxSize(diameter, diameter))
         self.board.Add(module)
 
-    def addFiducial(self, position, copperDiameter, openingDiameter, bottom=False):
+    def addFiducial(self, position, copperDiameter, openingDiameter, bottom=False, square=False):
         """
         Add fiducial, i.e round copper pad with solder mask opening to the position (`wxPoint`),
         with given copperDiameter and openingDiameter. By setting bottom to True, the fiducial
@@ -909,6 +909,8 @@ class Panel:
             else:
                 module.Flip(position)
         for pad in module.Pads():
+            if square:
+                pad.SetShape(pcbnew.PAD_SHAPE_RECT)
             pad.SetSize(pcbnew.wxSize(copperDiameter, copperDiameter))
             pad.SetLocalSolderMaskMargin(int((openingDiameter - copperDiameter) / 2))
             pad.SetLocalClearance(int((openingDiameter - copperDiameter) / 2))

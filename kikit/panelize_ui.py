@@ -22,6 +22,28 @@ def getPlacementClass(name):
         raise RuntimeError(f"Invalid alternation option '{name}' passed. " +
             "Valid options are: " + ", ".join(mapping.keys()))
 
+def addSingleFiducials(panel, singleFiducials):
+    from kikit.panelize import Panel, fromMm, wxPoint, wxRectMM, fromDegrees
+    for fiducial in singleFiducials:
+        hOffset, vOffset, copperDia, openingDia = tuple(map(fromMm, fiducial[:4]))
+        bottom = fiducial[4]
+        offsetFromTop = fiducial[5]
+        offsetFromLeft = fiducial[6]
+        square = fiducial[7]
+
+        minx, miny, maxx, maxy = panel.boardSubstrate.bounds()
+        if bottom != offsetFromLeft:  # xor
+            x = minx + hOffset
+        else:
+            x = maxx - hOffset
+        if offsetFromTop:
+            y = miny + vOffset
+        else:
+            y = maxy - vOffset
+
+        panel.addFiducial(wxPoint(x, y), copperDia, openingDia, bottom=bottom, square=square)
+
+
 @click.group()
 def panelize():
     """
@@ -103,12 +125,14 @@ def extractBoard(input, output, sourcearea):
     help="Add tooling holes to corners of the panel. Specify <horizontalOffset> <verticalOffset> <diameter>.")
 @click.option("--fiducials", type=(float, float, float, float), default=(None, None, None, None),
     help="Add fiducials holes to corners of the panel. Specify <horizontalOffset> <verticalOffset> <copperDiameter> <openingDiameter>.")
+@click.option("--singlefiducial", type=(float, float, float, float, bool, bool, bool, bool), default=(None, None, None, None, None, None, None, None), multiple=True,
+    help="Add fiducials holes to corners of the panel. Specify <horizontalOffset> <verticalOffset> <copperDiameter> <openingDiameter> <bottomLayer> (True for top) <offsetFromTop> <offsetFromLeft> <square>.")
 @click.option("--alternation", type=str, default="none",
     help="Rotate the boards based on their positions in the grid. Valid options: default, rows, cols, rowsCols")
 def grid(input, output, space, hspace, vspace, gridsize, panelsize, tabwidth,
          tabheight, vcuts, mousebites, radius, sourcearea, vcutcurves, htabs,
          vtabs, rotation, tolerance, renamenet, renameref, tabsfrom, framecutv,
-         framecuth, copperfill, railstb, railslr, tooling, fiducials, alternation):
+         framecuth, copperfill, railstb, railslr, tooling, fiducials, singlefiducial, alternation):
     """
     Create a regular panel placed in a frame.
 
@@ -182,6 +206,9 @@ def grid(input, output, space, hspace, vspace, gridsize, panelsize, tabwidth,
         if fiducials[0] is not None:
             hOffset, vOffset, copperDia, openingDia = tuple(map(fromMm, fiducials))
             panel.addFiducials(hOffset, vOffset, copperDia, openingDia)
+        if singlefiducial[0] is not None:
+            addSingleFiducials(panel, singlefiducial)
+
         if tooling[0] is not None:
             hOffset, vOffset, dia = tuple(map(fromMm, tooling))
             panel.addTooling(hOffset, vOffset, dia)
@@ -239,6 +266,8 @@ def grid(input, output, space, hspace, vspace, gridsize, panelsize, tabwidth,
     help="Add tooling holes to corners of the panel. Specify <horizontalOffset> <verticalOffset> <diameter>.")
 @click.option("--fiducials", type=(float, float, float, float), default=(None, None, None, None),
     help="Add fiducials holes to corners of the panel. Specify <horizontalOffset> <verticalOffset> <copperDiameter> <openingDiameter>.")
+@click.option("--singlefiducial", type=(float, float, float, float, bool, bool, bool, bool), default=(None, None, None, None, None, None, None, None), multiple=True,
+    help="Add fiducials holes to corners of the panel. Specify <horizontalOffset> <verticalOffset> <copperDiameter> <openingDiameter> <bottomLayer> (True for top) <offsetFromTop> <offsetFromLeft> <square>.")
 @click.option("--alternation", type=str, default="none",
     help="Rotate the boards based on their positions in the grid. Valid options: default, rows, cols, rowsCols")
 def tightgrid(input, output, space, hspace, vspace, gridsize, panelsize,
@@ -295,6 +324,8 @@ def tightgrid(input, output, space, hspace, vspace, gridsize, panelsize,
         if fiducials[0] is not None:
             hOffset, vOffset, copperDia, openingDia = tuple(map(fromMm, fiducials))
             panel.addFiducials(hOffset, vOffset, copperDia, openingDia)
+        if singlefiducial[0] is not None:
+            addSingleFiducials(panel, singlefiducial)
         if tooling[0] is not None:
             hOffset, vOffset, dia = tuple(map(fromMm, tooling))
             panel.addTooling(hOffset, vOffset, dia)
