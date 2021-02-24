@@ -125,7 +125,7 @@ def extractBoard(input, output, sourcearea):
     help="Add tooling holes to corners of the panel. Specify <horizontalOffset> <verticalOffset> <diameter>.")
 @click.option("--fiducials", type=(float, float, float, float), default=(None, None, None, None),
     help="Add fiducials holes to corners of the panel. Specify <horizontalOffset> <verticalOffset> <copperDiameter> <openingDiameter>.")
-@click.option("--singlefiducial", type=(float, float, float, float, bool, bool, bool, bool), default=(None, None, None, None, None, None, None, None), multiple=True,
+@click.option("--singlefiducial", type=(float, float, float, float, bool, bool, bool, bool), default=(None, None, None, None, None, None, None, None), nargs=8, multiple=True,
     help="Add fiducials holes to corners of the panel. Specify <horizontalOffset> <verticalOffset> <copperDiameter> <openingDiameter> <bottomLayer> (True for bottom) "
          "<offsetFromTop>(true for fiducial placed at the top of the board, otherwise at bottom) <offsetFromLeft>(true for fiducial placed at the left of the board, otherwise at right) "
          "<square>(yes for squared fiducials otherwise round.")
@@ -268,7 +268,7 @@ def grid(input, output, space, hspace, vspace, gridsize, panelsize, tabwidth,
     help="Add tooling holes to corners of the panel. Specify <horizontalOffset> <verticalOffset> <diameter>.")
 @click.option("--fiducials", type=(float, float, float, float), default=(None, None, None, None),
     help="Add fiducials holes to corners of the panel. Specify <horizontalOffset> <verticalOffset> <copperDiameter> <openingDiameter>.")
-@click.option("--singlefiducial", type=(float, float, float, float, bool, bool, bool, bool), default=(None, None, None, None, None, None, None, None), multiple=True,
+@click.option("--singlefiducial", type=(float, float, float, float, bool, bool, bool, bool), default=(None, None, None, None, None, None, None, None), nargs=8, multiple=True,
     help="Add fiducials holes to corners of the panel. Specify <horizontalOffset> <verticalOffset> <copperDiameter> <openingDiameter> <bottomLayer> (True for bottom) "
          "<offsetFromTop>(true for fiducial placed at the top of the board, otherwise at bottom) <offsetFromLeft>(true for fiducial placed at the left of the board, otherwise at right) "
          "<square>(yes for squared fiducials otherwise round.")
