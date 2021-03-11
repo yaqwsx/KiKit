@@ -463,6 +463,7 @@ class Panel:
         minY, maxY = bBox.GetY() - fromMm(3), bBox.GetY() + bBox.GetHeight() + fromMm(3)
         segments = []
         for cut in self.vVCuts:
+            self.add_keepout(cut - fromMm(0.5), minY, cut + fromMm(0.5), maxY)
             segment = pcbnew.PCB_SHAPE()
             self._setVCutSegmentStyle(segment, layer)
             segment.SetStart(pcbnew.wxPoint(cut, minY))
@@ -482,6 +483,7 @@ class Panel:
         minX, maxX = bBox.GetX() - fromMm(3), bBox.GetX() + bBox.GetWidth() + fromMm(3)
         segments = []
         for cut in self.hVCuts:
+            self.add_keepout(minX, cut - fromMm(0.5), maxX, cut + fromMm(0.5))
             segment = pcbnew.PCB_SHAPE()
             self._setVCutSegmentStyle(segment, layer)
             segment.SetStart(pcbnew.wxPoint(minX, cut))
@@ -1015,6 +1017,30 @@ class Panel:
         self.board.Add(zoneContainer)
         self.zonesToRefill.append(zoneContainer)
 
+        zoneContainer = zoneContainer.Duplicate()
+        zoneContainer.SetLayer(Layer.B_Cu)
+        self.board.Add(zoneContainer)
+        self.zonesToRefill.append(zoneContainer)
+
+    def add_keepout(self, x1, y1, x2, y2, no_tracks = True, no_vias = True, no_copper_pour = True):
+        """
+        Add rectangular keepout to top and bottom copper layers
+        """
+        zoneContainer = pcbnew.ZONE(self.board)
+        zoneContainer.SetIsKeepout(True)
+        zoneContainer.SetDoNotAllowTracks(no_tracks)
+        zoneContainer.SetDoNotAllowVias(no_vias)
+        zoneContainer.SetDoNotAllowCopperPour(no_copper_pour)
+        lineChain = pcbnew.SHAPE_LINE_CHAIN()
+        lineChain.Append(int(x1), int(y1))
+        lineChain.Append(int(x1), int(y2))
+        lineChain.Append(int(x2), int(y2))
+        lineChain.Append(int(x2), int(y1))
+        lineChain.SetClosed(True)
+        zoneContainer.Outline().AddOutline(lineChain)
+        zoneContainer.SetLayer(Layer.F_Cu)
+        self.board.Add(zoneContainer)
+        self.zonesToRefill.append(zoneContainer)
         zoneContainer = zoneContainer.Duplicate()
         zoneContainer.SetLayer(Layer.B_Cu)
         self.board.Add(zoneContainer)
