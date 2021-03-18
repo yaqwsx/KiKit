@@ -1,4 +1,41 @@
 import click
+import os
+from kikit.units import readLength, readAngle
+
+class Section(click.ParamType):
+    """
+    A CLI argument type for overriding section parameters. Basically a semicolon
+    separated list of `key: value` pairs. The first word might omit the key; in
+    that case "type" key is used.
+    """
+    name = "parameter_list"
+
+    def convert(self, value, param, ctx):
+        from kikit.panelize_ui_impl import splitStr
+
+        if len(value.strip()) == 0:
+            self.fail(f"{value} is not a valid argument specification",
+                param, ct)
+        try:
+            values = {}
+            for i, pair in enumerate(splitStr(";", "\\", value)):
+                if len(pair.strip()) == 0:
+                    continue
+                s = pair.split(":")
+                if i == 0 and len(s) == 1:
+                    values["type"] = s[0].strip()
+                    continue
+                key, value = s[0].strip(), s[1].strip()
+                values[key] = value
+            return values
+        except (TypeError, IndexError):
+            self.fail(f"'{pair}' is not a valid key: value pair",
+                param,
+                ctx)
+
+class PresetError(RuntimeError):
+    pass
+
 
 def validateSpaceRadius(space, radius):
     if space <= 0:
@@ -7,27 +44,65 @@ def validateSpaceRadius(space, radius):
         raise RuntimeError(f"Fillet radius ({radius} mm) should to be less than " \
                            f"half space between boards ({space} mm).")
 
-def getPlacementClass(name):
-    from kikit.panelize import (BasicGridPosition, OddEvenColumnPosition,
-        OddEvenRowsPosition, OddEvenRowsColumnsPosition)
-    mapping = {
-        "none": BasicGridPosition,
-        "rows": OddEvenRowsPosition,
-        "cols": OddEvenColumnPosition,
-        "rowsCols": OddEvenRowsColumnsPosition
-    }
-    try:
-        return mapping[name]
-    except KeyError:
-        raise RuntimeError(f"Invalid alternation option '{name}' passed. " +
-            "Valid options are: " + ", ".join(mapping.keys()))
-
 @click.group()
 def panelize():
     """
     Create a simple predefined panel patterns
     """
     pass
+
+@click.command()
+@click.argument("input", type=click.Path(dir_okay=False))
+@click.argument("output", type=click.Path(dir_okay=False))
+@click.option("--preset", "-p", multiple=True,
+    help="A panelization preset file; use prefix ':' for built-in styles.")
+@click.option("--layout", "-l", type=Section(),
+    help="Override layout settings.")
+@click.option("--source", "-s", type=Section(),
+    help="Override source settings.")
+@click.option("--tabs", "-t", type=Section(),
+    help="Override tab settings.")
+@click.option("--cuts", "-c", type=Section(),
+    help="Override cut settings.")
+@click.option("--framing", "-f", type=Section(),
+    help="Override framing settings.")
+@click.option("--tooling", "-o", type=Section(),
+    help="Override tooling settings.")
+@click.option("--dump", "-d", type=click.Path(file_okay=True, dir_okay=False),
+    help="Dump constructured preset into a JSON file.")
+def newpanelize(input, output, preset, layout, source, tabs, cuts, framing, tooling, dump):
+    # Hide the import in the function to make KiKit start faster
+    from kikit import panelize_ui_impl as ki
+    from kikit.panelize import Panel
+    from pcbnew import LoadBoard, wxPointMM
+    import commentjson
+    import sys
+
+
+    preset = ki.obtainPreset(preset,
+        layout=layout, source=source, tabs=tabs, cuts=cuts, framing=framing,
+        tooling=tooling)
+
+    board = LoadBoard(input)
+
+    panel = Panel()
+    panel.inheritDesignSettings(input)
+    panel.inheritProperties(input)
+
+    sourceArea = ki.readSourceArea(preset["source"], board)
+    substrates = ki.buildLayout(preset["layout"], panel, input, sourceArea)
+    innerCuts = ki.buildInnerTabs(preset["tabs"], panel, substrates)
+    ki.buildBackBone(preset["layout"], panel, substrates)
+    # buildFraming(preset["framing"], panel, psize)
+
+    cutLines = innerCuts
+    ki.makeCuts(preset["cuts"], panel, cutLines)
+
+    panel.save(output)
+
+    if (dump):
+        with open(dump, "w") as f:
+            f.write(commentjson.dumps(preset, indent=4))
 
 @click.command()
 @click.argument("input", type=click.Path(dir_okay=False))
@@ -116,6 +191,7 @@ def grid(input, output, space, hspace, vspace, gridsize, panelsize, tabwidth,
     """
     # Hide the import in the function to make KiKit start faster
     from kikit.panelize import Panel, fromMm, wxPointMM, wxRectMM, fromDegrees
+    from kikit import panelize_ui_impl as ki
     import sys
     try:
         panel = Panel()
@@ -147,7 +223,7 @@ def grid(input, output, space, hspace, vspace, gridsize, panelsize, tabwidth,
             frame = False
             railslr = fromMm(railslr)
             oht = fromMm(hspace)
-        placementClass = getPlacementClass(alternation)
+        placementClass = ki.getPlacementClass(alternation)
 
         validateSpaceRadius(vspace, radius)
         validateSpaceRadius(hspace, radius)
@@ -312,3 +388,4 @@ def tightgrid(input, output, space, hspace, vspace, gridsize, panelsize,
 panelize.add_command(extractBoard)
 panelize.add_command(grid)
 panelize.add_command(tightgrid)
+panelize.add_command(newpanelize)

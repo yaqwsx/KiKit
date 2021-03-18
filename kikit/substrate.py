@@ -2,6 +2,7 @@ from shapely.geometry import Polygon, MultiPolygon, LineString, MultiLineString,
 from shapely.ops import unary_union, split
 import shapely
 import numpy as np
+from kikit.intervals import Interval, BoxNeighbors
 from kikit.pcbnew_compatibility import pcbnew
 from enum import IntEnum
 from itertools import product
@@ -526,3 +527,26 @@ def showPolygons(polygons):
             x2, y2 = inter.xy
             plt.fill(x2, y2, color="w")
     plt.show()
+
+class SubstrateNeighbors:
+    """
+    Thin wrapper around BoxNeighbors for finding substrate pieces' neighbors.
+    """
+    def __init__(self, substrates):
+        self._revMap = { id(s): s for s in substrates }
+        self._neighbors = BoxNeighbors( { id(s): s.bounds() for s in substrates })
+
+    def _reverse(self, queryRes):
+        return [self._revMap[ x ] for x in queryRes]
+
+    def left(self, s):
+        return self._reverse(self._neighbors.left(id(s)))
+
+    def right(self, s):
+        return self._reverse(self._neighbors.right(id(s)))
+
+    def bottom(self, s):
+        return self._reverse(self._neighbors.bottom(id(s)))
+
+    def top(self, s):
+        return self._reverse(self._neighbors.top(id(s)))

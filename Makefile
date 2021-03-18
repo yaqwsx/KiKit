@@ -1,6 +1,6 @@
 
 
-.PHONY: doc clean package release test
+.PHONY: doc clean package release test test-system test-unit
 
 all: doc package test
 
@@ -23,8 +23,13 @@ install: package
 release: package
 	twine upload dist/*
 
-test: build/test $(shell find kikit -type f)
+test: test-system test-unit
+
+test-system: build/test $(shell find kikit -type f)
 	cd build/test && bats ../../test/system
+
+test-unit:
+	cd test/units && pytest
 
 build/test:
 	mkdir -p $@

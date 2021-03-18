@@ -17,7 +17,7 @@ jobs:
             libgraphicsmagick1-dev libmagickcore-dev \
             openscad bats
           sudo python -m pip install PcbDraw
-          sudo python -m pip install -e .
+          sudo python -m pip install -e .\[dev\]
       - run: make test
       - run: make doc
       - run: sudo make package

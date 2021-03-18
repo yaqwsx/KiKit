@@ -1,0 +1,40 @@
+{
+    "layout": {
+        "type": "grid",
+        "rows": 1,
+        "cols": 1,
+        "hspace": "0mm",
+        "vspace": "0mm",
+        "rotation": "0deg",
+        "alternation": "none",
+        "renamenet": "Board_{n}-{orig}",
+        "renameref": "{orig}"
+    },
+    "source": {
+        "type": "auto",
+        "tolerance": "1mm"
+    },
+    "tabs": {
+        "type": "auto",
+        "hcount": 1,
+        "vcount": 1,
+        "hwidth": "3mm",
+        "vwidth": "3mm"
+    },
+    "cuts": {
+        "type": "none",
+        "clearance": "0mm",
+        "cutcurves": false,
+        "layer": "Cmts.User"
+    },
+    "framing": {
+        "type": "none",
+        "thickness": "0mm",
+        "millRadius": "0mm",
+        "copperFill": false
+    },
+    "tooling": {
+        "type": "none",
+        "layout": "3hole" // 4hole
+    }
+}
