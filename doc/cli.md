@@ -47,6 +47,7 @@ the following commands available:
   - `--htabs INT` Number of horizontal tabs per board
   - `--vtabs INT` Number of vertical tabs per board
   - `--vcuts BOOLEAN` Use V-cuts to separate the boards
+  - `--vcutlayer <layer>` Name of the layer where V-cuts should be added
   - `--mousebites <FLOAT FLOAT FLOAT>` Use mouse bites to separate the boards.
     Specify drill size, spacing and offset in millimeters. If you are unsure
     about the offset value, use 0.25 mm

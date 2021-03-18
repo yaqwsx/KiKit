@@ -283,6 +283,7 @@ class Panel:
                                             # Draw it just before saving
         self.hVCuts = set() # Keep V-cuts as numbers and append them just before saving
         self.vVCuts = set() # to make them truly span the whole panel
+        self.vCutLayer = Layer.Cmts_User
         self.copperLayerCount = None
         self.zonesToRefill = pcbnew.ZONES()
 
@@ -298,10 +299,13 @@ class Panel:
         fillerTool = pcbnew.ZONE_FILLER(self.board)
         fillerTool.Fill(self.zonesToRefill)
         self.board.Save(filename)
-        for edge in collectEdges(self.board, "Edge.Cuts"):
-            self.board.Remove(edge)
+
+        # VCuts have to be removed *before* Edge.Cuts, in case VCuts were rendered to
+        # Edge.Cuts.
         for cut in vcuts:
             self.board.Remove(cut)
+        for edge in collectEdges(self.board, "Edge.Cuts"):
+            self.board.Remove(edge)
 
     def _uniquePrefix(self):
         return "Board_{}-".format(self.boardCounter)
@@ -457,39 +461,39 @@ class Panel:
         label.SetTextSize(pcbnew.wxSizeMM(2, 2))
         label.SetHorizJustify(EDA_TEXT_HJUSTIFY_T.GR_TEXT_HJUSTIFY_LEFT)
 
-    def _renderVCutV(self, layer=Layer.Cmts_User):
+    def _renderVCutV(self):
         """ return list of PCB_SHAPE V-Cuts """
         bBox = self.boardSubstrate.boundingBox()
         minY, maxY = bBox.GetY() - fromMm(3), bBox.GetY() + bBox.GetHeight() + fromMm(3)
         segments = []
         for cut in self.vVCuts:
             segment = pcbnew.PCB_SHAPE()
-            self._setVCutSegmentStyle(segment, layer)
+            self._setVCutSegmentStyle(segment, self.vCutLayer)
             segment.SetStart(pcbnew.wxPoint(cut, minY))
             segment.SetEnd(pcbnew.wxPoint(cut, maxY))
             segments.append(segment)
 
             label = pcbnew.PCB_TEXT(segment)
-            self._setVCutLabelStyle(label, layer)
+            self._setVCutLabelStyle(label, self.vCutLayer)
             label.SetPosition(wxPoint(cut, minY - fromMm(3)))
             label.SetTextAngle(900)
             segments.append(label)
         return segments
 
-    def _renderVCutH(self, layer=Layer.Cmts_User):
+    def _renderVCutH(self):
         """ return list of PCB_SHAPE V-Cuts """
         bBox = self.boardSubstrate.boundingBox()
         minX, maxX = bBox.GetX() - fromMm(3), bBox.GetX() + bBox.GetWidth() + fromMm(3)
         segments = []
         for cut in self.hVCuts:
             segment = pcbnew.PCB_SHAPE()
-            self._setVCutSegmentStyle(segment, layer)
+            self._setVCutSegmentStyle(segment, self.vCutLayer)
             segment.SetStart(pcbnew.wxPoint(minX, cut))
             segment.SetEnd(pcbnew.wxPoint(maxX, cut))
             segments.append(segment)
 
             label = pcbnew.PCB_TEXT(segment)
-            self._setVCutLabelStyle(label, layer)
+            self._setVCutLabelStyle(label, self.vCutLayer)
             label.SetPosition(wxPoint(maxX + fromMm(3), cut))
             segments.append(label)
         return segments
@@ -864,6 +868,13 @@ class Panel:
                 self.addVCutH((start.y + end.y) / 2)
             else:
                 raise RuntimeError("Cannot perform V-Cut which is not horizontal or vertical")
+
+    def setVCutLayer(self, layer):
+        """
+        Set the layer V-Cuts will be rendered to. Can be called at any time
+        before saving. Defaults to Layer.Cmts_User if not otherwise set.
+        """
+        self.vCutLayer = layer
 
     def makeMouseBites(self, cuts, diameter, spacing, offset=fromMm(0.25)):
         """

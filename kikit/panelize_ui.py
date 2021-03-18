@@ -1,4 +1,5 @@
 import click
+from kikit.defs import Layer
 
 def validateSpaceRadius(space, radius):
     if space <= 0:
@@ -80,6 +81,7 @@ def extractBoard(input, output, sourcearea):
 @click.option("--vtabs", type=int, default=1,
     help="Number of vertical tabs for each board")
 @click.option("--vcuts", type=bool, help="Use V-cuts to separe the boards", is_flag=True)
+@click.option("--vcutlayer", type=click.Choice(tuple(Layer.__members__)), default=None)
 @click.option("--vcutcurves", type=bool, help="Use V-cuts to approximate curves using starting and ending point", is_flag=True)
 @click.option("--mousebites", type=(float, float, float), default=(None, None, None),
     help="Use mouse bites to separate the boards. Specify drill size, spacing and offset from cutedge (use 0.25 mm if unsure)")
@@ -106,7 +108,7 @@ def extractBoard(input, output, sourcearea):
 @click.option("--alternation", type=str, default="none",
     help="Rotate the boards based on their positions in the grid. Valid options: default, rows, cols, rowsCols")
 def grid(input, output, space, hspace, vspace, gridsize, panelsize, tabwidth,
-         tabheight, vcuts, mousebites, radius, sourcearea, vcutcurves, htabs,
+         tabheight, vcuts, vcutlayer, mousebites, radius, sourcearea, vcutcurves, htabs,
          vtabs, rotation, tolerance, renamenet, renameref, tabsfrom, framecutv,
          framecuth, copperfill, railstb, railslr, tooling, fiducials, alternation):
     """
@@ -169,6 +171,8 @@ def grid(input, output, space, hspace, vspace, gridsize, panelsize, tabwidth,
         panel.appendSubstrate(tabs)
         if vcuts:
             panel.makeVCuts(cuts, vcutcurves)
+        if vcutlayer is not None:
+            panel.setVCutLayer(Layer[vcutlayer])
         if frame:
             (_, frame_cuts_v, frame_cuts_h) = panel.makeFrame(psize, fromMm(w), fromMm(h), fromMm(space))
             if framecutv:
@@ -218,6 +222,7 @@ def grid(input, output, space, hspace, vspace, gridsize, panelsize, tabwidth,
 @click.option("--vtabs", type=int, default=1,
     help="Number of vertical tabs for each board")
 @click.option("--vcuts", type=bool, help="Use V-cuts to separe the boards", is_flag=True)
+@click.option("--vcutlayer", type=click.Choice(tuple(Layer.__members__)), default=None)
 @click.option("--vcutcurves", type=bool, help="Use V-cuts to approximate curves using starting and ending point", is_flag=True)
 @click.option("--mousebites", type=(float, float, float), default=(None, None, None),
     help="Use mouse bites to separate the boards. Specify drill size, spacing and offset from cutedge (use 0.25 mm if unsure)")
@@ -242,7 +247,7 @@ def grid(input, output, space, hspace, vspace, gridsize, panelsize, tabwidth,
 @click.option("--alternation", type=str, default="none",
     help="Rotate the boards based on their positions in the grid. Valid options: default, rows, cols, rowsCols")
 def tightgrid(input, output, space, hspace, vspace, gridsize, panelsize,
-         tabwidth, tabheight, vcuts, mousebites, radius, sourcearea, vcutcurves,
+         tabwidth, tabheight, vcuts, vcutlayer, mousebites, radius, sourcearea, vcutcurves,
          htabs, vtabs, rotation, slotwidth, tolerance, renamenet, renameref,
          tabsfrom, copperfill, fiducials, tooling,
          alternation):
@@ -292,6 +297,8 @@ def tightgrid(input, output, space, hspace, vspace, gridsize, panelsize,
         panel.addMillFillets(fromMm(radius))
         if vcuts:
             panel.makeVCuts(cuts, vcutcurves)
+        if vcutlayer is not None:
+            panel.setVCutLayer(Layer[vcutlayer])
         if fiducials[0] is not None:
             hOffset, vOffset, copperDia, openingDia = tuple(map(fromMm, fiducials))
             panel.addFiducials(hOffset, vOffset, copperDia, openingDia)
