@@ -1,4 +1,5 @@
 from kikit.pcbnew_compatibility import pcbnew
+from kikit.intervals import Interval
 from pcbnew import wxPoint, wxRect
 import os
 from itertools import product, chain
@@ -136,3 +137,28 @@ def parseReferences(dStr):
     Parse comma separated list of component references to a list
     """
     return [x.strip() for x in dStr.split(",") if len(x.strip()) > 0]
+
+
+def shpBBoxLeft(bbox):
+    """
+    Given a shapely bounding box, return left edge as (pos, interval)
+    """
+    return bbox[0], Interval(bbox[1], bbox[3])
+
+def shpBBoxRight(bbox):
+    """
+    Given a shapely bounding box, return right edge as (pos, interval)
+    """
+    return bbox[2], Interval(bbox[1], bbox[3])
+
+def shpBBoxTop(bbox):
+    """
+    Given a shapely bounding box, return top edge as (pos, interval)
+    """
+    return bbox[1], Interval(bbox[0], bbox[2])
+
+def shpBBoxBottom(bbox):
+    """
+    Given a shapely bounding box, return bottom edge as (pos, interval)
+    """
+    return bbox[3], Interval(bbox[0], bbox[2])

@@ -1,5 +1,6 @@
 from kikit import pcbnew_compatibility
 from kikit.pcbnew_compatibility import pcbnew
+from kikit.common import normalize
 from pcbnew import (GetBoard, LoadBoard,
     FromMM, ToMM, wxPoint, wxRect, wxRectMM, wxPointMM)
 from enum import Enum, IntEnum
@@ -148,6 +149,8 @@ def expandRect(rect, offsetX, offsetY=None):
     """
     if offsetY is None:
         offsetY = offsetX
+    offsetX = int(offsetX)
+    offsetY = int(offsetY)
     return wxRect(rect.GetX() - offsetX, rect.GetY() - offsetY,
         rect.GetWidth() + 2 * offsetX, rect.GetHeight() + 2 * offsetY)
 
@@ -266,6 +269,35 @@ def increaseZonePriorities(board, amount=1):
     for zone in board.Zones():
         zone.SetPriority(zone.GetPriority() + amount)
 
+def tabSpacing(width, count):
+    """
+    Given a width of board edge and tab count, return an iterable with tab
+    offsets.
+    """
+    return [width * i / (count + 1) for i in range(1, count + 1)]
+
+def prolongCut(cut, prolongation):
+    """
+    Given a cut (Shapely LineString) it tangentially prolongs it by prolongation
+    """
+    c = list([np.array(x) for x in cut.coords])
+    c[0] += normalize(c[0] - c[1]) * prolongation
+    c[-1] += normalize(c[-1] - c[-2]) * prolongation
+    return LineString(c)
+
+def polygonToZone(polygon, board):
+    """
+    Given a polygon and target board, creates a KiCAD zone. The zone has to be
+    added to the board.
+    """
+    zone = pcbnew.ZONE(board)
+    boundary = polygon.exterior
+    zone.Outline().AddOutline(linestringToKicad(boundary))
+    for hole in polygon.interiors:
+        boundary = hole.exterior
+        zone.Outline().AddHole(linestringToKicad(boundary))
+    return zone
+
 class Panel:
     """
     Basic interface for panel building. Instance of this class represents a
@@ -283,6 +315,8 @@ class Panel:
                                             # Draw it just before saving
         self.hVCuts = set() # Keep V-cuts as numbers and append them just before saving
         self.vVCuts = set() # to make them truly span the whole panel
+        self.vCutLayer = Layer.Cmts_User
+        self.vCutClearance = 0
         self.copperLayerCount = None
         self.zonesToRefill = pcbnew.ZONES()
 
@@ -293,15 +327,23 @@ class Panel:
         for edge in self.boardSubstrate.serialize():
             self.board.Add(edge)
         vcuts = self._renderVCutH() + self._renderVCutV()
-        for cut in vcuts:
+        keepouts = []
+        for cut, clearanceArea in vcuts:
             self.board.Add(cut)
+            if clearanceArea is not None:
+                keepouts.append(self.addKeepout(clearanceArea))
         fillerTool = pcbnew.ZONE_FILLER(self.board)
         fillerTool.Fill(self.zonesToRefill)
         self.board.Save(filename)
+        # Remove cuts
+        for cut, _ in vcuts:
+            self.board.Remove(cut)
+        # Remove V-cuts keepouts
+        for keepout in keepouts:
+            self.board.Remove(keepout)
+        # Remove edges
         for edge in collectEdges(self.board, "Edge.Cuts"):
             self.board.Remove(edge)
-        for cut in vcuts:
-            self.board.Remove(cut)
 
     def _uniquePrefix(self):
         return "Board_{}-".format(self.boardCounter)
@@ -414,9 +456,10 @@ class Panel:
         edges += [edge for edge in drawings if isBoardEdge(edge)]
         otherDrawings = [edge for edge in drawings if not isBoardEdge(edge)]
         try:
+            o = Substrate(edges, -bufferOutline)
             s = Substrate(edges, bufferOutline)
             self.boardSubstrate.union(s)
-            self.substrates.append(s)
+            self.substrates.append(o)
         except substrate.PositionError as e:
             point = undoTransformation(e.point, rotationAngle, originPoint, translation)
             raise substrate.PositionError(filename + ": " + e.origMessage, point)
@@ -445,6 +488,18 @@ class Panel:
         """
         self.vVCuts.add(pos)
 
+    def setVCutLayer(self, layer):
+        """
+        Set layer on which the V-Cuts will be rendered
+        """
+        self.vCutLayer = layer
+
+    def setVCutClearance(self, clearance):
+        """
+        Set V-cut clearance
+        """
+        self.vCutClearance = clearance
+
     def _setVCutSegmentStyle(self, segment, layer):
         segment.SetShape(STROKE_T.S_SEGMENT)
         segment.SetLayer(layer)
@@ -457,41 +512,58 @@ class Panel:
         label.SetTextSize(pcbnew.wxSizeMM(2, 2))
         label.SetHorizJustify(EDA_TEXT_HJUSTIFY_T.GR_TEXT_HJUSTIFY_LEFT)
 
-    def _renderVCutV(self, layer=Layer.Cmts_User):
+    def _renderVCutV(self):
         """ return list of PCB_SHAPE V-Cuts """
         bBox = self.boardSubstrate.boundingBox()
         minY, maxY = bBox.GetY() - fromMm(3), bBox.GetY() + bBox.GetHeight() + fromMm(3)
         segments = []
         for cut in self.vVCuts:
             segment = pcbnew.PCB_SHAPE()
-            self._setVCutSegmentStyle(segment, layer)
+            self._setVCutSegmentStyle(segment, self.vCutLayer)
             segment.SetStart(pcbnew.wxPoint(cut, minY))
             segment.SetEnd(pcbnew.wxPoint(cut, maxY))
-            segments.append(segment)
+
+            keepout = None
+            if self.vCutClearance != 0:
+                keepout = shapely.geometry.box(
+                    cut - self.vCutClearance / 2,
+                    bBox.GetY(),
+                    cut + self.vCutClearance / 2,
+                    bBox.GetY() + bBox.GetHeight())
+            segments.append((segment, keepout))
 
             label = pcbnew.PCB_TEXT(segment)
-            self._setVCutLabelStyle(label, layer)
+            self._setVCutLabelStyle(label, self.vCutLayer)
             label.SetPosition(wxPoint(cut, minY - fromMm(3)))
             label.SetTextAngle(900)
-            segments.append(label)
+            segments.append((label, None))
         return segments
 
-    def _renderVCutH(self, layer=Layer.Cmts_User):
+    def _renderVCutH(self):
         """ return list of PCB_SHAPE V-Cuts """
         bBox = self.boardSubstrate.boundingBox()
         minX, maxX = bBox.GetX() - fromMm(3), bBox.GetX() + bBox.GetWidth() + fromMm(3)
         segments = []
         for cut in self.hVCuts:
             segment = pcbnew.PCB_SHAPE()
-            self._setVCutSegmentStyle(segment, layer)
+            self._setVCutSegmentStyle(segment, self.vCutLayer)
             segment.SetStart(pcbnew.wxPoint(minX, cut))
             segment.SetEnd(pcbnew.wxPoint(maxX, cut))
-            segments.append(segment)
+
+            keepout = None
+            if self.vCutClearance != 0:
+                keepout = shapely.geometry.box(
+                    bBox.GetX(),
+                    cut - self.vCutClearance / 2,
+                    bBox.GetX() + bBox.GetWidth(),
+                    cut + self.vCutClearance / 2)
+            segments.append((segment, keepout))
+
 
             label = pcbnew.PCB_TEXT(segment)
-            self._setVCutLabelStyle(label, layer)
+            self._setVCutLabelStyle(label, self.vCutLayer)
             label.SetPosition(wxPoint(maxX + fromMm(3), cut))
-            segments.append(label)
+            segments.append((label, None))
         return segments
 
     def _placeBoardsInGrid(self, boardfile, rows, cols, destination, sourceArea, tolerance,
@@ -661,6 +733,29 @@ class Panel:
                     polygons.append(t)
                     cuts.append(f)
         return polygons, cuts
+
+    def makeGridNew(self, boardfile, sourceArea, rows, cols, destination,
+                    verSpace, horSpace, rotation,
+                    placementClass=BasicGridPosition,
+                    netRenamePattern="Board_{n}-{orig}",
+                    refRenamePattern="Board_{n}-{orig}"):
+        """
+        Place the given board in a regular grid pattern with given spacing
+        (verSpace, horSpace). The board position can be fine-tuned via
+        placementClass. The nets and references are renamed according to the
+        patterns.
+
+        Returns a list of the placed substrates. You can use these to generate
+        tabs, frames, backbones, etc.
+        """
+        substrateCount = len(self.substrates)
+        netRenamer = lambda x, y: netRenamePattern.format(n=x, orig=y)
+        refRenamer = lambda x, y: refRenamePattern.format(n=x, orig=y)
+        self._placeBoardsInGrid(boardfile, rows, cols, destination,
+                                sourceArea, 0, verSpace, horSpace,
+                                rotation, netRenamer, refRenamer, placementClass)
+        return self.substrates[substrateCount:]
+
 
     def makeGrid(self, boardfile, rows, cols, destination, sourceArea=None,
                  tolerance=0, verSpace=0, horSpace=0, verTabCount=1,
@@ -865,13 +960,16 @@ class Panel:
             else:
                 raise RuntimeError("Cannot perform V-Cut which is not horizontal or vertical")
 
-    def makeMouseBites(self, cuts, diameter, spacing, offset=fromMm(0.25)):
+    def makeMouseBites(self, cuts, diameter, spacing, offset=fromMm(0.25),
+        prolongation=fromMm(0.5)):
         """
-        Take a list of cuts and perform mouse bites.
+        Take a list of cuts and perform mouse bites. The cuts can be prolonged
+        to
         """
         bloatedSubstrate = prep(self.boardSubstrate.substrates.buffer(fromMm(0.01)))
         for cut in cuts:
             cut = cut.simplify(fromMm(0.001)) # Remove self-intersecting geometry
+            cut = prolongCut(cut, prolongation)
             offsetCut = cut.parallel_offset(offset, "left")
             length = offsetCut.length
             count = int(length / spacing) + 1
@@ -1019,3 +1117,22 @@ class Panel:
         zoneContainer.SetLayer(Layer.B_Cu)
         self.board.Add(zoneContainer)
         self.zonesToRefill.append(zoneContainer)
+
+    def addKeepout(self, area, noTracks=True, noVias=True, noCopper=True):
+        """
+        Add a keepout area from top and bottom layers. Area is a shapely
+        polygon. Return the keepout area.
+        """
+        zone = polygonToZone(area, self.board)
+        zone.SetIsKeepout(True)
+        zone.SetDoNotAllowTracks(noTracks)
+        zone.SetDoNotAllowVias(noVias)
+        zone.SetDoNotAllowCopperPour(noCopper)
+
+        zone.SetLayer(Layer.F_Cu)
+        layerSet = zone.GetLayerSet()
+        layerSet.AddLayer(Layer.B_Cu)
+        zone.SetLayerSet(layerSet)
+
+        self.board.Add(zone)
+        return zone

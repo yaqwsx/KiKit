@@ -14,6 +14,10 @@ KiCAD workflow like:
 
 [![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/E1E2181LU)
 
+# KiKit is currently undergoing large changes. If you use stable version read!
+
+The documentation for latest stable (v0.7) is available at [https://github.com/yaqwsx/KiKit/tree/v0.7](https://github.com/yaqwsx/KiKit/tree/v0.7)
+
 ## Installation
 
 KiKit is available as a [PyPi package](https://pypi.org/project/KiKit/),

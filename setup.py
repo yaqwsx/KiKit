@@ -31,11 +31,15 @@ setuptools.setup(
         "click",
         "markdown2",
         "pybars3",
-        "solidpython"
+        "solidpython",
+        "commentjson"
     ],
     setup_requires=[
         "versioneer"
     ],
+    extras_require={
+        "dev": ["pytest"],
+    },
     zip_safe=False,
     include_package_data=True,
     entry_points = {
