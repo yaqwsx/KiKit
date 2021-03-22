@@ -211,17 +211,17 @@ def buildLayout(layout, panel, sourceBoard, sourceArea):
             netRenamePattern=layout["renamenet"], refRenamePattern=layout["renameref"])
     raise PresetError(f"Unknown type '{type}' of layout specification.")
 
-def buildInnerTabs(properties, panel, substrates):
+def buildTabs(properties, panel, substrates, boundarySubstrates):
     """
     Build tabs for the substrates in between the boards. Return a list of cuts.
     """
     type = properties["type"]
     if type == "auto":
-        return buildInnerTabsAuto(properties, panel, substrates)
+        return buildTabsAuto(properties, panel, substrates, boundarySubstrates)
     if type == "full":
-        return buildInnerTabsFull(properties, panel, substrates)
+        return buildTabsFull(properties, panel, substrates, boundarySubstrates)
     if type == "annotation":
-        return buildInnerTabsAnnotation(properties, panel, substrates)
+        return buildTabsAnnotation(properties, panel, substrates, boundarySubstrates)
     raise PresetError(f"Unknown type '{type}' of tabs specification.")
 
 def buildSideTabs(substrate, dir, side1, side2, count, width, tabs, cuts):
@@ -254,13 +254,14 @@ def buildSideTabs(substrate, dir, side1, side2, count, width, tabs, cuts):
         else:
             cuts.append(c)
 
-def buildInnerTabsAuto(properties, panel, substrates):
+def buildTabsAuto(properties, panel, substrates, boundarySubstrates):
     """
-    Build the "auto" type of inner tabs
+    Build the "auto" type of inner tabs. The boundary substrates serve as
+    a dummy substrates to generate the outer tabs.
     """
     tabs = []
     cuts = []
-    neighbors = SubstrateNeighbors(substrates)
+    neighbors = SubstrateNeighbors(substrates + boundarySubstrates)
     for s in substrates:
         for n in neighbors.left(s):
             buildSideTabs(s, [1, 0], shpBBoxLeft(s.bounds()), shpBBoxRight(n.bounds()),
@@ -278,13 +279,13 @@ def buildInnerTabsAuto(properties, panel, substrates):
     panel.appendSubstrate(tabs)
     return cuts
 
-def buildInnerTabsFull(properties, panel, substrates):
+def buildTabsFull(properties, panel, substrates, boundarySubstrates):
     """
     Build the "full" type of inner tabs
     """
     tabs = []
     cuts = []
-    neighbors = SubstrateNeighbors(substrates)
+    neighbors = SubstrateNeighbors(substrates + boundarySubstrates)
     for s in substrates:
         for n in neighbors.left(s):
             l = shpBBoxLeft(s.bounds())
@@ -306,7 +307,10 @@ def buildInnerTabsFull(properties, panel, substrates):
     bBoxes = box(*substrates[0].bounds())
     for s in substrates:
         bBoxes = bBoxes.union(box(*s.bounds()))
-    outerBox = box(*bBoxes.bounds)
+    outerBox = bBoxes
+    for x in tabs:
+        outerBox = outerBox.union(x)
+    outerBox = box(*outerBox.bounds)
     fill = outerBox.difference(bBoxes)
     tabs.append(fill)
 
@@ -315,7 +319,7 @@ def buildInnerTabsFull(properties, panel, substrates):
     panel.appendSubstrate(tabs)
     return cuts
 
-def buildInnerTabsAnnotation(properties, panel, substrates):
+def buildTabsAnnotation(properties, panel, substrates, boundarySubstrates):
     """
     Build the "annotation" type of inner tabs
     """
@@ -347,8 +351,7 @@ def buildBackBone(layout, panel, substrates, frameSpace):
             if not neighbors.top(s):
                 extraT = fromOpt(extraVSpace, 0)
                 if extraVSpace is not None:
-                    cuty = e1.min - extraT
-                    cut = LineString([(bbXMin, cuty), (bbXMax, cuty)])
+                    cut = LineString([(bbXMin, e1.min), (bbXMax, e1.min)])
                     cuts.append(cut)
             if neighbors.bottom(s):
                 y1, _ = shpBBoxBottom(s.bounds())
@@ -364,8 +367,7 @@ def buildBackBone(layout, panel, substrates, frameSpace):
             else:
                 extraB = fromOpt(extraVSpace, 0)
                 if extraVSpace is not None:
-                    cuty = e1.max + extraB
-                    cut = LineString([(bbXMax, cuty), (bbXMin, cuty)])
+                    cut = LineString([(bbXMax, e1.max), (bbXMin, e1.max)])
                     cuts.append(cut)
             bb = box(bbXMin, e1.min - extraT, bbXMax, e1.max + extraB)
             backbones.append(bb)
@@ -381,8 +383,7 @@ def buildBackBone(layout, panel, substrates, frameSpace):
             if not neighbors.left(s):
                 extraL = fromOpt(extraHSpace, 0)
                 if extraHSpace is not None:
-                    cutx = e1.min - extraL
-                    cut = LineString([(cutx, bbYMax), (cutx, bbYMin)])
+                    cut = LineString([(e1.min, bbYMax), (e1.min, bbYMin)])
                     cuts.append(cut)
             if neighbors.right(s):
                 x1, _ = shpBBoxRight(s.bounds())
@@ -398,11 +399,11 @@ def buildBackBone(layout, panel, substrates, frameSpace):
             else:
                 extraR = fromOpt(extraHSpace, 0)
                 if extraHSpace is not None:
-                    cutx = e1.max + extraR
-                    cut = LineString([(cutx, bbYMin), (cutx, bbYMax)])
+                    cut = LineString([(e1.max, bbYMin), (e1.max, bbYMax)])
                     cuts.append(cut)
             bb = box(e1.min - extraL, bbYMin, e1.max + extraR, bbYMax)
             backbones.append(bb)
+    backbones = list([b.buffer(fromMm(0.01), join_style=2) for b in backbones])
     panel.appendSubstrate(backbones)
     return cuts
 
@@ -432,3 +433,56 @@ def makeCuts(properties, panel, cuts):
             properties["spacing"], properties["offset"], properties["prolong"])
     else:
         raise PresetError(f"Unknown type '{type}' of cuts specification.")
+
+
+def polygonToSubstrate(polygon):
+    s = Substrate([])
+    s.union(polygon)
+    return s
+
+def dummyFramingSubstrate(substrates, frameOffset):
+    """
+    Generate dummy substrates that pretend to be the frame (to appear)
+    """
+    vSpace, hSpace = frameOffset
+    dummy = []
+    minx, miny, maxx, maxy = substrates[0].bounds()
+    for s in substrates:
+        minx2, miny2, maxx2, maxy2 = s.bounds()
+        minx = min(minx, minx2)
+        miny = min(miny, miny2)
+        maxx = max(maxx, maxx2)
+        maxy = max(maxy, maxy2)
+    width = fromMm(0)
+    if vSpace is not None:
+        top = box(minx, miny - 2 * vSpace - width, maxx, miny - 2 * vSpace)
+        bottom = box(minx, maxy + 2 * vSpace, maxx, maxy + 2 * vSpace + width)
+        dummy.append(polygonToSubstrate(top))
+        dummy.append(polygonToSubstrate(bottom))
+    if hSpace is not None:
+        left = box(minx - 2 * hSpace - width, miny, minx - 2 * hSpace, maxy)
+        right = box(maxx + 2 * hSpace, miny, maxx + 2 * hSpace + width, maxy)
+        dummy.append(polygonToSubstrate(left))
+        dummy.append(polygonToSubstrate(right))
+    return dummy
+
+def buildFraming(preset, panel):
+    """
+    Build frame according to the preset and return cuts
+    """
+    type = preset["type"]
+    if type == "none":
+        return []
+    if type == "railstb":
+        panel.makeRailsTb(preset["width"])
+        return []
+    if type == "railslr":
+        panel.makeRailsLr(preset["width"])
+        return []
+    if type == "frame":
+        cuts = panel.makeFrame(preset["width"])
+        return cuts if preset["cuts"] else []
+    if type == "tightframe":
+        panel.makeTightFrame(preset["width"], preset["slotwidth"])
+        return []
+    raise PresetError(f"Unknown type '{type}' of frame specification.")
