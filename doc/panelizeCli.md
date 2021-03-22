@@ -308,9 +308,16 @@ boards have just a milled slot around their perimeter.
 
 ## Tooling
 
-Add tooling holes to the (rail/frame of) the panel.
+Add tooling holes to the (rail/frame of) the panel. The holes are positioned
+by
 
 **Types**: none, 3hole, 4hole
+**Common options**:
+
+- `hoffset`, `voffset` - specify the offset from from panel edges
+- `size` - diameter of the holes
+- `paste` - if true, the holes are included in the paste layer (therefore they
+  appear on the stencil).
 
 ## Fiducials
 

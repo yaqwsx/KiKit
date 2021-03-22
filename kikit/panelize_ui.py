@@ -99,6 +99,7 @@ def newpanelize(input, output, preset, layout, source, tabs, cuts, framing, tool
     backboneCuts = ki.buildBackBone(preset["layout"], panel, substrates,
         ki.frameOffset(preset["framing"]))
     frameCuts = ki.buildFraming(preset["framing"], panel)
+    ki.buildTooling(preset["tooling"], panel)
 
     cutLines = chain(tabCuts, backboneCuts, frameCuts)
     ki.makeCuts(preset["cuts"], panel, cutLines)

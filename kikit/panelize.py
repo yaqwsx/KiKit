@@ -988,16 +988,21 @@ class Panel:
                 if bloatedSubstrate.intersects(hole.buffer(0.8 * diameter / 2)):
                     self.addNPTHole(wxPoint(hole.x, hole.y), diameter)
 
-    def addNPTHole(self, position, diameter):
+    def addNPTHole(self, position, diameter, paste=False):
         """
         Add a drilled non-plated hole to the position (`wxPoint`) with given
-        diameter.
+        diameter. The paste option allows to place the hole on the paste layers.
         """
         module = pcbnew.PCB_IO().FootprintLoad(KIKIT_LIB, "NPTH")
         module.SetPosition(position)
         for pad in module.Pads():
             pad.SetDrillSize(pcbnew.wxSize(diameter, diameter))
             pad.SetSize(pcbnew.wxSize(diameter, diameter))
+            if paste:
+                layerSet = pad.GetLayerSet()
+                layerSet.AddLayer(Layer.F_Paste)
+                layerSet.AddLayer(Layer.B_Paste)
+                pad.SetLayerSet(layerSet)
         self.board.Add(module)
 
     def addFiducial(self, position, copperDiameter, openingDiameter, bottom=False):
@@ -1035,11 +1040,12 @@ class Panel:
             self.addFiducial(pos, copperDiameter, openingDiameter, False)
             self.addFiducial(pos, copperDiameter, openingDiameter, True)
 
-    def addTooling(self, horizontalOffset, verticalOffset, diameter):
+    def addCornerTooling(self, holeCount, horizontalOffset, verticalOffset,
+                         diameter, paste=False):
         """
-        Add 3 tooling holes to the top-left, top-right and bottom-left corner of
-        the board. This function expects there is enough space on the
-        board/frame/rail to place the feature.
+        Add up to 4 tooling holes to the top-left, top-right, bottom-left and
+        bottom-right corner of the board (in this order). This function expects
+        there is enough space on the board/frame/rail to place the feature.
 
         The offsets are measured from the outer edges of the substrate.
         """
@@ -1047,8 +1053,9 @@ class Panel:
         topLeft= wxPoint(minx + horizontalOffset, miny + verticalOffset)
         topRight = wxPoint(maxx - horizontalOffset, miny + verticalOffset)
         bottomLeft = wxPoint(minx + horizontalOffset, maxy - verticalOffset)
-        for pos in [topLeft, topRight, bottomLeft]:
-            self.addNPTHole(pos, diameter)
+        bottomRight = wxPoint(maxx - horizontalOffset, maxy - verticalOffset)
+        for pos in [topLeft, topRight, bottomLeft, bottomRight][:holeCount]:
+            self.addNPTHole(pos, diameter, paste)
 
     def addMillFillets(self, millRadius):
         """
