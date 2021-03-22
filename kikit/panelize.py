@@ -4,7 +4,7 @@ from kikit.common import normalize
 from pcbnew import (GetBoard, LoadBoard,
     FromMM, ToMM, wxPoint, wxRect, wxRectMM, wxPointMM)
 from enum import Enum, IntEnum
-from shapely.geometry import Polygon, MultiPolygon, Point, LineString, box
+from shapely.geometry import Polygon, MultiPolygon, Point, LineString, box, GeometryCollection
 from shapely.prepared import prep
 import shapely
 from itertools import product, chain
@@ -877,28 +877,35 @@ class Panel:
 
         return (outerRect, cuts)
 
-
-    def makeFrame(self, innerArea, width, height, offset):
+    def makeFrame(self, width):
         """
-        Adds a frame around given `innerArea` (`wxRect`), which can be obtained,
-        e.g., by `makeGrid`, with given `width` and `height`. Space with width
-        `offset` is added around the `innerArea`.
+        Build a frame around the board. Return frame cuts
         """
-        innerAreaExpanded = expandRect(innerArea, offset-fromMm(0.01))
-        xDiff = (width - innerAreaExpanded.GetWidth()) // 2
-        if xDiff < 0:
-            raise RuntimeError("The frame is to small")
-        yDiff = (height - innerAreaExpanded.GetHeight()) // 2
-        if yDiff < 0:
-            raise RuntimeError("The frame is to small")
-        innerRing = rectToRing(innerAreaExpanded)
-        outerRect = expandRect(innerAreaExpanded, xDiff, yDiff)
-        outerRing = rectToRing(outerRect)
+        frameInnerRect = expandRect(self.boardSubstrate.boundingBox(), fromMm(-0.001))
+        frameOuterRect = expandRect(frameInnerRect, width)
+        outerRing = rectToRing(frameOuterRect)
+        innerRing = rectToRing(frameInnerRect)
         polygon = Polygon(outerRing, [innerRing])
-        frame_cuts_v = self.makeFrameCutsV( innerArea, innerAreaExpanded, outerRect )
-        frame_cuts_h = self.makeFrameCutsH( innerArea, innerAreaExpanded, outerRect )
         self.appendSubstrate(polygon)
-        return (outerRect, frame_cuts_v, frame_cuts_h)
+
+        innerArea = self.substrates[0].boundingBox()
+        for s in self.substrates:
+            innerArea = combineBoundingBoxes(innerArea, s.boundingBox())
+        frameCutsV = self.makeFrameCutsV(innerArea, frameInnerRect, frameOuterRect)
+        frameCutsH = self.makeFrameCutsH(innerArea, frameInnerRect, frameOuterRect)
+        return chain(frameCutsV, frameCutsH)
+
+    def makeTightFrame(self, width, slotwidth):
+        """
+        Build a full frame with board perimeter milled out
+        """
+        self.makeFrame(width)
+        boardSlot = GeometryCollection()
+        for s in self.substrates:
+            boardSlot = boardSlot.union(s.exterior())
+        boardSlot = boardSlot.buffer(slotwidth)
+        frameBody = box(*self.boardSubstrate.bounds()).difference(boardSlot)
+        self.appendSubstrate(frameBody)
 
     def makeRailsTb(self, thickness):
         """
@@ -920,22 +927,22 @@ class Panel:
         self.appendSubstrate(leftRail)
         self.appendSubstrate(rightRail)
 
-    def makeFrameCutsV(self, innerArea, innerAreaExpanded, outerArea ):
+    def makeFrameCutsV(self, innerArea, frameInnerArea, outerArea):
         x_coords = [ innerArea.GetX(),
                      innerArea.GetX() + innerArea.GetWidth() ]
-        y_coords = sorted([ innerAreaExpanded.GetY(),
-                            innerAreaExpanded.GetY() + innerAreaExpanded.GetHeight(),
+        y_coords = sorted([ frameInnerArea.GetY(),
+                            frameInnerArea.GetY() + frameInnerArea.GetHeight(),
                             outerArea.GetY(),
                             outerArea.GetY() + outerArea.GetHeight() ])
         cuts =  [ [(x_coord, y_coords[0]), (x_coord, y_coords[1])] for x_coord in x_coords ]
         cuts += [ [(x_coord, y_coords[2]), (x_coord, y_coords[3])] for x_coord in x_coords ]
         return map(LineString, cuts)
 
-    def makeFrameCutsH(self, innerArea, innerAreaExpanded, outerArea ):
+    def makeFrameCutsH(self, innerArea, frameInnerArea, outerArea):
         y_coords = [ innerArea.GetY(),
                      innerArea.GetY() + innerArea.GetHeight() ]
-        x_coords = sorted([ innerAreaExpanded.GetX(),
-                            innerAreaExpanded.GetX() + innerAreaExpanded.GetWidth(),
+        x_coords = sorted([ frameInnerArea.GetX(),
+                            frameInnerArea.GetX() + frameInnerArea.GetWidth(),
                             outerArea.GetX(),
                             outerArea.GetX() + outerArea.GetWidth() ])
         cuts =  [ [(x_coords[0], y_coord), (x_coords[1], y_coord)] for y_coord in y_coords ]

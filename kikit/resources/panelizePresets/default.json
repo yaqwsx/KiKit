@@ -35,7 +35,9 @@
         "type": "none",
         "thickness": "0mm",
         "millRadius": "0mm",
-        "copperFill": false
+        "cuts": true,
+        "copperFill": false,
+        "slotwidth": "2mm"
     },
     "tooling": {
         "type": "none",

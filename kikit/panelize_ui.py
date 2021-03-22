@@ -77,6 +77,7 @@ def newpanelize(input, output, preset, layout, source, tabs, cuts, framing, tool
     from pcbnew import LoadBoard, wxPointMM
     import commentjson
     import sys
+    from itertools import chain
 
 
     preset = ki.obtainPreset(preset,
@@ -91,12 +92,15 @@ def newpanelize(input, output, preset, layout, source, tabs, cuts, framing, tool
 
     sourceArea = ki.readSourceArea(preset["source"], board)
     substrates = ki.buildLayout(preset["layout"], panel, input, sourceArea)
-    innerCuts = ki.buildInnerTabs(preset["tabs"], panel, substrates)
+    framingSubstrates = ki.dummyFramingSubstrate(substrates,
+        ki.frameOffset(preset["framing"]))
+    tabCuts = ki.buildTabs(preset["tabs"], panel, substrates,
+        framingSubstrates)
     backboneCuts = ki.buildBackBone(preset["layout"], panel, substrates,
         ki.frameOffset(preset["framing"]))
-    # buildFraming(preset["framing"], panel, psize)
+    frameCuts = ki.buildFraming(preset["framing"], panel)
 
-    cutLines = innerCuts + backboneCuts
+    cutLines = chain(tabCuts, backboneCuts, frameCuts)
     ki.makeCuts(preset["cuts"], panel, cutLines)
 
     panel.save(output)
