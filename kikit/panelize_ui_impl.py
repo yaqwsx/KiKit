@@ -41,13 +41,14 @@ def readLayer(s):
     return Layer[s.replace(".", "_")]
 
 def ppLayout(section):
-    validateChoice("layout", section, "type", ["grid", "tightgrid"])
+    validateChoice("layout", section, "type", ["grid"])
     validateChoice("layout", section, "alternation",
         ["none", "rows", "cols", "rowsCols"])
     readParameters(section, readLength,
-        ["hspace", "vspace", "space", "slotwidth"])
+        ["hspace", "vspace", "space", "hbackbone", "vbackbone"])
     readParameters(section, readAngle, ["rotation"])
     readParameters(section, int, ["rows", "cols"])
+    readParameters(section, bool, ["vbonecut, hbonecut"])
     # The space parameter overrides hspace and vspace
     if "space" in section:
         section["hspace"] = section["vspace"] = section["space"]
@@ -72,7 +73,14 @@ def ppCuts(section):
     readParameters(section, readLayer, ["layer"])
 
 def ppFraming(section):
-    pass
+    validateChoice("framing", section, "type",
+        ["none", "railstb", "railslr", "frame", "tightframe"])
+    readParameters(section, readLength,
+        ["hspace", "vspace", "space", "width", "slotwidth"])
+    readParameters(section, bool, ["cuts"])
+    # The space parameter overrides hspace and vspace
+    if "space" in section:
+        section["hspace"] = section["vspace"] = section["space"]
 
 def ppTooling(section):
     pass
@@ -192,7 +200,7 @@ def buildLayout(layout, panel, sourceBoard, sourceArea):
     Return the list of created substrates.
     """
     type = layout["type"]
-    if type in ["grid", "tightgrid"]:
+    if type in ["grid"]:
         placementClass = getPlacementClass(layout["alternation"])
         return panel.makeGridNew(
             boardfile=sourceBoard, sourceArea=sourceArea,
@@ -315,12 +323,98 @@ def buildInnerTabsAnnotation(properties, panel, substrates):
     # TBA
 
 
-def buildBackBone(layout, panel, substrates):
+def buildBackBone(layout, panel, substrates, frameSpace):
     """
-    Append backbones to the panel
+    Append backbones to the panel. Return backbone cuts.
     """
-    pass
-    # TBA
+    extraVSpace, extraHSpace = frameSpace
+    hwidth, vwidth = layout["hbackbone"], layout["vbackbone"]
+    backbones = []
+    cuts = []
+    neighbors = SubstrateNeighbors(substrates)
+    # We append the backbone in pieces - one piece per substrate. We append
+    # backbone always at right or at bottom
+    for s in substrates:
+        if neighbors.right(s) and vwidth > 0:
+            n = neighbors.right(s)[0]
+            x1, e1 = shpBBoxRight(s.bounds())
+            x2, e2 = shpBBoxLeft(n.bounds())
+            assert e1 == e2 # We assume grid layout
+            mid = (x1 + x2) // 2
+            extraT, extraB = 0, 0
+            bbXMin = mid - vwidth / 2
+            bbXMax = mid + vwidth / 2
+            if not neighbors.top(s):
+                extraT = fromOpt(extraVSpace, 0)
+                if extraVSpace is not None:
+                    cuty = e1.min - extraT
+                    cut = LineString([(bbXMin, cuty), (bbXMax, cuty)])
+                    cuts.append(cut)
+            if neighbors.bottom(s):
+                y1, _ = shpBBoxBottom(s.bounds())
+                y2, _ = shpBBoxTop(neighbors.bottom(s)[0].bounds())
+                extraB = y2 - y1
+                if hwidth is not None and layout["vbonecut"]:
+                    # There is also the perpendicular backbone, add cut
+                    yMid = (y1 + y2) / 2
+                    cut = LineString([(bbXMin, yMid - hwidth / 2), (bbXMin, yMid + hwidth / 2)])
+                    cuts.append(cut)
+                    cut = LineString([(bbXMax, yMid + hwidth / 2), (bbXMax, yMid - hwidth / 2)])
+                    cuts.append(cut)
+            else:
+                extraB = fromOpt(extraVSpace, 0)
+                if extraVSpace is not None:
+                    cuty = e1.max + extraB
+                    cut = LineString([(bbXMax, cuty), (bbXMin, cuty)])
+                    cuts.append(cut)
+            bb = box(bbXMin, e1.min - extraT, bbXMax, e1.max + extraB)
+            backbones.append(bb)
+        if neighbors.bottom(s) and hwidth > 0:
+            n = neighbors.bottom(s)[0]
+            y1, e1 = shpBBoxBottom(s.bounds())
+            y2, e2 = shpBBoxTop(n.bounds())
+            assert e1 == e2 # We assume grid layout
+            mid = (y1 + y2) // 2
+            bbYMin = mid - hwidth / 2
+            bbYMax = mid + hwidth / 2
+            extraL, extraR = 0, 0
+            if not neighbors.left(s):
+                extraL = fromOpt(extraHSpace, 0)
+                if extraHSpace is not None:
+                    cutx = e1.min - extraL
+                    cut = LineString([(cutx, bbYMax), (cutx, bbYMin)])
+                    cuts.append(cut)
+            if neighbors.right(s):
+                x1, _ = shpBBoxRight(s.bounds())
+                x2, _ = shpBBoxLeft(neighbors.right(s)[0].bounds())
+                extraR = x2 - x1
+                if vwidth is not None and layout["hbonecut"]:
+                    # There is also the perpendicular backbone, add cut
+                    xMid = (x1 + x2) / 2
+                    cut = LineString([(xMid + vwidth / 2, bbYMin), (xMid - vwidth / 2, bbYMin)])
+                    cuts.append(cut)
+                    cut = LineString([(xMid - vwidth / 2, bbYMax), (xMid + vwidth / 2, bbYMax)])
+                    cuts.append(cut)
+            else:
+                extraR = fromOpt(extraHSpace, 0)
+                if extraHSpace is not None:
+                    cutx = e1.max + extraR
+                    cut = LineString([(cutx, bbYMin), (cutx, bbYMax)])
+                    cuts.append(cut)
+            bb = box(e1.min - extraL, bbYMin, e1.max + extraR, bbYMax)
+            backbones.append(bb)
+    panel.appendSubstrate(backbones)
+    return cuts
+
+def frameOffset(framing):
+    type = framing["type"]
+    if type == "none":
+        return None, None
+    if type == "railstb":
+        return framing["vspace"], None
+    if type == "railslr":
+        return None, framing["hspace"]
+    return framing["vspace"], framing["hspace"]
 
 def makeCuts(properties, panel, cuts):
     """

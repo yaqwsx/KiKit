@@ -8,7 +8,11 @@
         "rotation": "0deg",
         "alternation": "none",
         "renamenet": "Board_{n}-{orig}",
-        "renameref": "{orig}"
+        "renameref": "{orig}",
+        "hbackbone": "0mm",
+        "vbackbone": "0mm",
+        "vbonecut": true,
+        "hbonecut": true
     },
     "source": {
         "type": "auto",

@@ -170,6 +170,9 @@ the CLI by specifying it first and omitting the `type` word; e.g., `--cuts
   references.
 - `vbackbone`, `hbackbone`: The width of vertical and horizontal backbone (0
   means no backbone). The backbone does not increase the spacing of the boards.
+- `vbonecut`, `hbonecut`: true/false. If there are both backbones specified,
+  specifies if there should be a vertical or horizontal cut (or both) where the
+  backbones cross.
 
 #### Grid
 
@@ -278,7 +281,30 @@ Use mousebites to
 KiKit allows you to frame the panel with a full frame, or bottom/top or
 left/right rails.
 
-**Types**: none, railstb, railsrl, frame
+**Types**: none, railstb, railsrl, frame, tightframe
+**Common options**:
+
+- `hspace`, `vspace`, `space` - specify the space between PCB and the
+  frame/rail. `space` overrides `hspace and vspace`.
+- `width` - specify with of the rails or frame
+
+#### Railstb/Railsrl
+
+Add rail (either on top and bottom or on left and right) to the panel.
+
+#### Frame
+
+Add a frame around the board.
+
+- `cuts` - true/false - specify whether to add cuts to the corners of the frame
+  for easy removal.
+
+#### Tighframe
+
+Add a frame around the board which fills the whole area of the panel - the
+boards have just a milled slot around their perimeter.
+
+- `slotwidth` - width of the milled slot.
 
 ## Tooling
 
