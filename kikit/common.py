@@ -57,7 +57,6 @@ def collectFootprints(boardCollection, sourceArea):
     """ Returns a list of board footprints fully contained in the source area ignoring reference a value label"""
     return list([x for x in boardCollection if fitsIn(x.GetFootprintRect(), sourceArea)])
 
-
 def getBBoxWithoutContours(edge):
     width = edge.GetWidth()
     edge.SetWidth(0)
@@ -162,3 +161,9 @@ def shpBBoxBottom(bbox):
     Given a shapely bounding box, return bottom edge as (pos, interval)
     """
     return bbox[3], Interval(bbox[0], bbox[2])
+
+def fromOpt(object, default):
+    """
+    Given an object, return it if not None. Otherwise return default
+    """
+    return object if object is not None else default

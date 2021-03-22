@@ -1,4 +1,5 @@
 from itertools import islice
+from math import isclose
 
 class Interval:
     """
@@ -34,7 +35,7 @@ class Interval:
         return self.max - self.min
 
     def __eq__(self, other):
-        return self.min == other.min and self.max == other.max
+        return isclose(self.min, other.min) and isclose(self.max, other.max)
 
     def __repr__(self):
         return f"Interval({self.min}, {self.max})"

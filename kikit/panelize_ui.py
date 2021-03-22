@@ -92,10 +92,11 @@ def newpanelize(input, output, preset, layout, source, tabs, cuts, framing, tool
     sourceArea = ki.readSourceArea(preset["source"], board)
     substrates = ki.buildLayout(preset["layout"], panel, input, sourceArea)
     innerCuts = ki.buildInnerTabs(preset["tabs"], panel, substrates)
-    ki.buildBackBone(preset["layout"], panel, substrates)
+    backboneCuts = ki.buildBackBone(preset["layout"], panel, substrates,
+        ki.frameOffset(preset["framing"]))
     # buildFraming(preset["framing"], panel, psize)
 
-    cutLines = innerCuts
+    cutLines = innerCuts + backboneCuts
     ki.makeCuts(preset["cuts"], panel, cutLines)
 
     panel.save(output)
