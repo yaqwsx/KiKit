@@ -83,7 +83,9 @@ def ppFraming(section):
         section["hspace"] = section["vspace"] = section["space"]
 
 def ppTooling(section):
-    pass
+    validateChoice("tooling", section, "type", ["none", "3hole", "4hole"])
+    readParameters(section, readLength, ["hoffset", "voffset", "size"])
+    readParameters(section, bool, ["paste"])
 
 def postProcessPreset(preset):
     process = {
@@ -486,3 +488,21 @@ def buildFraming(preset, panel):
         panel.makeTightFrame(preset["width"], preset["slotwidth"])
         return []
     raise PresetError(f"Unknown type '{type}' of frame specification.")
+
+def buildTooling(preset, panel):
+    """
+    Build tooling holes according to the preset
+    """
+    type = preset["type"]
+    if type == "none":
+        return
+    hoffset, voffset = preset["hoffset"], preset["voffset"]
+    diameter = preset["size"]
+    paste = preset["paste"]
+    if type == "3hole":
+        panel.addCornerTooling(3, hoffset, voffset, diameter, paste)
+        return
+    if type == "4hole":
+        panel.addCornerTooling(4, hoffset, voffset, diameter, paste)
+        return
+    raise PresetError(f"Unknown type '{type}' of tooling specification.")
