@@ -72,10 +72,12 @@ def panelize():
     help="Override fiducials settings.")
 @click.option("--text", "-t", type=Section(),
     help="Override text settings.")
+@click.option("--post", "-z", type=Section(),
+    help="Override post processing settings settings.")
 @click.option("--dump", "-d", type=click.Path(file_okay=True, dir_okay=False),
     help="Dump constructured preset into a JSON file.")
 def newpanelize(input, output, preset, layout, source, tabs, cuts, framing,
-                tooling, fiducials, text, dump):
+                tooling, fiducials, text, post, dump):
     # Hide the import in the function to make KiKit start faster
     from kikit import panelize_ui_impl as ki
     from kikit.panelize import Panel
@@ -87,7 +89,7 @@ def newpanelize(input, output, preset, layout, source, tabs, cuts, framing,
 
     preset = ki.obtainPreset(preset,
         layout=layout, source=source, tabs=tabs, cuts=cuts, framing=framing,
-        tooling=tooling, fiducials=fiducials, text=text)
+        tooling=tooling, fiducials=fiducials, text=text, post=post)
 
     board = LoadBoard(input)
 
@@ -107,9 +109,12 @@ def newpanelize(input, output, preset, layout, source, tabs, cuts, framing,
     ki.buildTooling(preset["tooling"], panel)
     ki.buildFiducials(preset["fiducials"], panel)
     ki.buildText(preset["text"], panel)
+    ki.buildPostprocessing(preset["post"], panel)
 
     cutLines = chain(tabCuts, backboneCuts, frameCuts)
     ki.makeCuts(preset["cuts"], panel, cutLines)
+
+    ki.runUserScript(preset["post"], panel)
 
     panel.save(output)
 

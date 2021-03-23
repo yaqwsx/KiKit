@@ -56,5 +56,12 @@
         "vjustify": "center",
         "thickness": "0.3mm",
         "layer": "F_SilkS"
+    },
+    "post": {
+        "type": "auto",
+        "copperfill": false,
+        "millradius": "0mm",
+        "script": "",
+        "origin": false
     }
 }

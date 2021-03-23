@@ -1176,3 +1176,15 @@ class Panel:
         textObject.SetLayer(layer)
         textObject.SetMirrored(isBottomLayer(layer))
         self.board.Add(textObject)
+
+    def setAuxiliaryOrigin(self, point):
+        """
+        Set the auxiliary origin used e.g., for drill files
+        """
+        self.board.SetAuxOrigin(point)
+
+    def setGridOrigin(self, point):
+        """
+        Set grid origin
+        """
+        self.board.SetGridOrigin(point)
