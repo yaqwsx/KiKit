@@ -985,7 +985,7 @@ class Panel:
                     hole = offsetCut.interpolate(0.5, normalized=True)
                 else:
                     hole = offsetCut.interpolate( i * length / (count - 1) )
-                if bloatedSubstrate.intersects(hole.buffer(0.8 * diameter / 2)):
+                if bloatedSubstrate.intersects(hole):
                     self.addNPTHole(wxPoint(hole.x, hole.y), diameter)
 
     def addNPTHole(self, position, diameter, paste=False):
