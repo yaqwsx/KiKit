@@ -42,5 +42,19 @@
     "tooling": {
         "type": "none",
         "layout": "3hole" // 4hole
+    },
+    "text": {
+        "type": "none",
+        "text": "",
+        "anchor": "mt",
+        "hoffset": "0mm",
+        "voffset": "0mm",
+        "orientation": "0deg",
+        "width": "1.5mm",
+        "height": "1.5mm",
+        "hjustify": "center",
+        "vjustify": "center",
+        "thickness": "0.3mm",
+        "layer": "F_SilkS"
     }
 }

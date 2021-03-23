@@ -36,7 +36,7 @@ def readLength(unitStr):
         "inch": inch,
         "in": inch
     }
-    return readUnit(unitDir, unitStr)
+    return int(readUnit(unitDir, unitStr))
 
 def readAngle(unitStr):
     unitDir = {

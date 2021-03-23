@@ -13,7 +13,7 @@ import os
 
 from kikit import substrate
 from kikit.substrate import Substrate, linestringToKicad
-from kikit.defs import STROKE_T, Layer, EDA_TEXT_HJUSTIFY_T
+from kikit.defs import STROKE_T, Layer, EDA_TEXT_HJUSTIFY_T, EDA_TEXT_VJUSTIFY_T
 
 from kikit.common import *
 
@@ -1154,3 +1154,25 @@ class Panel:
 
         self.board.Add(zone)
         return zone
+
+    def addText(self, text, position, orientation=0,
+                width=fromMm(1.5), height=fromMm(1.5), thickness=fromMm(0.3),
+                hJustify=EDA_TEXT_HJUSTIFY_T.GR_TEXT_HJUSTIFY_CENTER,
+                vJustify=EDA_TEXT_VJUSTIFY_T.GR_TEXT_VJUSTIFY_CENTER,
+                layer=Layer.F_SilkS):
+        """
+        Add text at given position to the panel. If appending to the bottom
+        side, text is automatically mirrored.
+        """
+        textObject = pcbnew.PCB_TEXT(self.board)
+        textObject.SetText(text)
+        textObject.SetTextX(position[0])
+        textObject.SetTextY(position[1])
+        textObject.SetThickness(thickness)
+        textObject.SetTextSize(pcbnew.wxSize(width, height))
+        textObject.SetHorizJustify(hJustify)
+        textObject.SetVertJustify(vJustify)
+        textObject.SetTextAngle(orientation)
+        textObject.SetLayer(layer)
+        textObject.SetMirrored(isBottomLayer(layer))
+        self.board.Add(textObject)

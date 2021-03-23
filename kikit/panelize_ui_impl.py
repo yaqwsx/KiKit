@@ -4,7 +4,10 @@ from kikit.defs import Layer
 from shapely.geometry import box
 from kikit.units import readLength, readAngle
 from kikit.substrate import SubstrateNeighbors
+from kikit.common import resolveAnchor
 import commentjson
+import csv
+import io
 
 # This package exists as it is not needed for showing help and running other
 # commands, however, it has heavy dependencies (pcbnew) that take a second
@@ -13,12 +16,15 @@ import commentjson
 PKG_BASE = os.path.dirname(__file__)
 PRESET_LIB = os.path.join(PKG_BASE, "resources/panelizePresets")
 
-def splitStr(splitChar, escapeChar, s):
+def splitStr(delimiter, escapeChar, s):
     """
-    Splits s based on splitChar that can be escaped via escapeChar
+    Splits s based on delimiter that can be escaped via escapeChar
     """
-    # TBA
-    return s.split(splitChar)
+    # Let's use csv reader to implement this
+    reader = csv.reader(io.StringIO(s), delimiter=delimiter, escapechar=escapeChar)
+    # Unpack first line
+    for x in reader:
+        return x
 
 def validatePresetLayout(preset):
     if not isinstance(preset, dict):
@@ -39,6 +45,26 @@ def readParameters(section, method, what):
 
 def readLayer(s):
     return Layer[s.replace(".", "_")]
+
+def readHJustify(s):
+    choices = {
+        "left": EDA_TEXT_HJUSTIFY_T.GR_TEXT_HJUSTIFY_LEFT,
+        "right": EDA_TEXT_HJUSTIFY_T.GR_TEXT_HJUSTIFY_RIGHT,
+        "center": EDA_TEXT_HJUSTIFY_T.GR_TEXT_HJUSTIFY_CENTER
+    }
+    if s in choices:
+        return choices[s]
+    raise PresetError(f"'{s}' is not valid justification value")
+
+def readVJustify(s):
+    choices = {
+        "top": EDA_TEXT_VJUSTIFY_T.GR_TEXT_VJUSTIFY_TOP,
+        "center": EDA_TEXT_VJUSTIFY_T.GR_TEXT_VJUSTIFY_CENTER,
+        "bottom": EDA_TEXT_VJUSTIFY_T.GR_TEXT_VJUSTIFY_BOTTOM
+    }
+    if s in choices:
+        return choices[s]
+    raise PresetError(f"'{s}' is not valid justification value")
 
 def ppLayout(section):
     validateChoice("layout", section, "type", ["grid"])
@@ -92,6 +118,17 @@ def ppFiducials(section):
     readParameters(section, readLength,
         ["hoffset", "voffset", "coppersize", "opening"])
 
+def ppText(section):
+    validateChoice("text", section, "type", ["none", "simple"])
+    readParameters(section, readLength,
+        ["hoffset", "voffset", "width", "height", "thickness"])
+    readParameters(section, readHJustify, ["hjustify"])
+    readParameters(section, readVJustify, ["vjustify"])
+    readParameters(section, readLayer, ["layer"])
+    readParameters(section, readAngle, ["orientation"])
+    validateChoice("text", section, "anchor",
+        ["tl", "tr", "bl", "br", "mt", "mb", "ml", "mr", "c"])
+
 def postProcessPreset(preset):
     process = {
         "layout": ppLayout,
@@ -100,7 +137,8 @@ def postProcessPreset(preset):
         "cuts": ppCuts,
         "framing": ppFraming,
         "tooling": ppTooling,
-        "fiducials": ppFiducials
+        "fiducials": ppFiducials,
+        "text": ppText
     }
     for name, section in preset.items():
         process[name](section)
@@ -153,7 +191,7 @@ def validateSections(preset):
     validate all required keys are present. Ignores excessive keys.
     """
     VALID_SECTIONS = ["layout", "source", "tabs", "cuts", "framing", "tooling",
-        "fiducials"]
+        "fiducials", "text"]
     extraSections = set(preset.keys()).difference(VALID_SECTIONS)
     if len(extraSections) != 0:
         raise PresetError(f"Extra sections {', '.join(extraSections)} in preset")
@@ -531,4 +569,28 @@ def buildFiducials(preset, panel):
         panel.addCornerFiducials(4, hoffset, voffset, coppersize, opening)
         return
     raise PresetError(f"Unknown type '{type}' of fiducial specification.")
+
+def buildText(preset, panel):
+    """
+    Build text according to the preset
+    """
+    type = preset["type"]
+    if type == "none":
+        return
+    if type == "simple":
+        origin = resolveAnchor(preset["anchor"])(panel.boardSubstrate.boundingBox())
+        origin += wxPoint(preset["hoffset"], preset["voffset"])
+
+        panel.addText(
+            text=preset["text"],
+            position=origin,
+            orientation=preset["orientation"],
+            width=preset["width"],
+            height=preset["height"],
+            thickness=preset["thickness"],
+            hJustify=preset["hjustify"],
+            vJustify=preset["vjustify"],
+            layer=preset["layer"])
+        return
+    raise PresetError(f"Unknown type '{type}' of text specification.")
 
