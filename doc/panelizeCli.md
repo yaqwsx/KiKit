@@ -103,7 +103,8 @@ category, which accepts a semicolon-separated list of key-value pairs; e.g.:
 ```
 
 The options from CLI have the highest priority - they override values from
-specified from the files.
+specified from the files. If you need to specify the character `;`, you can
+escape it via `\`.
 
 Therefore, a full invocation of KiKit for panelization can look like this:
 ```
@@ -331,11 +332,42 @@ Add fiducial to the (rail/frame of) the panel.
 
 ## Text
 
+Add text to the panel. Allows you to put a single block of text on panel. If you
+need more text or more sophisticated placing options, see `script` option from
+`postprocess`.
+
+**Types**: none, simple
+**Common options**:
+
+- `text` - The text to be displayed. Note that you can escape `;` via `\`
+- `anchor` - Origin of the text. Can be one of `tl`, `tr`, `bl`, `br` (corners),
+  `mt`, `mb`, `ml`, `mr` (middle of sides), `c` (center).
+- `hoffset`, `voffset` - specify the offset from anchor
+- `orientation` - specify the orientation (angle)
+- `width`, `height` - width and height of the text
+- `hjustify` - justification of the text. One of `left`, `right`, `center`
+- `vjustify` - justification of the text. One of `top`, `bottom`, `center`
+- `thickness` - stroke thickness
+- `layer` - specify text layer
+
 ## Postprocess
+
+Finishing touches to the panel.
+
+**Types**: auto
+**Common options**:
 
 - `copperfill` - fill tabs and frame with copper (e.g., to save etchant or to
   increase rigidity of flex-PCB panels)
 - `millradius` - simulate the milling operation (add fillets to the internal
   corners). Specify mill radius (usually 1 mm)
+- `script` - a path to custom Python file. The file should contain a function
+  `kikitPostprocess(panel)` that receives the prepared panel as the
+  `kikit.panelize.Panel` object. The function can make arbitrary changes to the
+  panel - you can append text, footprints, alter labels, etc. The function is
+  invoked after the whole panel is constructed (including all other
+  postprocessing). **If you try to add a functionality for a common fabrication
+  houses via scripting, consider submitting PR for KiKit**.
+- `origin` - specify if the auxilary origin an grid origin should be placed
 
 

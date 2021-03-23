@@ -167,3 +167,27 @@ def fromOpt(object, default):
     Given an object, return it if not None. Otherwise return default
     """
     return object if object is not None else default
+
+def isBottomLayer(layer):
+    """
+    Decide if layer is a bottom layer
+    """
+    return str(layer).startswith("Layer.B_")
+
+def resolveAnchor(anchor):
+    """
+    Given a string anchor name, return a function that transforms wxRect into
+    a wxPoint
+    """
+    choices = {
+        "tl": lambda x: x.GetPosition(),
+        "tr": lambda x: x.GetPosition() + wxPoint(x.GetWidth(), 0),
+        "bl": lambda x: x.GetPosition() + wxPoint(0, x.GetHeight()),
+        "br": lambda x: x.GetPosition() + wxPoint(x.GetWidth(), x.GetHeight()),
+        "mt": lambda x: x.GetPosition() + wxPoint(x.GetWidth() / 2, 0),
+        "mb": lambda x: x.GetPosition() + wxPoint(x.GetWidth() / 2, x.GetHeight()),
+        "ml": lambda x: x.GetPosition() + wxPoint(0, x.GetHeight() / 2),
+        "mr": lambda x: x.GetPosition() + wxPoint(x.GetWidth(), x.GetHeight() / 2),
+        "c":  lambda x: x.GetPosition() + wxPoint(x.GetWidth() / 2, x.GetHeight() / 2)
+    }
+    return choices[anchor]
