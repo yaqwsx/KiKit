@@ -1024,19 +1024,28 @@ class Panel:
             pad.SetLocalClearance(int((openingDiameter - copperDiameter) / 2))
         self.board.Add(module)
 
-    def addFiducials(self, horizontalOffset, verticalOffset, copperDiameter, openingDiameter):
+    def panelCorners(self, horizontalOffset=0, verticalOffset=0):
         """
-        Add 3 fiducials to the top-left, top-right and bottom-left corner of the
-        board. This function expects there is enough space on the
-        board/frame/rail to place the feature.
+        Return the list of top-left, top-right, bottom-left and bottom-right
+        corners of the panel. You can specify offsets.
+        """
+        minx, miny, maxx, maxy = self.boardSubstrate.bounds()
+        topLeft = wxPoint(minx + horizontalOffset, miny + verticalOffset)
+        topRight = wxPoint(maxx - horizontalOffset, miny + verticalOffset)
+        bottomLeft = wxPoint(minx + horizontalOffset, maxy - verticalOffset)
+        bottomRight = wxPoint(maxx - horizontalOffset, maxy - verticalOffset)
+        return [topLeft, topRight, bottomLeft, bottomRight]
+
+    def addCornerFiducials(self, fidCount, horizontalOffset, verticalOffset,
+            copperDiameter, openingDiameter):
+        """
+        Add up to 4 fiducials to the top-left, top-right, bottom-left and
+        bottom-right corner of the board (in this order). This function expects
+        there is enough space on the board/frame/rail to place the feature.
 
         The offsets are measured from the outer edges of the substrate.
         """
-        minx, miny, maxx, maxy = self.boardSubstrate.bounds()
-        topLeft= wxPoint(minx + horizontalOffset, miny + verticalOffset)
-        topRight = wxPoint(maxx - horizontalOffset, miny + verticalOffset)
-        bottomLeft = wxPoint(minx + horizontalOffset, maxy - verticalOffset)
-        for pos in [topLeft, topRight, bottomLeft]:
+        for pos in self.panelCorners(horizontalOffset, verticalOffset)[:fidCount]:
             self.addFiducial(pos, copperDiameter, openingDiameter, False)
             self.addFiducial(pos, copperDiameter, openingDiameter, True)
 
@@ -1049,12 +1058,7 @@ class Panel:
 
         The offsets are measured from the outer edges of the substrate.
         """
-        minx, miny, maxx, maxy = self.boardSubstrate.bounds()
-        topLeft= wxPoint(minx + horizontalOffset, miny + verticalOffset)
-        topRight = wxPoint(maxx - horizontalOffset, miny + verticalOffset)
-        bottomLeft = wxPoint(minx + horizontalOffset, maxy - verticalOffset)
-        bottomRight = wxPoint(maxx - horizontalOffset, maxy - verticalOffset)
-        for pos in [topLeft, topRight, bottomLeft, bottomRight][:holeCount]:
+        for pos in self.panelCorners(horizontalOffset, verticalOffset)[:holeCount]:
             self.addNPTHole(pos, diameter, paste)
 
     def addMillFillets(self, millRadius):
