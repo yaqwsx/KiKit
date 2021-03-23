@@ -14,7 +14,7 @@ inch = 1000 * mil
 deg = 10
 rad = 57.2958 * deg
 
-UNIT_SPLIT = re.compile(r"\s*(\d+(\.\d*)?)\s*(\w+)$")
+UNIT_SPLIT = re.compile(r"\s*(-?\s*\d+(\.\d*)?)\s*(\w+)$")
 
 def readUnit(unitDir, unitStr):
     match = UNIT_SPLIT.match(unitStr)
