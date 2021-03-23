@@ -11,6 +11,7 @@ def cli():
 
 cli.add_command(export_ui.export)
 cli.add_command(panelize_ui.panelize)
+cli.add_command(panelize_ui.separate)
 cli.add_command(present_ui.present)
 cli.add_command(modify_ui.modify)
 cli.add_command(stencil_ui.stencil)

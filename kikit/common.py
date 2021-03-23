@@ -191,3 +191,13 @@ def resolveAnchor(anchor):
         "c":  lambda x: x.GetPosition() + wxPoint(x.GetWidth() / 2, x.GetHeight() / 2)
     }
     return choices[anchor]
+
+def indexOf(list, predicate):
+    """
+    Return the index of the first element that satisfies predicate. If no
+    element is found, return -1
+    """
+    for i, x in enumerate(list):
+        if predicate(x):
+            return i
+    return -1

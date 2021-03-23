@@ -12,7 +12,7 @@ import numpy as np
 import os
 
 from kikit import substrate
-from kikit.substrate import Substrate, linestringToKicad
+from kikit.substrate import Substrate, linestringToKicad, extractRings
 from kikit.defs import STROKE_T, Layer, EDA_TEXT_HJUSTIFY_T, EDA_TEXT_VJUSTIFY_T
 
 from kikit.common import *
@@ -1188,3 +1188,33 @@ class Panel:
         Set grid origin
         """
         self.board.SetGridOrigin(point)
+
+def getFootprintByReference(board, reference):
+    """
+    Return a footprint by with given reference
+    """
+    for f in board.GetFootprints():
+        if f.GetReference() == reference:
+            return f
+    raise RuntimeError(f"Footprint with reference '{reference}' not found")
+
+def extractSourceAreaByAnnotation(board, reference):
+    """
+    Given a board and a reference to annotation in the form of symbol
+    `kikit:Board`, extract the source area. The source area is a bounding box of
+    continuous lines in the Edge.Cuts on which the arrow in reference point.
+    """
+    annotation = getFootprintByReference(board, reference)
+    tip = annotation.GetPosition()
+    edges = collectEdges(board, "Edge.Cuts")
+    # KiCAD 6 will need an adjustment - method Collide was introduced with
+    # different parameters. But v6 API is not available yet, so we leave this
+    # to future ourselves.
+    pointedAt = indexOf(edges, lambda x: x.HitTest(tip))
+    rings = extractRings(edges)
+    ringPointedAt = indexOf(rings, lambda x: pointedAt in x)
+    if ringPointedAt == -1:
+        raise RuntimeError("Annotation symbol '{reference}' does not point to a board edge")
+    return findBoundingBox([edges[i] for i in rings[ringPointedAt]])
+
+

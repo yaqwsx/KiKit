@@ -16,7 +16,12 @@
     },
     "source": {
         "type": "auto",
-        "tolerance": "1mm"
+        "tolerance": "1mm",
+        "tlx": "0mm",
+        "tly": "0mm",
+        "brx": "0mm",
+        "brx": "0mm",
+        "ref": ""
     },
     "tabs": {
         "type": "auto",
@@ -62,6 +67,6 @@
         "copperfill": false,
         "millradius": "0mm",
         "script": "",
-        "origin": false
+        "origin": ""
     }
 }
