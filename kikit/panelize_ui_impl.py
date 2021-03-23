@@ -66,6 +66,8 @@ def readVJustify(s):
         return choices[s]
     raise PresetError(f"'{s}' is not valid justification value")
 
+ANCHORS = ["tl", "tr", "bl", "br", "mt", "mb", "ml", "mr", "c"]
+
 def ppLayout(section):
     validateChoice("layout", section, "type", ["grid"])
     validateChoice("layout", section, "alternation",
@@ -126,8 +128,14 @@ def ppText(section):
     readParameters(section, readVJustify, ["vjustify"])
     readParameters(section, readLayer, ["layer"])
     readParameters(section, readAngle, ["orientation"])
-    validateChoice("text", section, "anchor",
-        ["tl", "tr", "bl", "br", "mt", "mb", "ml", "mr", "c"])
+    validateChoice("text", section, "anchor", ANCHORS)
+
+def ppPost(section):
+    validateChoice("type", section, "type", ["auto"])
+    readParameters(section, bool, ["copperfill"])
+    readParameters(section, readLength, ["millradius"])
+    readParameters(section, str, ["script"])
+    validateChoice("text", section, "origin", ANCHORS + [""])
 
 def postProcessPreset(preset):
     process = {
@@ -138,7 +146,8 @@ def postProcessPreset(preset):
         "framing": ppFraming,
         "tooling": ppTooling,
         "fiducials": ppFiducials,
-        "text": ppText
+        "text": ppText,
+        "post": ppPost,
     }
     for name, section in preset.items():
         process[name](section)
@@ -191,7 +200,7 @@ def validateSections(preset):
     validate all required keys are present. Ignores excessive keys.
     """
     VALID_SECTIONS = ["layout", "source", "tabs", "cuts", "framing", "tooling",
-        "fiducials", "text"]
+        "fiducials", "text", "post"]
     extraSections = set(preset.keys()).difference(VALID_SECTIONS)
     if len(extraSections) != 0:
         raise PresetError(f"Extra sections {', '.join(extraSections)} in preset")
@@ -532,6 +541,7 @@ def buildFraming(preset, panel):
         return cuts if preset["cuts"] else []
     if type == "tightframe":
         panel.makeTightFrame(preset["width"], preset["slotwidth"])
+        panel.removeIslands()
         return []
     raise PresetError(f"Unknown type '{type}' of frame specification.")
 
@@ -593,4 +603,34 @@ def buildText(preset, panel):
             layer=preset["layer"])
         return
     raise PresetError(f"Unknown type '{type}' of text specification.")
+
+def buildPostprocessing(preset, panel):
+    """
+    Perform postprocessing operations
+    """
+    type = preset["type"]
+    if type != "auto":
+        raise PresetError(f"Unknown type '{type}' of postprocessing specification.")
+    if preset["millradius"] > 0:
+        panel.addMillFillets(preset["millradius"])
+    if preset["copperfill"]:
+        panel.copperFillNonBoardAreas()
+    if preset["origin"]:
+        origin = resolveAnchor(preset["origin"])(panel.boardSubstrate.boundingBox())
+        panel.setAuxiliaryOrigin(origin)
+        panel.setGridOrigin(origin)
+
+def runUserScript(preset, panel):
+    """
+    Run post processing script
+    """
+    if preset["script"] == "":
+        return
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("kikit.user_script",
+        preset["script"])
+    userScriptModule = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(userScriptModule)
+    userScriptModule.kikitPostprocess(panel)
 

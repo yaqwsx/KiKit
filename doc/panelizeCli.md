@@ -360,7 +360,8 @@ Finishing touches to the panel.
 - `copperfill` - fill tabs and frame with copper (e.g., to save etchant or to
   increase rigidity of flex-PCB panels)
 - `millradius` - simulate the milling operation (add fillets to the internal
-  corners). Specify mill radius (usually 1 mm)
+  corners). Specify mill radius (usually 1 mm). 0 radius disables the
+  functionality.
 - `script` - a path to custom Python file. The file should contain a function
   `kikitPostprocess(panel)` that receives the prepared panel as the
   `kikit.panelize.Panel` object. The function can make arbitrary changes to the
@@ -368,6 +369,8 @@ Finishing touches to the panel.
   invoked after the whole panel is constructed (including all other
   postprocessing). **If you try to add a functionality for a common fabrication
   houses via scripting, consider submitting PR for KiKit**.
-- `origin` - specify if the auxilary origin an grid origin should be placed
+- `origin` - specify if the auxilary origin an grid origin should be placed. Can
+  be one of `tl`, `tr`, `bl`, `br` (corners), `mt`, `mb`, `ml`, `mr` (middle of
+  sides), `c` (center). Empty string does not changes the origin.
 
 
