@@ -309,6 +309,7 @@ def buildSideTabs(substrate, dir, side1, side2, count, width, tabs, cuts):
                     (x * coeff[0] + coeff[1] * e.max, x * coeff[1] + coeff[0] * e.max)
                 ]))
         else:
+            assert c.length > fromMm(0.01)
             cuts.append(c)
 
 def buildTabsAuto(properties, panel, substrates, boundarySubstrates):
@@ -409,22 +410,26 @@ def buildBackBone(layout, panel, substrates, frameSpace):
                 extraT = fromOpt(extraVSpace, 0)
                 if extraVSpace is not None:
                     cut = LineString([(bbXMin, e1.min), (bbXMax, e1.min)])
+                    assert cut.length > fromMm(0.01)
                     cuts.append(cut)
             if neighbors.bottom(s):
                 y1, _ = shpBBoxBottom(s.bounds())
                 y2, _ = shpBBoxTop(neighbors.bottom(s)[0].bounds())
                 extraB = y2 - y1
-                if hwidth is not None and layout["vbonecut"]:
+                if hwidth > 0 and layout["vbonecut"]:
                     # There is also the perpendicular backbone, add cut
                     yMid = (y1 + y2) / 2
                     cut = LineString([(bbXMin, yMid - hwidth / 2), (bbXMin, yMid + hwidth / 2)])
+                    assert cut.length > fromMm(0.01)
                     cuts.append(cut)
                     cut = LineString([(bbXMax, yMid + hwidth / 2), (bbXMax, yMid - hwidth / 2)])
+                    assert cut.length > fromMm(0.01)
                     cuts.append(cut)
             else:
                 extraB = fromOpt(extraVSpace, 0)
                 if extraVSpace is not None:
                     cut = LineString([(bbXMax, e1.max), (bbXMin, e1.max)])
+                    assert cut.length > fromMm(0.01)
                     cuts.append(cut)
             bb = box(bbXMin, e1.min - extraT, bbXMax, e1.max + extraB)
             backbones.append(bb)
@@ -441,22 +446,26 @@ def buildBackBone(layout, panel, substrates, frameSpace):
                 extraL = fromOpt(extraHSpace, 0)
                 if extraHSpace is not None:
                     cut = LineString([(e1.min, bbYMax), (e1.min, bbYMin)])
+                    assert cut.length > fromMm(0.01)
                     cuts.append(cut)
             if neighbors.right(s):
                 x1, _ = shpBBoxRight(s.bounds())
                 x2, _ = shpBBoxLeft(neighbors.right(s)[0].bounds())
                 extraR = x2 - x1
-                if vwidth is not None and layout["hbonecut"]:
+                if vwidth > 0 and layout["hbonecut"]:
                     # There is also the perpendicular backbone, add cut
                     xMid = (x1 + x2) / 2
                     cut = LineString([(xMid + vwidth / 2, bbYMin), (xMid - vwidth / 2, bbYMin)])
+                    assert cut.length > fromMm(0.01)
                     cuts.append(cut)
                     cut = LineString([(xMid - vwidth / 2, bbYMax), (xMid + vwidth / 2, bbYMax)])
+                    assert cut.length > fromMm(0.01)
                     cuts.append(cut)
             else:
                 extraR = fromOpt(extraHSpace, 0)
                 if extraHSpace is not None:
                     cut = LineString([(e1.max, bbYMin), (e1.max, bbYMax)])
+                    assert cut.length > fromMm(0.01)
                     cuts.append(cut)
             bb = box(e1.min - extraL, bbYMin, e1.max + extraR, bbYMax)
             backbones.append(bb)
