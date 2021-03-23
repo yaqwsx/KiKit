@@ -324,6 +324,10 @@ by
 Add fiducial to the (rail/frame of) the panel.
 
 **Types**: none, 3fid, 4fid
+**Common options**:
+
+- `hoffset`, `voffset` - specify the offset from from panel edges
+- `coppersize`, `opening` - diameter of the copper spot and solder mask opening
 
 ## Text
 

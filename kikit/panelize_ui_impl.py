@@ -87,6 +87,11 @@ def ppTooling(section):
     readParameters(section, readLength, ["hoffset", "voffset", "size"])
     readParameters(section, bool, ["paste"])
 
+def ppFiducials(section):
+    validateChoice("fiducials", section, "type", ["none", "3fid", "4fid"])
+    readParameters(section, readLength,
+        ["hoffset", "voffset", "coppersize", "opening"])
+
 def postProcessPreset(preset):
     process = {
         "layout": ppLayout,
@@ -94,7 +99,8 @@ def postProcessPreset(preset):
         "tabs": ppTabs,
         "cuts": ppCuts,
         "framing": ppFraming,
-        "tooling": ppTooling
+        "tooling": ppTooling,
+        "fiducials": ppFiducials
     }
     for name, section in preset.items():
         process[name](section)
@@ -146,13 +152,15 @@ def validateSections(preset):
     Perform a logic validation of the given preset - e.g., if a style is applied,
     validate all required keys are present. Ignores excessive keys.
     """
-    VALID_SECTIONS = ["layout", "source", "tabs", "cuts", "framing", "tooling"]
+    VALID_SECTIONS = ["layout", "source", "tabs", "cuts", "framing", "tooling",
+        "fiducials"]
     extraSections = set(preset.keys()).difference(VALID_SECTIONS)
     if len(extraSections) != 0:
         raise PresetError(f"Extra sections {', '.join(extraSections)} in preset")
     missingSections = set(VALID_SECTIONS).difference(preset.keys())
     if len(missingSections) != 0:
         raise PresetError(f"Missing sections {', '.join(extraSections)} in preset")
+    # TBA
 
 def getPlacementClass(name):
     from kikit.panelize import (BasicGridPosition, OddEvenColumnPosition,
@@ -506,3 +514,21 @@ def buildTooling(preset, panel):
         panel.addCornerTooling(4, hoffset, voffset, diameter, paste)
         return
     raise PresetError(f"Unknown type '{type}' of tooling specification.")
+
+def buildFiducials(preset, panel):
+    """
+    Build tooling holes according to the preset
+    """
+    type = preset["type"]
+    if type == "none":
+        return
+    hoffset, voffset = preset["hoffset"], preset["voffset"]
+    coppersize, opening = preset["coppersize"], preset["opening"]
+    if type == "3fid":
+        panel.addCornerFiducials(3, hoffset, voffset, coppersize, opening)
+        return
+    if type == "4fid":
+        panel.addCornerFiducials(4, hoffset, voffset, coppersize, opening)
+        return
+    raise PresetError(f"Unknown type '{type}' of fiducial specification.")
+

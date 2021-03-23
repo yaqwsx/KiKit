@@ -64,13 +64,16 @@ def panelize():
     help="Override tab settings.")
 @click.option("--cuts", "-c", type=Section(),
     help="Override cut settings.")
-@click.option("--framing", "-f", type=Section(),
+@click.option("--framing", "-r", type=Section(),
     help="Override framing settings.")
 @click.option("--tooling", "-o", type=Section(),
     help="Override tooling settings.")
+@click.option("--fiducials", "-f", type=Section(),
+    help="Override fiducials settings.")
 @click.option("--dump", "-d", type=click.Path(file_okay=True, dir_okay=False),
     help="Dump constructured preset into a JSON file.")
-def newpanelize(input, output, preset, layout, source, tabs, cuts, framing, tooling, dump):
+def newpanelize(input, output, preset, layout, source, tabs, cuts, framing,
+                tooling, fiducials, dump):
     # Hide the import in the function to make KiKit start faster
     from kikit import panelize_ui_impl as ki
     from kikit.panelize import Panel
@@ -82,7 +85,7 @@ def newpanelize(input, output, preset, layout, source, tabs, cuts, framing, tool
 
     preset = ki.obtainPreset(preset,
         layout=layout, source=source, tabs=tabs, cuts=cuts, framing=framing,
-        tooling=tooling)
+        tooling=tooling, fiducials=fiducials)
 
     board = LoadBoard(input)
 
@@ -100,6 +103,7 @@ def newpanelize(input, output, preset, layout, source, tabs, cuts, framing, tool
         ki.frameOffset(preset["framing"]))
     frameCuts = ki.buildFraming(preset["framing"], panel)
     ki.buildTooling(preset["tooling"], panel)
+    ki.buildFiducials(preset["fiducials"], panel)
 
     cutLines = chain(tabCuts, backboneCuts, frameCuts)
     ki.makeCuts(preset["cuts"], panel, cutLines)
