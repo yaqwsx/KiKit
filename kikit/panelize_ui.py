@@ -125,7 +125,37 @@ def newpanelize(input, output, preset, layout, source, tabs, cuts, framing,
 @click.command()
 @click.argument("input", type=click.Path(dir_okay=False))
 @click.argument("output", type=click.Path(dir_okay=False))
-@click.option("--sourcearea", "-s", type=(float, float, float, float), help="x y w h in millimeters")
+@click.option("--source", "-s", type=Section(),
+    help="Specify source settings.")
+def separate(input, output, source):
+    """
+    Separate a single board out of a multi-board design. The separated board is
+    placed in the middle of the sheet.
+
+    You can specify the board via bounding box or annotation. See documentation
+    for further details on usage.
+    """
+    from kikit import panelize_ui_impl as ki
+    from kikit.panelize import Panel
+    from pcbnew import LoadBoard, wxPointMM
+
+    preset = ki.obtainPreset([], validate=False, source=source)
+
+    board = LoadBoard(input)
+    sourceArea = ki.readSourceArea(preset["source"], board)
+
+    panel = Panel()
+    panel.inheritDesignSettings(input)
+    panel.inheritProperties(input)
+    destination = wxPointMM(150, 100)
+    panel.appendBoard(input, destination, sourceArea)
+    panel.save(output)
+
+@click.command()
+@click.argument("input", type=click.Path(dir_okay=False))
+@click.argument("output", type=click.Path(dir_okay=False))
+@click.option("--sourcearea", "-s", type=(float, float, float, float),
+    help="x y w h in millimeters")
 def extractBoard(input, output, sourcearea):
     """
     Extract a single board out of a file

@@ -183,7 +183,7 @@ options.
 ## Source
 
 This option allows you to specify the source area, e.g., when multiple boards
-are present.
+are present. You can read more about multi-board project [here](multiboard.md).
 
 **Types**: auto, rectangle, annotation
 
@@ -208,10 +208,10 @@ Specify the source rectangle explicitly.
 
 #### Annotation
 
-KiKit offers you to place an annotation footprint `kikit:SourceArea` into your
-board to name the area. The area is determined by **axially arranged** rectangle
-drawn via lines. The annotation symbol tip has to be placed in a corner of such
-a rectangle. The area is named after reference of the annotation symbol.
+KiKit offers you to place an annotation footprint `kikit:Board` into your design
+file to name the board. The area is determined by a bounding box of the lines in
+the `Edge.Cuts` layer that the arrows point to. Note that the tip of the arrow
+must lie inside the
 
 - `ref` - specify the annotation symbol reference
 

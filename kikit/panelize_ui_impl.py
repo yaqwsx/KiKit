@@ -82,9 +82,10 @@ def ppLayout(section):
         section["hspace"] = section["vspace"] = section["space"]
 
 def ppSource(section):
-    validateChoice("source", section, "type", ["auto"])
+    validateChoice("source", section, "type", ["auto", "rectangle", "annotation"])
     readParameters(section, readLength,
-        ["tolerance", "x", "y", "w", "h"])
+        ["tolerance", "tlx", "tly", "brx", "bry"])
+    readParameters(section, str, "ref")
 
 def ppTabs(section):
     validateChoice("tabs", section, "type", ["auto", "full", "attribute"])
@@ -229,12 +230,19 @@ def readSourceArea(specification, board):
     Extract source area based on preset and a board.
     """
     type = specification["type"]
+    tolerance = specification["tolerance"]
     if type == "auto":
-        tolerance = specification.get("tolerance", 0)
         return expandRect(findBoardBoundingBox(board), tolerance)
+    if type == "annotation":
+        ref = specification["ref"]
+        return expandRect(extractSourceAreaByAnnotation(board, ref), tolerance)
+    if type == "rectangle":
+        tl = wxPoint(specification["tlx"], specification["tly"])
+        br = wxPoint(specification["brx"], specification["bry"])
+        return expandRect(wxRect(tl, br), tolerance)
     raise PresetError(f"Unknown type '{type}' of source specification.")
 
-def obtainPreset(presetPaths, **kwargs):
+def obtainPreset(presetPaths, validate=True, **kwargs):
     """
     Given a preset paths from the user and the overrides in the form of named
     arguments, construt the preset.
@@ -246,7 +254,8 @@ def obtainPreset(presetPaths, **kwargs):
     for name, section in kwargs.items():
         if section is not None:
             mergePresets(preset, {name: section})
-    validateSections(preset)
+    if validate:
+        validateSections(preset)
     postProcessPreset(preset)
     return preset
 
