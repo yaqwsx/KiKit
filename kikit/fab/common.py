@@ -1,4 +1,5 @@
 import csv
+from dataclasses import dataclass
 import re
 from typing import OrderedDict
 from pcbnewTransition import pcbnew, isV6
@@ -61,6 +62,15 @@ def hasNonSMDPins(footprint):
 class FormatError(Exception):
     pass
 
+@dataclass
+class CorrectionPattern:
+    """Single correction pattern to match a component against."""
+    footprint: re.Pattern
+    part_id: re.Pattern
+    x_correction: float
+    y_correction: float
+    rotation: float
+
 def layerToSide(layer):
     if layer == pcbnew.F_Cu:
         return "T"
@@ -104,11 +114,13 @@ def readCorrectionPatterns(filename):
 
     The file should be a CSV file with the following fields:
     - Regexp to match to the footprint
+    - Regexp to match to the part id (ignored at the moment)
     - X correction
     - Y correction
     - Rotation
     """
     corrections = OrderedDict()
+    correctionPatterns = []
     with open(filename) as csvfile:
         sample = csvfile.read(1024)
         dialect = csv.Sniffer().sniff(sample)
@@ -120,9 +132,16 @@ def readCorrectionPatterns(filename):
             if has_header and first:
                 first = False
                 continue
-            corrections[re.compile(row[0])] = (
-                float(row[1]), float(row[2]), float(row[3]))
-    return corrections
+            correctionPatterns.append(
+                CorrectionPattern(
+                    re.compile(row[0]),
+                    re.compile(row[1]),
+                    float(row[2]),
+                    float(row[3]),
+                    float(row[4]),
+                )
+            )
+    return correctionPatterns
 
 def applyCorrectionPattern(correctionPatterns, footprint):
     footprintName = str(footprint.GetFPID().GetLibItemName())
@@ -148,7 +167,7 @@ def collectPosData(board, correctionFields, posFilter=lambda x : True,
     else:
         bom = { getReference(comp): comp for comp in bom }
 
-    correctionPatterns = {}
+    correctionPatterns = []
     if correctionFile is not None:
         correctionPatterns = readCorrectionPatterns(correctionFile)
 
