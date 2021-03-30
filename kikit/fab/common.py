@@ -144,10 +144,13 @@ def readCorrectionPatterns(filename):
     return correctionPatterns
 
 def applyCorrectionPattern(correctionPatterns, footprint):
-    footprintName = str(footprint.GetFPID().GetLibItemName())
-    for pattern, value in correctionPatterns.items():
-        if pattern.match(footprintName):
-            return value
+    # FIXME: part ID is currently ignored
+    # GetUniStringLibId returns the full footprint name including the 
+    # library in the form of "Resistor_SMD:R_0402_1005Metric"
+    footprintName = str(footprint.GetFPID().GetUniStringLibId())
+    for corpat in correctionPatterns:
+        if corpat.footprint.match(footprintName):
+            return (corpat.x_correction, corpat.y_correction, corpat.rotation)
     return (0, 0, 0)
 
 def collectPosData(board, correctionFields, posFilter=lambda x : True,
