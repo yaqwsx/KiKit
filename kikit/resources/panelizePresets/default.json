@@ -68,5 +68,9 @@
         "millradius": "0mm",
         "script": "",
         "origin": ""
+    },
+    "debug": {
+        "type": "none",
+        "drawPartitionLines": false
     }
 }

@@ -2,8 +2,9 @@ from kikit.pcbnew_compatibility import pcbnew
 from kikit.intervals import Interval
 from pcbnew import wxPoint, wxRect
 import os
-from itertools import product, chain
+from itertools import product, chain, islice
 import numpy as np
+from shapely.geometry import LinearRing
 
 PKG_BASE = os.path.dirname(__file__)
 KIKIT_LIB = os.path.join(PKG_BASE, "resources/kikit.pretty")
@@ -64,6 +65,16 @@ def getBBoxWithoutContours(edge):
     edge.SetWidth(width)
     return bBox
 
+def listGeometries(shapelyObject):
+    """
+    Given a shapely object, return an iterable of all geometries. I.e., for
+    single items, return an iterable containing only the original item. For
+    collections, return iterable of all the geometries in it.
+    """
+    if hasattr(shapelyObject, 'geoms'):
+        return shapelyObject.geoms
+    return [shapelyObject]
+
 def findBoundingBox(edges):
     """
     Return a bounding box of all drawings in edges
@@ -105,6 +116,13 @@ def makePerpendicular(vector):
     Given a 2D vector, return a vector which is perpendicular to the input one
     """
     return np.array([vector[1], -vector[0]])
+
+def linestringToSegments(linestring):
+    """
+    Given a Shapely linestring, return a list of tuples with start and endpoint
+    of the segment
+    """
+    return [x for x in zip(linestring.coords, islice(linestring.coords, 1, None))]
 
 def tl(rect):
     """ Return top left corner of rect """
@@ -162,6 +180,31 @@ def shpBBoxBottom(bbox):
     """
     return bbox[3], Interval(bbox[0], bbox[2])
 
+def shpBBoxMerge(a, b):
+    """
+    Given two shapely bounding boxes, return smallest bounding box where both
+    can fit.
+    """
+    return (
+        min(a[0], b[0]),
+        min(a[1], b[1]),
+        max(a[2], b[2]),
+        max(a[3], b[3])
+    )
+
+def shpBBoxExpand(box, x, y=None):
+    """
+    Given a shapely bounding box, return new one expanded by given amount. If y
+    is not supplied, it the same as x.
+    """
+    if y is None:
+        y = x
+    return (box[0] - x, box[1] - y, box[2] + x, box[3] + y)
+
+def isLinestringCyclic(line):
+    c = line.coords
+    return c[0] == c[-1] or isinstance(line, LinearRing)
+
 def fromOpt(object, default):
     """
     Given an object, return it if not None. Otherwise return default
@@ -201,3 +244,27 @@ def indexOf(list, predicate):
         if predicate(x):
             return i
     return -1
+
+def readParameterList(inputStr):
+    """
+    Given a string, read semicolon separated parameter list in the form of
+    `key: value; key: value`. You can escape via `\\`
+    """
+    from kikit.panelize_ui import splitStr
+
+    if len(inputStr.strip()) == 0:
+        return {}
+    try:
+        values = {}
+        for i, pair in enumerate(splitStr(";", "\\", inputStr)):
+            if len(pair.strip()) == 0:
+                continue
+            s = pair.split(":")
+            if i == 0 and len(s) == 1:
+                values["type"] = s[0].strip()
+                continue
+            key, value = s[0].strip(), s[1].strip()
+            values[key] = value
+        return values
+    except (TypeError, IndexError):
+        raise RuntimeError(f"'{pair}' is not a valid key: value pair")

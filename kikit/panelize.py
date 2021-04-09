@@ -4,7 +4,8 @@ from kikit.common import normalize
 from pcbnew import (GetBoard, LoadBoard,
     FromMM, ToMM, wxPoint, wxRect, wxRectMM, wxPointMM)
 from enum import Enum, IntEnum
-from shapely.geometry import Polygon, MultiPolygon, Point, LineString, box, GeometryCollection
+from shapely.geometry import (Polygon, MultiPolygon, Point, LineString, box,
+    GeometryCollection, MultiLineString, LineString)
 from shapely.prepared import prep
 import shapely
 from itertools import product, chain
@@ -12,6 +13,7 @@ import numpy as np
 import os
 
 from kikit import substrate
+from kikit import units
 from kikit.substrate import Substrate, linestringToKicad, extractRings
 from kikit.defs import STROKE_T, Layer, EDA_TEXT_HJUSTIFY_T, EDA_TEXT_VJUSTIFY_T
 
@@ -298,6 +300,90 @@ def polygonToZone(polygon, board):
         zone.Outline().AddHole(linestringToKicad(boundary))
     return zone
 
+def isAnnotation(footprint):
+    """
+    Given a footprint, decide if it is KiKit annotation
+    """
+    info = footprint.GetFPID()
+    if info.GetLibNickname() != "kikit":
+        return False
+    return info.GetLibItemName() in ["Tab", "Board"]
+
+def readKiKitProps(footprint):
+    """
+    Given a footprint, returns a string containing KiKit annotations.
+    Annotations are in FP_TEXT starting with prefix `KIKIT:`.
+
+    Returns a dictionary of key-value pairs.
+    """
+    for x in footprint.GraphicalItemsList():
+        if not isinstance(x, pcbnew.FP_TEXT):
+            continue
+        text = x.GetText()
+        if text.startswith("KIKIT:"):
+            return readParameterList(text[len("KIKIT:"):])
+    return {}
+
+class TabAnnotation:
+    def __init__(self, ref, origin, direction, width, maxLength=fromMm(100)):
+        self.ref = ref
+        self.origin = origin
+        self.direction = direction
+        self.width = width
+        self.maxLength = maxLength
+
+    @staticmethod
+    def fromFootprint(footprint):
+        origin = footprint.GetPosition()
+        radOrientaion = footprint.GetOrientationRadians()
+        direction = (np.cos(radOrientaion), -np.sin(radOrientaion))
+        props = readKiKitProps(footprint)
+        width = units.readLength(props["width"])
+        return TabAnnotation(footprint.GetReference(), origin, direction, width)
+
+def convertToAnnotation(footprint):
+    """
+    Given a footprint, convert it into an annotation. One footprint might
+    represent a zero or multiple annotations, so this function returns a list.
+    """
+    name = footprint.GetFPID().GetLibItemName()
+    if name == "Tab":
+        return [TabAnnotation.fromFootprint(footprint)]
+    # We ignore Board annotation
+    return []
+
+def buildTabs(substrate, partionLines, tabAnnotations):
+    """
+    Given substrate, partitionLines of the substrate and an iterable of tab
+    annotations, build tabs. Note that if the tab does not hit the partition
+    line, it is not included in the design.
+
+    Return a pair of lists: tabs and cuts.
+    """
+    tabs, cuts = [], []
+    for annotation in tabAnnotations:
+        t, c = substrate.newtab(annotation.origin, annotation.direction,
+            annotation.width, partionLines, annotation.maxLength)
+        if t is not None:
+            tabs.append(t)
+            cuts.append(c)
+    return tabs, cuts
+
+def normalizePartitionLineOrientation(line):
+    """
+    Given a LineString or MultiLineString, normalize orientation of the
+    partition line. For open linestrings, the orientation does not matter. For
+    closed linerings, it has to be counter-clock-wise.
+    """
+    if isinstance(line, MultiLineString):
+        return MultiLineString([normalizePartitionLineOrientation(x) for x in line.geoms])
+    if not isLinestringCyclic(line):
+        return line
+    r = LinearRing(line.coords)
+    if not r.is_ccw:
+        return line
+    return LineString(list(r.coords)[::-1])
+
 class Panel:
     """
     Basic interface for panel building. Instance of this class represents a
@@ -310,9 +396,15 @@ class Panel:
         """
         self.board = pcbnew.BOARD()
         self.substrates = [] # Substrates of the individual boards; e.g. for masking
+        self.substrateAnnotations = [] # List of lists of annotation symbols.
+                                       # Items belong to the corresponding
+                                       # substrates in self.substrates
         self.boardCounter = 0
         self.boardSubstrate = Substrate([]) # Keep substrate in internal representation,
                                             # Draw it just before saving
+        self.partitionLines = [] # Keep and occasionally update partition
+                                 # between the panel substrates. Items belong to
+                                 # the corresponding substrates in self.substrates
         self.hVCuts = set() # Keep V-cuts as numbers and append them just before saving
         self.vVCuts = set() # to make them truly span the whole panel
         self.vCutLayer = Layer.Cmts_User
@@ -433,11 +525,15 @@ class Panel:
         zones = collectItems(board.Zones(), enlargedSourceArea)
 
         edges = []
+        annotations = []
         for footprint in footprints:
             footprint.Rotate(originPoint, rotationAngle)
             footprint.Move(translation)
             edges += removeCutsFromFootprint(footprint)
-            appendItem(self.board, footprint)
+            if isAnnotation(footprint):
+                annotations.extend(convertToAnnotation(footprint))
+            else:
+                appendItem(self.board, footprint)
         for track in tracks:
             track.Rotate(originPoint, rotationAngle)
             track.Move(translation)
@@ -460,6 +556,7 @@ class Panel:
             s = Substrate(edges, bufferOutline)
             self.boardSubstrate.union(s)
             self.substrates.append(o)
+            self.substrateAnnotations.append(annotations)
         except substrate.PositionError as e:
             point = undoTransformation(e.point, rotationAngle, originPoint, translation)
             raise substrate.PositionError(filename + ": " + e.origMessage, point)
@@ -1068,34 +1165,18 @@ class Panel:
         """
         self.boardSubstrate.millFillets(millRadius)
 
-    def layerToTabs(self, layerName, tabWidth):
+    def buildTabsFromAnnotations(self):
         """
-        Take all line pcbshapes from the given layer and convert them to
-        tabs.
-
-        The tabs are created by placing a tab origin into the line starting
-        point and spanning the tab in the line direction up to the line length.
-        Therefore, it is necessary that the line is long enough to penetarete
-        the boardoutline.
-
-        The lines are deleted from panel.
-
-        Returns list of tabs substrates and a list of cuts to perform.
+        Given annotations for the individual substrates, create tabs for them.
+        Tabs are appended to the panel, cuts are returned.
         """
-        lines = [element for element in self.board.GetDrawings()
-                    if isinstance(element, pcbnew.PCB_SHAPE) and
-                       element.GetShape() == STROKE_T.S_SEGMENT and
-                       element.GetLayerName() == layerName]
         tabs, cuts = [], []
-        for line in lines:
-            origin = line.GetStart()
-            direction = line.GetEnd() - line.GetStart()
-            tab, cut = self.boardSubstrate.tab(origin, direction, tabWidth,
-                line.GetLength())
-            tabs.append(tab)
-            cuts.append(cut)
-            self.board.Remove(line)
-        return tabs, cuts
+        for s, p, a in zip(self.substrates, self.partitionLines, self.substrateAnnotations):
+            t, c = buildTabs(s, p, a)
+            tabs.extend(t)
+            cuts.extend(c)
+        self.boardSubstrate.union(tabs)
+        return cuts
 
     def inheritCopperLayers(self, board):
         """
@@ -1188,6 +1269,42 @@ class Panel:
         Set grid origin
         """
         self.board.SetGridOrigin(point)
+
+    def buildPartitionLineFromBB(self, boundarySubstrates=[], safeMargin=0):
+        """
+        Builds partition line from bounding boxes of the substrates. You can
+        optionally pass extra substrates (e.g., for frame).
+        """
+        partition = substrate.SubstratePartitionLines(
+            self.substrates + boundarySubstrates,
+            safeMargin)
+        self.partitionLines = []
+        for s in self.substrates:
+            hLines, vLines = partition.partitionSubstrate(s)
+            hSLines = [((l.min, l.x), (l.max, l.x)) for l in hLines]
+            vSLines = [((l.x, l.min), (l.x, l.max)) for l in vLines]
+            lines = hSLines + vSLines
+            multiline = shapely.ops.linemerge(lines)
+            multiline = normalizePartitionLineOrientation(multiline)
+
+            self.partitionLines.append(multiline)
+
+    def addLine(self, start, end, thickness, layer):
+        segment = pcbnew.PCB_SHAPE()
+        segment.SetShape(STROKE_T.S_SEGMENT)
+        segment.SetLayer(layer)
+        segment.SetWidth(thickness)
+        segment.SetStart(pcbnew.wxPoint(start[0], start[1]))
+        segment.SetEnd(pcbnew.wxPoint(end[0], end[1]))
+        self.board.Add(segment)
+        return segment
+
+    def renderPartitionLines(self):
+        for geom in self.partitionLines:
+            for linestring in listGeometries(geom):
+                for start, end in linestringToSegments(linestring):
+                    self.addLine(start, end, fromMm(0.5), Layer.Eco1_User)
+
 
 def getFootprintByReference(board, reference):
     """

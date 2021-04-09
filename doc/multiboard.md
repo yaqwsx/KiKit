@@ -70,5 +70,5 @@ is there for shell as we split our command into two lines.
 
 ## About panlization
 
-Note that if panelize your boards, you don't have to separate your boards first
-- just use the `--source` with the panelization command.
+Note that if panelize your boards, you don't have to separate your boards first;
+just use the `--source` with the panelization command.

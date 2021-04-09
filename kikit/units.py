@@ -1,4 +1,5 @@
 import re
+import math
 
 class UnitError(RuntimeError):
     pass
@@ -12,7 +13,7 @@ mil = 25400
 inch = 1000 * mil
 
 deg = 10
-rad = 57.2958 * deg
+rad = 180 / math.pi * deg
 
 UNIT_SPLIT = re.compile(r"\s*(-?\s*\d+(\.\d*)?)\s*(\w+)$")
 
