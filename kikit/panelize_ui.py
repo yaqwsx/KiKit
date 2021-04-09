@@ -1,6 +1,19 @@
 import click
 import os
+import csv
+import io
 from kikit.units import readLength, readAngle
+
+def splitStr(delimiter, escapeChar, s):
+    """
+    Splits s based on delimiter that can be escaped via escapeChar
+    """
+    # Let's use csv reader to implement this
+    reader = csv.reader(io.StringIO(s), delimiter=delimiter, escapechar=escapeChar)
+    # Unpack first line
+    for x in reader:
+        return x
+
 
 class Section(click.ParamType):
     """
@@ -11,8 +24,6 @@ class Section(click.ParamType):
     name = "parameter_list"
 
     def convert(self, value, param, ctx):
-        from kikit.panelize_ui_impl import splitStr
-
         if len(value.strip()) == 0:
             self.fail(f"{value} is not a valid argument specification",
                 param, ct)
@@ -74,10 +85,12 @@ def panelize():
     help="Override text settings.")
 @click.option("--post", "-z", type=Section(),
     help="Override post processing settings settings.")
+@click.option("--debug", type=Section(),
+    help="Include debug traces or drawings in the panel.")
 @click.option("--dump", "-d", type=click.Path(file_okay=True, dir_okay=False),
     help="Dump constructured preset into a JSON file.")
 def newpanelize(input, output, preset, layout, source, tabs, cuts, framing,
-                tooling, fiducials, text, post, dump):
+                tooling, fiducials, text, post, debug, dump):
     # Hide the import in the function to make KiKit start faster
     from kikit import panelize_ui_impl as ki
     from kikit.panelize import Panel
@@ -89,7 +102,7 @@ def newpanelize(input, output, preset, layout, source, tabs, cuts, framing,
 
     preset = ki.obtainPreset(preset,
         layout=layout, source=source, tabs=tabs, cuts=cuts, framing=framing,
-        tooling=tooling, fiducials=fiducials, text=text, post=post)
+        tooling=tooling, fiducials=fiducials, text=text, post=post, debug=debug)
 
     board = LoadBoard(input)
 
@@ -115,6 +128,8 @@ def newpanelize(input, output, preset, layout, source, tabs, cuts, framing,
     ki.makeCuts(preset["cuts"], panel, cutLines)
 
     ki.runUserScript(preset["post"], panel)
+
+    ki.buildDebugAnnotation(preset["debug"], panel)
 
     panel.save(output)
 

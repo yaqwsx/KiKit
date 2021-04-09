@@ -16,16 +16,6 @@ import io
 PKG_BASE = os.path.dirname(__file__)
 PRESET_LIB = os.path.join(PKG_BASE, "resources/panelizePresets")
 
-def splitStr(delimiter, escapeChar, s):
-    """
-    Splits s based on delimiter that can be escaped via escapeChar
-    """
-    # Let's use csv reader to implement this
-    reader = csv.reader(io.StringIO(s), delimiter=delimiter, escapechar=escapeChar)
-    # Unpack first line
-    for x in reader:
-        return x
-
 def validatePresetLayout(preset):
     if not isinstance(preset, dict):
         raise PresetError("Preset is not a dictionary")
@@ -45,6 +35,14 @@ def readParameters(section, method, what):
 
 def readLayer(s):
     return Layer[s.replace(".", "_")]
+
+def readBool(s):
+    sl = str(s).lower()
+    if sl in ["1", "true", "yes"]:
+        return True
+    if sl in ["0", "false", "no"]:
+        return False
+    raise PresetError("Uknown boolean value '{s}'")
 
 def readHJustify(s):
     choices = {
@@ -76,7 +74,7 @@ def ppLayout(section):
         ["hspace", "vspace", "space", "hbackbone", "vbackbone"])
     readParameters(section, readAngle, ["rotation"])
     readParameters(section, int, ["rows", "cols"])
-    readParameters(section, bool, ["vbonecut, hbonecut"])
+    readParameters(section, readBool, ["vbonecut, hbonecut"])
     # The space parameter overrides hspace and vspace
     if "space" in section:
         section["hspace"] = section["vspace"] = section["space"]
@@ -88,7 +86,7 @@ def ppSource(section):
     readParameters(section, str, "ref")
 
 def ppTabs(section):
-    validateChoice("tabs", section, "type", ["auto", "full", "attribute"])
+    validateChoice("tabs", section, "type", ["none", "auto", "full", "annotation"])
     readParameters(section, readLength, ["vwidth", "hwidth", "width"])
     readParameters(section, int, ["vcount", "hcount"])
     if "width" in section:
@@ -98,7 +96,7 @@ def ppCuts(section):
     validateChoice("cuts", section, "type", ["none", "mousebites", "vcuts"])
     readParameters(section, readLength, ["drill", "spacing", "offset",
         "prolong", "clearance", "threshold"])
-    readParameters(section, bool, ["cutcurves"])
+    readParameters(section, readBool, ["cutcurves"])
     readParameters(section, readLayer, ["layer"])
 
 def ppFraming(section):
@@ -106,7 +104,7 @@ def ppFraming(section):
         ["none", "railstb", "railslr", "frame", "tightframe"])
     readParameters(section, readLength,
         ["hspace", "vspace", "space", "width", "slotwidth"])
-    readParameters(section, bool, ["cuts"])
+    readParameters(section, readBool, ["cuts"])
     # The space parameter overrides hspace and vspace
     if "space" in section:
         section["hspace"] = section["vspace"] = section["space"]
@@ -114,7 +112,7 @@ def ppFraming(section):
 def ppTooling(section):
     validateChoice("tooling", section, "type", ["none", "3hole", "4hole"])
     readParameters(section, readLength, ["hoffset", "voffset", "size"])
-    readParameters(section, bool, ["paste"])
+    readParameters(section, readBool, ["paste"])
 
 def ppFiducials(section):
     validateChoice("fiducials", section, "type", ["none", "3fid", "4fid"])
@@ -133,10 +131,13 @@ def ppText(section):
 
 def ppPost(section):
     validateChoice("type", section, "type", ["auto"])
-    readParameters(section, bool, ["copperfill"])
+    readParameters(section, readBool, ["copperfill"])
     readParameters(section, readLength, ["millradius"])
     readParameters(section, str, ["script"])
     validateChoice("text", section, "origin", ANCHORS + [""])
+
+def ppDebug(section):
+    readParameters(section, readBool, ["drawPartitionLines"])
 
 def postProcessPreset(preset):
     process = {
@@ -149,6 +150,7 @@ def postProcessPreset(preset):
         "fiducials": ppFiducials,
         "text": ppText,
         "post": ppPost,
+        "debug": ppDebug
     }
     for name, section in preset.items():
         process[name](section)
@@ -201,7 +203,7 @@ def validateSections(preset):
     validate all required keys are present. Ignores excessive keys.
     """
     VALID_SECTIONS = ["layout", "source", "tabs", "cuts", "framing", "tooling",
-        "fiducials", "text", "post"]
+        "fiducials", "text", "post", "debug"]
     extraSections = set(preset.keys()).difference(VALID_SECTIONS)
     if len(extraSections) != 0:
         raise PresetError(f"Extra sections {', '.join(extraSections)} in preset")
@@ -282,6 +284,8 @@ def buildTabs(properties, panel, substrates, boundarySubstrates):
     Build tabs for the substrates in between the boards. Return a list of cuts.
     """
     type = properties["type"]
+    if type == "none":
+        return []
     if type == "auto":
         return buildTabsAuto(properties, panel, substrates, boundarySubstrates)
     if type == "full":
@@ -390,8 +394,9 @@ def buildTabsAnnotation(properties, panel, substrates, boundarySubstrates):
     """
     Build the "annotation" type of inner tabs
     """
-    pass
-    # TBA
+    panel.buildPartitionLineFromBB(boundarySubstrates)
+    cuts = panel.buildTabsFromAnnotations()
+    return cuts
 
 
 def buildBackBone(layout, panel, substrates, frameSpace):
@@ -652,3 +657,11 @@ def runUserScript(preset, panel):
     spec.loader.exec_module(userScriptModule)
     userScriptModule.kikitPostprocess(panel)
 
+
+def buildDebugAnnotation(preset, panel):
+    """
+    Add debug annotation to the panel
+    """
+
+    if preset["drawPartitionLines"]:
+        panel.renderPartitionLines()

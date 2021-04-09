@@ -1,8 +1,9 @@
-from shapely.geometry import Polygon, MultiPolygon, LineString, MultiLineString, Point
-from shapely.ops import unary_union, split
+from shapely.geometry import (Polygon, MultiPolygon, LineString,
+    MultiLineString, LinearRing, Point)
+from shapely.ops import unary_union, split, nearest_points
 import shapely
 import numpy as np
-from kikit.intervals import Interval, BoxNeighbors
+from kikit.intervals import Interval, BoxNeighbors, BoxPartitionLines
 from kikit.pcbnew_compatibility import pcbnew
 from enum import IntEnum
 from itertools import product
@@ -16,6 +17,9 @@ class PositionError(RuntimeError):
         super().__init__(message.format(pcbnew.ToMM(point[0]), pcbnew.ToMM(point[1])))
         self.point = point
         self.origMessage = message
+
+class NoIntersectionError(RuntimeError):
+    pass
 
 def toTuple(item):
     if isinstance(item, pcbnew.wxPoint):
@@ -254,10 +258,53 @@ def commonCircle(a, b, c):
     r = np.sqrt(x*x + y*y + np.linalg.det(m14) / m11d)
     return (x, y, r)
 
-def splitLine(linestring, point, tolerance=pcbnew.FromMM(0.01)):
-    splitted = split(linestring, point.buffer(tolerance, resolution=1))
+def liesOnSegment(start, end, point, tolerance=fromMm(0.01)):
+    """
+    Decide if a point lies on a given segment within tolerance
+    """
+    segment = LineString([start, end])
+    point = Point(point)
+    candidatePoint, _ = nearest_points(segment, point)
+    return candidatePoint.distance(point) < tolerance
+
+def biteBoundary(boundary, pointA, pointB, tolerance=fromMm(0.01)):
+    """
+    Given an oriented and possibly cyclic boundary in a form of shapely
+    linestring, return a part of the boundary between pointA and pointB. The
+    orientation matters - the segment is oriented from A to B.
+
+    If no intersection is found, None is returned.
+    """
+    if isLinestringCyclic(boundary):
+        c = boundary.coords
+        if c[0] == c[-1]:
+            boundaryCoords = chain(c, islice(c, 1, None))
+        else:
+            boundaryCoords = chain(c, c)
+    else:
+        boundaryCoords = boundary.coords
+    boundaryCoords = list(boundaryCoords)
+    faceCoords = []
+    targetPoint = pointA
+    inCut = False
+    for a, b in zip(boundaryCoords, islice(boundaryCoords, 1, None)):
+        if liesOnSegment(a, b, targetPoint, tolerance):
+            faceCoords.append(targetPoint)
+            if inCut:
+                return LineString(faceCoords)
+            inCut = True
+            targetPoint = pointB
+            # The pointB might lie on the same segment
+            if liesOnSegment(a, b, targetPoint, tolerance):
+                return LineString([pointA, pointB])
+        if inCut:
+            faceCoords.append(b)
+    return None
+
+def splitLine(linestring, point, tolerance=1):
+    _, snappedPoint = nearest_points(point, linestring)
+    splitted = split(linestring, snappedPoint.buffer(tolerance, resolution=1))
     if len(splitted) != 3:
-        print(splitted)
         raise RuntimeError("Expected 3 segments in line spitting")
     p1 = LineString(list(splitted[0].coords) + [point])
     p2 = LineString([point] + list(splitted[2].coords))
@@ -266,7 +313,8 @@ def splitLine(linestring, point, tolerance=pcbnew.FromMM(0.01)):
 def cutOutline(point, linestring, segmentLimit=None, tolerance=pcbnew.FromMM(0.001)):
     """
     Given a point finds an entity in (multi)linestring which goes through the
-    point.
+    point. Returns a new string that starts in the point. The linestring is
+    expected to be cyclic.
 
     It is possible to restrict the number of segments used by specifying
     segmentLimit.
@@ -298,7 +346,7 @@ def cutOutline(point, linestring, segmentLimit=None, tolerance=pcbnew.FromMM(0.0
         limit1 = max(1, len(string.coords) - segmentLimit)
         limit2 = min(segmentLimit, len(string.coords) - 1)
         return LineString(string.coords[limit1:]), LineString(string.coords[:limit2])
-    return None, None
+    return None
 
 def extractPoint(collection):
     """
@@ -318,7 +366,7 @@ def closestIntersectionPoint(origin, direction, outline, maxDistance):
     testLine = LineString([origin, origin + direction * maxDistance])
     inter = testLine.intersection(outline)
     if inter.is_empty:
-        raise RuntimeError("No intersection found within given distance")
+        raise NoIntersectionError("No intersection found within given distance")
     origin = Point(origin[0], origin[1])
     if isinstance(inter, Point):
         geoms = [inter]
@@ -469,6 +517,64 @@ class Substrate:
         tab = Polygon(list(tabFace.coords) + [sideOriginA, sideOriginB])
         return tab, tabFace
 
+    def newtab(self, origin, direction, width, partitionLine=None,
+               maxHeight=pcbnew.FromMM(50)):
+        """
+        Create a tab for the substrate. The tab starts at the specified origin
+        (2D point) and tries to penetrate existing substrate in direction (a 2D
+        vector). The tab is constructed with given width. If the substrate is
+        not penetrated within maxHeight, exception is raised.
+
+        When partitionLine is specified, tha tab is extended to the opposite
+        side - limited by the partition line. Note that if tab cannot span
+        towards the partition line, then the the tab is not created - it returns
+        a tuple (None, None).
+
+        Returns a pair tab and cut outline. Add the tab it via union - batch
+        adding of geometry is more efficient.
+        """
+        origin = np.array(origin)
+        direction = normalize(direction)
+        sideOriginA = origin + makePerpendicular(direction) * width / 2
+        sideOriginB = origin - makePerpendicular(direction) * width / 2
+        boundary = self.substrates.boundary
+        splitPointA = closestIntersectionPoint(sideOriginA, direction,
+            boundary, maxHeight)
+        splitPointB = closestIntersectionPoint(sideOriginB, direction,
+            boundary, maxHeight)
+        tabFace = biteBoundary(boundary, splitPointB, splitPointA)
+        if partitionLine is None:
+            # There is nothing else to do, return the tab
+            tab = Polygon(list(tabFace.coords) + [sideOriginA, sideOriginB])
+            return tab, tabFace
+        # Span the tab towwards the partition line
+        # There might be multiple geometries in the partition line, so try them
+        # individually.
+        direction = -direction
+        for p in listGeometries(partitionLine):
+            try:
+                partitionSplitPointA = closestIntersectionPoint(splitPointA.coords[0],
+                        direction, p, maxHeight)
+                partitionSplitPointB = closestIntersectionPoint(splitPointB.coords[0],
+                    direction, p, maxHeight)
+            except NoIntersectionError: # We cannot span towards the partition line
+                continue
+            if isLinestringCyclic(p):
+                candidates = [(partitionSplitPointA, partitionSplitPointB)]
+            else:
+                candidates = [(partitionSplitPointA, partitionSplitPointB),
+                    (partitionSplitPointB, partitionSplitPointA)]
+            for i, (spa, spb) in enumerate(candidates):
+                partitionFace = biteBoundary(p, spa, spb)
+                if partitionFace is None:
+                    continue
+                partitionFaceCoord = list(partitionFace.coords)
+                if i == 1:
+                    partitionFaceCoord = partitionFaceCoord[::-1]
+                tab = Polygon(list(tabFace.coords) + partitionFaceCoord)
+                return tab, tabFace
+        return None, None
+
     def millFillets(self, millRadius):
         """
         Add fillets to inner conernes which will be produced a by mill with
@@ -539,14 +645,47 @@ class SubstrateNeighbors:
     def _reverse(self, queryRes):
         return [self._revMap[ x ] for x in queryRes]
 
+    def _reverseC(self, queryRes):
+        return [(self._revMap[ x ], shadow) for x, shadow in queryRes]
+
     def left(self, s):
         return self._reverse(self._neighbors.left(id(s)))
+
+    def leftC(self, s):
+        return self._reverseC(self._neighbors.leftC(id(s)))
 
     def right(self, s):
         return self._reverse(self._neighbors.right(id(s)))
 
+    def right(self, s):
+        return self._reverseC(self._neighbors.rightC(id(s)))
+
     def bottom(self, s):
         return self._reverse(self._neighbors.bottom(id(s)))
 
+    def bottom(self, s):
+        return self._reverseC(self._neighbors.bottomC(id(s)))
+
     def top(self, s):
         return self._reverse(self._neighbors.top(id(s)))
+
+    def top(self, s):
+        return self._reverseC(self._neighbors.topC(id(s)))
+
+class SubstratePartitionLines:
+    """
+    Thin wrapper around BoxPartitionLines for finding substrate pieces'
+    partition lines.
+    """
+    def __init__(self, substrates, safeVerticalMargin=0):
+        self._partition = BoxPartitionLines(
+            { id(s): s.bounds() for s in substrates },
+            safeVerticalMargin)
+
+    @property
+    def query(self):
+        return self._partition.query
+
+    def partitionSubstrate(self, substrate):
+        return self._partition.partitionLines(id(substrate))
+
