@@ -675,12 +675,18 @@ class SubstrateNeighbors:
 class SubstratePartitionLines:
     """
     Thin wrapper around BoxPartitionLines for finding substrate pieces'
-    partition lines.
+    partition lines. It allows you to specify ghost substrates. No partition
+    line is formed between two ghost substrates.
     """
-    def __init__(self, substrates, safeVerticalMargin=0):
+    def __init__(self, substrates, ghostSubstrates=[],
+                 safeHorizontalMargin=0, safeVerticalMargin=0):
+        boxes = {id(s): s.bounds() for s in chain(substrates, ghostSubstrates)}
+        ghosts = set([id(s) for s in ghostSubstrates])
+        seedFilter = lambda idA, idB, v, l: idA not in ghosts or idB not in ghosts
         self._partition = BoxPartitionLines(
-            { id(s): s.bounds() for s in substrates },
-            safeVerticalMargin)
+            boxes,
+            seedFilter,
+            safeHorizontalMargin, safeVerticalMargin)
 
     @property
     def query(self):

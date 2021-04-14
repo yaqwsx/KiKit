@@ -124,8 +124,8 @@ def newpanelize(input, output, preset, layout, source, tabs, cuts, framing,
     ki.buildText(preset["text"], panel)
     ki.buildPostprocessing(preset["post"], panel)
 
-    cutLines = chain(tabCuts, backboneCuts, frameCuts)
-    ki.makeCuts(preset["cuts"], panel, cutLines)
+    ki.makeTabCuts(preset["cuts"], panel, tabCuts)
+    ki.makeOtherCuts(preset["cuts"], panel, chain(backboneCuts, frameCuts))
 
     ki.runUserScript(preset["post"], panel)
 

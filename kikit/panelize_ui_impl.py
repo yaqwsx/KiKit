@@ -137,7 +137,7 @@ def ppPost(section):
     validateChoice("text", section, "origin", ANCHORS + [""])
 
 def ppDebug(section):
-    readParameters(section, readBool, ["drawPartitionLines"])
+    readParameters(section, readBool, ["drawPartitionLines", "drawBackboneLines"])
 
 def postProcessPreset(preset):
     process = {
@@ -403,89 +403,8 @@ def buildBackBone(layout, panel, substrates, frameSpace):
     """
     Append backbones to the panel. Return backbone cuts.
     """
-    extraVSpace, extraHSpace = frameSpace
-    hwidth, vwidth = layout["hbackbone"], layout["vbackbone"]
-    backbones = []
-    cuts = []
-    neighbors = SubstrateNeighbors(substrates)
-    # We append the backbone in pieces - one piece per substrate. We append
-    # backbone always at right or at bottom
-    for s in substrates:
-        if neighbors.right(s) and vwidth > 0:
-            n = neighbors.right(s)[0]
-            x1, e1 = shpBBoxRight(s.bounds())
-            x2, e2 = shpBBoxLeft(n.bounds())
-            assert e1 == e2 # We assume grid layout
-            mid = (x1 + x2) // 2
-            extraT, extraB = 0, 0
-            bbXMin = mid - vwidth / 2
-            bbXMax = mid + vwidth / 2
-            if not neighbors.top(s):
-                extraT = fromOpt(extraVSpace, 0)
-                if extraVSpace is not None:
-                    cut = LineString([(bbXMin, e1.min), (bbXMax, e1.min)])
-                    assert cut.length > fromMm(0.01)
-                    cuts.append(cut)
-            if neighbors.bottom(s):
-                y1, _ = shpBBoxBottom(s.bounds())
-                y2, _ = shpBBoxTop(neighbors.bottom(s)[0].bounds())
-                extraB = y2 - y1
-                if hwidth > 0 and layout["vbonecut"]:
-                    # There is also the perpendicular backbone, add cut
-                    yMid = (y1 + y2) / 2
-                    cut = LineString([(bbXMin, yMid - hwidth / 2), (bbXMin, yMid + hwidth / 2)])
-                    assert cut.length > fromMm(0.01)
-                    cuts.append(cut)
-                    cut = LineString([(bbXMax, yMid + hwidth / 2), (bbXMax, yMid - hwidth / 2)])
-                    assert cut.length > fromMm(0.01)
-                    cuts.append(cut)
-            else:
-                extraB = fromOpt(extraVSpace, 0)
-                if extraVSpace is not None:
-                    cut = LineString([(bbXMax, e1.max), (bbXMin, e1.max)])
-                    assert cut.length > fromMm(0.01)
-                    cuts.append(cut)
-            bb = box(bbXMin, e1.min - extraT, bbXMax, e1.max + extraB)
-            backbones.append(bb)
-        if neighbors.bottom(s) and hwidth > 0:
-            n = neighbors.bottom(s)[0]
-            y1, e1 = shpBBoxBottom(s.bounds())
-            y2, e2 = shpBBoxTop(n.bounds())
-            assert e1 == e2 # We assume grid layout
-            mid = (y1 + y2) // 2
-            bbYMin = mid - hwidth / 2
-            bbYMax = mid + hwidth / 2
-            extraL, extraR = 0, 0
-            if not neighbors.left(s):
-                extraL = fromOpt(extraHSpace, 0)
-                if extraHSpace is not None:
-                    cut = LineString([(e1.min, bbYMax), (e1.min, bbYMin)])
-                    assert cut.length > fromMm(0.01)
-                    cuts.append(cut)
-            if neighbors.right(s):
-                x1, _ = shpBBoxRight(s.bounds())
-                x2, _ = shpBBoxLeft(neighbors.right(s)[0].bounds())
-                extraR = x2 - x1
-                if vwidth > 0 and layout["hbonecut"]:
-                    # There is also the perpendicular backbone, add cut
-                    xMid = (x1 + x2) / 2
-                    cut = LineString([(xMid + vwidth / 2, bbYMin), (xMid - vwidth / 2, bbYMin)])
-                    assert cut.length > fromMm(0.01)
-                    cuts.append(cut)
-                    cut = LineString([(xMid - vwidth / 2, bbYMax), (xMid + vwidth / 2, bbYMax)])
-                    assert cut.length > fromMm(0.01)
-                    cuts.append(cut)
-            else:
-                extraR = fromOpt(extraHSpace, 0)
-                if extraHSpace is not None:
-                    cut = LineString([(e1.max, bbYMin), (e1.max, bbYMax)])
-                    assert cut.length > fromMm(0.01)
-                    cuts.append(cut)
-            bb = box(e1.min - extraL, bbYMin, e1.max + extraR, bbYMax)
-            backbones.append(bb)
-    backbones = list([b.buffer(fromMm(0.01), join_style=2) for b in backbones])
-    panel.appendSubstrate(backbones)
-    return cuts
+    return panel.renderBackbone(layout["vbackbone"], layout["hbackbone"],
+                                layout["vbonecut"], layout["hbonecut"])
 
 def frameOffset(framing):
     type = framing["type"]
@@ -497,7 +416,19 @@ def frameOffset(framing):
         return None, framing["hspace"]
     return framing["vspace"], framing["hspace"]
 
-def makeCuts(properties, panel, cuts):
+def makeTabCuts(properties, panel, cuts):
+    """
+    Perform cuts on tab (does not ignore offset)
+    """
+    makeCuts(properties, panel, cuts, False)
+
+def makeOtherCuts(properties, panel, cuts):
+    """
+    Perform non-tab cuts (ignore offset)
+    """
+    makeCuts(properties, panel, cuts, True)
+
+def makeCuts(properties, panel, cuts, ignoreOffset):
     """
     Perform cuts
     """
@@ -509,8 +440,9 @@ def makeCuts(properties, panel, cuts):
         panel.setVCutLayer(properties["layer"])
         panel.setVCutClearance(properties["clearance"])
     elif type == "mousebites":
+        offset = 0 if ignoreOffset else properties["offset"]
         panel.makeMouseBites(cuts, properties["drill"],
-            properties["spacing"], properties["offset"], properties["prolong"])
+            properties["spacing"], offset, properties["prolong"])
     else:
         raise PresetError(f"Unknown type '{type}' of cuts specification.")
 
@@ -533,7 +465,7 @@ def dummyFramingSubstrate(substrates, frameOffset):
         miny = min(miny, miny2)
         maxx = max(maxx, maxx2)
         maxy = max(maxy, maxy2)
-    width = fromMm(0)
+    width = fromMm(1)
     if vSpace is not None:
         top = box(minx, miny - 2 * vSpace - width, maxx, miny - 2 * vSpace)
         bottom = box(minx, maxy + 2 * vSpace, maxx, maxy + 2 * vSpace + width)
@@ -664,4 +596,6 @@ def buildDebugAnnotation(preset, panel):
     """
 
     if preset["drawPartitionLines"]:
-        panel.renderPartitionLines()
+        panel.debugRenderPartitionLines()
+    if preset["drawBackboneLines"]:
+        panel.debugRenderBackboneLines()

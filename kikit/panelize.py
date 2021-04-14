@@ -5,7 +5,7 @@ from pcbnew import (GetBoard, LoadBoard,
     FromMM, ToMM, wxPoint, wxRect, wxRectMM, wxPointMM)
 from enum import Enum, IntEnum
 from shapely.geometry import (Polygon, MultiPolygon, Point, LineString, box,
-    GeometryCollection, MultiLineString, LineString)
+    GeometryCollection, MultiLineString)
 from shapely.prepared import prep
 import shapely
 from itertools import product, chain
@@ -402,9 +402,8 @@ class Panel:
         self.boardCounter = 0
         self.boardSubstrate = Substrate([]) # Keep substrate in internal representation,
                                             # Draw it just before saving
-        self.partitionLines = [] # Keep and occasionally update partition
-                                 # between the panel substrates. Items belong to
-                                 # the corresponding substrates in self.substrates
+        self.partitionLines = [] # Items belong to the corresponding substrates
+        self.backboneLines = []   # in self.substrates
         self.hVCuts = set() # Keep V-cuts as numbers and append them just before saving
         self.vVCuts = set() # to make them truly span the whole panel
         self.vCutLayer = Layer.Cmts_User
@@ -1270,14 +1269,7 @@ class Panel:
         """
         self.board.SetGridOrigin(point)
 
-    def buildPartitionLineFromBB(self, boundarySubstrates=[], safeMargin=0):
-        """
-        Builds partition line from bounding boxes of the substrates. You can
-        optionally pass extra substrates (e.g., for frame).
-        """
-        partition = substrate.SubstratePartitionLines(
-            self.substrates + boundarySubstrates,
-            safeMargin)
+    def _buildPartitionLineFromBB(self, partition):
         self.partitionLines = []
         for s in self.substrates:
             hLines, vLines = partition.partitionSubstrate(s)
@@ -1289,6 +1281,38 @@ class Panel:
 
             self.partitionLines.append(multiline)
 
+    def _buildBackboneLineFromBB(self, partition, boundarySubstrates):
+        hBoneLines, vBoneLines = set(), set()
+        for s in self.substrates:
+            hLines, vLines = partition.partitionSubstrate(s)
+            hBoneLines.update(hLines)
+            vBoneLines.update(vLines)
+        for s in boundarySubstrates:
+            hLines, vLines = partition.partitionSubstrate(s)
+            for l in hLines:
+                hBoneLines.remove(l)
+            for l in vLines:
+                vBoneLines.remove(l)
+        minx, miny, maxx, maxy = self.boardSubstrate.bounds()
+        # Cut backbone on substrates boundaries:
+        cut = lambda xs, y: chain(*[x.cut(y) for x in xs])
+        hBoneLines = cut(cut(hBoneLines, minx), maxx)
+        vBoneLines = cut(cut(vBoneLines, miny), maxy)
+        hBLines = [LineString([(l.min, l.x), (l.max, l.x)]) for l in hBoneLines]
+        vBLines = [LineString([(l.x, l.min), (l.x, l.max)]) for l in vBoneLines]
+        self.backboneLines = list(chain(hBLines, vBLines))
+
+    def buildPartitionLineFromBB(self, boundarySubstrates=[], safeMargin=0):
+        """
+        Builds partition & backbone line from bounding boxes of the substrates.
+        You can optionally pass extra substrates (e.g., for frame).
+        """
+        partition = substrate.SubstratePartitionLines(
+            self.substrates, boundarySubstrates,
+            safeMargin, safeMargin)
+        self._buildPartitionLineFromBB(partition)
+        self._buildBackboneLineFromBB(partition, boundarySubstrates)
+
     def addLine(self, start, end, thickness, layer):
         segment = pcbnew.PCB_SHAPE()
         segment.SetShape(STROKE_T.S_SEGMENT)
@@ -1299,12 +1323,83 @@ class Panel:
         self.board.Add(segment)
         return segment
 
-    def renderPartitionLines(self):
-        for geom in self.partitionLines:
+    def _renderLines(self, lines, layer, thickness=fromMm(0.5)):
+        for geom in lines:
             for linestring in listGeometries(geom):
                 for start, end in linestringToSegments(linestring):
-                    self.addLine(start, end, fromMm(0.5), Layer.Eco1_User)
+                    self.addLine(start, end, thickness, layer)
 
+    def debugRenderPartitionLines(self):
+        self._renderLines(self.partitionLines, Layer.Eco1_User, fromMm(0.5))
+
+    def debugRenderBackboneLines(self):
+        self._renderLines(self.backboneLines, Layer.Eco2_User, fromMm(0.5))
+
+    def renderBackbone(self, vthickness, hthickness, vcut, hcut):
+        """
+        Render horizontal and vertical backbone lines. If zero thickness is
+        specified, no backbone is rendered.
+
+        vcut, hcut specifies if vertical or horizontal backbones should be cut.
+
+        Return a list of cuts
+        """
+        cutpoints = commonPoints(self.backboneLines)
+        pieces, cuts = [], []
+        for l in self.backboneLines:
+            start = l.coords[0]
+            end = l.coords[1]
+            if isHorizontal(start, end) and hthickness > 0:
+                minX = min(start[0], end[0])
+                maxX = max(start[0], end[0])
+                bb = box(minX, start[1] - hthickness // 2,
+                         maxX, start[1] + hthickness // 2)
+                pieces.append(bb)
+                if not hcut:
+                    continue
+
+                candidates = []
+
+                if cutpoints[start] > 2:
+                    candidates.append(((start[0] + vthickness // 2, start[1]), -1))
+
+                if cutpoints[end] == 2:
+                    candidates.append((end, 1))
+                elif cutpoints[end] > 2:
+                    candidates.append(((end[0] - vthickness // 2, end[1]), 1))
+
+                for x, c in candidates:
+                    cut = LineString([
+                        (x[0], x[1] - c * hthickness // 2),
+                        (x[0], x[1] + c * hthickness // 2)])
+                    cuts.append(cut)
+            if isVertical(start, end) and vthickness > 0:
+                minY = min(start[1], end[1])
+                maxY = max(start[1], end[1])
+                bb = box(start[0] - vthickness // 2, minY,
+                         start[0] + vthickness // 2, maxY)
+                pieces.append(bb)
+                if not vcut:
+                    continue
+
+                candidates = []
+
+                if cutpoints[start] > 2:
+                    candidates.append(((start[0], start[1] + hthickness // 2), 1))
+
+                if cutpoints[end] == 2:
+                    candidates.append((end, -1))
+                elif cutpoints[end] > 2:
+                    candidates.append(((end[0], end[1] - hthickness // 2), -1))
+
+                for x, c in candidates:
+                    cut = LineString([
+                        (x[0] - c * vthickness // 2, x[1]),
+                        (x[0] + c * vthickness // 2, x[1])])
+                    cuts.append(cut)
+        backbones = list([b.buffer(fromMm(0.01), join_style=2) for b in pieces])
+        self.appendSubstrate(backbones)
+        return cuts
 
 def getFootprintByReference(board, reference):
     """

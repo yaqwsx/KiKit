@@ -172,3 +172,24 @@ def test_trimShadows():
     assert shadows == [
         SL(lines[0].line, I(1, 4)), SL(lines[1].line, I(1, 3))
     ]
+
+def test_BoxPartitionLines():
+    pass
+    boxes = {
+        1: (0, 5, 1, 6),
+        2: (2, 5, 3, 6),
+        3: (4, 5, 5, 6),
+        4: (0, 3, 1, 4),
+        5: (2, 3, 3, 4),
+        6: (4, 3, 5, 4),
+        7: (0, 1, 1, 2),
+        8: (2, 1, 3, 2),
+        9: (4, 1, 5, 2),
+        10: (0, -1, 5, 0),
+        11: (0, 7, 5, 8)
+    }
+
+    filter = lambda idA, idB, v, l: idA < 10 or idB < 10
+    lines = BoxPartitionLines(boxes, filter)
+
+    hlines, vlines = lines.partitionLines(5)
