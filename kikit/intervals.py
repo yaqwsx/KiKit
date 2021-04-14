@@ -239,6 +239,17 @@ class AxialLine(Interval):
         self.x = x
         self.tag = tag
 
+    def cut(self, y):
+        """
+        Cut the line at y. Return a list of newly created AxialLines
+        """
+        if y not in self or y == self.min or y == self.max:
+            return [self]
+        return [
+            AxialLine(self.x, self.min, y, self.tag),
+            AxialLine(self.x, y, self.max, self.tag)
+        ]
+
     def __eq__(self, other):
         return isclose(self.x, other.x) and super().__eq__(other)
 
@@ -302,10 +313,17 @@ def collectHardStops(boxes):
     vedges.update(v)
     return list(hedges), list(vedges)
 
-def collectSeedLines(boxes):
+def defaultSeedFilter(boxIdA, boxIdB, vertical, seedline):
+    return True
+
+def collectSeedLines(boxes, seedFilter):
     """
     Given a dictionary ident -> box return a list of all midlines between
     neighboring boxes.
+
+    The function seedFilter of type(boxAId, boxBId, vertical, seedLine) -> bool,
+    serves as a predicate that can filter unwanted seed lines - e.g., too far
+    apart or comming from ghost boxes.
 
     Returns (horlines, verlines), where the lines are tagged with ident
     """
@@ -314,20 +332,28 @@ def collectSeedLines(boxes):
     for identA, boxA in boxes.items():
         for identB, shadow in neighbors.leftC(identA):
             mid = (boxA[0] + boxes[identB][2]) / 2
-            verlines.extend([AxialLine(mid, e.min, e.max, identA)
-                for e in shadow.intervals])
+            candidates = [AxialLine(mid, e.min, e.max, identA)
+                for e in shadow.intervals]
+            verlines.extend([x for x in candidates
+                if seedFilter(identA, identB, True, x)])
         for identB, shadow in neighbors.rightC(identA):
             mid = (boxA[2] + boxes[identB][0]) / 2
-            verlines.extend([AxialLine(mid, e.min, e.max, identA)
-                for e in shadow.intervals])
+            candidates = [AxialLine(mid, e.min, e.max, identA)
+                for e in shadow.intervals]
+            verlines.extend([x for x in candidates
+                if seedFilter(identA, identB, True, x)])
         for identB, shadow in neighbors.topC(identA):
             mid = (boxA[1] + boxes[identB][3]) / 2
-            horlines.extend([AxialLine(mid, e.min, e.max, identA)
-                for e in shadow.intervals])
+            candidates = [AxialLine(mid, e.min, e.max, identA)
+                for e in shadow.intervals]
+            horlines.extend([x for x in candidates
+                if seedFilter(identA, identB, False, x)])
         for identB, shadow in neighbors.bottomC(identA):
             mid = (boxA[3] + boxes[identB][1]) / 2
-            horlines.extend([AxialLine(mid, e.min, e.max, identA)
-                for e in shadow.intervals])
+            candidates = [AxialLine(mid, e.min, e.max, identA)
+                for e in shadow.intervals]
+            horlines.extend([x for x in candidates
+                if seedFilter(identA, identB, False, x)])
     return horlines, verlines
 
 def upperBound(sortedCollection, item, key=lambda x: x):
@@ -441,7 +467,8 @@ class BoxPartitionLines:
     +---+ | +----+   |   +----+
     """
 
-    def __init__(self, boxes, safeHorizontalMargin=0, safeVerticalMargin=0):
+    def __init__(self, boxes, seedFilter=defaultSeedFilter,
+                 safeHorizontalMargin=0, safeVerticalMargin=0):
         """
         Given a dictionary id -> box initializes the structure.
 
@@ -455,9 +482,9 @@ class BoxPartitionLines:
         hstops, vstops = collectHardStops(boxes.values())
         hSafeStops, vSafeStops = collectHardStops([
             shpBBoxExpand(x, safeVerticalMargin) for x in boxes.values()])
-        hseeds, vseeds = collectSeedLines(boxes)
-        hshadows = buildShadows(hseeds, vstops)
-        vshadows = buildShadows(vseeds, hstops)
+        hseeds, vseeds = collectSeedLines(boxes, seedFilter)
+        hshadows = buildShadows(hseeds, chain(vstops, vSafeStops))
+        vshadows = buildShadows(vseeds, chain(hstops, hSafeStops))
 
         hPartition = trimShadows(hshadows, chain(
             [x.shadowLine for x in vshadows], vSafeStops))

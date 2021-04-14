@@ -217,6 +217,29 @@ def isBottomLayer(layer):
     """
     return str(layer).startswith("Layer.B_")
 
+def commonPoints(lines):
+    """
+    Given a list of lines, return dictionary - vertice -> count. Where count
+    specifies how many lines share the vertex.
+    """
+    count = {}
+    for l in lines:
+        for c in l.coords:
+            count[c] = count.get(c, 0) + 1
+    return count
+
+def isHorizontal(start, end):
+    """
+    Given a line decide if it is horizontal
+    """
+    return start[1] == end[1]
+
+def isVertical(start, end):
+    """
+    Given a line decide if it is vertical
+    """
+    return start[0] == end[0]
+
 def resolveAnchor(anchor):
     """
     Given a string anchor name, return a function that transforms wxRect into
