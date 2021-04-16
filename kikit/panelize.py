@@ -1270,6 +1270,20 @@ class Panel:
             return maxTabCount(edgeLength, widthFn(edgeLength, dir), spacing)
         return self._buildTabAnnotations(countFn, widthFn, ghostSubstrates)
 
+    def buildTabAnnotationsCorners(self, width):
+        """
+        Add tab annotations to the corners of the individual substrates.
+        """
+        for i, s in enumerate(self.substrates):
+            minx, miny, maxx, maxy = s.bounds()
+            midx = (minx + maxx) / 2
+            midy = (miny + maxy) / 2
+
+            for x, y in product([minx, maxx], [miny, maxy]):
+                dir = normalize((midx - x, midy - y))
+                a = TabAnnotation(None, (x, y), dir, width)
+                self.substrateAnnotations[i].append(a)
+
 
     def buildFullTabs(self):
         """

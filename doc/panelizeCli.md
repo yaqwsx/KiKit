@@ -249,6 +249,12 @@ V-Cuts. This mode does not make much sense for mousebites in practice. Note that
 in this mode the cuts do not faithfully copy the PCB outline and, instead, they
 cut the bounding box of the PCB. There are no other options.
 
+#### Corner
+
+Create tabs in the corners of the PCB.
+
+- `width`: The width of tabs
+
 #### Annotation
 
 Add tabs based on PCB annotations. Place a footprint `kikit:Tab` at the edges of

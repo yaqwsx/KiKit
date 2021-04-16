@@ -87,7 +87,7 @@ def ppSource(section):
 
 def ppTabs(section):
     validateChoice("tabs", section, "type", ["none", "fixed", "spacing", "full",
-        "annotation"])
+        "corner", "annotation"])
     readParameters(section, readLength, ["vwidth", "hwidth", "width",
         "mindistance", "spacing"])
     readParameters(section, int, ["vcount", "hcount"])
@@ -298,6 +298,10 @@ def buildTabs(properties, panel, substrates, boundarySubstrates):
         panel.clearTabsAnnotations()
         panel.buildTabAnnotationsSpacing(properties["spacing"],
             properties["hwidth"], properties["vwidth"], boundarySubstrates)
+        return panel.buildTabsFromAnnotations()
+    if type == "corner":
+        panel.clearTabsAnnotations()
+        panel.buildTabAnnotationsCorners(properties["width"])
         return panel.buildTabsFromAnnotations()
     if type == "full":
         return panel.buildFullTabs()
