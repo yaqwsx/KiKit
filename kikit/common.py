@@ -8,6 +8,8 @@ from shapely.geometry import LinearRing
 
 PKG_BASE = os.path.dirname(__file__)
 KIKIT_LIB = os.path.join(PKG_BASE, "resources/kikit.pretty")
+SHP_EPSILON = pcbnew.FromMM(0.01) # Common factor of enlarging substrates to
+                                  # cover up numerical imprecisions of Shapely
 
 def fromDegrees(angle):
     return angle * 10
