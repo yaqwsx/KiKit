@@ -379,12 +379,15 @@ Finishing touches to the panel.
   corners). Specify mill radius (usually 1 mm). 0 radius disables the
   functionality.
 - `script` - a path to custom Python file. The file should contain a function
-  `kikitPostprocess(panel)` that receives the prepared panel as the
-  `kikit.panelize.Panel` object. The function can make arbitrary changes to the
-  panel - you can append text, footprints, alter labels, etc. The function is
-  invoked after the whole panel is constructed (including all other
-  postprocessing). **If you try to add a functionality for a common fabrication
-  houses via scripting, consider submitting PR for KiKit**.
+  `kikitPostprocess(panel, args)` that receives the prepared panel as the
+  `kikit.panelize.Panel` object and the user-supplied arguments as a string -
+  see `scriptarg`. The function can make arbitrary changes to the panel - you
+  can append text, footprints, alter labels, etc. The function is invoked after
+  the whole panel is constructed (including all other postprocessing). **If you
+  try to add a functionality for a common fabrication houses via scripting,
+  consider submitting PR for KiKit**.
+- `scriptarg`: An arbitrary string passed to the user post-processing script
+  specified in `script`
 - `origin` - specify if the auxilary origin an grid origin should be placed. Can
   be one of `tl`, `tr`, `bl`, `br` (corners), `mt`, `mb`, `ml`, `mr` (middle of
   sides), `c` (center). Empty string does not changes the origin.

@@ -69,6 +69,7 @@
         "copperfill": false,
         "millradius": "0mm",
         "script": "",
+        "scriptarg": "",
         "origin": ""
     },
     "debug": {
