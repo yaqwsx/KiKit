@@ -217,12 +217,12 @@ must lie inside the
 
 ## Tabs
 
-**Types**: auto, full, annotation
+**Types**: fixed, spacing, full, annotation
 
 Place tabs. To make some of the options clear, please see the [explanation of
 tab placement process](understandingTabs.md).
 
-#### Auto
+#### Fixed
 
 Place given number of tabs on the PCB edge. The tabs are spaced uniformly. If
 you need a custom tab placement (e.g., to avoid critical feature), see type
@@ -231,11 +231,23 @@ you need a custom tab placement (e.g., to avoid critical feature), see type
 - `vwidth`, `hwidth`, `width`: The width of tabs in the vertical and horizontal
   direction. `width` overrides both.
 - `vcount`, `hcount`: Number of tabs in a given direction.
+- `mindistance`: Minimal spacing between the tabs. If there are too many tabs,
+  their count is reduced.
+
+#### Spacing
+
+Place tabs on the PCB edges based on spacing.
+
+- `vwidth`, `hwidth`, `width`: The width of tabs in the vertical and horizontal
+  direction. `width` overrides both.
+- `spacing`: The maximum spacing of the tabs.
 
 #### Full
 
 Create tabs that are full width of the PCB. Suitable for PCBs separated by
-V-Cuts. There are no other options.
+V-Cuts. This mode does not make much sense for mousebites in practice. Note that
+in this mode the cuts do not faithfully copy the PCB outline and, instead, they
+cut the bounding box of the PCB. There are no other options.
 
 #### Annotation
 
@@ -245,8 +257,6 @@ parameters. There are no extra parameters. However, the individual tabs can have
 the following properties specified in the text field of the component:
 
 - `width`: width of the tab.
-- `deepen`: specify how much further can the tab span compared to the tip of
-  arrow. Default 5 mm. It is useful for curved surfaces.
 
 ## Cuts
 

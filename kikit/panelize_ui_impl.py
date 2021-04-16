@@ -86,8 +86,10 @@ def ppSource(section):
     readParameters(section, str, "ref")
 
 def ppTabs(section):
-    validateChoice("tabs", section, "type", ["none", "auto", "full", "annotation"])
-    readParameters(section, readLength, ["vwidth", "hwidth", "width"])
+    validateChoice("tabs", section, "type", ["none", "fixed", "spacing", "full",
+        "annotation"])
+    readParameters(section, readLength, ["vwidth", "hwidth", "width",
+        "mindistance", "spacing"])
     readParameters(section, int, ["vcount", "hcount"])
     if "width" in section:
         section["vwidth"] = section["hwidth"] = section["width"]
@@ -286,118 +288,22 @@ def buildTabs(properties, panel, substrates, boundarySubstrates):
     type = properties["type"]
     if type == "none":
         return []
-    if type == "auto":
-        return buildTabsAuto(properties, panel, substrates, boundarySubstrates)
+    if type == "fixed":
+        panel.clearTabsAnnotations()
+        panel.buildTabAnnotationsFixed(properties["hcount"],
+            properties["vcount"], properties["hwidth"], properties["vwidth"],
+            properties["mindistance"], boundarySubstrates)
+        return panel.buildTabsFromAnnotations()
+    if type == "spacing":
+        panel.clearTabsAnnotations()
+        panel.buildTabAnnotationsSpacing(properties["spacing"],
+            properties["hwidth"], properties["vwidth"], boundarySubstrates)
+        return panel.buildTabsFromAnnotations()
     if type == "full":
-        return buildTabsFull(properties, panel, substrates, boundarySubstrates)
+        return panel.buildFullTabs()
     if type == "annotation":
-        return buildTabsAnnotation(properties, panel, substrates, boundarySubstrates)
+        return panel.buildTabsFromAnnotations()
     raise PresetError(f"Unknown type '{type}' of tabs specification.")
-
-def buildSideTabs(substrate, dir, side1, side2, count, width, tabs, cuts):
-    """
-    Builds a tab on a side. Just specify the reference substrate (specifies the
-    cut shape), direction, two sides of the neighboring substrates (the result
-    of shpBBox* functions). The direction should be either [±1, 0] or [0, ±1]
-
-    The cuts and tabs are placed into the corresponding lists.
-    """
-    x1, e1 = side1
-    x2, e2 = side2
-    x = (x1 + x2) // 2
-    e = e1.intersect(e2)
-    coeff = [abs(n) for n in dir]
-    for y in tabSpacing(e.length, count):
-        # Multiplication with absolute value of direction distinguishes
-        # vertical and horizontal tab
-        origin = wxPoint(x * coeff[0] + coeff[1] * (e.min + y), x * coeff[1] + coeff[0] * (e.min + y))
-        t, c = substrate.tab(origin, dir, width)
-        tabs.append(t)
-        # Append a cut only if the boards are sufficiently apart. Otherwise, use
-        # e as a cut...
-        if (abs(x1 - x2) < fromMm(0.01)):
-            if x1 - x2 < 0: # ... but only when the direction is bottom or left
-                cuts.append(LineString([
-                    (x * coeff[0] + coeff[1] * e.min, x * coeff[1] + coeff[0] * e.min),
-                    (x * coeff[0] + coeff[1] * e.max, x * coeff[1] + coeff[0] * e.max)
-                ]))
-        else:
-            assert c.length > fromMm(0.01)
-            cuts.append(c)
-
-def buildTabsAuto(properties, panel, substrates, boundarySubstrates):
-    """
-    Build the "auto" type of inner tabs. The boundary substrates serve as
-    a dummy substrates to generate the outer tabs.
-    """
-    tabs = []
-    cuts = []
-    neighbors = SubstrateNeighbors(substrates + boundarySubstrates)
-    for s in substrates:
-        for n in neighbors.left(s):
-            buildSideTabs(s, [1, 0], shpBBoxLeft(s.bounds()), shpBBoxRight(n.bounds()),
-                properties["hcount"], properties["hwidth"], tabs, cuts)
-        for n in neighbors.right(s):
-            buildSideTabs(s, [-1, 0], shpBBoxRight(s.bounds()), shpBBoxLeft(n.bounds()),
-                properties["hcount"], properties["hwidth"], tabs, cuts)
-        for n in neighbors.top(s):
-            buildSideTabs(s, [0, 1], shpBBoxTop(s.bounds()), shpBBoxBottom(n.bounds()),
-                properties["vcount"], properties["vwidth"], tabs, cuts)
-        for n in neighbors.bottom(s):
-            buildSideTabs(s, [0, -1], shpBBoxBottom(s.bounds()), shpBBoxTop(n.bounds()),
-                properties["vcount"], properties["vwidth"], tabs, cuts)
-    tabs = list([t.buffer(fromMm(0.01), join_style=2) for t in tabs])
-    panel.appendSubstrate(tabs)
-    return cuts
-
-def buildTabsFull(properties, panel, substrates, boundarySubstrates):
-    """
-    Build the "full" type of inner tabs
-    """
-    tabs = []
-    cuts = []
-    neighbors = SubstrateNeighbors(substrates + boundarySubstrates)
-    for s in substrates:
-        for n in neighbors.left(s):
-            l = shpBBoxLeft(s.bounds())
-            buildSideTabs(s, [1, 0], l, shpBBoxRight(n.bounds()),
-                1, l[1].length - fromMm(0.01), tabs, cuts)
-        for n in neighbors.right(s):
-            l = shpBBoxRight(s.bounds())
-            buildSideTabs(s, [-1, 0], l, shpBBoxLeft(n.bounds()),
-                1, l[1].length - fromMm(0.01), tabs, cuts)
-        for n in neighbors.top(s):
-            l = shpBBoxTop(s.bounds())
-            buildSideTabs(s, [0, 1], l, shpBBoxBottom(n.bounds()),
-                1, l[1].length - fromMm(0.01), tabs, cuts)
-        for n in neighbors.bottom(s):
-            l = shpBBoxBottom(s.bounds())
-            buildSideTabs(s, [0, -1], l, shpBBoxTop(n.bounds()),
-                1, l[1].length - fromMm(0.01), tabs, cuts)
-    # Compute the bounding box gap polygon
-    bBoxes = box(*substrates[0].bounds())
-    for s in substrates:
-        bBoxes = bBoxes.union(box(*s.bounds()))
-    outerBox = bBoxes
-    for x in tabs:
-        outerBox = outerBox.union(x)
-    outerBox = box(*outerBox.bounds)
-    fill = outerBox.difference(bBoxes)
-    tabs.append(fill)
-
-    # Append tabs
-    tabs = list([t.buffer(fromMm(0.01), join_style=2) for t in tabs])
-    panel.appendSubstrate(tabs)
-    return cuts
-
-def buildTabsAnnotation(properties, panel, substrates, boundarySubstrates):
-    """
-    Build the "annotation" type of inner tabs
-    """
-    panel.buildPartitionLineFromBB(boundarySubstrates)
-    cuts = panel.buildTabsFromAnnotations()
-    return cuts
-
 
 def buildBackBone(layout, panel, substrates, frameSpace):
     """
@@ -465,7 +371,7 @@ def dummyFramingSubstrate(substrates, frameOffset):
         miny = min(miny, miny2)
         maxx = max(maxx, maxx2)
         maxy = max(maxy, maxy2)
-    width = fromMm(1)
+    width = fromMm(0)
     if vSpace is not None:
         top = box(minx, miny - 2 * vSpace - width, maxx, miny - 2 * vSpace)
         bottom = box(minx, maxy + 2 * vSpace, maxx, maxy + 2 * vSpace + width)

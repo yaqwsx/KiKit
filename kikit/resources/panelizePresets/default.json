@@ -24,11 +24,13 @@
         "ref": ""
     },
     "tabs": {
-        "type": "auto",
+        "type": "spacing",
         "hcount": 1,
         "vcount": 1,
         "hwidth": "3mm",
-        "vwidth": "3mm"
+        "vwidth": "3mm",
+        "mindistance": "0mm",
+        "spacing": "10mm"
     },
     "cuts": {
         "type": "none",

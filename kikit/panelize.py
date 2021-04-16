@@ -384,6 +384,16 @@ def normalizePartitionLineOrientation(line):
         return line
     return LineString(list(r.coords)[::-1])
 
+def maxTabCount(edgeLen, width, minDistance):
+    """
+    Given a length of edge, tab width and their minimal distance, return maximal
+    number of tabs.
+    """
+    if edgeLen < width:
+        return 0
+    c = 1 + (edgeLen - minDistance) // (minDistance + width)
+    return max(0, int(c))
+
 class Panel:
     """
     Basic interface for panel building. Instance of this class represents a
@@ -1164,10 +1174,20 @@ class Panel:
         """
         self.boardSubstrate.millFillets(millRadius)
 
+    def clearTabsAnnotations(self):
+        """
+        Remove all existing tab annotations from the panel.
+        """
+        self.substrateAnnotations = list([
+            list(filter(lambda x: not isinstance(x, TabAnnotation), anns)) for anns in self.substrateAnnotations
+        ])
+
     def buildTabsFromAnnotations(self):
         """
         Given annotations for the individual substrates, create tabs for them.
         Tabs are appended to the panel, cuts are returned.
+
+        Expects that a valid partition line is assigned to the the panel.
         """
         tabs, cuts = [], []
         for s, p, a in zip(self.substrates, self.partitionLines, self.substrateAnnotations):
@@ -1176,6 +1196,104 @@ class Panel:
             cuts.extend(c)
         self.boardSubstrate.union(tabs)
         return cuts
+
+    def _buildTabAnnotationForEdge(self, edge, dir, count, width):
+        """
+        Given an edge as AxialLine, dir and count, return a list of
+        annotations.
+        """
+        pos = lambda offset: (
+            abs(dir[0]) * edge.x + abs(dir[1]) * (edge.min + offset),
+            abs(dir[1]) * edge.x + abs(dir[0]) * (edge.min + offset))
+        return [TabAnnotation(None, pos(offset), dir, width)
+            for offset in tabSpacing(edge.length, count)]
+
+    def _buildTabAnnotations(self, countFn, widthFn, ghostSubstrates):
+        """
+        Add tab annotations for the individual substrates based on their
+        bounding boxes. Assign tabs annotations to the edges of the bounding
+        box. You provides a function countFn, widthFn that take edge length and
+        direction that return number of tabs per edge or tab width
+        respectively.
+
+        You can also specify ghost substrates (for the future framing).
+        """
+        neighbors = substrate.SubstrateNeighbors(self.substrates + ghostSubstrates)
+        S = substrate.SubstrateNeighbors
+        sides = [
+            (S.leftC, shpBBoxLeft, [1, 0]),
+            (S.rightC, shpBBoxRight,[-1, 0]),
+            (S.topC, shpBBoxTop, [0, 1]),
+            (S.bottomC, shpBBoxBottom,[0, -1])
+        ]
+        for i, s in enumerate(self.substrates):
+            for query, side, dir in sides:
+                for n, shadow in query(neighbors, s):
+                    edge = side(s.bounds())
+                    for section in shadow.intervals:
+                        edge.min, edge.max = section.min, section.max
+                        tWidth = widthFn(edge.length, dir)
+                        tCount = countFn(edge.length, dir)
+                        a = self._buildTabAnnotationForEdge(edge, dir, tCount, tWidth)
+                        self.substrateAnnotations[i].extend(a)
+
+    def buildTabAnnotationsFixed(self, hcount, vcount, hwidth, vwidth,
+            minDistance, ghostSubstrates):
+        """
+        Add tab annotations for the individual substrates based on number of
+        tabs in horizontal and vertical direction. You can specify individual
+        width in each direction.
+
+        If the edge is short for the specified number of tabs with given minimal
+        spacing, the count is reduced.
+
+        You can also specify ghost substrates (for the future framing).
+        """
+        def widthFn(edgeLength, dir):
+            return abs(dir[0]) * hwidth + abs(dir[1]) * vwidth
+        def countFn(edgeLength, dir):
+            countLimit = abs(dir[0]) * hcount + abs(dir[1]) * vcount
+            width = widthFn(edgeLength, dir)
+            return min(countLimit, maxTabCount(edgeLength, width, minDistance))
+        return self._buildTabAnnotations(countFn, widthFn, ghostSubstrates)
+
+
+    def buildTabAnnotationsSpacing(self, spacing, hwidth, vwidth, ghostSubstrates):
+        """
+        Add tab annotations for the individual substrates based on their spacing.
+
+        You can also specify ghost substrates (for the future framing).
+        """
+        def widthFn(edgeLength, dir):
+            return abs(dir[0]) * hwidth + abs(dir[1]) * vwidth
+        def countFn(edgeLength, dir):
+            return maxTabCount(edgeLength, widthFn(edgeLength, dir), spacing)
+        return self._buildTabAnnotations(countFn, widthFn, ghostSubstrates)
+
+
+    def buildFullTabs(self):
+        """
+        Make full tabs. This strategy basically cuts the bounding boxes of the
+        PCBs. Not suitable for mousebites.
+
+        Return a list of cuts.
+        """
+        # Compute the bounding box gap polygon. Note that we cannot just merge a
+        # rectangle as that would remove internal holes
+        bBoxes = box(*self.substrates[0].bounds())
+        for s in islice(self.substrates, 1, None):
+            bBoxes = bBoxes.union(box(*s.bounds()))
+        outerBounds = self.partitionLines[0].bounds
+        for p in islice(self.partitionLines, 1, None):
+            outerBounds = shpBBoxMerge(outerBounds, p.bounds)
+        fill = box(*outerBounds).difference(bBoxes)
+        self.appendSubstrate(fill.buffer(fromMm(0.01)))
+
+        # Make the cuts
+        substrateBoundaries = [linestringToSegments(box(*x.bounds()).boundary)
+            for x in self.substrates]
+        substrateCuts = [LineString(x) for x in chain(*substrateBoundaries)]
+        return substrateCuts
 
     def inheritCopperLayers(self, board):
         """
