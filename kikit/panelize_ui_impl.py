@@ -135,7 +135,7 @@ def ppPost(section):
     validateChoice("type", section, "type", ["auto"])
     readParameters(section, readBool, ["copperfill"])
     readParameters(section, readLength, ["millradius"])
-    readParameters(section, str, ["script"])
+    readParameters(section, str, ["script", "scriptarg"])
     validateChoice("text", section, "origin", ANCHORS + [""])
 
 def ppDebug(section):
@@ -497,7 +497,7 @@ def runUserScript(preset, panel):
         preset["script"])
     userScriptModule = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(userScriptModule)
-    userScriptModule.kikitPostprocess(panel)
+    userScriptModule.kikitPostprocess(panel, preset["scriptarg"])
 
 
 def buildDebugAnnotation(preset, panel):
