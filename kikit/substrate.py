@@ -657,19 +657,19 @@ class SubstrateNeighbors:
     def right(self, s):
         return self._reverse(self._neighbors.right(id(s)))
 
-    def right(self, s):
+    def rightC(self, s):
         return self._reverseC(self._neighbors.rightC(id(s)))
 
     def bottom(self, s):
         return self._reverse(self._neighbors.bottom(id(s)))
 
-    def bottom(self, s):
+    def bottomC(self, s):
         return self._reverseC(self._neighbors.bottomC(id(s)))
 
     def top(self, s):
         return self._reverse(self._neighbors.top(id(s)))
 
-    def top(self, s):
+    def topC(self, s):
         return self._reverseC(self._neighbors.topC(id(s)))
 
 class SubstratePartitionLines:

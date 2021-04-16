@@ -114,11 +114,14 @@ def newpanelize(input, output, preset, layout, source, tabs, cuts, framing,
     substrates = ki.buildLayout(preset["layout"], panel, input, sourceArea)
     framingSubstrates = ki.dummyFramingSubstrate(substrates,
         ki.frameOffset(preset["framing"]))
+    panel.buildPartitionLineFromBB(framingSubstrates)
+
     tabCuts = ki.buildTabs(preset["tabs"], panel, substrates,
         framingSubstrates)
     backboneCuts = ki.buildBackBone(preset["layout"], panel, substrates,
         ki.frameOffset(preset["framing"]))
     frameCuts = ki.buildFraming(preset["framing"], panel)
+
     ki.buildTooling(preset["tooling"], panel)
     ki.buildFiducials(preset["fiducials"], panel)
     ki.buildText(preset["text"], panel)

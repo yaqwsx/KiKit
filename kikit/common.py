@@ -1,5 +1,5 @@
 from kikit.pcbnew_compatibility import pcbnew
-from kikit.intervals import Interval
+from kikit.intervals import Interval, AxialLine
 from pcbnew import wxPoint, wxRect
 import os
 from itertools import product, chain, islice
@@ -160,25 +160,25 @@ def shpBBoxLeft(bbox):
     """
     Given a shapely bounding box, return left edge as (pos, interval)
     """
-    return bbox[0], Interval(bbox[1], bbox[3])
+    return AxialLine(bbox[0], bbox[1], bbox[3])
 
 def shpBBoxRight(bbox):
     """
     Given a shapely bounding box, return right edge as (pos, interval)
     """
-    return bbox[2], Interval(bbox[1], bbox[3])
+    return AxialLine(bbox[2], bbox[1], bbox[3])
 
 def shpBBoxTop(bbox):
     """
     Given a shapely bounding box, return top edge as (pos, interval)
     """
-    return bbox[1], Interval(bbox[0], bbox[2])
+    return AxialLine(bbox[1], bbox[0], bbox[2])
 
 def shpBBoxBottom(bbox):
     """
     Given a shapely bounding box, return bottom edge as (pos, interval)
     """
-    return bbox[3], Interval(bbox[0], bbox[2])
+    return AxialLine(bbox[3], bbox[0], bbox[2])
 
 def shpBBoxMerge(a, b):
     """
