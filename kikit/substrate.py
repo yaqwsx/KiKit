@@ -100,7 +100,7 @@ def extractRings(geometryList):
             raise PositionError("Discontinuous outline at [{}, {}]", point)
         if l == 2:
             continue
-        raise PositionError("Multiple outlines ({}) at [{}, {}]".format(l), point)
+        raise PositionError("Multiple outlines ({}) at [{{}}, {{}}]".format(l), point)
 
     rings = []
     unused = [True] * len(geometryList)
