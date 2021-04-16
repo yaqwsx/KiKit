@@ -580,8 +580,7 @@ class Substrate:
         Add fillets to inner conernes which will be produced a by mill with
         given radius.
         """
-        epsilon = fromMm(0.01)
-        if millRadius < epsilon:
+        if millRadius < SHP_EPSILON:
             return
         self.substrates = self.substrates.buffer(millRadius - epsilon).buffer(-millRadius).buffer(epsilon)
 

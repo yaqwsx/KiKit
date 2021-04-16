@@ -582,6 +582,24 @@ class Panel:
         polygon = toPolygon(substrate)
         self.boardSubstrate.union(polygon)
 
+    def boardsBBox(self):
+        """
+        Return common bounding box for all boards in the design (ignores the
+        individual pieces of substrate) as a shapely box.
+        """
+        if len(self.substrates) == 0:
+            raise RuntimeError("There are no substrates, cannot compute bounding box")
+        bbox = self.substrates[0].bounds()
+        for p in islice(self.substrates, 1, None):
+            bbox = shpBBoxMerge(bbox, p.bounds())
+        return bbox
+
+    def panelBBox(self):
+        """
+        Return bounding box of the panel as a shapely box.
+        """
+        return self.boardSubstrate.bounds()
+
     def addVCutH(self, pos):
         """
         Adds a horizontal V-CUT at pos (integer in KiCAD units).
@@ -919,7 +937,7 @@ class Panel:
             tabs += t
             cuts += c
 
-        tabs = list([t.buffer(fromMm(0.01), join_style=2) for t in tabs])
+        tabs = list([t.buffer(SHP_EPSILON, join_style=2) for t in tabs])
         self.appendSubstrate(tabs)
 
         return (wxRect(gridDest[0], gridDest[1],
@@ -975,7 +993,7 @@ class Panel:
         frame = frame.difference(self.boardSubstrate.exterior().buffer(slotWidth))
         self.appendSubstrate(frame)
 
-        tabs = list([t.buffer(fromMm(0.01), join_style=2) for t in tabs])
+        tabs = list([t.buffer(SHP_EPSILON, join_style=2) for t in tabs])
         self.appendSubstrate(tabs)
 
         if verTabCount != 0 or horTabCount != 0:
@@ -987,7 +1005,7 @@ class Panel:
         """
         Build a frame around the board. Return frame cuts
         """
-        frameInnerRect = expandRect(self.boardSubstrate.boundingBox(), fromMm(-0.001))
+        frameInnerRect = expandRect(self.boardSubstrate.boundingBox(), -SHP_EPSILON)
         frameOuterRect = expandRect(frameInnerRect, width)
         outerRing = rectToRing(frameOuterRect)
         innerRing = rectToRing(frameInnerRect)
@@ -1017,9 +1035,10 @@ class Panel:
         """
         Adds a rail to top and bottom.
         """
-        minx, miny, maxx, maxy = self.boardSubstrate.bounds()
-        topRail = box(minx, maxy - fromMm(0.001), maxx, maxy + thickness)
-        bottomRail = box(minx, miny + fromMm(0.001), maxx, miny - thickness)
+        minx, miny, maxx, maxy = self.panelBBox()
+        thickness -= SHP_EPSILON
+        topRail = box(minx, maxy - SHP_EPSILON, maxx, maxy + thickness)
+        bottomRail = box(minx, miny + SHP_EPSILON, maxx, miny - thickness)
         self.appendSubstrate(topRail)
         self.appendSubstrate(bottomRail)
 
@@ -1027,9 +1046,10 @@ class Panel:
         """
         Adds a rail to left and right.
         """
-        minx, miny, maxx, maxy = self.boardSubstrate.bounds()
-        leftRail = box(minx - thickness + fromMm(0.001), miny, minx, maxy)
-        rightRail = box(maxx - fromMm(0.001), miny, maxx + thickness, maxy)
+        minx, miny, maxx, maxy = self.panelBBox()
+        thickness -= SHP_EPSILON
+        leftRail = box(minx - thickness + SHP_EPSILON, miny, minx, maxy)
+        rightRail = box(maxx - SHP_EPSILON, miny, maxx + thickness, maxy)
         self.appendSubstrate(leftRail)
         self.appendSubstrate(rightRail)
 
@@ -1062,7 +1082,7 @@ class Panel:
         Otherwise, raise an exception.
         """
         for cut in cuts:
-            if len(cut.simplify(fromMm(0.01)).coords) > 2 and not boundCurves:
+            if len(cut.simplify(SHP_EPSILON).coords) > 2 and not boundCurves:
                 raise RuntimeError("Cannot V-Cut a curve")
             start = roundPoint(cut.coords[0])
             end = roundPoint(cut.coords[-1])
@@ -1079,9 +1099,9 @@ class Panel:
         Take a list of cuts and perform mouse bites. The cuts can be prolonged
         to
         """
-        bloatedSubstrate = prep(self.boardSubstrate.substrates.buffer(fromMm(0.01)))
+        bloatedSubstrate = prep(self.boardSubstrate.substrates.buffer(SHP_EPSILON))
         for cut in cuts:
-            cut = cut.simplify(fromMm(0.001)) # Remove self-intersecting geometry
+            cut = cut.simplify(SHP_EPSILON) # Remove self-intersecting geometry
             cut = prolongCut(cut, prolongation)
             offsetCut = cut.parallel_offset(offset, "left")
             length = offsetCut.length
@@ -1301,7 +1321,7 @@ class Panel:
         for p in islice(self.partitionLines, 1, None):
             outerBounds = shpBBoxMerge(outerBounds, p.bounds)
         fill = box(*outerBounds).difference(bBoxes)
-        self.appendSubstrate(fill.buffer(fromMm(0.01)))
+        self.appendSubstrate(fill.buffer(SHP_EPSILON))
 
         # Make the cuts
         substrateBoundaries = [linestringToSegments(box(*x.bounds()).boundary)
@@ -1529,7 +1549,7 @@ class Panel:
                         (x[0] - c * vthickness // 2, x[1]),
                         (x[0] + c * vthickness // 2, x[1])])
                     cuts.append(cut)
-        backbones = list([b.buffer(fromMm(0.01), join_style=2) for b in pieces])
+        backbones = list([b.buffer(SHP_EPSILON, join_style=2) for b in pieces])
         self.appendSubstrate(backbones)
         return cuts
 
