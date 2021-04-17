@@ -42,7 +42,7 @@ def readBool(s):
         return True
     if sl in ["0", "false", "no"]:
         return False
-    raise PresetError("Uknown boolean value '{s}'")
+    raise PresetError(f"Uknown boolean value '{s}'")
 
 def readHJustify(s):
     choices = {
@@ -139,7 +139,8 @@ def ppPost(section):
     validateChoice("text", section, "origin", ANCHORS + [""])
 
 def ppDebug(section):
-    readParameters(section, readBool, ["drawPartitionLines", "drawBackboneLines"])
+    readParameters(section, readBool, ["drawPartitionLines",
+        "drawBackboneLines", "trace"])
 
 def postProcessPreset(preset):
     process = {
@@ -272,7 +273,7 @@ def buildLayout(layout, panel, sourceBoard, sourceArea):
     type = layout["type"]
     if type in ["grid"]:
         placementClass = getPlacementClass(layout["alternation"])
-        return panel.makeGridNew(
+        return panel.makeGrid(
             boardfile=sourceBoard, sourceArea=sourceArea,
             rows=layout["rows"], cols=layout["cols"], destination=wxPointMM(50, 50),
             rotation=layout["rotation"],

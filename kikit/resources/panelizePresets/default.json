@@ -74,6 +74,8 @@
     },
     "debug": {
         "type": "none",
-        "drawPartitionLines": false
+        "drawPartitionLines": false,
+        "drawBackboneLines": false,
+        "trace": false
     }
 }

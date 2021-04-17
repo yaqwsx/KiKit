@@ -2,6 +2,7 @@ import click
 import os
 import csv
 import io
+import traceback
 from kikit.units import readLength, readAngle
 
 def splitStr(delimiter, escapeChar, s):
@@ -47,21 +48,6 @@ class Section(click.ParamType):
 class PresetError(RuntimeError):
     pass
 
-
-def validateSpaceRadius(space, radius):
-    if space <= 0:
-        return
-    if space < 2 * radius:
-        raise RuntimeError(f"Fillet radius ({radius} mm) should to be less than " \
-                           f"half space between boards ({space} mm).")
-
-@click.group()
-def panelize():
-    """
-    Create a simple predefined panel patterns
-    """
-    pass
-
 @click.command()
 @click.argument("input", type=click.Path(dir_okay=False))
 @click.argument("output", type=click.Path(dir_okay=False))
@@ -89,63 +75,72 @@ def panelize():
     help="Include debug traces or drawings in the panel.")
 @click.option("--dump", "-d", type=click.Path(file_okay=True, dir_okay=False),
     help="Dump constructured preset into a JSON file.")
-def newpanelize(input, output, preset, layout, source, tabs, cuts, framing,
+def panelize(input, output, preset, layout, source, tabs, cuts, framing,
                 tooling, fiducials, text, post, debug, dump):
-    # Hide the import in the function to make KiKit start faster
-    from kikit import panelize_ui_impl as ki
-    from kikit.panelize import Panel
-    from pcbnew import LoadBoard, wxPointMM
-    import commentjson
-    import sys
-    from itertools import chain
+    try:
+        # Hide the import in the function to make KiKit start faster
+        from kikit import panelize_ui_impl as ki
+        from kikit.panelize import Panel
+        from pcbnew import LoadBoard, wxPointMM
+        import commentjson
+        import sys
+        from itertools import chain
 
 
-    preset = ki.obtainPreset(preset,
-        layout=layout, source=source, tabs=tabs, cuts=cuts, framing=framing,
-        tooling=tooling, fiducials=fiducials, text=text, post=post, debug=debug)
+        preset = ki.obtainPreset(preset,
+            layout=layout, source=source, tabs=tabs, cuts=cuts, framing=framing,
+            tooling=tooling, fiducials=fiducials, text=text, post=post, debug=debug)
 
-    board = LoadBoard(input)
+        board = LoadBoard(input)
 
-    panel = Panel()
-    panel.inheritDesignSettings(input)
-    panel.inheritProperties(input)
+        panel = Panel()
+        panel.inheritDesignSettings(input)
+        panel.inheritProperties(input)
 
-    sourceArea = ki.readSourceArea(preset["source"], board)
-    substrates = ki.buildLayout(preset["layout"], panel, input, sourceArea)
-    framingSubstrates = ki.dummyFramingSubstrate(substrates,
-        ki.frameOffset(preset["framing"]))
-    panel.buildPartitionLineFromBB(framingSubstrates)
+        sourceArea = ki.readSourceArea(preset["source"], board)
+        substrates = ki.buildLayout(preset["layout"], panel, input, sourceArea)
+        framingSubstrates = ki.dummyFramingSubstrate(substrates,
+            ki.frameOffset(preset["framing"]))
+        panel.buildPartitionLineFromBB(framingSubstrates)
 
-    tabCuts = ki.buildTabs(preset["tabs"], panel, substrates,
-        framingSubstrates)
-    backboneCuts = ki.buildBackBone(preset["layout"], panel, substrates,
-        ki.frameOffset(preset["framing"]))
-    frameCuts = ki.buildFraming(preset["framing"], panel)
+        tabCuts = ki.buildTabs(preset["tabs"], panel, substrates,
+            framingSubstrates)
+        backboneCuts = ki.buildBackBone(preset["layout"], panel, substrates,
+            ki.frameOffset(preset["framing"]))
+        frameCuts = ki.buildFraming(preset["framing"], panel)
 
-    ki.buildTooling(preset["tooling"], panel)
-    ki.buildFiducials(preset["fiducials"], panel)
-    ki.buildText(preset["text"], panel)
-    ki.buildPostprocessing(preset["post"], panel)
+        ki.buildTooling(preset["tooling"], panel)
+        ki.buildFiducials(preset["fiducials"], panel)
+        ki.buildText(preset["text"], panel)
+        ki.buildPostprocessing(preset["post"], panel)
 
-    ki.makeTabCuts(preset["cuts"], panel, tabCuts)
-    ki.makeOtherCuts(preset["cuts"], panel, chain(backboneCuts, frameCuts))
+        ki.makeTabCuts(preset["cuts"], panel, tabCuts)
+        ki.makeOtherCuts(preset["cuts"], panel, chain(backboneCuts, frameCuts))
 
-    ki.runUserScript(preset["post"], panel)
+        ki.runUserScript(preset["post"], panel)
 
-    ki.buildDebugAnnotation(preset["debug"], panel)
+        ki.buildDebugAnnotation(preset["debug"], panel)
 
-    panel.save(output)
+        panel.save(output)
 
-    if (dump):
-        with open(dump, "w") as f:
-            f.write(commentjson.dumps(preset, indent=4))
+        if (dump):
+            with open(dump, "w") as f:
+                f.write(commentjson.dumps(preset, indent=4))
+    except Exception as e:
+        sys.stderr.write("An error occurred: " + str(e) + "\n")
+        sys.stderr.write("No output files produced\n")
+        if isinstance(preset, dict) and preset["debug"]["trace"]:
+            traceback.print_exc(file=sys.stderr)
+        sys.exit(1)
 
 @click.command()
 @click.argument("input", type=click.Path(dir_okay=False))
 @click.argument("output", type=click.Path(dir_okay=False))
 @click.option("--source", "-s", type=Section(),
     help="Specify source settings.")
-def separate(input, output, source):
+@click.option("--debug", type=Section(),
+    help="Include debug traces or drawings in the panel.")
+def separate(input, output, source, debug):
     """
     Separate a single board out of a multi-board design. The separated board is
     placed in the middle of the sheet.
@@ -153,48 +148,29 @@ def separate(input, output, source):
     You can specify the board via bounding box or annotation. See documentation
     for further details on usage.
     """
-    from kikit import panelize_ui_impl as ki
-    from kikit.panelize import Panel
-    from pcbnew import LoadBoard, wxPointMM
-
-    preset = ki.obtainPreset([], validate=False, source=source)
-
-    board = LoadBoard(input)
-    sourceArea = ki.readSourceArea(preset["source"], board)
-
-    panel = Panel()
-    panel.inheritDesignSettings(input)
-    panel.inheritProperties(input)
-    destination = wxPointMM(150, 100)
-    panel.appendBoard(input, destination, sourceArea)
-    panel.save(output)
-
-@click.command()
-@click.argument("input", type=click.Path(dir_okay=False))
-@click.argument("output", type=click.Path(dir_okay=False))
-@click.option("--sourcearea", "-s", type=(float, float, float, float),
-    help="x y w h in millimeters")
-def extractBoard(input, output, sourcearea):
-    """
-    Extract a single board out of a file
-
-    The extracted board is placed in the middle of the sheet
-    """
-    # Hide the import in the function to make KiKit start faster
-    from kikit.panelize import Panel, fromMm, wxPointMM, wxRectMM, fromDegrees
-    import sys
     try:
+        from kikit import panelize_ui_impl as ki
+        from kikit.panelize import Panel
+        from pcbnew import LoadBoard, wxPointMM
+
+        preset = ki.obtainPreset([], validate=False, source=source, debug=debug)
+
+        board = LoadBoard(input)
+        sourceArea = ki.readSourceArea(preset["source"], board)
+
         panel = Panel()
-        destination = wxPointMM(150, 100)
-        area = wxRectMM(*sourcearea)
         panel.inheritDesignSettings(input)
         panel.inheritProperties(input)
-        panel.appendBoard(input, destination, area, tolerance=fromMm(2))
+        destination = wxPointMM(150, 100)
+        panel.appendBoard(input, destination, sourceArea)
         panel.save(output)
     except Exception as e:
         sys.stderr.write("An error occurred: " + str(e) + "\n")
         sys.stderr.write("No output files produced\n")
+        if isinstance(preset, dict) and preset["debug"]["trace"]:
+            traceback.print_exc(file=sys.stderr)
         sys.exit(1)
+
 
 @click.command()
 @click.argument("input", type=click.Path(dir_okay=False))
@@ -450,8 +426,3 @@ def tightgrid(input, output, space, hspace, vspace, gridsize, panelsize,
         sys.stderr.write("An error occurred: " + str(e) + "\n")
         sys.stderr.write("No output files produced\n")
         sys.exit(1)
-
-panelize.add_command(extractBoard)
-panelize.add_command(grid)
-panelize.add_command(tightgrid)
-panelize.add_command(newpanelize)
