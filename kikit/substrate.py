@@ -24,7 +24,7 @@ class NoIntersectionError(RuntimeError):
 def toTuple(item):
     if isinstance(item, pcbnew.wxPoint):
         return item[0], item[1]
-    raise NotImplementedError("toTuple for {} not implemented".format(type(item)))
+    raise NotImplementedError(f"toTuple for {type(item)} not implemented")
 
 def roundPoint(point, precision=-2):
     return pcbnew.wxPoint(round(point[0], precision), round(point[1], precision))
@@ -301,66 +301,6 @@ def biteBoundary(boundary, pointA, pointB, tolerance=fromMm(0.01)):
             faceCoords.append(b)
     return None
 
-def splitLine(linestring, point, tolerance=1):
-    _, snappedPoint = nearest_points(point, linestring)
-    splitted = split(linestring, snappedPoint.buffer(tolerance, resolution=1))
-    if len(splitted) != 3:
-        raise RuntimeError("Expected 3 segments in line spitting")
-    p1 = LineString(list(splitted[0].coords) + [point])
-    p2 = LineString([point] + list(splitted[2].coords))
-    return shapely.geometry.collection.GeometryCollection([p1, p2])
-
-def cutOutline(point, linestring, segmentLimit=None, tolerance=pcbnew.FromMM(0.001)):
-    """
-    Given a point finds an entity in (multi)linestring which goes through the
-    point. Returns a new string that starts in the point. The linestring is
-    expected to be cyclic.
-
-    It is possible to restrict the number of segments used by specifying
-    segmentLimit.
-
-    When segment limit is passed, return a tuple of the string starting and
-    ending in that point. When no limit is passed returns a single string.
-    """
-    if not isinstance(point, Point):
-        point = Point(point[0], point[1])
-    if isinstance(linestring, LineString):
-        geom = [linestring]
-    elif isinstance(linestring, MultiLineString):
-        geom = linestring.geoms
-    else:
-        raise RuntimeError("Unknown geometry '{}' passed".format(type(linestring)))
-    for string in geom:
-        bufferedPoint = point.buffer(tolerance, resolution=1)
-        splitted = split(string, bufferedPoint)
-        if len(splitted) == 1 and not Point(splitted[0].coords[0]).intersects(bufferedPoint):
-            continue
-        if len(splitted) == 3:
-            string = LineString([point] + list(splitted[2].coords) + splitted[0].coords[1:])
-        elif len(splitted) == 2:
-            string = LineString(list(splitted[1].coords) + splitted[0].coords[1:])
-        else:
-            string = splitted[0]
-        if segmentLimit is None:
-            return string
-        limit1 = max(1, len(string.coords) - segmentLimit)
-        limit2 = min(segmentLimit, len(string.coords) - 1)
-        return LineString(string.coords[limit1:]), LineString(string.coords[:limit2])
-    return None
-
-def extractPoint(collection):
-    """
-    Given a geometry collection, return first point if it. None if no point in
-    the collection
-    """
-    if isinstance(collection, LineString):
-        return None
-    if isinstance(collection, Point):
-        return collection
-    for x in collection:
-        if isinstance(x, Point):
-            return x
-    return None
 
 def closestIntersectionPoint(origin, direction, outline, maxDistance):
     testLine = LineString([origin, origin + direction * maxDistance])
@@ -465,59 +405,7 @@ class Substrate:
     def boundary(self):
         return self.substrates.boundary
 
-    def fillet(self, point, radius):
-        """
-        Add a fillet to the substrate at given point. If the point does not lie
-        on an inner corner or the surrounding geometry does not allow for fillet,
-        does nothing. Return true if the fillet was created, else otherwise
-        """
-        if radius == 0:
-            return
-        LEN_LIMIT = 40 # Should be roughly equal to half the circular segments,
-                    # may prevent from finding a solution
-        cut1, cut2 = cutOutline(point, self.substrates.boundary, LEN_LIMIT,
-            tolerance=pcbnew.FromMM(0.02))
-        if not cut1 or not cut2:
-            # The point does not intersect any outline
-            return False
-        offset1 = cut1.parallel_offset(radius, 'right', join_style=2)
-        offset2 = cut2.parallel_offset(radius, 'right', join_style=2)
-        filletCenter = extractPoint(offset1.intersection(offset2))
-        if not filletCenter:
-            return False
-        a, _ = shapely.ops.nearest_points(cut1, filletCenter)
-        b, _ = shapely.ops.nearest_points(cut2, filletCenter)
-        if not a or not b:
-            return False
-        patch = Polygon([a, b, point]).buffer(pcbnew.FromMM(0.001)).difference(filletCenter.buffer(radius))
-        self.union(patch)
-        return True
-
-    def tab(self, origin, direction, width, maxHeight=pcbnew.FromMM(50)):
-        """
-        Create a tab for the substrate. The tab starts at the specified origin
-        (2D point) and tries to penetrate existing substrate in direction (a 2D
-        vector). The tab is constructed with given width. If the substrate is
-        not penetrated within maxHeight, exception is raised.
-
-        Returns a pair tab and cut outline. Add the tab it via
-        uion - batch adding of geometry is more efficient.
-        """
-        origin = np.array(origin)
-        direction = normalize(direction)
-        sideOriginA = origin + makePerpendicular(direction) * width / 2
-        sideOriginB = origin - makePerpendicular(direction) * width / 2
-        boundary = self.substrates.boundary
-        splitPointA = closestIntersectionPoint(sideOriginA, direction,
-            boundary, maxHeight)
-        splitPointB = closestIntersectionPoint(sideOriginB, direction,
-            boundary, maxHeight)
-        shiftedOutline = cutOutline(splitPointB, boundary)
-        tabFace = splitLine(shiftedOutline, splitPointA)[0]
-        tab = Polygon(list(tabFace.coords) + [sideOriginA, sideOriginB])
-        return tab, tabFace
-
-    def newtab(self, origin, direction, width, partitionLine=None,
+    def tab(self, origin, direction, width, partitionLine=None,
                maxHeight=pcbnew.FromMM(50)):
         """
         Create a tab for the substrate. The tab starts at the specified origin

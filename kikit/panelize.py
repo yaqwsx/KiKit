@@ -156,34 +156,6 @@ def expandRect(rect, offsetX, offsetY=None):
     return wxRect(rect.GetX() - offsetX, rect.GetY() - offsetY,
         rect.GetWidth() + 2 * offsetX, rect.GetHeight() + 2 * offsetY)
 
-def translateRect(rect, translation):
-    """
-    Given a wxRect return a new rect translated by transaltion (tuple-like object)
-    """
-    return wxRect(rect.GetX() + translation[0], rect.GetY() + translation[1],
-        rect.GetWidth(), rect.GetHeight())
-
-def normalizeRect(rect):
-    """ If rectangle is specified via negative width/height, corrects it """
-    if rect.GetHeight() < 0:
-        rect.SetY(rect.GetY() + rect.GetHeight())
-        rect.SetHeight(-rect.GetHeight())
-    if rect.GetWidth() < 0:
-        rect.SetX(rect.GetX() + rect.GetWidth())
-        rect.SetWidth(-rect.GetWidth())
-    return rect
-
-def flipRect(rect):
-    return wxRect(rect.GetY(), rect.GetX(), rect.GetHeight(), rect.GetWidth())
-
-def mirrorRectX(rect, axis):
-    return wxRect(2 * axis - rect.GetX() - rect.GetWidth(), rect.GetY(),
-                  rect.GetWidth(), rect.GetHeight())
-
-def mirrorRectY(rect, axis):
-    return wxRect(rect.GetX(), 2 * axis - rect.GetY() - rect.GetHeight(),
-                  rect.GetWidth(), rect.GetHeight())
-
 def rectToRing(rect):
     return [
         (rect.GetX(), rect.GetY()),
@@ -362,7 +334,7 @@ def buildTabs(substrate, partionLines, tabAnnotations):
     """
     tabs, cuts = [], []
     for annotation in tabAnnotations:
-        t, c = substrate.newtab(annotation.origin, annotation.direction,
+        t, c = substrate.tab(annotation.origin, annotation.direction,
             annotation.width, partionLines, annotation.maxLength)
         if t is not None:
             tabs.append(t)
@@ -713,152 +685,7 @@ class Panel:
                 topLeftSize = boardSize
         return topLeftSize
 
-    def _makeFullHorizontalTabs(self, destination, rows, cols, boardSize,
-                                verSpace, horSpace, outerVerSpace, outerHorSpace,
-                                forceOuterCuts):
-        """
-        Crate full tabs for given grid.
-
-        Return tab body, list of cut edges and list of fillet candidates as a
-        tuple.
-        """
-        width = cols * boardSize.GetWidth() + (cols - 1) * horSpace
-        height = rows * boardSize.GetHeight() + (rows - 1) * verSpace
-        polygons = []
-        cuts = []
-        for i in range(cols - 1):
-            pos = (i + 1) * boardSize.GetWidth() + i * horSpace
-            tl = destination + wxPoint(pos, -outerVerSpace)
-            tr = destination + wxPoint(pos + horSpace, -outerVerSpace)
-            br = destination + wxPoint(pos + horSpace, height + outerVerSpace)
-            bl = destination + wxPoint(pos, height + outerVerSpace)
-            if horSpace > 0:
-                polygon = Polygon([tl, tr, br, bl])
-                polygons.append(polygon)
-                cuts.append(LineString([tl, bl]))
-            cuts.append(LineString([br, tr]))
-
-        if outerHorSpace > 0:
-            # Outer tabs
-            polygons.append(Polygon([
-                destination + wxPoint(-outerHorSpace, -outerVerSpace),
-                destination + wxPoint(0, -outerVerSpace),
-                destination + wxPoint(0, height + outerVerSpace),
-                destination + wxPoint(-outerHorSpace, height + outerVerSpace)]))
-            polygons.append(Polygon([
-                destination + wxPoint(width + outerHorSpace, -outerVerSpace),
-                destination + wxPoint(width, -outerVerSpace),
-                destination + wxPoint(width, height + outerVerSpace),
-                destination + wxPoint(width + outerHorSpace, height + outerVerSpace)]))
-        if forceOuterCuts or outerHorSpace > 0:
-            cuts.append(LineString([destination + wxPoint(0, height + outerVerSpace),
-                destination + wxPoint(0, -outerVerSpace)]))
-            cuts.append(LineString([destination + wxPoint(width, -outerVerSpace),
-                destination + wxPoint(width, height + outerVerSpace)]))
-        return polygons, cuts
-
-    def _makeFullVerticalTabs(self, destination, rows, cols, boardSize,
-                              verSpace, horSpace, outerVerSpace, outerHorSpace,
-                              forceOuterCuts):
-        """
-        Crate full tabs for given grid.
-
-        Return tab body, list of cut edges and list of fillet candidates as a
-        tuple.
-        """
-        width = cols * boardSize.GetWidth() + (cols - 1) * horSpace
-        height = rows * boardSize.GetHeight() + (rows - 1) * verSpace
-        polygons = []
-        cuts = []
-        for i in range(rows - 1):
-            pos = (i + 1) * boardSize.GetHeight() + i * verSpace
-            tl = destination + wxPoint(-outerHorSpace, pos)
-            tr = destination + wxPoint(width + outerHorSpace, pos)
-            br = destination + wxPoint(width + outerHorSpace, pos + verSpace)
-            bl = destination + wxPoint(-outerHorSpace, pos + verSpace)
-            if verSpace > 0:
-                polygon = Polygon([tl, tr, br, bl])
-                polygons.append(polygon)
-                cuts.append(LineString([tr, tl]))
-            cuts.append(LineString([bl, br]))
-        if outerVerSpace > 0:
-            # Outer tabs
-            polygons.append(Polygon([
-                destination + wxPoint(-outerHorSpace, 0),
-                destination + wxPoint(-outerHorSpace, -outerVerSpace),
-                destination + wxPoint(outerHorSpace + width, - outerVerSpace),
-                destination + wxPoint(outerHorSpace + width, 0)]))
-            polygons.append(Polygon([
-                destination + wxPoint(-outerHorSpace, height),
-                destination + wxPoint(-outerHorSpace, height + outerVerSpace),
-                destination + wxPoint(outerHorSpace + width, height + outerVerSpace),
-                destination + wxPoint(outerHorSpace + width, height)]))
-        if forceOuterCuts or outerVerSpace > 0:
-            cuts.append(LineString([destination + wxPoint(-outerHorSpace, 0),
-                destination + wxPoint(width + outerHorSpace, 0)]))
-            cuts.append(LineString([destination + wxPoint(width + outerHorSpace, height),
-                destination + wxPoint(-outerHorSpace, height)]))
-        return polygons, cuts
-
-    def _tabSpacing(self, width, count):
-        """
-        Given a width of board edge and tab count, return an iterable with tab
-        offsets.
-        """
-        return [width * i / (count + 1) for i in range(1, count + 1)]
-
-    def _makeVerGridTabs(self, destination, rows, cols, boardSize, verSpace,
-                      horSpace, verTabWidth, horTabWidth, verTabCount,
-                      horTabCount, outerVerTabThickness, outerHorTabThickness,
-                      placementClass):
-        placement = placementClass(destination, boardSize, horSpace, verSpace)
-        polygons = []
-        cuts = []
-        for i, j in product(range(rows), range(cols)):
-            dest = placement.position(i, j)
-            if (i != 0 and verSpace > 0) or outerVerTabThickness > 0: # Add tabs to the top side
-                tabThickness = outerVerTabThickness if i == 0 else verSpace / 2
-                for tabPos in self._tabSpacing(boardSize.GetWidth(), verTabCount):
-                    t, f = self.boardSubstrate.tab(
-                        dest + wxPoint(tabPos, -tabThickness), [0, 1], verTabWidth)
-                    polygons.append(t)
-                    cuts.append(f)
-            if (i != rows - 1 and verSpace > 0) or outerVerTabThickness > 0: # Add tabs to the bottom side
-                tabThickness = outerVerTabThickness if i == rows - 1 else verSpace / 2
-                for tabPos in self._tabSpacing(boardSize.GetWidth(), verTabCount):
-                    origin = dest + wxPoint(tabPos, boardSize.GetHeight() + tabThickness)
-                    t, f = self.boardSubstrate.tab(origin, [0, -1], verTabWidth)
-                    polygons.append(t)
-                    cuts.append(f)
-        return polygons, cuts
-
-    def _makeHorGridTabs(self, destination, rows, cols, boardSize, verSpace,
-                      horSpace, verTabWidth, horTabWidth, verTabCount,
-                      horTabCount, outerVerTabThickness, outerHorTabThickness,
-                      placementClass):
-        placement = placementClass(destination, boardSize, horSpace, verSpace)
-        polygons = []
-        cuts = []
-        for i, j in product(range(rows), range(cols)):
-            dest = placement.position(i, j)
-            if (j != 0 and horSpace > 0) or outerHorTabThickness > 0: # Add tabs to the left side
-                tabThickness = outerHorTabThickness if j == 0 else horSpace / 2
-                for tabPos in self._tabSpacing(boardSize.GetHeight(), horTabCount):
-                    t, f = self.boardSubstrate.tab(
-                        dest + wxPoint(-tabThickness, tabPos), [1, 0], horTabWidth)
-                    polygons.append(t)
-                    cuts.append(f)
-            if (j != cols - 1 and horSpace > 0) or outerHorTabThickness > 0: # Add tabs to the right side
-                tabThickness = outerHorTabThickness if j == cols - 1 else horSpace / 2
-                for tabPos in self._tabSpacing(boardSize.GetHeight(), horTabCount):
-                    origin = dest + wxPoint(boardSize.GetWidth() + tabThickness, tabPos)
-                    t, f = self.boardSubstrate.tab(
-                        origin, [-1, 0], horTabWidth)
-                    polygons.append(t)
-                    cuts.append(f)
-        return polygons, cuts
-
-    def makeGridNew(self, boardfile, sourceArea, rows, cols, destination,
+    def makeGrid(self, boardfile, sourceArea, rows, cols, destination,
                     verSpace, horSpace, rotation,
                     placementClass=BasicGridPosition,
                     netRenamePattern="Board_{n}-{orig}",
@@ -879,127 +706,6 @@ class Panel:
                                 sourceArea, 0, verSpace, horSpace,
                                 rotation, netRenamer, refRenamer, placementClass)
         return self.substrates[substrateCount:]
-
-
-    def makeGrid(self, boardfile, rows, cols, destination, sourceArea=None,
-                 tolerance=0, verSpace=0, horSpace=0, verTabCount=1,
-                 horTabCount=1, verTabWidth=0, horTabWidth=0,
-                 outerVerTabThickness=0, outerHorTabThickness=0, rotation=0,
-                 forceOuterCutsH=False, forceOuterCutsV=False,
-                 placementClass=BasicGridPosition,
-                 netRenamePattern="Board_{n}-{orig}",
-                 refRenamePattern="Board_{n}-{orig}"):
-        """
-        Creates a grid of boards (row x col) as a panel at given destination
-        separated by V-CUTS. The source can be either extracted automatically or
-        from given sourceArea. There can be a spacing between the individual
-        board (verSpacing, horSpacing) and the tab width can be adjusted
-        (verTabWidth, horTabWidth). Also, the user can control whether to append
-        the outer tabs (e.g. to connect it to a frame) by setting
-        outerVerTabsWidth and outerHorTabsWidth.
-
-        Returns a tuple - wxRect with the panel bounding box (excluding
-        outerTabs) and a list of cuts (list of lines) to make. You can use the
-        list to either create a V-CUTS via makeVCuts or mouse bites via
-        makeMouseBites.
-        """
-        netRenamer = lambda x, y: netRenamePattern.format(n=x, orig=y)
-        refRenamer = lambda x, y: refRenamePattern.format(n=x, orig=y)
-        boardSize = self._placeBoardsInGrid(boardfile, rows, cols, destination,
-                                    sourceArea, tolerance, verSpace, horSpace,
-                                    rotation, netRenamer, refRenamer, placementClass)
-        gridDest = wxPoint(boardSize.GetX(), boardSize.GetY())
-        tabs, cuts = [], []
-
-        if verTabCount != 0:
-            if verTabWidth == 0:
-                t, c = self._makeFullVerticalTabs(gridDest, rows, cols,
-                    boardSize, verSpace, horSpace, outerVerTabThickness,outerHorTabThickness,
-                    forceOuterCutsV)
-            else:
-                t, c = self._makeVerGridTabs(gridDest, rows, cols, boardSize,
-                    verSpace, horSpace, verTabWidth, horTabWidth, verTabCount,
-                    horTabCount, outerVerTabThickness, outerHorTabThickness,
-                    placementClass)
-            tabs += t
-            cuts += c
-
-        if horTabCount != 0:
-            if horTabWidth == 0:
-                t, c = self._makeFullHorizontalTabs(gridDest, rows, cols,
-                    boardSize, verSpace, horSpace, outerVerTabThickness, outerHorTabThickness,
-                    forceOuterCutsH)
-            else:
-                t, c = self._makeHorGridTabs(gridDest, rows, cols, boardSize,
-                    verSpace, horSpace, verTabWidth, horTabWidth, verTabCount,
-                    horTabCount, outerVerTabThickness, outerHorTabThickness,
-                    placementClass)
-            tabs += t
-            cuts += c
-
-        tabs = list([t.buffer(SHP_EPSILON, join_style=2) for t in tabs])
-        self.appendSubstrate(tabs)
-
-        return (wxRect(gridDest[0], gridDest[1],
-                       cols * boardSize.GetWidth() + (cols - 1) * horSpace,
-                       rows * boardSize.GetHeight() + (rows - 1) * verSpace),
-                cuts)
-
-
-    def makeTightGrid(self, boardfile, rows, cols, destination, verSpace,
-                      horSpace, slotWidth, width, height, sourceArea=None,
-                      tolerance=0, verTabWidth=0, horTabWidth=0,
-                      verTabCount=1, horTabCount=1, rotation=0,
-                      placementClass=BasicGridPosition,
-                      netRenamePattern="Board_{n}-{orig}",
-                      refRenamePattern="Board_{n}-{orig}"):
-        """
-        Creates a grid of boards just like `makeGrid`, however, it creates a
-        milled slot around perimeter of each board and 4 tabs.
-        """
-        netRenamer = lambda x, y: netRenamePattern.format(n=x, orig=y)
-        refRenamer = lambda x, y: refRenamePattern.format(n=x, orig=y)
-        boardSize = self._placeBoardsInGrid(boardfile, rows, cols, destination,
-                                    sourceArea, tolerance, verSpace, horSpace,
-                                    rotation, netRenamer, refRenamer, placementClass)
-        gridDest = wxPoint(boardSize.GetX(), boardSize.GetY())
-        panelSize = wxRect(gridDest[0], gridDest[1],
-                       cols * boardSize.GetWidth() + (cols - 1) * horSpace,
-                       rows * boardSize.GetHeight() + (rows - 1) * verSpace)
-
-        tabs, cuts = [], []
-        if verTabCount != 0:
-            t, c = self._makeVerGridTabs(gridDest, rows, cols, boardSize,
-                    verSpace, horSpace, verTabWidth, horTabWidth, verTabCount,
-                    horTabCount, slotWidth, slotWidth, placementClass)
-            tabs += t
-            cuts += c
-        if horTabCount != 0:
-            t, c = self._makeHorGridTabs(gridDest, rows, cols, boardSize,
-                    verSpace, horSpace, verTabWidth, horTabWidth, verTabCount,
-                    horTabCount, slotWidth, slotWidth, placementClass)
-            tabs += t
-            cuts += c
-
-        xDiff = (width - panelSize.GetWidth()) // 2
-        if xDiff < 0:
-            raise RuntimeError("The frame is to small")
-        yDiff = (height - panelSize.GetHeight()) // 2
-        if yDiff < 0:
-            raise RuntimeError("The frame is to small")
-        outerRect = expandRect(panelSize, xDiff, yDiff)
-        outerRing = rectToRing(outerRect)
-        frame = Polygon(outerRing)
-        frame = frame.difference(self.boardSubstrate.exterior().buffer(slotWidth))
-        self.appendSubstrate(frame)
-
-        tabs = list([t.buffer(SHP_EPSILON, join_style=2) for t in tabs])
-        self.appendSubstrate(tabs)
-
-        if verTabCount != 0 or horTabCount != 0:
-            self.boardSubstrate.removeIslands()
-
-        return (outerRect, cuts)
 
     def makeFrame(self, width):
         """
@@ -1155,7 +861,7 @@ class Panel:
         Return the list of top-left, top-right, bottom-left and bottom-right
         corners of the panel. You can specify offsets.
         """
-        minx, miny, maxx, maxy = self.boardSubstrate.bounds()
+        minx, miny, maxx, maxy = self.panelBBox()
         topLeft = wxPoint(minx + horizontalOffset, miny + verticalOffset)
         topRight = wxPoint(maxx - horizontalOffset, miny + verticalOffset)
         bottomLeft = wxPoint(minx + horizontalOffset, maxy - verticalOffset)
