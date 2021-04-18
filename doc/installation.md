@@ -8,8 +8,9 @@ pip install KiKit # Use pip or pip3 based on your distribution
 ```
 
 Then you are ready to use it. Note that if you would like to use GUI plugins in
-KiCAD, you have enable them. See section "Enabling plugins". Also, there are two
-optional dependencies:
+KiCAD, you have enable them. Similarly, you can also register the KiKit
+footprint library. See section "Enabling plugins" and "Enabling Kikit annotation
+footprint library". Also, there are two optional dependencies:
 
 - PcbDraw - to be able to export presentation pages (install it via `pip install
   PcbDraw`)
@@ -32,6 +33,17 @@ install it directly from GitHub:
 ```
 pip3 install git+https://github.com/yaqwsx/KiKit@master
 ```
+
+## Enabling KiKit annotation footprint library
+
+KiKit distributes a footprint library called `kikit`. This library contains
+footprints that can be used for annotation of the PCB (e.g., mark tab
+locations). To use it, you have to add it into KiCAD.
+
+You can:
+- register the library automatically via invoking `kikit-plugin registerlib` of
+- add the library manually in KiCAD. You get the library location via
+  `kikit-info lib`. Note that the library has to be named `kikit`
 
 
 ## Enabling plugins

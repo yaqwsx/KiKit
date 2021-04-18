@@ -1,4 +1,5 @@
 from kikit import pcbnew_compatibility
+from kikit.common import KIKIT_LIB
 import sys
 import click
 
@@ -22,6 +23,13 @@ def drcapi():
     else:
         print("0")
 
+@click.command()
+def lib():
+    """
+    Return KiKit library location
+    """
+    print(KIKIT_LIB)
+
 
 @click.group()
 def cli():
@@ -32,3 +40,4 @@ def cli():
 
 cli.add_command(kicadversion)
 cli.add_command(drcapi)
+cli.add_command(lib)
