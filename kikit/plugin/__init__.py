@@ -1,8 +1,15 @@
 import textwrap
 import os
 import sys
+import platform
 from pathlib import Path
 import click
+from itertools import islice
+from copy import deepcopy
+from datetime import datetime
+import shutil
+from kikit.sexpr import Atom, SExpr, parseSexprF
+from kikit.common import KIKIT_LIB
 
 # Tuple: package, name, description
 availablePlugins = [
@@ -71,6 +78,100 @@ def enable(all, plugin):
     with open(location, "w") as f:
         f.write(registrationRoutine(plugins))
 
+def getFpLibTablePath():
+    """
+    Return path to the FP Lib table
+    """
+    # Currently, we only support Linux and stable KiKit
+    if platform.system() != "Linux":
+        raise RuntimeError(f"Usupported platform '{platform.system()}'")
+    return str(Path.home() / ".config" / "kicad" / "fp-lib-table")
+
+def findLib(fpLibTable, lib):
+    """
+    Given footprint library table, find a library entry
+    """
+    if len(fpLibTable) == 0 or fpLibTable[0] != "fp_lib_table":
+        raise RuntimeError("Invalid table")
+    for x in islice(fpLibTable, 1, None):
+        if x[0] != "lib":
+            continue
+        for y in islice(x, 1, None):
+            if not isinstance(y, SExpr) or len(y) != 2:
+                continue
+            if y[0] == "name" and y[1] == lib:
+                return x
+    return None
+
+def pushNewLib(fpLibTable):
+    """
+    Add new KiCAD library into the table. Try to respect the formatting. Return
+    the Sexpression for the newly inserted item.
+    """
+    if len(fpLibTable) == 0 or fpLibTable[0] != "fp_lib_table":
+        raise RuntimeError("Invalid table")
+    if len(fpLibTable) == 1:
+        # There are no libraries, we can choose formatting
+        s = SExpr([
+            Atom("lib"),
+            SExpr([Atom("name"), Atom("", " ")], " "),
+            SExpr([Atom("type"), Atom("", " ")]),
+            SExpr([Atom("uri"), Atom("", " ")]),
+            SExpr([Atom("options"), Atom("", " ")]),
+            SExpr([Atom("descr"), Atom("", " ")])
+        ], "\n    ")
+        fpLibTable.trailingWhitespace = "\n"
+        fpLibTable.items.append(s)
+        return s
+    # There are already libraries, copy last item and erase it:
+    s = deepcopy(fpLibTable[-1])
+    fpLibTable.items.append(s)
+    for x in islice(s, 1, None):
+        x[1].value = ""
+    return s
+
+@click.command()
+@click.option("--path", "-p",
+    type=click.Path(dir_okay=False, file_okay=True, exists=True),
+    default=None,
+    help="You can optionally specify custom path for the fp_lib_table file")
+def registerlib(path):
+    """
+    Add KiKit's footprint library into the global footprint library table. If
+    the library has already been registered, update the path.
+    """
+    if path is None:
+        path = getFpLibTablePath()
+    with open(path, "r") as f:
+        fpLibTable = parseSexprF(f)
+        rest = f.read()
+    kikitLib = findLib(fpLibTable, "kikit")
+    if kikitLib is None:
+        kikitLib = pushNewLib(fpLibTable)
+
+    rewriteTable = {
+        "name": "kikit",
+        "type": "KiCAD",
+        "uri": KIKIT_LIB,
+        "options": "",
+        "descr": "KiKit Footprint library"
+    }
+    for x in islice(kikitLib, 1, None):
+        x[1].value = rewriteTable[x[0].value]
+
+    ident = datetime.now().strftime("%Y-%m-%d--%H-%M:%S")
+    backupName = f"{path}.bak.{ident}"
+    shutil.copy(path, backupName)
+    print(f"A copy of the original {path} was made into {backupName}. ", end="")
+    print("You can restore it if something goes wrong.", end="\n\n")
+
+    with open(path, "w") as f:
+        f.write(str(fpLibTable))
+        f.write(rest)
+
+    print(f"KiKit footprint library successfully added to the global footprint table '{path}'. Please restart KiCAD.")
+
+
 @click.group()
 def cli():
     """
@@ -81,6 +182,7 @@ def cli():
 
 cli.add_command(enable)
 cli.add_command(list)
+cli.add_command(registerlib)
 
 if __name__ == "__main__":
     cli()
