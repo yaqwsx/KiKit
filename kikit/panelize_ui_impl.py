@@ -213,7 +213,6 @@ def validateSections(preset):
     missingSections = set(VALID_SECTIONS).difference(preset.keys())
     if len(missingSections) != 0:
         raise PresetError(f"Missing sections {', '.join(missingSections)} in preset")
-    # TBA
 
 def getPlacementClass(name):
     from kikit.panelize import (BasicGridPosition, OddEvenColumnPosition,
@@ -234,18 +233,21 @@ def readSourceArea(specification, board):
     """
     Extract source area based on preset and a board.
     """
-    type = specification["type"]
-    tolerance = specification["tolerance"]
-    if type == "auto":
-        return expandRect(findBoardBoundingBox(board), tolerance)
-    if type == "annotation":
-        ref = specification["ref"]
-        return expandRect(extractSourceAreaByAnnotation(board, ref), tolerance)
-    if type == "rectangle":
-        tl = wxPoint(specification["tlx"], specification["tly"])
-        br = wxPoint(specification["brx"], specification["bry"])
-        return expandRect(wxRect(tl, br), tolerance)
-    raise PresetError(f"Unknown type '{type}' of source specification.")
+    try:
+        type = specification["type"]
+        tolerance = specification["tolerance"]
+        if type == "auto":
+            return expandRect(findBoardBoundingBox(board), tolerance)
+        if type == "annotation":
+            ref = specification["ref"]
+            return expandRect(extractSourceAreaByAnnotation(board, ref), tolerance)
+        if type == "rectangle":
+            tl = wxPoint(specification["tlx"], specification["tly"])
+            br = wxPoint(specification["brx"], specification["bry"])
+            return expandRect(wxRect(tl, br), tolerance)
+        raise PresetError(f"Unknown type '{type}' of source specification.")
+    except KeyError as e:
+        raise PresetError(f"Missing parameter '{e}' in section 'source'")
 
 def obtainPreset(presetPaths, validate=True, **kwargs):
     """
@@ -270,62 +272,74 @@ def buildLayout(layout, panel, sourceBoard, sourceArea):
 
     Return the list of created substrates.
     """
-    type = layout["type"]
-    if type in ["grid"]:
-        placementClass = getPlacementClass(layout["alternation"])
-        return panel.makeGrid(
-            boardfile=sourceBoard, sourceArea=sourceArea,
-            rows=layout["rows"], cols=layout["cols"], destination=wxPointMM(50, 50),
-            rotation=layout["rotation"],
-            verSpace=layout["vspace"], horSpace=layout["hspace"],
-            placementClass=placementClass,
-            netRenamePattern=layout["renamenet"], refRenamePattern=layout["renameref"])
-    raise PresetError(f"Unknown type '{type}' of layout specification.")
+    try:
+        type = layout["type"]
+        if type in ["grid"]:
+            placementClass = getPlacementClass(layout["alternation"])
+            return panel.makeGrid(
+                boardfile=sourceBoard, sourceArea=sourceArea,
+                rows=layout["rows"], cols=layout["cols"], destination=wxPointMM(50, 50),
+                rotation=layout["rotation"],
+                verSpace=layout["vspace"], horSpace=layout["hspace"],
+                placementClass=placementClass,
+                netRenamePattern=layout["renamenet"], refRenamePattern=layout["renameref"])
+        raise PresetError(f"Unknown type '{type}' of layout specification.")
+    except KeyError as e:
+        raise PresetError(f"Missing parameter '{e}' in section 'layout'")
 
 def buildTabs(properties, panel, substrates, boundarySubstrates):
     """
     Build tabs for the substrates in between the boards. Return a list of cuts.
     """
-    type = properties["type"]
-    if type == "none":
-        return []
-    if type == "fixed":
-        panel.clearTabsAnnotations()
-        panel.buildTabAnnotationsFixed(properties["hcount"],
-            properties["vcount"], properties["hwidth"], properties["vwidth"],
-            properties["mindistance"], boundarySubstrates)
-        return panel.buildTabsFromAnnotations()
-    if type == "spacing":
-        panel.clearTabsAnnotations()
-        panel.buildTabAnnotationsSpacing(properties["spacing"],
-            properties["hwidth"], properties["vwidth"], boundarySubstrates)
-        return panel.buildTabsFromAnnotations()
-    if type == "corner":
-        panel.clearTabsAnnotations()
-        panel.buildTabAnnotationsCorners(properties["width"])
-        return panel.buildTabsFromAnnotations()
-    if type == "full":
-        return panel.buildFullTabs()
-    if type == "annotation":
-        return panel.buildTabsFromAnnotations()
-    raise PresetError(f"Unknown type '{type}' of tabs specification.")
+    try:
+        type = properties["type"]
+        if type == "none":
+            return []
+        if type == "fixed":
+            panel.clearTabsAnnotations()
+            panel.buildTabAnnotationsFixed(properties["hcount"],
+                properties["vcount"], properties["hwidth"], properties["vwidth"],
+                properties["mindistance"], boundarySubstrates)
+            return panel.buildTabsFromAnnotations()
+        if type == "spacing":
+            panel.clearTabsAnnotations()
+            panel.buildTabAnnotationsSpacing(properties["spacing"],
+                properties["hwidth"], properties["vwidth"], boundarySubstrates)
+            return panel.buildTabsFromAnnotations()
+        if type == "corner":
+            panel.clearTabsAnnotations()
+            panel.buildTabAnnotationsCorners(properties["width"])
+            return panel.buildTabsFromAnnotations()
+        if type == "full":
+            return panel.buildFullTabs()
+        if type == "annotation":
+            return panel.buildTabsFromAnnotations()
+        raise PresetError(f"Unknown type '{type}' of tabs specification.")
+    except KeyError as e:
+        raise PresetError(f"Missing parameter '{e}' in section 'tabs'")
 
 def buildBackBone(layout, panel, substrates, frameSpace):
     """
     Append backbones to the panel. Return backbone cuts.
     """
-    return panel.renderBackbone(layout["vbackbone"], layout["hbackbone"],
-                                layout["vbonecut"], layout["hbonecut"])
+    try:
+        return panel.renderBackbone(layout["vbackbone"], layout["hbackbone"],
+                                    layout["vbonecut"], layout["hbonecut"])
+    except KeyError as e:
+        raise PresetError(f"Missing parameter '{e}' in section 'layout'")
 
 def frameOffset(framing):
-    type = framing["type"]
-    if type == "none":
-        return None, None
-    if type == "railstb":
-        return framing["vspace"], None
-    if type == "railslr":
-        return None, framing["hspace"]
-    return framing["vspace"], framing["hspace"]
+    try:
+        type = framing["type"]
+        if type == "none":
+            return None, None
+        if type == "railstb":
+            return framing["vspace"], None
+        if type == "railslr":
+            return None, framing["hspace"]
+        return framing["vspace"], framing["hspace"]
+    except KeyError as e:
+        raise PresetError(f"Missing parameter '{e}' in section 'framing'")
 
 def makeTabCuts(properties, panel, cuts):
     """
@@ -343,19 +357,22 @@ def makeCuts(properties, panel, cuts, ignoreOffset):
     """
     Perform cuts
     """
-    type = properties["type"]
-    if type == "none":
-        return
-    if type == "vcuts":
-        panel.makeVCuts(cuts, properties["cutcurves"])
-        panel.setVCutLayer(properties["layer"])
-        panel.setVCutClearance(properties["clearance"])
-    elif type == "mousebites":
-        offset = 0 if ignoreOffset else properties["offset"]
-        panel.makeMouseBites(cuts, properties["drill"],
-            properties["spacing"], offset, properties["prolong"])
-    else:
-        raise PresetError(f"Unknown type '{type}' of cuts specification.")
+    try:
+        type = properties["type"]
+        if type == "none":
+            return
+        if type == "vcuts":
+            panel.makeVCuts(cuts, properties["cutcurves"])
+            panel.setVCutLayer(properties["layer"])
+            panel.setVCutClearance(properties["clearance"])
+        elif type == "mousebites":
+            offset = 0 if ignoreOffset else properties["offset"]
+            panel.makeMouseBites(cuts, properties["drill"],
+                properties["spacing"], offset, properties["prolong"])
+        else:
+            raise PresetError(f"Unknown type '{type}' of cuts specification.")
+    except KeyError as e:
+        raise PresetError(f"Missing parameter '{e}' in section 'cuts'")
 
 
 def polygonToSubstrate(polygon):
@@ -393,98 +410,113 @@ def buildFraming(preset, panel):
     """
     Build frame according to the preset and return cuts
     """
-    type = preset["type"]
-    if type == "none":
-        return []
-    if type == "railstb":
-        panel.makeRailsTb(preset["width"])
-        return []
-    if type == "railslr":
-        panel.makeRailsLr(preset["width"])
-        return []
-    if type == "frame":
-        cuts = panel.makeFrame(preset["width"])
-        return cuts if preset["cuts"] else []
-    if type == "tightframe":
-        panel.makeTightFrame(preset["width"], preset["slotwidth"])
-        panel.boardSubstrate.removeIslands()
-        return []
-    raise PresetError(f"Unknown type '{type}' of frame specification.")
+    try:
+        type = preset["type"]
+        if type == "none":
+            return []
+        if type == "railstb":
+            panel.makeRailsTb(preset["width"])
+            return []
+        if type == "railslr":
+            panel.makeRailsLr(preset["width"])
+            return []
+        if type == "frame":
+            cuts = panel.makeFrame(preset["width"])
+            return cuts if preset["cuts"] else []
+        if type == "tightframe":
+            panel.makeTightFrame(preset["width"], preset["slotwidth"])
+            panel.boardSubstrate.removeIslands()
+            return []
+        raise PresetError(f"Unknown type '{type}' of frame specification.")
+    except KeyError as e:
+        raise PresetError(f"Missing parameter '{e}' in section 'framing'")
 
 def buildTooling(preset, panel):
     """
     Build tooling holes according to the preset
     """
-    type = preset["type"]
-    if type == "none":
-        return
-    hoffset, voffset = preset["hoffset"], preset["voffset"]
-    diameter = preset["size"]
-    paste = preset["paste"]
-    if type == "3hole":
-        panel.addCornerTooling(3, hoffset, voffset, diameter, paste)
-        return
-    if type == "4hole":
-        panel.addCornerTooling(4, hoffset, voffset, diameter, paste)
-        return
-    raise PresetError(f"Unknown type '{type}' of tooling specification.")
+    try:
+        type = preset["type"]
+        if type == "none":
+            return
+        hoffset, voffset = preset["hoffset"], preset["voffset"]
+        diameter = preset["size"]
+        paste = preset["paste"]
+        if type == "3hole":
+            panel.addCornerTooling(3, hoffset, voffset, diameter, paste)
+            return
+        if type == "4hole":
+            panel.addCornerTooling(4, hoffset, voffset, diameter, paste)
+            return
+        raise PresetError(f"Unknown type '{type}' of tooling specification.")
+    except KeyError as e:
+        raise PresetError(f"Missing parameter '{e}' in section 'tooling'")
 
 def buildFiducials(preset, panel):
     """
     Build tooling holes according to the preset
     """
-    type = preset["type"]
-    if type == "none":
-        return
-    hoffset, voffset = preset["hoffset"], preset["voffset"]
-    coppersize, opening = preset["coppersize"], preset["opening"]
-    if type == "3fid":
-        panel.addCornerFiducials(3, hoffset, voffset, coppersize, opening)
-        return
-    if type == "4fid":
-        panel.addCornerFiducials(4, hoffset, voffset, coppersize, opening)
-        return
-    raise PresetError(f"Unknown type '{type}' of fiducial specification.")
+    try:
+        type = preset["type"]
+        if type == "none":
+            return
+        hoffset, voffset = preset["hoffset"], preset["voffset"]
+        coppersize, opening = preset["coppersize"], preset["opening"]
+        if type == "3fid":
+            panel.addCornerFiducials(3, hoffset, voffset, coppersize, opening)
+            return
+        if type == "4fid":
+            panel.addCornerFiducials(4, hoffset, voffset, coppersize, opening)
+            return
+        raise PresetError(f"Unknown type '{type}' of fiducial specification.")
+    except KeyError as e:
+        raise PresetError(f"Missing parameter '{e}' in section 'fiducials'")
 
 def buildText(preset, panel):
     """
     Build text according to the preset
     """
-    type = preset["type"]
-    if type == "none":
-        return
-    if type == "simple":
-        origin = resolveAnchor(preset["anchor"])(panel.boardSubstrate.boundingBox())
-        origin += wxPoint(preset["hoffset"], preset["voffset"])
+    try:
+        type = preset["type"]
+        if type == "none":
+            return
+        if type == "simple":
+            origin = resolveAnchor(preset["anchor"])(panel.boardSubstrate.boundingBox())
+            origin += wxPoint(preset["hoffset"], preset["voffset"])
 
-        panel.addText(
-            text=preset["text"],
-            position=origin,
-            orientation=preset["orientation"],
-            width=preset["width"],
-            height=preset["height"],
-            thickness=preset["thickness"],
-            hJustify=preset["hjustify"],
-            vJustify=preset["vjustify"],
-            layer=preset["layer"])
-        return
-    raise PresetError(f"Unknown type '{type}' of text specification.")
+            panel.addText(
+                text=preset["text"],
+                position=origin,
+                orientation=preset["orientation"],
+                width=preset["width"],
+                height=preset["height"],
+                thickness=preset["thickness"],
+                hJustify=preset["hjustify"],
+                vJustify=preset["vjustify"],
+                layer=preset["layer"])
+            return
+        raise PresetError(f"Unknown type '{type}' of text specification.")
+    except KeyError as e:
+        raise PresetError(f"Missing parameter '{e}' in section 'text'")
 
 def buildPostprocessing(preset, panel):
     """
     Perform postprocessing operations
     """
-    type = preset["type"]
-    if type != "auto":
-        raise PresetError(f"Unknown type '{type}' of postprocessing specification.")
-    if preset["millradius"] > 0:
-        panel.addMillFillets(preset["millradius"])
-    if preset["copperfill"]:
-        panel.copperFillNonBoardAreas()
-    if preset["origin"]:
-        origin = resolveAnchor(preset["origin"])(panel.boardSubstrate.boundingBox())
-        panel.setAuxiliaryOrigin(origin)
-        panel.setGridOrigin(origin)
+    try:
+        type = preset["type"]
+        if type != "auto":
+            raise PresetError(f"Unknown type '{type}' of postprocessing specification.")
+        if preset["millradius"] > 0:
+            panel.addMillFillets(preset["millradius"])
+        if preset["copperfill"]:
+            panel.copperFillNonBoardAreas()
+        if preset["origin"]:
+            origin = resolveAnchor(preset["origin"])(panel.boardSubstrate.boundingBox())
+            panel.setAuxiliaryOrigin(origin)
+            panel.setGridOrigin(origin)
+    except KeyError as e:
+        raise PresetError(f"Missing parameter '{e}' in section 'postprocessing'")
 
 def runUserScript(preset, panel):
     """
@@ -505,10 +537,12 @@ def buildDebugAnnotation(preset, panel):
     """
     Add debug annotation to the panel
     """
-
-    if preset["drawPartitionLines"]:
-        panel.debugRenderPartitionLines()
-    if preset["drawBackboneLines"]:
-        panel.debugRenderBackboneLines()
-    if preset["drawboxes"]:
-        panel.debugRenderBoundingBoxes()
+    try:
+        if preset["drawPartitionLines"]:
+            panel.debugRenderPartitionLines()
+        if preset["drawBackboneLines"]:
+            panel.debugRenderBackboneLines()
+        if preset["drawboxes"]:
+            panel.debugRenderBoundingBoxes()
+    except KeyError as e:
+        raise PresetError(f"Missing parameter '{e}' in section 'debug'")
