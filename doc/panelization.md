@@ -4,18 +4,32 @@
 When you want to panelize a board, you are expected to load the `kikit.panelize`
 module and create an instance of the `Panel` class.
 
-All units are in the internal KiCAD units (1 nm). You can use functions `fromMm(mm)` and
-`toMm(kiUnits)` to convert to/from them (synopsis below). You are also encouraged to use
-the functions and objects the native KiCAD Python API offers, e.g.: `wxPoint(args)`, `wxPointMM(mmx, mmy)`, `wxRect(args)`, `wxRectMM(x, y, wx, wy)`.
+All units are in the internal KiCAD units (1 nm). You can use predefined
+constants to convert from/to them:
 
+```.py
+from kikit.units import *
+
+l = 1 * mm    # 1 mm
+l = 42 * inch # 42 inches
+l = 15 * cm   # 15 cm
+a = 90 * deg  # 90°
+a = 1 * rad   # 1 radian
+```
+
+You can also use functions `fromMm(mm)` and
+`toMm(kiUnits)` to convert to/from them if you like them more. You are
+also encouraged to use the functions and objects the native KiCAD Python API
+offers, e.g.: wxPoint(args)`, `wxPointMM(mmx, mmy)`, `wxRect(args)`, `wxRectMM(x, y, wx, wy).
 
 
 ## Basic Concepts
 
-The `panelize.Panel` class holds a panel under construction. Basically it is
-`pcbnew.BOARD` without outlines. The outlines are held separately as
+The `kikit.panelize.Panel` class holds a panel under construction. Basically it
+is `pcbnew.BOARD` without outlines. The outlines are held separately as
 `shapely.MultiPolygon` so we can easily merge pieces of a substrate, add cuts
-and export it back to `pcbnew.BOARD`.
+and export it back to `pcbnew.BOARD`. This is all handled by the class
+`kikit.substrate.Substrate`.
 
 ## Tabs
 
@@ -34,6 +48,9 @@ piece of the outline of the original board, which was removed by the tab. Then
 add the piece of a substrate via `panelize.Panel.appendSubstrate`. This design
 choice was made as batch adding of substrates is more efficient. Therefore, you
 are advised to first generate all the tabs and then append them to the board.
+
+You read more about the algorithms for generating tabs in a separate document
+[understanding tabs](understandingTabs.md).
 
 ## Cuts
 
@@ -58,11 +75,105 @@ include components sticking out of the board outline, you can specify tolerance
 -- a distance by which the source area is expanded when copying components.
 
 
+#### `appendBoard`
+```
+appendBoard(self, filename, destination, sourceArea=None, origin=Origin.Center, 
+            rotationAngle=0, shrink=False, tolerance=0, bufferOutline=1000, 
+            netRenamer=None, refRenamer=None)
+```
+
 ## Panel class
 
-Basic interface for panel building. Instance of this class represents a
-single panel. You can append boards, add substrate pieces, make cuts or add
-holes to the panel. Once you finish, you have to save the panel to a file.
+This class has the following relevant members:
+- `board` - `pcbnew.BOARD` of the panel. Does not contain any edges.
+- `substrates` - `kikit.substrate.Substrate` - individual substrates appended
+  via `None`. You can use them to get the
+  original outline (and e.g., generate tabs accroding to it).
+- `boardSubstrate` - `kikit.substrate.Substrate` of the whole panel.
+- `backboneLines` - a list of lines representing backbone candidates. Read more
+  about it in [understanding tabs](understandingTabs.md).
+
+
+#### `addCornerFiducials`
+```
+addCornerFiducials(self, fidCount, horizontalOffset, verticalOffset, 
+                   copperDiameter, openingDiameter)
+```
+Add up to 4 fiducials to the top-left, top-right, bottom-left and
+bottom-right corner of the board (in this order). This function expects
+there is enough space on the board/frame/rail to place the feature.
+
+The offsets are measured from the outer edges of the substrate.
+
+#### `addCornerTooling`
+```
+addCornerTooling(self, holeCount, horizontalOffset, verticalOffset, diameter, 
+                 paste=False)
+```
+Add up to 4 tooling holes to the top-left, top-right, bottom-left and
+bottom-right corner of the board (in this order). This function expects
+there is enough space on the board/frame/rail to place the feature.
+
+The offsets are measured from the outer edges of the substrate.
+
+#### `addFiducial`
+```
+addFiducial(self, position, copperDiameter, openingDiameter, bottom=False)
+```
+Add fiducial, i.e round copper pad with solder mask opening to the position (`wxPoint`),
+with given copperDiameter and openingDiameter. By setting bottom to True, the fiducial
+is placed on bottom side.
+
+#### `addKeepout`
+```
+addKeepout(self, area, noTracks=True, noVias=True, noCopper=True)
+```
+Add a keepout area from top and bottom layers. Area is a shapely
+polygon. Return the keepout area.
+
+#### `addLine`
+```
+addLine(self, start, end, thickness, layer)
+```
+Add a line to the panel based on starting and ending point
+
+#### `addMillFillets`
+```
+addMillFillets(self, millRadius)
+```
+Add fillets to inner conernes which will be produced a by mill with
+given radius.
+
+#### `addNPTHole`
+```
+addNPTHole(self, position, diameter, paste=False)
+```
+Add a drilled non-plated hole to the position (`wxPoint`) with given
+diameter. The paste option allows to place the hole on the paste layers.
+
+#### `addText`
+```
+addText(self, text, position, orientation=0, width=1500000, height=1500000, 
+        thickness=300000, hJustify=EDA_TEXT_HJUSTIFY_T.GR_TEXT_HJUSTIFY_CENTER, 
+        vJustify=EDA_TEXT_VJUSTIFY_T.GR_TEXT_VJUSTIFY_CENTER, 
+        layer=Layer.F_SilkS)
+```
+Add text at given position to the panel. If appending to the bottom
+side, text is automatically mirrored.
+
+#### `addVCutH`
+```
+addVCutH(self, pos)
+```
+Adds a horizontal V-CUT at pos (integer in KiCAD units).
+
+#### `addVCutV`
+```
+addVCutV(self, pos)
+```
+Adds a horizontal V-CUT at pos (integer in KiCAD units).
+
+#### `appendBoard`
 ```
 appendBoard(self, filename, destination, sourceArea=None, origin=Origin.Center, 
             rotationAngle=0, shrink=False, tolerance=0, bufferOutline=1000, 
@@ -87,91 +198,335 @@ The renamers are given board seq number and original name
 
 Returns bounding box (wxRect) of the extracted area placed at the
 destination and the extracted substrate of the board.
-```
-save(self, filename)
-```
-Saves the panel to a file.
+
+#### `appendSubstrate`
 ```
 appendSubstrate(self, substrate)
 ```
 Append a piece of substrate or a list of pieces to the panel. Substrate
 can be either wxRect or Shapely polygon. Newly appended corners can be
 rounded by specifying non-zero filletRadius.
+
+#### `boardsBBox`
 ```
-makeGrid(self, boardfile, rows, cols, destination, sourceArea=None, tolerance=0, 
-         verSpace=0, horSpace=0, verTabCount=1, horTabCount=1, verTabWidth=0, 
-         horTabWidth=0, outerVerTabThickness=0, outerHorTabThickness=0, 
-         rotation=0, forceOuterCutsH=False, forceOuterCutsV=False, 
+boardsBBox(self)
+```
+Return common bounding box for all boards in the design (ignores the
+individual pieces of substrate) as a shapely box.
+
+#### `buildFullTabs`
+```
+buildFullTabs(self)
+```
+Make full tabs. This strategy basically cuts the bounding boxes of the
+PCBs. Not suitable for mousebites. Expects there is a valid partition
+line.
+
+Return a list of cuts.
+
+#### `buildPartitionLineFromBB`
+```
+buildPartitionLineFromBB(self, boundarySubstrates=[], safeMargin=0)
+```
+Builds partition & backbone line from bounding boxes of the substrates.
+You can optionally pass extra substrates (e.g., for frame).
+
+#### `buildTabAnnotationsCorners`
+```
+buildTabAnnotationsCorners(self, width)
+```
+Add tab annotations to the corners of the individual substrates.
+
+#### `buildTabAnnotationsFixed`
+```
+buildTabAnnotationsFixed(self, hcount, vcount, hwidth, vwidth, minDistance, 
+                         ghostSubstrates)
+```
+Add tab annotations for the individual substrates based on number of
+tabs in horizontal and vertical direction. You can specify individual
+width in each direction.
+
+If the edge is short for the specified number of tabs with given minimal
+spacing, the count is reduced.
+
+You can also specify ghost substrates (for the future framing).
+
+#### `buildTabAnnotationsSpacing`
+```
+buildTabAnnotationsSpacing(self, spacing, hwidth, vwidth, ghostSubstrates)
+```
+Add tab annotations for the individual substrates based on their spacing.
+
+You can also specify ghost substrates (for the future framing).
+
+#### `buildTabsFromAnnotations`
+```
+buildTabsFromAnnotations(self)
+```
+Given annotations for the individual substrates, create tabs for them.
+Tabs are appended to the panel, cuts are returned.
+
+Expects that a valid partition line is assigned to the the panel.
+
+#### `clearTabsAnnotations`
+```
+clearTabsAnnotations(self)
+```
+Remove all existing tab annotations from the panel.
+
+#### `copperFillNonBoardAreas`
+```
+copperFillNonBoardAreas(self)
+```
+Fill top and bottom layers with copper on unused areas of the panel
+(frame, rails and tabs)
+
+#### `debugRenderBackboneLines`
+```
+debugRenderBackboneLines(self)
+```
+Render partition line to the panel to be easily able to inspect them via
+Pcbnew.
+
+#### `debugRenderPartitionLines`
+```
+debugRenderPartitionLines(self)
+```
+Render partition line to the panel to be easily able to inspect them via
+Pcbnew.
+
+#### `inheritCopperLayers`
+```
+inheritCopperLayers(self, board)
+```
+Update the panel's layer count to match the design being panelized.
+Raise an error if this is attempted twice with inconsistent layer count
+boards.
+
+#### `inheritDesignSettings`
+```
+inheritDesignSettings(self, boardFilename)
+```
+Inherit design settings from the given board specified by a filename
+
+#### `inheritProperties`
+```
+inheritProperties(self, boardFilename)
+```
+Inherit text properties from a board specified by a properties
+
+#### `makeFrame`
+```
+makeFrame(self, width)
+```
+Build a frame around the board. Return frame cuts
+
+#### `makeFrameCutsH`
+```
+makeFrameCutsH(self, innerArea, frameInnerArea, outerArea)
+```
+Generate horizontal cuts for the frame corners and return them
+
+#### `makeFrameCutsV`
+```
+makeFrameCutsV(self, innerArea, frameInnerArea, outerArea)
+```
+Generate vertical cuts for the frame corners and return them
+
+#### `makeGrid`
+```
+makeGrid(self, boardfile, sourceArea, rows, cols, destination, verSpace, 
+         horSpace, rotation, 
          placementClass=<class 'kikit.panelize.BasicGridPosition'>, 
          netRenamePattern=Board_{n}-{orig}, refRenamePattern=Board_{n}-{orig})
 ```
-Creates a grid of boards (row x col) as a panel at given destination
-separated by V-CUTS. The source can be either extracted automatically or
-from given sourceArea. There can be a spacing between the individual
-board (verSpacing, horSpacing) and the tab width can be adjusted
-(verTabWidth, horTabWidth). Also, the user can control whether to append
-the outer tabs (e.g. to connect it to a frame) by setting
-outerVerTabsWidth and outerHorTabsWidth.
+Place the given board in a regular grid pattern with given spacing
+(verSpace, horSpace). The board position can be fine-tuned via
+placementClass. The nets and references are renamed according to the
+patterns.
 
-Returns a tuple - wxRect with the panel bounding box (excluding
-outerTabs) and a list of cuts (list of lines) to make. You can use the
-list to either create a V-CUTS via makeVCuts or mouse bites via
-makeMouseBites.
+Returns a list of the placed substrates. You can use these to generate
+tabs, frames, backbones, etc.
+
+#### `makeMouseBites`
 ```
-makeTightGrid(self, boardfile, rows, cols, destination, verSpace, horSpace, 
-              slotWidth, width, height, sourceArea=None, tolerance=0, 
-              verTabWidth=0, horTabWidth=0, verTabCount=1, horTabCount=1, 
-              rotation=0, 
-              placementClass=<class 'kikit.panelize.BasicGridPosition'>, 
-              netRenamePattern=Board_{n}-{orig}, 
-              refRenamePattern=Board_{n}-{orig})
+makeMouseBites(self, cuts, diameter, spacing, offset=250000, prolongation=500000)
 ```
-Creates a grid of boards just like `makeGrid`, however, it creates a
-milled slot around perimeter of each board and 4 tabs.
+Take a list of cuts and perform mouse bites. The cuts can be prolonged
+to
+
+#### `makeRailsLr`
 ```
-makeFrame(self, innerArea, width, height, offset)
+makeRailsLr(self, thickness)
 ```
-Adds a frame around given `innerArea` (`wxRect`), which can be obtained,
-e.g., by `makeGrid`, with given `width` and `height`. Space with width
-`offset` is added around the `innerArea`.
+Adds a rail to left and right.
+
+#### `makeRailsTb`
+```
+makeRailsTb(self, thickness)
+```
+Adds a rail to top and bottom.
+
+#### `makeTightFrame`
+```
+makeTightFrame(self, width, slotwidth)
+```
+Build a full frame with board perimeter milled out
+
+#### `makeVCuts`
 ```
 makeVCuts(self, cuts, boundCurves=False)
 ```
 Take a list of lines to cut and performs V-CUTS. When boundCurves is
 set, approximate curved cuts by a line from the first and last point.
 Otherwise, raise an exception.
-```
-makeMouseBites(self, cuts, diameter, spacing, offset=250000)
-```
-Take a list of cuts and perform mouse bites.
-```
-addNPTHole(self, position, diameter)
-```
-Add a drilled non-plated hole to the position (`wxPoint`) with given
-diameter.
-```
-addFiducial(self, position, copperDiameter, openingDiameter, bottom=False)
-```
-Add fiducial, i.e round copper pad with solder mask opening to the position (`wxPoint`),
-with given copperDiameter and openingDiameter. By setting bottom to True, the fiducial
-is placed on bottom side.
 
-## Examples
-
-### Simple grid
-
-The following example creates a 3 x 3 grid of boards in a frame separated by V-CUTS.
-
+#### `panelBBox`
 ```
-panel = Panel()
-size, cuts = panel.makeGrid("test.kicad_pcb", 4, 3, wxPointMM(100, 40),
-            tolerance=fromMm(5), verSpace=fromMm(5), horSpace=fromMm(5),
-            outerHorTabThickness=fromMm(3), outerVerTabThickness=fromMm(3),
-            verTabWidth=fromMm(15), horTabWidth=fromMm(8))
-panel.makeVCuts(cuts)
-# alternative: panel.makeMouseBites(cuts, diameter=fromMm(0.5), spacing=fromMm(1))
-panel.makeFrame(size, fromMm(100), fromMm(100), fromMm(3), radius=fromMm(1))
-panel.addMillFillets(fromMm(1))
-panel.save("out.kicad_pcb")
+panelBBox(self)
 ```
+Return bounding box of the panel as a shapely box.
 
+#### `panelCorners`
+```
+panelCorners(self, horizontalOffset=0, verticalOffset=0)
+```
+Return the list of top-left, top-right, bottom-left and bottom-right
+corners of the panel. You can specify offsets.
+
+#### `renderBackbone`
+```
+renderBackbone(self, vthickness, hthickness, vcut, hcut)
+```
+Render horizontal and vertical backbone lines. If zero thickness is
+specified, no backbone is rendered.
+
+vcut, hcut specifies if vertical or horizontal backbones should be cut.
+
+Return a list of cuts
+
+#### `save`
+```
+save(self, filename)
+```
+Saves the panel to a file.
+
+#### `setAuxiliaryOrigin`
+```
+setAuxiliaryOrigin(self, point)
+```
+Set the auxiliary origin used e.g., for drill files
+
+#### `setDesignSettings`
+```
+setDesignSettings(self, designSettings)
+```
+Set design settings
+
+#### `setGridOrigin`
+```
+setGridOrigin(self, point)
+```
+Set grid origin
+
+#### `setProperties`
+```
+setProperties(self, properties)
+```
+Set text properties cached in the board
+
+#### `setVCutClearance`
+```
+setVCutClearance(self, clearance)
+```
+Set V-cut clearance
+
+#### `setVCutLayer`
+```
+setVCutLayer(self, layer)
+```
+Set layer on which the V-Cuts will be rendered
+
+## Substrate class
+
+This class represents a pice of substrate (with no components). Basically it is
+just a relatively thin wrapper around shapely polygons. On top of that, it keeps
+a partition line for the substrate. ead more about partition lines in
+[understanding tabs](understandingTabs.md).
+
+
+
+#### `boundary`
+```
+boundary(self)
+```
+Return shapely geometry representing the outer ring
+
+#### `boundingBox`
+```
+boundingBox(self)
+```
+Return bounding box as wxRect
+
+#### `bounds`
+```
+bounds(self)
+```
+Return shapely bounds of substrates
+
+#### `exterior`
+```
+exterior(self)
+```
+Return a geometry representing the substrate with no holes
+
+#### `isSinglePiece`
+```
+isSinglePiece(self)
+```
+Decide whether the substrate consists of a single piece
+
+#### `millFillets`
+```
+millFillets(self, millRadius)
+```
+Add fillets to inner conernes which will be produced a by mill with
+given radius.
+
+#### `removeIslands`
+```
+removeIslands(self)
+```
+Removes all islads - pieces of substrate fully contained within outline
+of another board
+
+#### `serialize`
+```
+serialize(self)
+```
+Produces a list of PCB_SHAPE on the Edge.Cuts layer
+
+#### `tab`
+```
+tab(self, origin, direction, width, partitionLine=None, maxHeight=50000000)
+```
+Create a tab for the substrate. The tab starts at the specified origin
+(2D point) and tries to penetrate existing substrate in direction (a 2D
+vector). The tab is constructed with given width. If the substrate is
+not penetrated within maxHeight, exception is raised.
+
+When partitionLine is specified, tha tab is extended to the opposite
+side - limited by the partition line. Note that if tab cannot span
+towards the partition line, then the the tab is not created - it returns
+a tuple (None, None).
+
+Returns a pair tab and cut outline. Add the tab it via union - batch
+adding of geometry is more efficient.
+
+#### `union`
+```
+union(self, other)
+```
+Appends a substrate, polygon or list of polygons. If there is a common
+intersection, with existing substrate, it will be merged into a single
+substrate.

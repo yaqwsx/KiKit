@@ -36,7 +36,9 @@
         "type": "none",
         "clearance": "0mm",
         "cutcurves": false,
-        "layer": "Cmts.User"
+        "layer": "Cmts.User",
+        "offset": "0mm",
+        "prolong": "0mm"
     },
     "framing": {
         "type": "none",
@@ -48,7 +50,15 @@
     },
     "tooling": {
         "type": "none",
-        "layout": "3hole" // 4hole
+        "layout": "3hole",
+        "paste": false
+    },
+    "fiducials": {
+        "type": "none",
+        "hoffset": "0mm",
+        "voffset": "0mm",
+        "coppersize": "1mm",
+        "opening": "1mm"
     },
     "text": {
         "type": "none",
@@ -76,6 +86,7 @@
         "type": "none",
         "drawPartitionLines": false,
         "drawBackboneLines": false,
+        "drawboxes": false,
         "trace": false
     }
 }

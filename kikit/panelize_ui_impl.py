@@ -140,7 +140,7 @@ def ppPost(section):
 
 def ppDebug(section):
     readParameters(section, readBool, ["drawPartitionLines",
-        "drawBackboneLines", "trace"])
+        "drawBackboneLines", "drawboxes", "trace"])
 
 def postProcessPreset(preset):
     process = {
@@ -212,7 +212,7 @@ def validateSections(preset):
         raise PresetError(f"Extra sections {', '.join(extraSections)} in preset")
     missingSections = set(VALID_SECTIONS).difference(preset.keys())
     if len(missingSections) != 0:
-        raise PresetError(f"Missing sections {', '.join(extraSections)} in preset")
+        raise PresetError(f"Missing sections {', '.join(missingSections)} in preset")
     # TBA
 
 def getPlacementClass(name):
@@ -407,7 +407,7 @@ def buildFraming(preset, panel):
         return cuts if preset["cuts"] else []
     if type == "tightframe":
         panel.makeTightFrame(preset["width"], preset["slotwidth"])
-        panel.removeIslands()
+        panel.boardSubstrate.removeIslands()
         return []
     raise PresetError(f"Unknown type '{type}' of frame specification.")
 
@@ -510,3 +510,5 @@ def buildDebugAnnotation(preset, panel):
         panel.debugRenderPartitionLines()
     if preset["drawBackboneLines"]:
         panel.debugRenderBackboneLines()
+    if preset["drawboxes"]:
+        panel.debugRenderBoundingBoxes()

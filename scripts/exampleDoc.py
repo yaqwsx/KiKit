@@ -4,50 +4,70 @@
 Generate documentation in markdown format for examples
 """
 
-from kikit.doc import runBoardExample
-
+import sys
+from kikit.doc import runBoardExample, runBoardExampleJoin
 from kikit.pcbnew_compatibility import pcbnew
+
+counter = 0
+
+def autoName():
+    global counter
+    counter += 1
+    return f"examplePanel{counter}"
+
+SRC = "doc/resources/conn.kicad_pcb"
 
 print(
 """
 # Examples
 
-This document will show you several examples of KiKit CLI for panelization. We
-will show everything on a single board located in
-`doc/resources/conn.kicad_pcb`. The board looks like this:
+This document will show you several examples of KiKit CLI for panelization. Note
+that this is **not an exhaustive description** of everything that KiKit can do,
+nor proper documentation. For further details, please refer to:
+
+- [installation guide](installation.md)
+- [description of all panelization options](panelizeCli.md)
+- [more detail about KiKit's algorithm for tab creation](understandingTabs.md)
+- [reference for the Python interface](panelization.md)
+
+We will show everything on a single board located in
+`doc/resources/conn.kicad_pcb`. The board looks like this when rendered via
+PcbDraw:
 
 ![conn](resources/conn.png)
-
-# Extract Board
-
-The simples command is `extractboard`. By calling:
-
-```
-kikit panelize extractboard --sourcearea 100 50 100 100 doc/resources/conn.kicad_pcb output.kicad_pcb
-```
-
-We extract our board into a new file. This command is usefull when you designed
-multiple boards in a single file (e.g., to have shared schematic for board
-sandwiches). The `sourcearea` is given as a rectangle. You should specify X, Y
-coordinates of upper left corner width and height in millimeters. Also note,
-that only board items which fully fit inside this rectangle are extracted.
 """)
 
 print(
 """
-# Panelize
+# Basic panels & layout
 
 Let's start with our first panel.
 """)
 
-runBoardExample("panel1",
-    ["panelize", "grid", "--gridsize", "2", "2", "--vcuts", "doc/resources/conn.kicad_pcb"])
+runBoardExample(autoName(),
+    [["panelize"],
+        ["--layout", "grid; rows: 2; cols: 2;"],
+        ["--tabs", "full"],
+        ["--cuts", "vcuts"],
+        [SRC]])
 
 print(
 """
 We specified that we want 2x2 panel, no space between board and separate them by
-V-cuts. Note, that due to the rounded corners, this panel cannot be
-manufactured. We will fix it later.
+V-cuts. We also specified that we want to build full tabs (although no tabs are
+visible in this example). This is ,however, essential - if we omitted tabs, no
+cuts between the boards would be performed. Note, that due to the rounded
+corners, this panel cannot be manufactured. We will fix it later.
+
+Note that the `\` in the input is there to make shell happy, so we can break our
+command into multiple lines. Also note that there are single quotes around the
+key-value pair - again, to make shell happy and to interpret a string with
+spaces as a single option.
+
+Also note that KiKit accepts all options in categories (e.g., `layout`, `tabs`,
+`cuts`, ...). You can specify the parameters as a semicolon-separated key-value
+list. To learn about the precise syntax of the CLI and about all options, please
+refer to - [documentation](panelizeCli.md).
 
 One side note - if you try it with your own board some components might be gone.
 KiKit respects the KiCAD component selection criteria. When you specify an input
@@ -66,140 +86,416 @@ copies of the notes around the board).
 
 How to include the missing components?
 - specify the source area explicitly to include all your components
-- specify `--tolerance 10` to enlarge the board outline bounding box by e.g. 10
-  mm. The default value is 5 mm.
+- specify `--source 'tolerance: 10mm'` to enlarge the board outline bounding box
+  by e.g. 10 mm. The default value is 5 mm.
 
-Now back to our example. Let's see how the same panel will look like with mouse
-bites instead:
+I told you that the panel above is not suitable for manufacturing. Let's see why:
 """)
 
-runBoardExample("panel2",
-    ["panelize", "grid", "--gridsize", "2", "2", "--mousebites", "0.5", "1", "0",  "doc/resources/conn.kicad_pcb"])
+runBoardExample(autoName(),
+    [["panelize"],
+        ["--layout", "grid; rows: 2; cols: 2;"],
+        ["--tabs", "full"],
+        ["--cuts", "vcuts"],
+        ["--post", "millradius: 1mm"],
+        [SRC]])
 
-print(
-"""
-You specify mouse bites by three numbers - hole diameter, hole spacing and
-offset. All in millimeters. We use offset 0, because we have no tabs. Otherwise
-the recommended value is 0.25 mm.
+print("""
+We specified a milling simulation post-processing. This simulates the milling
+operation in the fab house. As you can see, the sharp internal corners cannot be
+manufactured. I recommend you to use milling postprocessing always - you can
+easily see if your cuts are off or you have too narrow slots in your design.
 
-The approach shown above is good for boards without rounded corners. If send
-panel above for fabrication we would obtain something like this:
+Usually, one would use full tabs only for rectangular boards. Usually, when you
+have rounded corners, you will use short tabs instead and add some space between
+the boards. So let's fix it:
 """)
 
-runBoardExample("panel3",
-    ["panelize", "grid", "--gridsize", "2", "2", "--mousebites", "0.5", "1", "0", "--radius", "1", "doc/resources/conn.kicad_pcb"])
+runBoardExample(autoName(),
+    [["panelize"],
+        ["--layout", "grid; rows: 2; cols: 2; space: 2mm"],
+        ["--tabs", "fixed; hwidth: 10mm; vwidth: 15mm"],
+        ["--cuts", "vcuts"],
+        ["--post", "millradius: 1mm"],
+        [SRC]])
 
-print(
-"""
-The `--radius` argument simulates the milling operation. You specify mill radius
-(usuall the smallest diameter is 2 mm). We recommend to use the radius argument.
-See the distorted corners in picture above? Let's fix it by adding tabs.
+print("""
+In that way, the rounded corners can be machined. Lets' see the same example
+with mousebites instead:
 """)
 
-runBoardExample("panel4",
-    ["panelize", "grid", "--space", "3", "--gridsize", "2", "2", "--tabwidth", "18", "--tabheight", "10", "--vcuts", "--radius", "1", "doc/resources/conn.kicad_pcb"])
+runBoardExample(autoName(),
+    [["panelize"],
+        ["--layout", "grid; rows: 2; cols: 2; space: 2mm"],
+        ["--tabs", "fixed; width: 5mm"],
+        ["--cuts", "mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm"],
+        [SRC]])
 
 print(
 """
-We introduced tabs - extra space between the board. We also specified the tab
-width and height, so there is clearance for milling the corners.
+We changed cut styles to mousebites and we specified that they should be
+performed by 0.5mm holes with a spacing of 1 mm. You could also use inches if
+you want - just specify `<number>in. Since we use mousebites, we used narrower
+tabs. We also specified that the cuts should be inset 0.25 mm into the board
+outline. This is suitable when your board should fit into a cover - when you
+break away the tabs, all burs will be inside the intended board outline.
 
-When doing similar panel with mousebites, you usually want shorter tabs and
-possibly more of them. We can do it by specifing `--htabs` and `--vtabs`:
+
+What happens, when we simulate the milling operation?
 """)
 
-runBoardExample("panel5",
-    ["panelize", "grid", "--space", "3", "--gridsize", "2", "2", "--tabwidth", "3", "--tabheight", "3", "--htabs", "1", "--vtabs", "2", "--mousebites", "0.5", "1", "0.25", "--radius", "1", "doc/resources/conn.kicad_pcb"])
+runBoardExample(autoName(),
+    [["panelize"],
+        ["--layout", "grid; rows: 2; cols: 2; space: 2mm"],
+        ["--tabs", "fixed; width: 5mm"],
+        ["--cuts", "mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm"],
+        ["--post", "millradius: 1mm"],
+        [SRC]])
 
 print(
 """
-If you want, you can also add rails to the panel. Rails are suitable for placing
-tooling holes and fiducials, which are required by some assembly houses.
-
-The rails can be added by either `--railsTb <width>` (for top and bottom rails)
-or by `--railsLr <widht>` (for left and right rails). The rails work with both;
-mousebites and V-cuts.
-
-Then you can add fiducials to the top-left, bottom-left and top-right corner via
-`--fiducials <horizontalOffset> <verticalOffset> <copperDiameter>
-<openingDiameter>`. Similarly, you can add tooling holes via `--tooling
-<horizontalOffset> <verticalOffset> <diameter>`.
+See? The cuts are somewhat short. This is due to the internal corners that
+cannot be milled. KiKit can fix that for you - just specify you want to prolong
+your cuts tangentially by a small amount:
 """)
 
-runBoardExample("panel6",
-    ["panelize", "grid", "--space", "3", "--gridsize", "2", "2", "--tabwidth", "18", "--tabheight", "10", "--vcuts", "--radius", "1", "--railsTb", "5", "--fiducials", "10", "2.5", "1", "2", "--tooling", "5", "2.5", "1.5", "doc/resources/conn.kicad_pcb"])
+runBoardExample(autoName(),
+    [["panelize"],
+        ["--layout", "grid; rows: 2; cols: 2; space: 2mm"],
+        ["--tabs", "fixed; width: 3mm"],
+        ["--cuts", "mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm"],
+        ["--post", "millradius: 1mm"],
+        [SRC]])
 
-print(
-"""
-If you want to get a full frame around a board, don't use combination of top and
-bottom rails. It will generate a correct shape, however, it won't generate cuts
-to easily break the frame. Instead, use the "--panelsize <width> <height>"
-option in combination with `--framecutH` or `--framecutV` to add the cuts in the
-corners of the frame. Note that in the following example we use mousebites to
-see the frame cuts
+print("""
+If you want, you can also specify a number of tabs to generate. KiKit will place
+them evenly:
 """)
 
-runBoardExample("panel7",
-    ["panelize", "grid", "--space", "3", "--gridsize", "2", "2", "--tabwidth", "5", "--tabheight", "5", "--mousebites", "0.5", "1", "0", "--radius", "1", "--panelsize", "75", "58", "--framecutH", "--fiducials", "10", "2.5", "1", "2", "--tooling", "5", "2.5", "1.5", "doc/resources/conn.kicad_pcb"])
+runBoardExample(autoName(),
+    [["panelize"],
+        ["--layout", "grid; rows: 2; cols: 2; space: 2mm"],
+        ["--tabs", "fixed; width: 3mm; vcount: 2"],
+        ["--cuts", "mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm"],
+        ["--post", "millradius: 1mm"],
+        [SRC]])
 
-print(
-"""
-This was the `grid` command. There is also command `tightgrid` which works
-similarly, but instead of adding tabs and frames around the board, in places a
-full frame around the boards and mills a slot around the contours. Why this
-might be useful? For example when you make panel out of circular boards which
-you want to separate by V-cuts (by cutting a little bit to their interior). In
-that case don't forget to specify `--vcutcurves` to approximate curvature cuts
-via a straight V-cut. Back to `tightgrid`:
+print("""
+You can also append frame or rails to the panel. Frames and rail are useful in
+the following situations:
+
+- you want to assemble your board, so you need tooling holes, fiducial.
+- you want to append a text to board (e.g., to identify a manufacturing batch)
+- your boards are not rectangluar and you want to use V-Cuts (most manufactures
+  require the outer edge of the panel to be a rectangle in order to manufacture
+  V-Cuts)
+
+Let's start with rails:
 """)
-runBoardExample("panel8",
-    ["panelize", "tightgrid", "--slotwidth", "2.5", "--space", "8", "--gridsize", "2", "2", "--tabwidth", "15", "--tabheight", "8", "--mousebites", "0.5", "1", "0.25", "--radius", "1", "--panelsize", "80", "60", "doc/resources/conn.kicad_pcb"])
 
-print(
-"""
-You can also rotate the input board. Might not be usefull for
-rectangular boards, but if you have a circular or oddly shaped board...
-"""
-)
-runBoardExample("panel9",
-    ["panelize", "grid", "--space", "2", "--gridsize", "2", "2", "--tabwidth", "3", "--tabheight", "3", "--mousebites", "0.5", "1", "0.25", "--radius", "1", "--panelsize", "80", "80", "--rotation", "45", "doc/resources/conn.kicad_pcb"])
+runBoardExample(autoName(),
+    [["panelize"],
+        ["--layout", "grid; rows: 2; cols: 2; space: 2mm"],
+        ["--tabs", "fixed; width: 3mm; vcount: 2"],
+        ["--cuts", "mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm"],
+        ["--framing", "railstb; width: 5mm; space: 3mm;"],
+        ["--post", "millradius: 1mm"],
+        [SRC]])
 
-print(
-"""
-Especially for irregular shaped board it might make sense to rotate boards by
-180° based on their position in the grid. It could allow you to pack the boards
-more closely. Also, if you create a panel out of boards that have e.g., a
-connector on one side, it makes sense to rotate the second column by 180° so the
-connectors are facing out of the panel. You can do so by specifying the
-`--alternation` option. This options allows you to rotate board in every second
-column (`cols`), every second row (`rows`) or combination of both:
-"""
-)
-runBoardExample("panel10",
-    ["panelize", "grid", "--space", "2", "--gridsize", "2", "2", "--tabwidth", "3", "--tabheight", "3", "--mousebites", "0.5", "1", "0.25", "--radius", "1", "--panelsize", "80", "80", "--alternation", "cols", "doc/resources/conn.kicad_pcb"])
+print("""
+Similarly, you can add left and right rail via the `railslr` style. If you want
+a full frame, use the style `frame`. When you place a full frame, it might make
+sense to include cuts in the corner of the frame, so you can break it apart
+easily. Let's see an example:
+""")
 
-print(
-"""
-Sometimes you might find yourself in a need for precise tab placement. This can be
-easily done. Just draw a line in one of KiCAD layers (be careful, the
-orientation matters - the line has to target the board substrate) and specify
-option `--tabsfrom`. Don't forget to disable automatically generated tabs by
-specifying `--vtabs 0` and `--htabs 0`. See for yourself, there are some lines
-already prepared for you in `conn.kicad_pcb`
-"""
-)
-runBoardExample("panel11",
-    ["panelize", "tightgrid", "--slotwidth", "2.5", "--space", "8", "--gridsize", "2", "2", "--htabs", "0", "--vtabs", "0", "--tabsfrom", "Eco2.User", "3", "--tabsfrom", "Eco1.User", "5", "--mousebites", "0.5", "1", "0.25", "--radius", "1", "--panelsize", "80", "80", "doc/resources/conn.kicad_pcb"])
+runBoardExample(autoName(),
+    [["panelize"],
+        ["--layout", "grid; rows: 2; cols: 2; space: 2mm"],
+        ["--tabs", "fixed; width: 3mm; vcount: 2"],
+        ["--cuts", "mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm"],
+        ["--framing", "frame; width: 5mm; space: 3mm; cuts: true"],
+        ["--post", "millradius: 1mm"],
+        [SRC]])
 
-print(
-"""
-Especially when you work with flex PCBs it makes sense to leave copper on
-non-functional parts of the panel to make it stiffer. It might also make sense
-to leave on traditional PCBs as it reduces the amount of etching. To do so,
-simply specify `--copperfill`. Here is one of the examples above with a copper
-fill:
-"""
-)
+print("""
+When you use V-cuts it might make sense to not remove all material, but only
+mill a slot around the board of the board. This yields a stronger panel - and
+some manufacturers require such style for assembly with V-Cuts. This is achieved
+via framing style `tightframe`. Note that it does not make much sense with
+mousebites.
+""")
 
-runBoardExample("panel12",
-    ["panelize", "grid", "--space", "3", "--gridsize", "2", "2", "--tabwidth", "18", "--tabheight", "10", "--vcuts", "--radius", "1", "--panelsize", "70", "55", "--copperfill", "doc/resources/conn.kicad_pcb"])
+runBoardExample(autoName(),
+    [["panelize"],
+        ["--layout", "grid; rows: 2; cols: 2; space: 6mm"],
+        ["--tabs", "fixed; width: 3mm; vcount: 2"],
+        ["--cuts", "vcuts;"],
+        ["--framing", "tightframe; width: 5mm; space: 3mm; "],
+        ["--post", "millradius: 1mm"],
+        [SRC]])
+
+print("""
+Once we have a frame, we can append a tooling holes, fiducials and some text to
+it:
+""")
+
+runBoardExample(autoName(),
+    [["panelize"],
+        ["--layout", "grid; rows: 2; cols: 2; space: 2mm"],
+        ["--tabs", "fixed; width: 3mm; vcount: 2"],
+        ["--cuts", "mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm"],
+        ["--framing", "railstb; width: 5mm; space: 3mm;"],
+        ["--tooling", "3hole; hoffset: 2.5mm; voffset: 2.5mm; size: 1.5mm"],
+        ["--fiducials", "3fid; hoffset: 5mm; voffset: 2.5mm; coppersize: 2mm; opening: 1mm;"],
+        ["--text", "simple; text: yaqwsx's panel; anchor: mt; voffset: 2.5mm; hjustify: center; vjustify: center;"],
+        ["--post", "millradius: 1mm"],
+        [SRC]])
+
+print("""
+There are many options for text and fiducials. Be sure to read the [full
+documentation](panelizeCli.md).
+
+# Advanced features & layouts
+
+It is possible that you have some critical features you want to avoid with tabs.
+KiKit has several features that can help you. Let's start with the simple ones.
+
+First, you can rotate the boards in your layout. This might make not much sense
+for rectanglar boards, but it might save you when you have circular or oddly
+shaped boards:
+
+""")
+
+runBoardExample(autoName(),
+    [["panelize"],
+        ["--layout", "grid; rows: 2; cols: 2; space: 0mm; rotation: 45deg;"],
+        ["--tabs", "fixed; width: 3mm;"],
+        ["--cuts", "mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.75mm"],
+        ["--framing", "frame; width: 5mm; space: 3mm; cuts: true"],
+        ["--post", "millradius: 1mm"],
+        [SRC]])
+
+print("""
+When your board has a connector sticking one one side of the board, it makes
+sense to rotate the boards every other column, row or combination of both. KiKit
+supports this via layout option `alternation`. You should be careful about
+component references when rotating boards - KiCAD's references have a property
+"Stay upright" which makes them always face up (even when placed on a panel). So
+be sure to turn it off before panelizing. Here's an example:
+""")
+
+runBoardExample(autoName(),
+    [["panelize"],
+        ["--layout", "grid; rows: 2; cols: 2; space: 3mm; alternation: cols;"],
+        ["--tabs", "fixed; width: 3mm; vcount: 2"],
+        ["--cuts", "mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm"],
+        ["--framing", "frame; width: 5mm; space: 3mm; cuts: true"],
+        ["--post", "millradius: 1mm"],
+        [SRC]])
+
+print("""
+Another solution might be to not put tabs on, e.g., vertical edges of the PCB.
+However, in that case your panel might be weak for further assembly. You can
+make it more stiff by including backbones - a full piece of substrate between
+the panels. Note that adding a backbone does not extend space between boards -
+that's up to you. You can add either vertical, horizontal or both backbones.
+Also, similarly with frames, you can put cuts on your backbone to make
+depanelization of your boards easier. Enough theory, let's see an example
+""")
+
+runBoardExample(autoName(),
+    [["panelize"],
+        ["--layout", "grid; rows: 2; cols: 2; hspace: 2mm; vspace: 9mm; hbackbone: 5mm; hbonecut: true"],
+        ["--tabs", "fixed; width: 3mm; vcount: 2; hcount: 0"],
+        ["--cuts", "mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm"],
+        ["--framing", "railstb; width: 5mm; space: 3mm;"],
+        ["--post", "millradius: 1mm"],
+        [SRC]])
+
+print("""
+The most powerful feature of KiKit regarding tab placement are tabs via
+annotation. Remember our test board? When you open it in Pcbnew, you can see
+that there are some special footprints - KiKit's annotations:
+
+![conn-pcbnew](resources/conn-pcbnew.png)
+
+They specify where to place tabs. You can even specify individual tab width via
+text property of the symbol. How to use it? Just specify tab style to
+`annotation`. We also have to increase the source area tolerance, so it can
+capture the annotations.
+""")
+
+runBoardExample(autoName(),
+    [["panelize"],
+        ["--layout", "grid; rows: 2; cols: 2; space: 5mm;"],
+        ["--tabs", "annotation;"],
+        ["--source", "tolerance: 15mm"],
+        ["--cuts", "mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm"],
+        ["--framing", "railstb; width: 5mm; space: 3mm;"],
+        ["--post", "millradius: 1mm"],
+        [SRC]])
+
+print("""
+Well, the panel looks strange - right? That's because KiKit always constructs a
+half-bridges. When you specify the tabs location, you have to either ensure they
+match or put a piece of substrate they can reach - e.g., a backbone or a
+tightframe. If you are interested in the details, read more about tabs in
+section [Understanding tabs](understandingTabs.md). Let's fix it:
+""")
+
+runBoardExample(autoName(),
+    [["panelize"],
+        ["--layout", "grid; rows: 2; cols: 2; space: 8mm; hbackbone: 3mm; vbackbone: 3mm"],
+        ["--tabs", "annotation;"],
+        ["--source", "tolerance: 15mm"],
+        ["--cuts", "mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm"],
+        ["--framing", "railstb; width: 5mm; space: 3mm;"],
+        ["--post", "millradius: 1mm"],
+        [SRC]])
+
+print("""
+Note that the annotation can have an arbitrary orientation. The arrow just must
+be outside board edge and points towards it. KiKit will also place only those
+tabs, that have a neighboring substrate. For precise algorithm, see section
+[understanding tabs](understandingTabs.md).
+
+When you make flex PCBs or you want to save etchant, it make sense to pour
+copper on all non-functional parts of the panel. It will make the PCB rigid. You
+can do so via `copperfill` post-processing operation:
+""")
+
+runBoardExample(autoName(),
+    [["panelize"],
+        ["--layout", "grid; rows: 2; cols: 2; space: 2mm"],
+        ["--tabs", "fixed; width: 3mm;"],
+        ["--cuts", "mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm"],
+        ["--framing", "railstb; width: 5mm; space: 3mm;"],
+        ["--post", "millradius: 1mm; copperfill: true"],
+        [SRC]])
+
+print("""
+When you use V-cuts with `copperfill` you (or your fab house) might want to
+include a clearance around the V-cuts:
+""")
+
+runBoardExample(autoName(),
+    [["panelize"],
+        ["--layout", "grid; rows: 2; cols: 2; space: 2mm"],
+        ["--tabs", "fixed; hwidth: 10mm; vwidth: 15mm"],
+        ["--cuts", "vcuts; clearance: 1.5mm"],
+        ["--framing", "railstb; width: 5mm; space: 3mm;"],
+        ["--post", "millradius: 1mm; copperfill: true"],
+        [SRC]])
+
+print("""
+Note one last facts about V-cuts. V-cuts can only be straight and
+horizontal/vertical. But you can use them with circular boards if you want by
+cutting a little inside them. The option `cutcurves`, that will approximate the
+cut by staring and ending point.
+
+# I would like... but KiKit does not support it!
+
+If you need something special; e.g., custom placement of tooling holes, multiple
+texts, etc. KiKit has you covered.
+
+The CLI interface allows you to run a custom script over the final panel. The
+script can use KiKit Python interface to modify it. For the sake of simplicity,
+let's add a hole in the middle of the frame. Therefore, we write the following
+script:
+
+```.py
+from kikit.units import mm
+from pcbnew import wxPoint
+
+def kikitPostprocess(panel, arg):
+    minx, miny, maxx, maxy = panel.panelBBox()
+    position = wxPoint((minx + maxx) / 2, miny + 2 * mm)
+    panel.addNPTHole(position, 3 * mm)
+```
+
+Then run KiKit:
+""")
+
+runBoardExample(autoName(),
+    [["panelize"],
+        ["--layout", "grid; rows: 2; cols: 2; space: 2mm"],
+        ["--tabs", "fixed; width: 3mm; vcount: 2"],
+        ["--cuts", "mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm"],
+        ["--framing", "railstb; width: 5mm; space: 3mm;"],
+        ["--post", "millradius: 1mm; script: doc/resources/examplePost.py"],
+        [SRC]])
+
+
+print("""
+You can learn more about available functions from the comment in the source code
+or in [documentation](panelization.md).
+
+If you implement a feature that your fab house requires (e.g., new tooling hole
+style), consider submitting a pull request for KiKit instead. I believe the
+others will benefit from it.
+
+# Managing presets
+
+The last section of this document is dedicated to management of presets. You can
+read the specification in the [documentation for CLI](panelizeCli.md). Here I
+would like to focus on practical examples.
+
+As you should know from the documentation, the panelization preset is divided
+into sections; e. g., `layout`, `tabs`, etc. The key-value parameters in these
+sections can be specified via JSON files. In KiKit, you can specify these files
+via `-p` option:
+
+```
+kikit panelize -p myPreset.json -p :<builtInPreset> <other parameters>
+```
+
+The parameters in the later specified presets override the parameters in the
+previously specified presets. This allows you to define a named piece-wise
+presets. Therefore, you can prepare various presets for mousebites - e.g.,
+`fineMousebites.json` and `coarseMousebites.json`:
+
+```.js
+// fineMousebites.json
+{
+    "cuts": {
+        "style": "mousebites",
+        "drill": "0.5mm",
+        "spacing": "0.9mm",
+        "offset": "0.25mm"
+    }
+}
+
+// coarseMousebites.json
+{
+    "cuts": {
+        "style": "mousebites",
+        "drill": "0.3mm",
+        "spacing": "0.2mm",
+        "offset": "0.15mm"
+    }
+}
+```
+
+Then you can specify your panelization commands easily via:
+
+```
+kikit panelize -p fineMousebites.json <otheroptions>
+```
+
+Therefore, you can build a custom library of commonly used-options; e.g., per
+fabrication house. KiKit offers some built-in styles - see
+[`panelizePresets`](../kikit/resources/panelizePresets). Note that the built-in
+preset `default.json` is always used as a base and it specifies conservative
+default values so you can only override the options relevant for you.
+
+To give you an example - with KiKit, you will no longer have to remember what
+diameter of tooling holes JLC PCB requires, just use:
+
+```
+kikit panelize -p :jlcTooling <otheroptions>
+```
+""")
+
+
+runBoardExampleJoin()
