@@ -288,6 +288,12 @@ debugRenderBackboneLines(self)
 Render partition line to the panel to be easily able to inspect them via
 Pcbnew.
 
+#### `debugRenderBoundingBoxes`
+```
+debugRenderBoundingBoxes(self)
+```
+None
+
 #### `debugRenderPartitionLines`
 ```
 debugRenderPartitionLines(self)
