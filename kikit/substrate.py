@@ -335,6 +335,8 @@ class Substrate:
         self.substrates = self.substrates.buffer(bufferDistance)
         if not self.substrates.is_empty:
             self.substrates = shapely.ops.orient(self.substrates)
+        self.partitionLine = shapely.geometry.GeometryCollection()
+        self.annotations = []
 
     def bounds(self):
         """
