@@ -55,21 +55,21 @@ print(
 """
 We specified that we want 2x2 panel, no space between board and separate them by
 V-cuts. We also specified that we want to build full tabs (although no tabs are
-visible in this example). This is ,however, essential - if we omitted tabs, no
+visible in this example). This is ,however, essential – if we omitted tabs, no
 cuts between the boards would be performed. Note, that due to the rounded
 corners, this panel cannot be manufactured. We will fix it later.
 
 Note that the `\` in the input is there to make shell happy, so we can break our
 command into multiple lines. Also note that there are single quotes around the
-key-value pair - again, to make shell happy and to interpret a string with
+key-value pair – again, to make shell happy and to interpret a string with
 spaces as a single option.
 
 Also note that KiKit accepts all options in categories (e.g., `layout`, `tabs`,
 `cuts`, ...). You can specify the parameters as a semicolon-separated key-value
 list. To learn about the precise syntax of the CLI and about all options, please
-refer to - [documentation](panelizeCli.md).
+refer to – [documentation](panelizeCli.md).
 
-One side note - if you try it with your own board some components might be gone.
+One side note – if you try it with your own board some components might be gone.
 KiKit respects the KiCAD component selection criteria. When you specify an input
 rectangle, only the components that **fully fit** inside the input rectangle are
 selected. This however take in account **both name and value labels** (even when
@@ -103,7 +103,7 @@ runBoardExample(autoName(),
 print("""
 We specified a milling simulation post-processing. This simulates the milling
 operation in the fab house. As you can see, the sharp internal corners cannot be
-manufactured. I recommend you to use milling postprocessing always - you can
+manufactured. I recommend you to use milling postprocessing always – you can
 easily see if your cuts are off or you have too narrow slots in your design.
 
 Usually, one would use full tabs only for rectangular boards. Usually, when you
@@ -135,9 +135,9 @@ print(
 """
 We changed cut styles to mousebites and we specified that they should be
 performed by 0.5mm holes with a spacing of 1 mm. You could also use inches if
-you want - just specify `<number>in. Since we use mousebites, we used narrower
+you want – just specify `<number>in. Since we use mousebites, we used narrower
 tabs. We also specified that the cuts should be inset 0.25 mm into the board
-outline. This is suitable when your board should fit into a cover - when you
+outline. This is suitable when your board should fit into a cover – when you
 break away the tabs, all burs will be inside the intended board outline.
 
 
@@ -155,7 +155,7 @@ runBoardExample(autoName(),
 print(
 """
 See? The cuts are somewhat short. This is due to the internal corners that
-cannot be milled. KiKit can fix that for you - just specify you want to prolong
+cannot be milled. KiKit can fix that for you – just specify you want to prolong
 your cuts tangentially by a small amount:
 """)
 
@@ -220,7 +220,7 @@ runBoardExample(autoName(),
 
 print("""
 When you use V-cuts it might make sense to not remove all material, but only
-mill a slot around the board of the board. This yields a stronger panel - and
+mill a slot around the board of the board. This yields a stronger panel – and
 some manufacturers require such style for assembly with V-Cuts. This is achieved
 via framing style `tightframe`. Note that it does not make much sense with
 mousebites.
@@ -280,7 +280,7 @@ print("""
 When your board has a connector sticking one one side of the board, it makes
 sense to rotate the boards every other column, row or combination of both. KiKit
 supports this via layout option `alternation`. You should be careful about
-component references when rotating boards - KiCAD's references have a property
+component references when rotating boards – KiCAD's references have a property
 "Stay upright" which makes them always face up (even when placed on a panel). So
 be sure to turn it off before panelizing. Here's an example:
 """)
@@ -297,7 +297,7 @@ runBoardExample(autoName(),
 print("""
 Another solution might be to not put tabs on, e.g., vertical edges of the PCB.
 However, in that case your panel might be weak for further assembly. You can
-make it more stiff by including backbones - a full piece of substrate between
+make it more stiff by including backbones – a full piece of substrate between
 the panels. Note that adding a backbone does not extend space between boards -
 that's up to you. You can add either vertical, horizontal or both backbones.
 Also, similarly with frames, you can put cuts on your backbone to make
@@ -316,7 +316,7 @@ runBoardExample(autoName(),
 print("""
 The most powerful feature of KiKit regarding tab placement are tabs via
 annotation. Remember our test board? When you open it in Pcbnew, you can see
-that there are some special footprints - KiKit's annotations:
+that there are some special footprints – KiKit's annotations:
 
 ![conn-pcbnew](resources/conn-pcbnew.png)
 
@@ -337,9 +337,9 @@ runBoardExample(autoName(),
         [SRC]])
 
 print("""
-Well, the panel looks strange - right? That's because KiKit always constructs a
+Well, the panel looks strange – right? That's because KiKit always constructs a
 half-bridges. When you specify the tabs location, you have to either ensure they
-match or put a piece of substrate they can reach - e.g., a backbone or a
+match or put a piece of substrate they can reach – e.g., a backbone or a
 tightframe. If you are interested in the details, read more about tabs in
 section [Understanding tabs](understandingTabs.md). Let's fix it:
 """)
@@ -452,7 +452,7 @@ kikit panelize -p myPreset.json -p :<builtInPreset> <other parameters>
 
 The parameters in the later specified presets override the parameters in the
 previously specified presets. This allows you to define a named piece-wise
-presets. Therefore, you can prepare various presets for mousebites - e.g.,
+presets. Therefore, you can prepare various presets for mousebites – e.g.,
 `fineMousebites.json` and `coarseMousebites.json`:
 
 ```.js
@@ -484,12 +484,12 @@ kikit panelize -p fineMousebites.json <otheroptions>
 ```
 
 Therefore, you can build a custom library of commonly used-options; e.g., per
-fabrication house. KiKit offers some built-in styles - see
+fabrication house. KiKit offers some built-in styles – see
 [`panelizePresets`](../kikit/resources/panelizePresets). Note that the built-in
 preset `default.json` is always used as a base and it specifies conservative
 default values so you can only override the options relevant for you.
 
-To give you an example - with KiKit, you will no longer have to remember what
+To give you an example – with KiKit, you will no longer have to remember what
 diameter of tooling holes JLC PCB requires, just use:
 
 ```

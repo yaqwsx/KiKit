@@ -1,10 +1,12 @@
-# KiKit - Automation for KiCAD
+# KiKit – Automation for KiCAD
 
-KiKit is a Python library and CLI tool to automate several tasks in a standard
-KiCAD workflow like:
+KiKit is a Python library, KiCAD plugin and  a CLI tool to automate several
+tasks in a standard KiCAD workflow like:
 
-- panelization of the boards (see [examples](doc/examples.md))
-- exporting manufacturing data
+- panelization of both, regular and oddly shaped, boards (see
+  [examples](doc/examples.md))
+- automated exporting manufacturing data based on manufacturer presets
+- multi-board project in KiCAD
 - building board presentation pages (see [an example presentation page generated
   by KiKit](https://roboticsbrno.github.io/RB0002-BatteryPack))
 
@@ -37,7 +39,7 @@ pip3 install git+https://github.com/yaqwsx/KiKit@master
 Note that if you have a stable version installed, you need to add `--force` to
 upgrade it to upstream.
 
-Note that to use [KiCAD GUI plugins](doc/plugins.md), you have to enable them -
+Note that to use [KiCAD GUI plugins](doc/plugins.md), you have to enable them –
 see the [installation guide](doc/installation.md) for more details.
 
 If you would like to use KiKit on Windows or MacOS, see the [installation
@@ -73,6 +75,7 @@ KiKit](https://roboticsbrno.github.io/RB0002-BatteryPack).
 - compared to hand-creation of panels, your panels will pass DRC (as tracks from
   different instances of the same board have distinct nets when using KiKit)
 - if you have multiple boards in a single file, you can split them
+- simplifying [multi-board project in KiCAD](doc/multiboard.md)
 - [automated export of gerbers and assembly data](doc/fabrication.md)
 - [3D printed self-registering solder paste stencils](doc/stencil.md)
 - [steel stencils with alignment jig](doc/stencil.md)
