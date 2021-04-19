@@ -324,7 +324,7 @@ def convertToAnnotation(footprint):
     # We ignore Board annotation
     return []
 
-def buildTabs(substrate, partionLines, tabAnnotations):
+def buildTabs(substrate, partitionLines, tabAnnotations):
     """
     Given substrate, partitionLines of the substrate and an iterable of tab
     annotations, build tabs. Note that if the tab does not hit the partition
@@ -335,7 +335,7 @@ def buildTabs(substrate, partionLines, tabAnnotations):
     tabs, cuts = [], []
     for annotation in tabAnnotations:
         t, c = substrate.tab(annotation.origin, annotation.direction,
-            annotation.width, partionLines, annotation.maxLength)
+            annotation.width, partitionLines, annotation.maxLength)
         if t is not None:
             tabs.append(t)
             cuts.append(c)
@@ -380,14 +380,9 @@ class Panel:
         """
         self.board = pcbnew.BOARD()
         self.substrates = [] # Substrates of the individual boards; e.g. for masking
-        self.substrateAnnotations = [] # List of lists of annotation symbols.
-                                       # Items belong to the corresponding
-                                       # substrates in self.substrates
-        self.boardCounter = 0
         self.boardSubstrate = Substrate([]) # Keep substrate in internal representation,
                                             # Draw it just before saving
-        self.partitionLines = [] # Items belong to the corresponding substrates
-        self.backboneLines = []   # in self.substrates
+        self.backboneLines = []
         self.hVCuts = set() # Keep V-cuts as numbers and append them just before saving
         self.vVCuts = set() # to make them truly span the whole panel
         self.vCutLayer = Layer.Cmts_User
@@ -421,7 +416,7 @@ class Panel:
             self.board.Remove(edge)
 
     def _uniquePrefix(self):
-        return "Board_{}-".format(self.boardCounter)
+        return "Board_{}-".format(len(self.substrates))
 
     def inheritDesignSettings(self, boardFilename):
         """
@@ -476,7 +471,7 @@ class Panel:
         """
         board = LoadBoard(filename)
         thickness = board.GetDesignSettings().GetBoardThickness()
-        if self.boardCounter == 0:
+        if len(self.substrates) == 0:
             self.board.GetDesignSettings().SetBoardThickness(thickness)
         else:
             panelThickness = self.board.GetDesignSettings().GetBoardThickness()
@@ -484,7 +479,6 @@ class Panel:
                 raise PanelError(f"Cannot append board {filename} as its " \
                                  f"thickness ({toMm(thickness)} mm) differs from " \
                                  f"thickness of the panel ({toMm(panelThickness)}) mm")
-        self.boardCounter += 1
         self.inheritCopperLayers(board)
 
         if not sourceArea:
@@ -498,9 +492,9 @@ class Panel:
 
         if netRenamer is None:
             netRenamer = lambda x, y: self._uniquePrefix() + y
-        renameNets(board, lambda x: netRenamer(self.boardCounter, x))
+        renameNets(board, lambda x: netRenamer(len(self.substrates), x))
         if refRenamer is not None:
-            renameRefs(board, lambda x: refRenamer(self.boardCounter, x))
+            renameRefs(board, lambda x: refRenamer(len(self.substrates), x))
 
         drawings = collectItems(board.GetDrawings(), enlargedSourceArea)
         footprints = collectFootprints(board.GetFootprints(), enlargedSourceArea)
@@ -539,7 +533,7 @@ class Panel:
             s = Substrate(edges, bufferOutline)
             self.boardSubstrate.union(s)
             self.substrates.append(o)
-            self.substrateAnnotations.append(annotations)
+            self.substrates[-1].annotations = annotations
         except substrate.PositionError as e:
             point = undoTransformation(e.point, rotationAngle, originPoint, translation)
             raise substrate.PositionError(filename + ": " + e.origMessage, point)
@@ -912,9 +906,9 @@ class Panel:
         """
         Remove all existing tab annotations from the panel.
         """
-        self.substrateAnnotations = list([
-            list(filter(lambda x: not isinstance(x, TabAnnotation), anns)) for anns in self.substrateAnnotations
-        ])
+        for s in self.substrates:
+            s.annotations = list(
+                filter(lambda x: not isinstance(x, TabAnnotation), s.annotations))
 
     def buildTabsFromAnnotations(self):
         """
@@ -924,8 +918,8 @@ class Panel:
         Expects that a valid partition line is assigned to the the panel.
         """
         tabs, cuts = [], []
-        for s, p, a in zip(self.substrates, self.partitionLines, self.substrateAnnotations):
-            t, c = buildTabs(s, p, a)
+        for s in self.substrates:
+            t, c = buildTabs(s, s.partitionLine, s.annotations)
             tabs.extend(t)
             cuts.extend(c)
         self.boardSubstrate.union(tabs)
@@ -969,7 +963,7 @@ class Panel:
                         tWidth = widthFn(edge.length, dir)
                         tCount = countFn(edge.length, dir)
                         a = self._buildTabAnnotationForEdge(edge, dir, tCount, tWidth)
-                        self.substrateAnnotations[i].extend(a)
+                        self.substrates[i].annotations.extend(a)
 
     def buildTabAnnotationsFixed(self, hcount, vcount, hwidth, vwidth,
             minDistance, ghostSubstrates):
@@ -1016,7 +1010,7 @@ class Panel:
             for x, y in product([minx, maxx], [miny, maxy]):
                 dir = normalize((midx - x, midy - y))
                 a = TabAnnotation(None, (x, y), dir, width)
-                self.substrateAnnotations[i].append(a)
+                self.substrates[i].annotations.append(a)
 
 
     def buildFullTabs(self):
@@ -1032,15 +1026,15 @@ class Panel:
         bBoxes = box(*self.substrates[0].bounds())
         for s in islice(self.substrates, 1, None):
             bBoxes = bBoxes.union(box(*s.bounds()))
-        outerBounds = self.partitionLines[0].bounds
-        for p in islice(self.partitionLines, 1, None):
-            outerBounds = shpBBoxMerge(outerBounds, p.bounds)
+        outerBounds = self.substrates[0].partitionLine.bounds
+        for s in islice(self.substrates, 1, None):
+            outerBounds = shpBBoxMerge(outerBounds, s.partitionLine.bounds)
         fill = box(*outerBounds).difference(bBoxes.buffer(SHP_EPSILON))
         self.appendSubstrate(fill.buffer(SHP_EPSILON))
 
         # Make the cuts
-        substrateBoundaries = [linestringToSegments(x)
-            for x in self.partitionLines]
+        substrateBoundaries = [linestringToSegments(s.partitionLine)
+            for s in self.substrates]
         substrateCuts = [LineString(x) for x in chain(*substrateBoundaries)]
         return substrateCuts
 
@@ -1137,7 +1131,6 @@ class Panel:
         self.board.SetGridOrigin(point)
 
     def _buildPartitionLineFromBB(self, partition):
-        self.partitionLines = []
         for s in self.substrates:
             hLines, vLines = partition.partitionSubstrate(s)
             hSLines = [((l.min, l.x), (l.max, l.x)) for l in hLines]
@@ -1146,7 +1139,7 @@ class Panel:
             multiline = shapely.ops.linemerge(lines)
             multiline = normalizePartitionLineOrientation(multiline)
 
-            self.partitionLines.append(multiline)
+            s.partitionLine = multiline
 
     def _buildBackboneLineFromBB(self, partition, boundarySubstrates):
         hBoneLines, vBoneLines = set(), set()
@@ -1204,7 +1197,8 @@ class Panel:
         Render partition line to the panel to be easily able to inspect them via
         Pcbnew.
         """
-        self._renderLines(self.partitionLines, Layer.Eco1_User, fromMm(0.5))
+        lines = [s.paritionLine for s in self.substrates]
+        self._renderLines(lines, Layer.Eco1_User, fromMm(0.5))
 
     def debugRenderBackboneLines(self):
         """
