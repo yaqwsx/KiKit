@@ -46,8 +46,8 @@ inside it, will be included in the board. The command for separation of board A
 into a separate board file is:
 
 ```
-kikit separate --source 'rectangle; tlx=90mm; tly=90mm; brx=110mm; bry=100mm' \
-        multiboardpcb.kicad_pcb board_a.kicad_pcb
+kikit separate --source 'rectangle; tlx: 89mm; tly: 89mm; brx: 111mm; bry: 111mm' \
+        multiboard.kicad_pcb board_a.kicad_pcb
 ```
 
 After that, `board_a.kicad_pcb` will contain only a board A. Note that the `\`
@@ -62,7 +62,7 @@ symbol for separation of the board. To separate board A simply invoke:
 
 ```
 kikit separate --source 'annotation; ref: B1' \
-    multiboardpcb.kicad_pcb board_a.kicad_pcb
+    multiboard.kicad_pcb board_a.kicad_pcb
 ```
 
 After that, `board_a.kicad_pcb` will contain only a board A. Note that the `\`

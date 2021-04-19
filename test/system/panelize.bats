@@ -3,123 +3,145 @@
 load common
 
 @test "Extract board" {
-    kikit panelize extractboard \
-        --sourcearea 100 50 100 100 \
-        $RES/conn.kicad_pcb extract_res.kicad_pcb
+    kikit separate --source 'rectangle; tlx: 89mm; tly: 89mm; brx: 111mm; bry: 111mm' \
+        $RES/multiboard.kicad_pcb board_a.kicad_pcb
+
+    kikit separate --source 'annotation; ref: B1' \
+        $RES/multiboard.kicad_pcb board_a.kicad_pcb
 }
 
 @test "Simple grid, no space, vcuts" {
-    kikit panelize grid \
-        --gridsize 2 2 \
-        --vcuts \
-        $RES/conn.kicad_pcb panel1.kicad_pcb
+    kikit panelize \
+        --layout 'grid; rows: 2; cols: 2;' \
+        --tabs full \
+        --cuts vcuts \
+        $RES/conn.kicad_pcb panel.kicad_pcb
 }
 
-@test "Simple grid, no space, mousebites" {
-    kikit panelize grid \
-        --gridsize 2 2 \
-        --mousebites 0.5 1 0 \
-        $RES/conn.kicad_pcb panel2.kicad_pcb
+@test "Simple grid, spacing, vcuts" {
+    kikit panelize \
+        --layout 'grid; rows: 2; cols: 2; space: 2mm' \
+        --tabs 'fixed; hwidth: 10mm; vwidth: 15mm' \
+        --cuts vcuts \
+        --post 'millradius: 1mm' \
+        $RES/conn.kicad_pcb panel.kicad_pcb
 }
 
-@test "Simple grid, no space, mousebites with radius" {
-    kikit panelize grid \
-        --gridsize 2 2 \
-        --mousebites 0.5 1 0 \
-        --radius 1 \
-        $RES/conn.kicad_pcb panel3.kicad_pcb
+@test "Simple grid, spacing, mousebites" {
+    kikit panelize \
+        --layout 'grid; rows: 2; cols: 2; space: 2mm' \
+        --tabs 'fixed; width: 5mm' \
+        --cuts 'mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm' \
+        $RES/conn.kicad_pcb panel.kicad_pcb
 }
 
-@test "Simple grid, with space, vcusts and radius" {
-    kikit panelize grid \
-        --space 3 --gridsize 2 2 \
-        --tabwidth 18 --tabheight 10 \
-        --vcuts \
-        --radius 1 \
-        $RES/conn.kicad_pcb panel4.kicad_pcb
+
+@test "Simple grid, spacing, mousebites prolonged" {
+    kikit panelize \
+        --layout 'grid; rows: 2; cols: 2; space: 2mm' \
+        --tabs 'fixed; width: 3mm' \
+        --cuts 'mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm' \
+        --post 'millradius: 1mm' \
+        $RES/conn.kicad_pcb panel.kicad_pcb
 }
 
-@test "Simple grid, with space, mousebites, multiple tabs and radius" {
-    kikit panelize grid \
-        --space 3 --gridsize 2 2 \
-        --tabwidth 3 --tabheight 3 --htabs 1 --vtabs 2 \
-        --mousebites 0.5 1 0.25 \
-        --radius 1 \
-        $RES/conn.kicad_pcb panel5.kicad_pcb
+@test "Simple grid, change number of tabs" {
+    kikit panelize \
+        --layout 'grid; rows: 2; cols: 2; space: 2mm' \
+        --tabs 'fixed; width: 3mm; vcount: 2' \
+        --cuts 'mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm' \
+        --post 'millradius: 1mm' \
+        $RES/conn.kicad_pcb panel.kicad_pcb
 }
 
-@test "Simple grid, with space, vcuts, rails, tooling and fiducials" {
-    kikit panelize grid \
-        --space 3 --gridsize 2 2 \
-        --tabwidth 18 --tabheight 10 \
-        --vcuts --radius 1 \
-        --railsTb 5 --fiducials 10 2.5 1 2 --tooling 5 2.5 1.5 \
-        $RES/conn.kicad_pcb panel6.kicad_pcb
+@test "Simple grid, rails" {
+    kikit panelize \
+        --layout 'grid; rows: 2; cols: 2; space: 2mm' \
+        --tabs 'fixed; width: 3mm; vcount: 2' \
+        --cuts 'mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm' \
+        --framing 'railstb; width: 5mm; space: 3mm;' \
+        --post 'millradius: 1mm' \
+        $RES/conn.kicad_pcb panel.kicad_pcb
+
+    kikit panelize \
+        --layout 'grid; rows: 2; cols: 2; space: 2mm' \
+        --tabs 'fixed; width: 3mm; vcount: 2' \
+        --cuts 'mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm' \
+        --framing 'railslr; width: 5mm; space: 3mm;' \
+        --post 'millradius: 1mm' \
+        $RES/conn.kicad_pcb panel.kicad_pcb
 }
 
-@test "Simple grid with frame, tooling and fiducials" {
-    kikit panelize grid \
-        --space 3 --gridsize 2 2 \
-        --tabwidth 5 --tabheight 5 \
-        --mousebites 0.5 1 0 \
-        --radius 1 \
-        --panelsize 75 58 --framecutH \
-        --fiducials 10 2.5 1 2 --tooling 5 2.5 1.5 \
-        $RES/conn.kicad_pcb panel7.kicad_pcb
+@test "Simple grid, frame" {
+    kikit panelize \
+        --layout 'grid; rows: 2; cols: 2; space: 2mm' \
+        --tabs 'fixed; width: 3mm; vcount: 2' \
+        --cuts 'mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm' \
+        --framing 'frame; width: 5mm; space: 3mm; cuts: true' \
+        --post 'millradius: 1mm' \
+        $RES/conn.kicad_pcb panel.kicad_pcb
 }
 
-@test "Tightgrid" {
-    kikit panelize tightgrid \
-        --slotwidth 2.5 --space 8 --gridsize 2 2 \
-        --tabwidth 15 --tabheight 8 \
-        --mousebites 0.5 1 0.25 \
-        --radius 1 --panelsize 80 60 \
-        $RES/conn.kicad_pcb panel8.kicad_pcb
+@test "Simple grid, tightgrid" {
+    kikit panelize \
+        --layout 'grid; rows: 2; cols: 2; space: 6mm' \
+        --tabs 'fixed; width: 3mm; vcount: 2' \
+        --cuts vcuts \
+        --framing 'tightframe; width: 5mm; space: 3mm; ' \
+        --post 'millradius: 1mm' \
+        $RES/conn.kicad_pcb panel.kicad_pcb
 }
 
-@test "Grid with board rotation" {
-    kikit panelize grid \
-        --space 2 --gridsize 2 2 \
-        --tabwidth 3 --tabheight 3 \
-        --mousebites 0.5 1 0.25 \
-        --radius 1 --panelsize 80 80 --rotation 45 \
-        $RES/conn.kicad_pcb panel9.kicad_pcb
+@test "Simple grid, framing features" {
+    kikit panelize \
+        --layout 'grid; rows: 2; cols: 2; space: 2mm' \
+        --tabs 'fixed; width: 3mm; vcount: 2' \
+        --cuts 'mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm' \
+        --framing 'railstb; width: 5mm; space: 3mm;' \
+        --tooling '3hole; hoffset: 2.5mm; voffset: 2.5mm; size: 1.5mm' \
+        --fiducials '3fid; hoffset: 5mm; voffset: 2.5mm; coppersize: 2mm; opening: 1mm;' \
+        --text 'simple; text: yaqwsx panel; anchor: mt; voffset: 2.5mm; hjustify: center; vjustify: center;' \
+        --post 'millradius: 1mm' \
+        $RES/conn.kicad_pcb panel.kicad_pcb
 }
 
 @test "Grid with alternation" {
-    kikit panelize grid \
-        --space 2 --gridsize 2 2 \
-        --tabwidth 3 --tabheight 3 \
-        --mousebites 0.5 1 0.25 \
-        --radius 1 --panelsize 80 80 --alternation rows \
-        $RES/conn.kicad_pcb panel-alternationRows.kicad_pcb
-    kikit panelize grid \
-        --space 2 --gridsize 2 2 \
-        --tabwidth 3 --tabheight 3 \
-        --mousebites 0.5 1 0.25 \
-        --radius 1 --panelsize 80 80 --alternation cols \
-        $RES/conn.kicad_pcb panel-alternationCols.kicad_pcb
-    kikit panelize grid \
-        --space 2 --gridsize 2 2 \
-        --tabwidth 3 --tabheight 3 \
-        --mousebites 0.5 1 0.25 \
-        --radius 1 --panelsize 80 80 --alternation rowsCols \
-        $RES/conn.kicad_pcb panel-alternationRowsCols.kicad_pcb
+    kikit panelize \
+        --layout 'grid; rows: 2; cols: 2; space: 3mm; alternation: cols;' \
+        --tabs 'fixed; width: 3mm; vcount: 2' \
+        --cuts 'mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm' \
+        --framing 'frame; width: 5mm; space: 3mm; cuts: true' \
+        --post 'millradius: 1mm' \
+        $RES/conn.kicad_pcb panel.kicad_pcb
 }
 
-@test "Tightgrid with custom tab positions" {
-    kikit panelize tightgrid \
-        --slotwidth 2.5 --space 8 --gridsize 2 2 \
-        --htabs 0 --vtabs 0 --tabsfrom Eco2.User 3 --tabsfrom Eco1.User 5 \
-        --mousebites 0.5 1 0.25 \
-        --radius 1 --panelsize 80 80 \
-        $RES/conn.kicad_pcb panel10.kicad_pcb
+@test "Grid with backbone" {
+    kikit panelize \
+        --layout 'grid; rows: 2; cols: 2; hspace: 2mm; vspace: 9mm; hbackbone: 5mm; hbonecut: true' \
+        --tabs 'fixed; width: 3mm; vcount: 2; hcount: 0' \
+        --cuts 'mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm' \
+        --framing 'railstb; width: 5mm; space: 3mm;' \
+        --post 'millradius: 1mm' \
+        $RES/conn.kicad_pcb panel.kicad_pcb
 }
 
-@test "Copper fill" {
-    kikit panelize grid \
-        --space 3 --gridsize 2 2 \
-        --tabwidth 18 --tabheight 10 \
-        --vcuts --radius 1 --panelsize 70 55 --copperfill \
-        $RES/conn.kicad_pcb panel11.kicad_pcb
+@test "Tabs from annotation" {
+    kikit panelize \
+        --layout 'grid; rows: 2; cols: 2; space: 8mm; hbackbone: 3mm; vbackbone: 3mm' \
+        --tabs annotation \
+        --source 'tolerance: 15mm' \
+        --cuts 'mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm' \
+        --framing 'railstb; width: 5mm; space: 3mm;' \
+        --post 'millradius: 1mm' \
+        $RES/conn.kicad_pcb panel.kicad_pcb
+}
+
+@test "Copperfill" {
+    kikit panelize \
+        --layout 'grid; rows: 2; cols: 2; space: 2mm' \
+        --tabs 'fixed; hwidth: 10mm; vwidth: 15mm' \
+        --cuts 'vcuts; clearance: 1.5mm' \
+        --framing 'railstb; width: 5mm; space: 3mm;' \
+        --post 'millradius: 1mm; copperfill: true' \
+        $RES/conn.kicad_pcb panel.kicad_pcb
 }

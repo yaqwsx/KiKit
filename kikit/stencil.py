@@ -183,7 +183,7 @@ def createOuterPolygon(board, jigFrameSize, outerBorder):
     outerSubstrate.substrates = outerSubstrate.substrates.buffer(outerBorder)
     tabs = []
     for hole in holes:
-        tab, _ = outerSubstrate.tab(hole, centerpoint - hole, INNER_BORDER, fromMm(1000))
+        tab, _ = outerSubstrate.tab(hole, centerpoint - hole, INNER_BORDER, maxHeight=fromMm(1000))
         tabs.append(tab)
     outerSubstrate.union(tabs)
     outerSubstrate.union([Point(x).buffer(INNER_BORDER / 2) for x in holes])
