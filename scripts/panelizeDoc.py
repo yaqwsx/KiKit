@@ -5,35 +5,57 @@ Generate documentation in markdown format for panelization
 """
 
 from kikit import panelize
+from kikit import substrate
 from kikit.doc import header, printHelp, printHeader
-
 from kikit.pcbnew_compatibility import pcbnew
+import inspect
+
+def synopsis(object):
+    printHeader(object)
+    printHelp(object)
+
+def classMethods(c):
+    for name, o in inspect.getmembers(c, predicate=inspect.isfunction):
+        if name.startswith("_"):
+            continue
+        synopsis(o)
 
 print(
-"""
+f"""
 # Panelization
 
 When you want to panelize a board, you are expected to load the `kikit.panelize`
 module and create an instance of the `Panel` class.
 
-All units are in the internal KiCAD units (1 nm). You can use functions `{}` and
-`{}` to convert to/from them (synopsis below). You are also encouraged to use
-the functions and objects the native KiCAD Python API offers, e.g.: {}.
+All units are in the internal KiCAD units (1 nm). You can use predefined
+constants to convert from/to them:
 
-""".format(
-    header(panelize.fromMm),
-    header(panelize.toMm),
-    "`" + "`, `".join([header(pcbnew.wxPoint), header(pcbnew.wxPointMM),
-              header(pcbnew.wxRect), header(pcbnew.wxRectMM)]) + "`"))
+```.py
+from kikit.units import *
+
+l = 1 * mm    # 1 mm
+l = 42 * inch # 42 inches
+l = 15 * cm   # 15 cm
+a = 90 * deg  # 90°
+a = 1 * rad   # 1 radian
+```
+
+You can also use functions `{header(panelize.fromMm)}` and
+`{header(panelize.toMm)}` to convert to/from them if you like them more. You are
+also encouraged to use the functions and objects the native KiCAD Python API
+offers, e.g.: {'`, `'.join([header(pcbnew.wxPoint), header(pcbnew.wxPointMM),
+              header(pcbnew.wxRect), header(pcbnew.wxRectMM)])}.
+""")
 
 print(
 """
 ## Basic Concepts
 
-The `panelize.Panel` class holds a panel under construction. Basically it is
-`pcbnew.BOARD` without outlines. The outlines are held separately as
+The `kikit.panelize.Panel` class holds a panel under construction. Basically it
+is `pcbnew.BOARD` without outlines. The outlines are held separately as
 `shapely.MultiPolygon` so we can easily merge pieces of a substrate, add cuts
-and export it back to `pcbnew.BOARD`.
+and export it back to `pcbnew.BOARD`. This is all handled by the class
+`kikit.substrate.Substrate`.
 
 ## Tabs
 
@@ -52,6 +74,9 @@ piece of the outline of the original board, which was removed by the tab. Then
 add the piece of a substrate via `panelize.Panel.appendSubstrate`. This design
 choice was made as batch adding of substrates is more efficient. Therefore, you
 are advised to first generate all the tabs and then append them to the board.
+
+You read more about the algorithms for generating tabs in a separate document
+[understanding tabs](understandingTabs.md).
 
 ## Cuts
 
@@ -77,61 +102,30 @@ include components sticking out of the board outline, you can specify tolerance
 """
 )
 
-print("""
+print(f"""
 ## Panel class
+
+This class has the following relevant members:
+- `board` - `pcbnew.BOARD` of the panel. Does not contain any edges.
+- `substrates` - `kikit.substrate.Substrate` - individual substrates appended
+  via `{printHeader(panelize.Panel.appendBoard)}`. You can use them to get the
+  original outline (and e.g., generate tabs accroding to it).
+- `boardSubstrate` - `kikit.substrate.Substrate` of the whole panel.
+- `backboneLines` - a list of lines representing backbone candidates. Read more
+  about it in [understanding tabs](understandingTabs.md).
 """)
 
-printHelp(panelize.Panel)
+classMethods(panelize.Panel)
 
-printHeader(panelize.Panel.appendBoard)
-printHelp(panelize.Panel.appendBoard)
+print(f"""
+## Substrate class
 
-printHeader(panelize.Panel.save)
-printHelp(panelize.Panel.save)
+This class represents a pice of substrate (with no components). Basically it is
+just a relatively thin wrapper around shapely polygons. On top of that, it keeps
+a partition line for the substrate. ead more about partition lines in
+[understanding tabs](understandingTabs.md).
 
-printHeader(panelize.Panel.appendSubstrate)
-printHelp(panelize.Panel.appendSubstrate)
-
-printHeader(panelize.Panel.makeGrid)
-printHelp(panelize.Panel.makeGrid)
-
-printHeader(panelize.Panel.makeTightGrid)
-printHelp(panelize.Panel.makeTightGrid)
-
-printHeader(panelize.Panel.makeFrame)
-printHelp(panelize.Panel.makeFrame)
-
-printHeader(panelize.Panel.makeVCuts)
-printHelp(panelize.Panel.makeVCuts)
-
-printHeader(panelize.Panel.makeMouseBites)
-printHelp(panelize.Panel.makeMouseBites)
-
-printHeader(panelize.Panel.addNPTHole)
-printHelp(panelize.Panel.addNPTHole)
-
-printHeader(panelize.Panel.addFiducial)
-printHelp(panelize.Panel.addFiducial)
-
-
-print("""
-## Examples
-
-### Simple grid
-
-The following example creates a 3 x 3 grid of boards in a frame separated by V-CUTS.
-
-```
-panel = Panel()
-size, cuts = panel.makeGrid("test.kicad_pcb", 4, 3, wxPointMM(100, 40),
-            tolerance=fromMm(5), verSpace=fromMm(5), horSpace=fromMm(5),
-            outerHorTabThickness=fromMm(3), outerVerTabThickness=fromMm(3),
-            verTabWidth=fromMm(15), horTabWidth=fromMm(8))
-panel.makeVCuts(cuts)
-# alternative: panel.makeMouseBites(cuts, diameter=fromMm(0.5), spacing=fromMm(1))
-panel.makeFrame(size, fromMm(100), fromMm(100), fromMm(3), radius=fromMm(1))
-panel.addMillFillets(fromMm(1))
-panel.save("out.kicad_pcb")
-```
 """)
+
+classMethods(substrate.Substrate)
 

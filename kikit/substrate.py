@@ -337,6 +337,9 @@ class Substrate:
             self.substrates = shapely.ops.orient(self.substrates)
 
     def bounds(self):
+        """
+        Return shapely bounds of substrates
+        """
         return self.substrates.bounds
 
     def union(self, other):
@@ -386,6 +389,9 @@ class Substrate:
         return segments
 
     def boundingBox(self):
+        """
+        Return bounding box as wxRect
+        """
         minx, miny, maxx, maxy = self.substrates.bounds
         return pcbnew.wxRect(int(minx), int(miny), int(maxx - minx), int(maxy - miny))
 
@@ -403,6 +409,9 @@ class Substrate:
         return unary_union(polygons)
 
     def boundary(self):
+        """
+        Return shapely geometry representing the outer ring
+        """
         return self.substrates.boundary
 
     def tab(self, origin, direction, width, partitionLine=None,
@@ -470,7 +479,7 @@ class Substrate:
         """
         if millRadius < SHP_EPSILON:
             return
-        self.substrates = self.substrates.buffer(millRadius - epsilon).buffer(-millRadius).buffer(epsilon)
+        self.substrates = self.substrates.buffer(millRadius - SHP_EPSILON).buffer(-millRadius).buffer(SHP_EPSILON)
 
     def removeIslands(self):
         """
@@ -569,7 +578,10 @@ class SubstratePartitionLines:
                  safeHorizontalMargin=0, safeVerticalMargin=0):
         boxes = {id(s): s.bounds() for s in chain(substrates, ghostSubstrates)}
         ghosts = set([id(s) for s in ghostSubstrates])
-        seedFilter = lambda idA, idB, v, l: idA not in ghosts or idB not in ghosts
+        def seedFilter(idA, idB, v, l):
+            if l.length < SHP_EPSILON:
+                return False
+            return idA not in ghosts or idB not in ghosts
         self._partition = BoxPartitionLines(
             boxes,
             seedFilter,

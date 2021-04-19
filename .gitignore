@@ -22,4 +22,7 @@ KiKit.egg-info
 # Ignore venv
 venv
 
+# Ignore png tab drawings
+doc/resources/tabdrawing*.png
+
 

@@ -349,6 +349,8 @@ def normalizePartitionLineOrientation(line):
     """
     if isinstance(line, MultiLineString):
         return MultiLineString([normalizePartitionLineOrientation(x) for x in line.geoms])
+    if isinstance(line, GeometryCollection):
+        return GeometryCollection([normalizePartitionLineOrientation(l) for l in line.geoms])
     if not isLinestringCyclic(line):
         return line
     r = LinearRing(line.coords)
@@ -760,6 +762,9 @@ class Panel:
         self.appendSubstrate(rightRail)
 
     def makeFrameCutsV(self, innerArea, frameInnerArea, outerArea):
+        """
+        Generate vertical cuts for the frame corners and return them
+        """
         x_coords = [ innerArea.GetX(),
                      innerArea.GetX() + innerArea.GetWidth() ]
         y_coords = sorted([ frameInnerArea.GetY(),
@@ -771,6 +776,9 @@ class Panel:
         return map(LineString, cuts)
 
     def makeFrameCutsH(self, innerArea, frameInnerArea, outerArea):
+        """
+        Generate horizontal cuts for the frame corners and return them
+        """
         y_coords = [ innerArea.GetY(),
                      innerArea.GetY() + innerArea.GetHeight() ]
         x_coords = sorted([ frameInnerArea.GetX(),
@@ -1014,7 +1022,8 @@ class Panel:
     def buildFullTabs(self):
         """
         Make full tabs. This strategy basically cuts the bounding boxes of the
-        PCBs. Not suitable for mousebites.
+        PCBs. Not suitable for mousebites. Expects there is a valid partition
+        line.
 
         Return a list of cuts.
         """
@@ -1026,12 +1035,12 @@ class Panel:
         outerBounds = self.partitionLines[0].bounds
         for p in islice(self.partitionLines, 1, None):
             outerBounds = shpBBoxMerge(outerBounds, p.bounds)
-        fill = box(*outerBounds).difference(bBoxes)
+        fill = box(*outerBounds).difference(bBoxes.buffer(SHP_EPSILON))
         self.appendSubstrate(fill.buffer(SHP_EPSILON))
 
         # Make the cuts
-        substrateBoundaries = [linestringToSegments(box(*x.bounds()).boundary)
-            for x in self.substrates]
+        substrateBoundaries = [linestringToSegments(x)
+            for x in self.partitionLines]
         substrateCuts = [LineString(x) for x in chain(*substrateBoundaries)]
         return substrateCuts
 
@@ -1172,6 +1181,9 @@ class Panel:
         self._buildBackboneLineFromBB(partition, boundarySubstrates)
 
     def addLine(self, start, end, thickness, layer):
+        """
+        Add a line to the panel based on starting and ending point
+        """
         segment = pcbnew.PCB_SHAPE()
         segment.SetShape(STROKE_T.S_SEGMENT)
         segment.SetLayer(layer)
@@ -1188,10 +1200,22 @@ class Panel:
                     self.addLine(start, end, thickness, layer)
 
     def debugRenderPartitionLines(self):
+        """
+        Render partition line to the panel to be easily able to inspect them via
+        Pcbnew.
+        """
         self._renderLines(self.partitionLines, Layer.Eco1_User, fromMm(0.5))
 
     def debugRenderBackboneLines(self):
+        """
+        Render partition line to the panel to be easily able to inspect them via
+        Pcbnew.
+        """
         self._renderLines(self.backboneLines, Layer.Eco2_User, fromMm(0.5))
+
+    def debugRenderBoundingBoxes(self):
+        lines = [box(*s.bounds()).exterior for s in self.substrates]
+        self._renderLines(lines, Layer.Cmts_User, fromMm(0.5))
 
     def renderBackbone(self, vthickness, hthickness, vcut, hcut):
         """

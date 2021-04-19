@@ -447,7 +447,6 @@ def trimShadows(shadows, boundaries):
         newShadows.append(ShadowLine(l.line, Interval(leftTrim, rightTrim)))
     return newShadows
 
-
 class BoxPartitionLines:
     """
     Given a set of axially arranged non-overlapping boxes answers the query for
@@ -504,3 +503,27 @@ class BoxPartitionLines:
         Return a tuple (horiz. lines, vert. lines) represented as AxialLine
         """
         return self.query[ident]
+
+    def _visualize(self, vars):
+        """
+        When debugging, you can invoke self._visualize(locals()) in __init__ to
+        see what is happening.
+        """
+        import matplotlib.pyplot as plt
+
+        for h in vars["hstops"]:
+            plt.hlines(h.x, h.min, h.max, ["g"])
+        for v in vars["vstops"]:
+            plt.vlines(v.x, v.min, v.max, ["g"])
+
+        plt.axis('equal')
+        for h in vars["hshadows"]:
+            plt.hlines(h.line.x, h.shadow.min, h.shadow.max, ["r"])
+        for v in vars["vshadows"]:
+            plt.vlines(v.line.x, v.shadow.min, v.shadow.max, ["r"])
+
+        for h in vars["hseeds"]:
+            plt.hlines(h.x, h.min, h.max)
+        for v in vars["vseeds"]:
+            plt.vlines(v.x, v.min, v.max)
+        plt.show()
