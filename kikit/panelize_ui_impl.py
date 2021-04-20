@@ -421,10 +421,11 @@ def buildFraming(preset, panel):
             panel.makeRailsLr(preset["width"])
             return []
         if type == "frame":
-            cuts = panel.makeFrame(preset["width"])
+            cuts = panel.makeFrame(preset["width"], preset["hspace"], preset["vspace"])
             return cuts if preset["cuts"] else []
         if type == "tightframe":
-            panel.makeTightFrame(preset["width"], preset["slotwidth"])
+            panel.makeTightFrame(preset["width"], preset["slotwidth"],
+                preset["hspace"], preset["vspace"])
             panel.boardSubstrate.removeIslands()
             return []
         raise PresetError(f"Unknown type '{type}' of frame specification.")

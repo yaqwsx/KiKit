@@ -323,9 +323,10 @@ Inherit text properties from a board specified by a properties
 
 #### `makeFrame`
 ```
-makeFrame(self, width)
+makeFrame(self, width, hspace, vspace)
 ```
-Build a frame around the board. Return frame cuts
+Build a frame around the board. Specify width and spacing between the
+boards substrates and the frame. Return frame cuts
 
 #### `makeFrameCutsH`
 ```
@@ -375,9 +376,9 @@ Adds a rail to top and bottom.
 
 #### `makeTightFrame`
 ```
-makeTightFrame(self, width, slotwidth)
+makeTightFrame(self, width, slotwidth, hspace, vspace)
 ```
-Build a full frame with board perimeter milled out
+Build a full frame with board perimeter milled out.
 
 #### `makeVCuts`
 ```

@@ -203,6 +203,10 @@ def shpBBoxExpand(box, x, y=None):
         y = x
     return (box[0] - x, box[1] - y, box[2] + x, box[3] + y)
 
+def shpBoxToRect(box):
+    box = list([int(x) for x in box])
+    return wxRect(box[0], box[1], box[2] - box[0], box[3] - box[1])
+
 def isLinestringCyclic(line):
     c = line.coords
     return c[0] == c[-1] or isinstance(line, LinearRing)

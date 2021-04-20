@@ -703,12 +703,14 @@ class Panel:
                                 rotation, netRenamer, refRenamer, placementClass)
         return self.substrates[substrateCount:]
 
-    def makeFrame(self, width):
+    def makeFrame(self, width, hspace, vspace):
         """
-        Build a frame around the board. Return frame cuts
+        Build a frame around the board. Specify width and spacing between the
+        boards substrates and the frame. Return frame cuts
         """
-        frameInnerRect = expandRect(self.boardSubstrate.boundingBox(), -SHP_EPSILON)
-        frameOuterRect = expandRect(frameInnerRect, width)
+        frameInnerRect = expandRect(shpBoxToRect(self.boardsBBox()),
+            hspace - SHP_EPSILON, vspace + SHP_EPSILON)
+        frameOuterRect = expandRect(frameInnerRect, width + SHP_EPSILON)
         outerRing = rectToRing(frameOuterRect)
         innerRing = rectToRing(frameInnerRect)
         polygon = Polygon(outerRing, [innerRing])
@@ -721,11 +723,11 @@ class Panel:
         frameCutsH = self.makeFrameCutsH(innerArea, frameInnerRect, frameOuterRect)
         return chain(frameCutsV, frameCutsH)
 
-    def makeTightFrame(self, width, slotwidth):
+    def makeTightFrame(self, width, slotwidth, hspace, vspace):
         """
-        Build a full frame with board perimeter milled out
+        Build a full frame with board perimeter milled out.
         """
-        self.makeFrame(width)
+        self.makeFrame(width, hspace, vspace)
         boardSlot = GeometryCollection()
         for s in self.substrates:
             boardSlot = boardSlot.union(s.exterior())
