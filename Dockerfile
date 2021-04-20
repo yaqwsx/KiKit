@@ -12,12 +12,10 @@ RUN export DEBIAN_FRONTEND="noninteractive" && apt-get update && \
       libgraphicsmagick1-dev libmagickcore-dev openscad && \
       rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install Pcbdraw
-
 # hack: manually install Python dependencies to speed up the build process
 # for repetitive builds
 
-RUN pip3 install numpy shapely click markdown2 pybars3 solidpython
+RUN pip3 install Pcbdraw numpy shapely click markdown2 pybars3 solidpython
 
 # create a new stage for building and installing KiKit
 FROM base AS build
