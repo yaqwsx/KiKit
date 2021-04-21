@@ -15,7 +15,14 @@ RUN export DEBIAN_FRONTEND="noninteractive" && apt-get update && \
 # hack: manually install Python dependencies to speed up the build process
 # for repetitive builds
 
-RUN pip3 install Pcbdraw numpy shapely click markdown2 pybars3 solidpython
+RUN pip3 install \
+    "Pcbdraw ~= 0.6" \
+    "numpy ~= 1.20" \
+    "shapely ~= 1.7" \
+    "click ~= 7.1" \
+    "markdown2 ~= 2.4" \
+    "pybars3 ~= 0.9" \
+    "solidpython ~= 1.1"
 
 # create a new stage for building and installing KiKit
 FROM base AS build
