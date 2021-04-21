@@ -324,7 +324,7 @@ def buildBackBone(layout, panel, substrates, frameSpace):
     """
     try:
         return panel.renderBackbone(layout["vbackbone"], layout["hbackbone"],
-                                    layout["vbonecut"], layout["hbonecut"])
+                                    readBool(layout["vbonecut"]), readBool(layout["hbonecut"]))
     except KeyError as e:
         raise PresetError(f"Missing parameter '{e}' in section 'layout'")
 
