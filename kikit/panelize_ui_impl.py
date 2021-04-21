@@ -74,7 +74,7 @@ def ppLayout(section):
         ["hspace", "vspace", "space", "hbackbone", "vbackbone"])
     readParameters(section, readAngle, ["rotation"])
     readParameters(section, int, ["rows", "cols"])
-    readParameters(section, readBool, ["vbonecut, hbonecut"])
+    readParameters(section, readBool, ["vbonecut", "hbonecut"])
     # The space parameter overrides hspace and vspace
     if "space" in section:
         section["hspace"] = section["vspace"] = section["space"]
