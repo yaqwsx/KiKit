@@ -17,6 +17,22 @@ rad = 180 / math.pi * deg
 
 UNIT_SPLIT = re.compile(r"\s*(-?\s*\d+(\.\d*)?)\s*(\w+)$")
 
+class BaseValue(int):
+    """
+    Value in base units that remembers its original string representation.
+    """
+    def __new__(cls, value, strRepr):
+        x = super().__new__(cls, value)
+        x.str = strRepr
+        return x
+
+    def __str__(self):
+        return self.str
+
+    def __repr__(self):
+        return f"<BaseValue: {x}, {self.str} >"
+
+
 def readUnit(unitDir, unitStr):
     match = UNIT_SPLIT.match(unitStr)
     if not match:
@@ -37,7 +53,11 @@ def readLength(unitStr):
         "inch": inch,
         "in": inch
     }
-    return int(readUnit(unitDir, unitStr))
+    if isinstance(unitStr, int):
+        return BaseValue(unitStr, f"{unitStr}nm")
+    if not isinstance(unitStr, str):
+        raise RuntimeError(f"Got '{unitStr}', a length with units was expected")
+    return BaseValue(readUnit(unitDir, unitStr), unitStr)
 
 def readAngle(unitStr):
     unitDir = {
@@ -45,4 +65,8 @@ def readAngle(unitStr):
         "°": deg,
         "rad": rad
     }
-    return readUnit(unitDir, unitStr)
+    if isinstance(unitStr, int):
+        return BaseValue(unitStr, f"{unitStr / 10} deg")
+    if not isinstance(unitStr, str):
+        raise RuntimeError(f"Got '{unitStr}', an angle with units was expected")
+    return BaseValue(readUnit(unitDir, unitStr), unitStr)

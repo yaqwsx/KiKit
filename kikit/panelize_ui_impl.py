@@ -2,10 +2,12 @@ from kikit.panelize_ui import Section, PresetError
 from kikit.panelize import *
 from kikit.defs import Layer
 from shapely.geometry import box
-from kikit.units import readLength, readAngle
+from kikit.units import readLength, readAngle, BaseValue
 from kikit.substrate import SubstrateNeighbors
 from kikit.common import resolveAnchor
 import commentjson
+import enum
+import json
 import csv
 import io
 
@@ -15,6 +17,40 @@ import io
 
 PKG_BASE = os.path.dirname(__file__)
 PRESET_LIB = os.path.join(PKG_BASE, "resources/panelizePresets")
+
+
+def encodePreset(value):
+    """
+    Convert a preset into its stringified version.
+    """
+    if isinstance(value, BaseValue):
+        return str(value)
+    if isinstance(value, EDA_TEXT_HJUSTIFY_T) or isinstance(value, EDA_TEXT_VJUSTIFY_T):
+        return writeJustify(value)
+    if isinstance(value, Enum):
+        return str(value.name)
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, int):
+        return value
+    if isinstance(value, str):
+        return value
+    if isinstance(value, list):
+        return [encodePreset(x) for x in list]
+    if isinstance(value, dict):
+        return {encodePreset(k): encodePreset(v) for k, v in value.items()}
+    raise RuntimeError(f"Cannot serialize {value} of type {type(value)}")
+
+def dumpPreset(preset):
+    """
+    Pretty prints a preset into string (containing JSON) so that it can be
+    loaded back again by KiKit
+    """
+    # You might be wondering, why don't ve subclass JSONEncoder and instead, we
+    # preprocess the preset. The reason for that is that json.dumps ignores
+    # encoder for primitive types, which breaks BaseValue
+    preprocessedPreset = encodePreset(preset)
+    return json.dumps(preprocessedPreset, indent=4)
 
 def validatePresetLayout(preset):
     if not isinstance(preset, dict):
@@ -34,15 +70,25 @@ def readParameters(section, method, what):
             section[x] = method(section[x])
 
 def readLayer(s):
-    return Layer[s.replace(".", "_")]
+    if isinstance(s, int):
+        if s in tuple(item.value for item in Layer):
+            return Layer(s)
+        raise RuntimeError(f"{s} is not a valid layer number")
+    if isinstance(s, str):
+        return Layer[s.replace(".", "_")]
+    raise RuntimeError(f"Got {s}, expected layer name or number")
 
 def readBool(s):
-    sl = str(s).lower()
-    if sl in ["1", "true", "yes"]:
-        return True
-    if sl in ["0", "false", "no"]:
-        return False
-    raise PresetError(f"Uknown boolean value '{s}'")
+    if isinstance(s, bool):
+        return s
+    if isinstance(s, str):
+        sl = str(s).lower()
+        if sl in ["1", "true", "yes"]:
+            return True
+        if sl in ["0", "false", "no"]:
+            return False
+        raise PresetError(f"Uknown boolean value '{s}'")
+    raise RuntimeError(f"Got {s}, expected boolean value")
 
 def readHJustify(s):
     choices = {
@@ -63,6 +109,17 @@ def readVJustify(s):
     if s in choices:
         return choices[s]
     raise PresetError(f"'{s}' is not valid justification value")
+
+def writeJustify(j):
+    choices = {
+        EDA_TEXT_HJUSTIFY_T.GR_TEXT_HJUSTIFY_LEFT: "left",
+        EDA_TEXT_HJUSTIFY_T.GR_TEXT_HJUSTIFY_RIGHT: "right",
+        EDA_TEXT_HJUSTIFY_T.GR_TEXT_HJUSTIFY_CENTER: "center",
+        EDA_TEXT_VJUSTIFY_T.GR_TEXT_VJUSTIFY_TOP: "top",
+        EDA_TEXT_VJUSTIFY_T.GR_TEXT_VJUSTIFY_CENTER: "center",
+        EDA_TEXT_VJUSTIFY_T.GR_TEXT_VJUSTIFY_BOTTOM: "bottom"
+    }
+    return choices[j]
 
 ANCHORS = ["tl", "tr", "bl", "br", "mt", "mb", "ml", "mr", "c"]
 

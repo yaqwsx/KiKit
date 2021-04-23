@@ -82,6 +82,7 @@ def panelize(input, output, preset, layout, source, tabs, cuts, framing,
         from kikit import panelize_ui_impl as ki
         from kikit.panelize import Panel
         from pcbnew import LoadBoard, wxPointMM
+        import json
         import commentjson
         import sys
         from itertools import chain
@@ -125,7 +126,7 @@ def panelize(input, output, preset, layout, source, tabs, cuts, framing,
 
         if (dump):
             with open(dump, "w") as f:
-                f.write(commentjson.dumps(preset, indent=4))
+                f.write(ki.dumpPreset(preset))
     except Exception as e:
         sys.stderr.write("An error occurred: " + str(e) + "\n")
         sys.stderr.write("No output files produced\n")

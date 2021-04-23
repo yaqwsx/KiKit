@@ -145,3 +145,18 @@ load common
         --post 'millradius: 1mm; copperfill: true' \
         $RES/conn.kicad_pcb panel.kicad_pcb
 }
+
+@test "Dumping preset" {
+    kikit panelize --dump preset.json \
+        --layout 'grid; rows: 2; cols: 2; space: 2mm' \
+        --tabs 'fixed; hwidth: 10mm; vwidth: 15mm' \
+        --cuts 'vcuts; clearance: 1.5mm' \
+        $RES/conn.kicad_pcb panel-original.kicad_pcb
+    kikit panelize -p preset.json $RES/conn.kicad_pcb panel-copy.kicad_pcb
+
+    # Remove timestamps
+    perl -pi -e 's/\((tedit|tstamp).*\)//g' panel-original.kicad_pcb
+    perl -pi -e 's/\((tedit|tstamp).*\)//g' panel-copy.kicad_pcb
+
+    cmp -s panel-original.kicad_pcb panel-copy.kicad_pcb
+}
