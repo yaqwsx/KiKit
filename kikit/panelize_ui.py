@@ -128,6 +128,7 @@ def panelize(input, output, preset, layout, source, tabs, cuts, framing,
             with open(dump, "w") as f:
                 f.write(ki.dumpPreset(preset))
     except Exception as e:
+        import sys
         sys.stderr.write("An error occurred: " + str(e) + "\n")
         sys.stderr.write("No output files produced\n")
         if isinstance(preset, dict) and preset["debug"]["trace"]:
