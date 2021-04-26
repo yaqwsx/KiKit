@@ -26,7 +26,7 @@ def toTuple(item):
         return item[0], item[1]
     raise NotImplementedError(f"toTuple for {type(item)} not implemented")
 
-def roundPoint(point, precision=-2):
+def roundPoint(point, precision=-4):
     return pcbnew.wxPoint(round(point[0], precision), round(point[1], precision))
 
 def getStartPoint(geom):
@@ -125,7 +125,7 @@ def approximateArc(arc, endWith):
     """
     Take DRAWINGITEM and approximate it using lines
     """
-    SEGMENTS_PER_FULL= 4 * 16 # To Be consistent with default shapely settings
+    SEGMENTS_PER_FULL= 4 * 32 # To Be consistent with default shapely settings
     startAngle = arc.GetArcAngleStart() / 10
     if arc.GetShape() == STROKE_T.S_CIRCLE:
         endAngle = startAngle + 360
@@ -137,9 +137,11 @@ def approximateArc(arc, endWith):
     x = arc.GetCenter()[0] + arc.GetRadius() * np.cos(theta)
     y = arc.GetCenter()[1] + arc.GetRadius() * np.sin(theta)
     outline = list(np.column_stack([x, y]))
-    last = outline[-1][0], outline[-1][1]
-    if (not np.isclose(last[0], endWith[0], atol=pcbnew.FromMM(0.001)) or
-        not np.isclose(last[1], endWith[1], atol=pcbnew.FromMM(0.001))):
+
+    end = np.array(endWith)
+    first = np.array([outline[0][0], outline[0][1]])
+    last = np.array([outline[-1][0], outline[-1][1]])
+    if (np.linalg.norm(end - first) < np.linalg.norm(end - last)):
         outline.reverse()
     return outline
 
