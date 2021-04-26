@@ -17,8 +17,8 @@ copies of the notes around the board).
 
 How to include the components?
 - specify the source area explicitly to include all your components
-- specify `--tolerance 10` to enlarge the board outline bounding box by e.g. 10
-  mm. The default value is 5 mm.
+- specify `tolerance: 20mm` for `source` (i.e., `--source 'tolerance: 20mm'`) to
+  enlarge the board outline bounding box. The default value is 5 mm.
 
 ## I rotated my board in a panel and the component references did not rotate.
 
@@ -30,11 +30,11 @@ properties.
 
 ## My milled slots are gone! How can I preserve them?
 
-KiKit's `--radius` parameter simulates the board outline milling by a tool with
-given radius. That means that it will round all inner corners. It is not a
-command to round just your tabs. That means if you specify a tool which diameter
-is larger than your slot, KiKit will remove the slot as such slot cannot be
-created with the tool.
+KiKit's `millradius` parameter from the `postprocess` section simulates the
+board outline milling by a tool with given radius. That means that it will round
+all inner corners. It is not a command to round just your tabs. That means if
+you specify a tool which diameter is larger than your slot, KiKit will remove
+the slot as such slot cannot be created with the tool.
 
 This is an intended behavior. The options is designed for you to check if your
 board can be manufactured with all the features you have in your board outline.
@@ -43,9 +43,9 @@ cannot be milled but have to be e.g., broached, which is much more complicated
 and expensive setup.
 
 If you want to preserve your narrow internal slots:
-- don't specify `--radius` at all
-- specify smaller `--radius` but make sure that your fabrication house supports
-  such small tools.
+- don't specify `millradius` at all in the `postprocess`
+- specify smaller `millradius` but make sure that your fabrication house
+  supports such small tools.
 
 ## My mouse bites are inside the board, what should I do about it?
 
