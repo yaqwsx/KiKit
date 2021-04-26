@@ -89,10 +89,12 @@ This method is applicable to Windows, Linux and MacOS.
 First, install [Docker](https://www.docker.com/). The installation procedure
 varies by the platform, so Google up a recent guide for your platform.
 
-Then, pull the KiKit container via issuing the following command:
+Then, pull the KiKit container via issuing one of the following commands:
 
 ```
-docker pull yaqwsx/kikit
+docker pull yaqwsx/kikit:latest # Pull latest stable version
+docker pull yaqwsx/kikit:v0.7   # Pull image with a concrete release
+docker pull yaqwsx/kikit:nighly # Pull upstream version of KiKit - content of the master branch
 ```
 
 To run KiKit commands for files in the current working directory issue the
@@ -108,7 +110,8 @@ mounting directories outside you user account (see [the following
 topis](https://forums.docker.com/t/volume-mounts-in-windows-does-not-work/10693/5)).
 
 If you want to use Makefile for your projects, the preferable way is to invoke
-`make` inside the container and to invoke docker from make.
+`make` inside the container. The Docker image contains several often used tools
+and you can even run KiCAD from it (if you supply it with X-server).
 
 # Choosing KiCAD version
 
