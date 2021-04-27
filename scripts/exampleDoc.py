@@ -133,7 +133,7 @@ runBoardExample(autoName(),
 
 print(
 """
-We changed cut styles to mousebites and we specified that they should be
+We changed cut type to mousebites and we specified that they should be
 performed by 0.5mm holes with a spacing of 1 mm. You could also use inches if
 you want – just specify `<number>in. Since we use mousebites, we used narrower
 tabs. We also specified that the cuts should be inset 0.25 mm into the board
@@ -203,8 +203,8 @@ runBoardExample(autoName(),
         [SRC]])
 
 print("""
-Similarly, you can add left and right rail via the `railslr` style. If you want
-a full frame, use the style `frame`. When you place a full frame, it might make
+Similarly, you can add left and right rail via the `railslr` type. If you want
+a full frame, use the type `frame`. When you place a full frame, it might make
 sense to include cuts in the corner of the frame, so you can break it apart
 easily. Let's see an example:
 """)
@@ -222,7 +222,7 @@ print("""
 When you use V-cuts it might make sense to not remove all material, but only
 mill a slot around the board of the board. This yields a stronger panel – and
 some manufacturers require such style for assembly with V-Cuts. This is achieved
-via framing style `tightframe`. Note that it does not make much sense with
+via framing type `tightframe`. Note that it does not make much sense with
 mousebites.
 """)
 
@@ -321,7 +321,7 @@ that there are some special footprints – KiKit's annotations:
 ![conn-pcbnew](resources/conn-pcbnew.png)
 
 They specify where to place tabs. You can even specify individual tab width via
-text property of the symbol. How to use it? Just specify tab style to
+text property of the symbol. How to use it? Just specify tab type to
 `annotation`. We also have to increase the source area tolerance, so it can
 capture the annotations.
 """)
@@ -432,7 +432,7 @@ You can learn more about available functions from the comment in the source code
 or in [documentation](panelization.md).
 
 If you implement a feature that your fab house requires (e.g., new tooling hole
-style), consider submitting a pull request for KiKit instead. I believe the
+type), consider submitting a pull request for KiKit instead. I believe the
 others will benefit from it.
 
 # Managing presets
@@ -459,7 +459,7 @@ presets. Therefore, you can prepare various presets for mousebites – e.g.,
 // fineMousebites.json
 {
     "cuts": {
-        "style": "mousebites",
+        "type": "mousebites",
         "drill": "0.5mm",
         "spacing": "0.9mm",
         "offset": "0.25mm"
@@ -469,7 +469,7 @@ presets. Therefore, you can prepare various presets for mousebites – e.g.,
 // coarseMousebites.json
 {
     "cuts": {
-        "style": "mousebites",
+        "type": "mousebites",
         "drill": "0.3mm",
         "spacing": "0.2mm",
         "offset": "0.15mm"
@@ -484,7 +484,7 @@ kikit panelize -p fineMousebites.json <otheroptions>
 ```
 
 Therefore, you can build a custom library of commonly used-options; e.g., per
-fabrication house. KiKit offers some built-in styles – see
+fabrication house. KiKit offers some built-in presets – see
 [`panelizePresets`](../kikit/resources/panelizePresets). Note that the built-in
 preset `default.json` is always used as a base and it specifies conservative
 default values so you can only override the options relevant for you.

@@ -1199,7 +1199,7 @@ class Panel:
         Render partition line to the panel to be easily able to inspect them via
         Pcbnew.
         """
-        lines = [s.paritionLine for s in self.substrates]
+        lines = [s.partitionLine for s in self.substrates]
         self._renderLines(lines, Layer.Eco1_User, fromMm(0.5))
 
     def debugRenderBackboneLines(self):

@@ -64,7 +64,7 @@ def runBoardExample(name, args):
     # copy-paste-ready form
     args[0] = ["kikit"] + args[0]
     args[-1] = args[-1] + ["panel.kicad_pcb"]
-    print("```\n")
+    print("```")
     for i, c in enumerate(args):
         if i != 0:
             print("    ", end="")

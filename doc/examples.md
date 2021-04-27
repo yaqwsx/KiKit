@@ -22,7 +22,6 @@ PcbDraw:
 Let's start with our first panel.
 
 ```
-
 kikit panelize \
     --layout 'grid; rows: 2; cols: 2;' \
     --tabs full \
@@ -71,7 +70,6 @@ How to include the missing components?
 I told you that the panel above is not suitable for manufacturing. Let's see why:
 
 ```
-
 kikit panelize \
     --layout 'grid; rows: 2; cols: 2;' \
     --tabs full \
@@ -92,7 +90,6 @@ have rounded corners, you will use short tabs instead and add some space between
 the boards. So let's fix it:
 
 ```
-
 kikit panelize \
     --layout 'grid; rows: 2; cols: 2; space: 2mm' \
     --tabs 'fixed; hwidth: 10mm; vwidth: 15mm' \
@@ -107,7 +104,6 @@ In that way, the rounded corners can be machined. Lets' see the same example
 with mousebites instead:
 
 ```
-
 kikit panelize \
     --layout 'grid; rows: 2; cols: 2; space: 2mm' \
     --tabs 'fixed; width: 5mm' \
@@ -117,7 +113,7 @@ kikit panelize \
 
 ![examplePanel4](resources/examplePanel4.png)
 
-We changed cut styles to mousebites and we specified that they should be
+We changed cut type to mousebites and we specified that they should be
 performed by 0.5mm holes with a spacing of 1 mm. You could also use inches if
 you want – just specify `<number>in. Since we use mousebites, we used narrower
 tabs. We also specified that the cuts should be inset 0.25 mm into the board
@@ -128,7 +124,6 @@ break away the tabs, all burs will be inside the intended board outline.
 What happens, when we simulate the milling operation?
 
 ```
-
 kikit panelize \
     --layout 'grid; rows: 2; cols: 2; space: 2mm' \
     --tabs 'fixed; width: 5mm' \
@@ -144,7 +139,6 @@ cannot be milled. KiKit can fix that for you – just specify you want to prolon
 your cuts tangentially by a small amount:
 
 ```
-
 kikit panelize \
     --layout 'grid; rows: 2; cols: 2; space: 2mm' \
     --tabs 'fixed; width: 3mm' \
@@ -159,7 +153,6 @@ If you want, you can also specify a number of tabs to generate. KiKit will place
 them evenly:
 
 ```
-
 kikit panelize \
     --layout 'grid; rows: 2; cols: 2; space: 2mm' \
     --tabs 'fixed; width: 3mm; vcount: 2' \
@@ -182,7 +175,6 @@ the following situations:
 Let's start with rails:
 
 ```
-
 kikit panelize \
     --layout 'grid; rows: 2; cols: 2; space: 2mm' \
     --tabs 'fixed; width: 3mm; vcount: 2' \
@@ -194,13 +186,12 @@ kikit panelize \
 
 ![examplePanel8](resources/examplePanel8.png)
 
-Similarly, you can add left and right rail via the `railslr` style. If you want
-a full frame, use the style `frame`. When you place a full frame, it might make
+Similarly, you can add left and right rail via the `railslr` type. If you want
+a full frame, use the type `frame`. When you place a full frame, it might make
 sense to include cuts in the corner of the frame, so you can break it apart
 easily. Let's see an example:
 
 ```
-
 kikit panelize \
     --layout 'grid; rows: 2; cols: 2; space: 2mm' \
     --tabs 'fixed; width: 3mm; vcount: 2' \
@@ -215,11 +206,10 @@ kikit panelize \
 When you use V-cuts it might make sense to not remove all material, but only
 mill a slot around the board of the board. This yields a stronger panel – and
 some manufacturers require such style for assembly with V-Cuts. This is achieved
-via framing style `tightframe`. Note that it does not make much sense with
+via framing type `tightframe`. Note that it does not make much sense with
 mousebites.
 
 ```
-
 kikit panelize \
     --layout 'grid; rows: 2; cols: 2; space: 6mm' \
     --tabs 'fixed; width: 3mm; vcount: 2' \
@@ -235,7 +225,6 @@ Once we have a frame, we can append a tooling holes, fiducials and some text to
 it:
 
 ```
-
 kikit panelize \
     --layout 'grid; rows: 2; cols: 2; space: 2mm' \
     --tabs 'fixed; width: 3mm; vcount: 2' \
@@ -264,7 +253,6 @@ shaped boards:
 
 
 ```
-
 kikit panelize \
     --layout 'grid; rows: 2; cols: 2; space: 0mm; rotation: 45deg;' \
     --tabs 'fixed; width: 3mm;' \
@@ -284,7 +272,6 @@ component references when rotating boards – KiCAD's references have a property
 be sure to turn it off before panelizing. Here's an example:
 
 ```
-
 kikit panelize \
     --layout 'grid; rows: 2; cols: 2; space: 3mm; alternation: cols;' \
     --tabs 'fixed; width: 3mm; vcount: 2' \
@@ -305,7 +292,6 @@ Also, similarly with frames, you can put cuts on your backbone to make
 depanelization of your boards easier. Enough theory, let's see an example
 
 ```
-
 kikit panelize \
     --layout 'grid; rows: 2; cols: 2; hspace: 2mm; vspace: 9mm; hbackbone: 5mm; hbonecut: true' \
     --tabs 'fixed; width: 3mm; vcount: 2; hcount: 0' \
@@ -324,12 +310,11 @@ that there are some special footprints – KiKit's annotations:
 ![conn-pcbnew](resources/conn-pcbnew.png)
 
 They specify where to place tabs. You can even specify individual tab width via
-text property of the symbol. How to use it? Just specify tab style to
+text property of the symbol. How to use it? Just specify tab type to
 `annotation`. We also have to increase the source area tolerance, so it can
 capture the annotations.
 
 ```
-
 kikit panelize \
     --layout 'grid; rows: 2; cols: 2; space: 5mm;' \
     --tabs annotation \
@@ -349,7 +334,6 @@ tightframe. If you are interested in the details, read more about tabs in
 section [Understanding tabs](understandingTabs.md). Let's fix it:
 
 ```
-
 kikit panelize \
     --layout 'grid; rows: 2; cols: 2; space: 8mm; hbackbone: 3mm; vbackbone: 3mm' \
     --tabs annotation \
@@ -372,7 +356,6 @@ copper on all non-functional parts of the panel. It will make the PCB rigid. You
 can do so via `copperfill` post-processing operation:
 
 ```
-
 kikit panelize \
     --layout 'grid; rows: 2; cols: 2; space: 2mm' \
     --tabs 'fixed; width: 3mm;' \
@@ -388,7 +371,6 @@ When you use V-cuts with `copperfill` you (or your fab house) might want to
 include a clearance around the V-cuts:
 
 ```
-
 kikit panelize \
     --layout 'grid; rows: 2; cols: 2; space: 2mm' \
     --tabs 'fixed; hwidth: 10mm; vwidth: 15mm' \
@@ -428,7 +410,6 @@ def kikitPostprocess(panel, arg):
 Then run KiKit:
 
 ```
-
 kikit panelize \
     --layout 'grid; rows: 2; cols: 2; space: 2mm' \
     --tabs 'fixed; width: 3mm; vcount: 2' \
@@ -444,7 +425,7 @@ You can learn more about available functions from the comment in the source code
 or in [documentation](panelization.md).
 
 If you implement a feature that your fab house requires (e.g., new tooling hole
-style), consider submitting a pull request for KiKit instead. I believe the
+type), consider submitting a pull request for KiKit instead. I believe the
 others will benefit from it.
 
 # Managing presets
@@ -471,7 +452,7 @@ presets. Therefore, you can prepare various presets for mousebites – e.g.,
 // fineMousebites.json
 {
     "cuts": {
-        "style": "mousebites",
+        "type": "mousebites",
         "drill": "0.5mm",
         "spacing": "0.9mm",
         "offset": "0.25mm"
@@ -481,7 +462,7 @@ presets. Therefore, you can prepare various presets for mousebites – e.g.,
 // coarseMousebites.json
 {
     "cuts": {
-        "style": "mousebites",
+        "type": "mousebites",
         "drill": "0.3mm",
         "spacing": "0.2mm",
         "offset": "0.15mm"
@@ -496,7 +477,7 @@ kikit panelize -p fineMousebites.json <otheroptions>
 ```
 
 Therefore, you can build a custom library of commonly used-options; e.g., per
-fabrication house. KiKit offers some built-in styles – see
+fabrication house. KiKit offers some built-in presets – see
 [`panelizePresets`](../kikit/resources/panelizePresets). Note that the built-in
 preset `default.json` is always used as a base and it specifies conservative
 default values so you can only override the options relevant for you.
