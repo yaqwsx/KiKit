@@ -126,7 +126,11 @@ def gerberImpl(boardfile, outputdir, plot_plan=fullGerberPlotPlan, drilling=True
 
         mirror = False
         minimalHeader = settings["MinimalHeader"]
-        offset = board.GetDesignSettings().m_AuxOrigin
+        if settings["UseAuxOrigin"]:
+            offset = board.GetDesignSettings().m_AuxOrigin
+        else:
+            offset = wxPoint(0,0)
+
         # False to generate 2 separate drill files (one for plated holes, one for non plated holes)
         # True to generate only one drill file
         mergeNPTH = settings["MergeNPTH"]
