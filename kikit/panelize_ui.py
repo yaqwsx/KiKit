@@ -2,8 +2,12 @@ import click
 import os
 import csv
 import io
+import glob
 import traceback
-from kikit.units import readLength, readAngle
+from kikit.panelize_ui_sections import *
+
+PKG_BASE = os.path.dirname(__file__)
+PRESETS = os.path.join(PKG_BASE, "resources/panelizePresets")
 
 def splitStr(delimiter, escapeChar, s):
     """
@@ -45,34 +49,100 @@ class Section(click.ParamType):
                 param,
                 ctx)
 
-class PresetError(RuntimeError):
-    pass
+def completePath(prefix, fileSuffix=""):
+    """
+    This is rather hacky and  far from ideal, however, until Click 8 we probably
+    cannot do much better.
+    """
+    paths = []
+    for p in glob.glob(prefix + "*"):
+        if os.path.isdir(p):
+            paths.append(p + "/")
+        elif p.endswith(fileSuffix):
+            paths.append(p)
+    return paths
+
+def pathCompletion(fileSuffix=""):
+    def f(ctx, args, incomplete):
+        return completePath(incomplete, fileSuffix)
+    return f
+
+def completePreset(ctx, args, incomplete):
+    presets = [":" + x.replace(".json", "")
+        for x in os.listdir(PRESETS)
+        if x.endswith(".json") and (x.startswith(incomplete) or x.startswith(incomplete[1:]))]
+    if incomplete.startswith(":"):
+        return presets
+    return presets + completePath(incomplete, ".json")
+
+def lastSectionPair(incomplete):
+    """
+    Given an incomplete command text of a section, return the last (possibly
+    incomplete) key-value pair
+    """
+    lastSection = incomplete.split(";")[-1]
+    x = [x.strip() for x in lastSection.split(":", 1)]
+    if len(x) == 1:
+        return x[0], ""
+    return x
+
+def hasNoSectionPair(incomplete):
+    return ";" not in incomplete
+
+def completeSection(section):
+    def fun(ctx, args, incomplete):
+        if incomplete.startswith("'"):
+            incomplete = incomplete[1:]
+        key, val = lastSectionPair(incomplete)
+
+        candidates = []
+        if hasNoSectionPair(incomplete):
+            candidates.extend([x for x in section["type"].vals if x.startswith(incomplete)])
+        if len(val) == 0:
+            trimmedIncomplete = incomplete.rsplit(";", 1)[0]
+            candidates.extend([trimmedIncomplete + x + ":"
+                for x in section.keys() if x.startswith(key)])
+        return candidates
+    return fun
 
 @click.command()
-@click.argument("input", type=click.Path(dir_okay=False))
-@click.argument("output", type=click.Path(dir_okay=False))
+@click.argument("input", type=click.Path(dir_okay=False),
+    autocompletion=pathCompletion(".kicad_pcb"))
+@click.argument("output", type=click.Path(dir_okay=False),
+    autocompletion=pathCompletion(".kicad_pcb"))
 @click.option("--preset", "-p", multiple=True,
-    help="A panelization preset file; use prefix ':' for built-in styles.")
+    help="A panelization preset file; use prefix ':' for built-in styles.",
+    autocompletion=completePreset)
 @click.option("--layout", "-l", type=Section(),
-    help="Override layout settings.")
+    help="Override layout settings.",
+    autocompletion=completeSection(LAYOUT_SECTION))
 @click.option("--source", "-s", type=Section(),
-    help="Override source settings.")
+    help="Override source settings.",
+    autocompletion=completeSection(SOURCE_SECTION))
 @click.option("--tabs", "-t", type=Section(),
-    help="Override tab settings.")
+    help="Override tab settings.",
+    autocompletion=completeSection(TABS_SECTION))
 @click.option("--cuts", "-c", type=Section(),
-    help="Override cut settings.")
+    help="Override cut settings.",
+    autocompletion=completeSection(CUTS_SECTION))
 @click.option("--framing", "-r", type=Section(),
-    help="Override framing settings.")
+    help="Override framing settings.",
+    autocompletion=completeSection(FRAMING_SECTION))
 @click.option("--tooling", "-o", type=Section(),
-    help="Override tooling settings.")
+    help="Override tooling settings.",
+    autocompletion=completeSection(TOOLING_SECTION))
 @click.option("--fiducials", "-f", type=Section(),
-    help="Override fiducials settings.")
+    help="Override fiducials settings.",
+    autocompletion=completeSection(FIDUCIALS_SECTION))
 @click.option("--text", "-t", type=Section(),
-    help="Override text settings.")
+    help="Override text settings.",
+    autocompletion=completeSection(TEXT_SECTION))
 @click.option("--post", "-z", type=Section(),
-    help="Override post processing settings settings.")
+    help="Override post processing settings settings.",
+    autocompletion=completeSection(POST_SECTION))
 @click.option("--debug", type=Section(),
-    help="Include debug traces or drawings in the panel.")
+    help="Include debug traces or drawings in the panel.",
+    autocompletion=completeSection(DEBUG_SECTION))
 @click.option("--dump", "-d", type=click.Path(file_okay=True, dir_okay=False),
     help="Dump constructured preset into a JSON file.")
 def panelize(input, output, preset, layout, source, tabs, cuts, framing,

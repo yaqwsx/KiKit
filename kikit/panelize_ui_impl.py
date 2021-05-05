@@ -2,7 +2,8 @@ from kikit.panelize_ui import Section, PresetError
 from kikit.panelize import *
 from kikit.defs import Layer
 from shapely.geometry import box
-from kikit.units import readLength, readAngle, BaseValue
+from kikit.units import BaseValue
+from kikit.panelize_ui_sections import *
 from kikit.substrate import SubstrateNeighbors
 from kikit.common import resolveAnchor
 import commentjson
@@ -59,57 +60,6 @@ def validatePresetLayout(preset):
         if not isinstance(section, dict):
             raise PresetError(f"Section '{name}' is not a dictionary")
 
-def validateChoice(sectionName, section, key, choices):
-    if section[key] not in choices:
-        c = ", ".join(choices)
-        raise PresetError(f"'{section[key]}' is not allowed for {sectionName}.{key}. Use one of {c}.")
-
-def readParameters(section, method, what):
-    for x in what:
-        if x in section:
-            section[x] = method(section[x])
-
-def readLayer(s):
-    if isinstance(s, int):
-        if s in tuple(item.value for item in Layer):
-            return Layer(s)
-        raise RuntimeError(f"{s} is not a valid layer number")
-    if isinstance(s, str):
-        return Layer[s.replace(".", "_")]
-    raise RuntimeError(f"Got {s}, expected layer name or number")
-
-def readBool(s):
-    if isinstance(s, bool):
-        return s
-    if isinstance(s, str):
-        sl = str(s).lower()
-        if sl in ["1", "true", "yes"]:
-            return True
-        if sl in ["0", "false", "no"]:
-            return False
-        raise PresetError(f"Uknown boolean value '{s}'")
-    raise RuntimeError(f"Got {s}, expected boolean value")
-
-def readHJustify(s):
-    choices = {
-        "left": EDA_TEXT_HJUSTIFY_T.GR_TEXT_HJUSTIFY_LEFT,
-        "right": EDA_TEXT_HJUSTIFY_T.GR_TEXT_HJUSTIFY_RIGHT,
-        "center": EDA_TEXT_HJUSTIFY_T.GR_TEXT_HJUSTIFY_CENTER
-    }
-    if s in choices:
-        return choices[s]
-    raise PresetError(f"'{s}' is not valid justification value")
-
-def readVJustify(s):
-    choices = {
-        "top": EDA_TEXT_VJUSTIFY_T.GR_TEXT_VJUSTIFY_TOP,
-        "center": EDA_TEXT_VJUSTIFY_T.GR_TEXT_VJUSTIFY_CENTER,
-        "bottom": EDA_TEXT_VJUSTIFY_T.GR_TEXT_VJUSTIFY_BOTTOM
-    }
-    if s in choices:
-        return choices[s]
-    raise PresetError(f"'{s}' is not valid justification value")
-
 def writeJustify(j):
     choices = {
         EDA_TEXT_HJUSTIFY_T.GR_TEXT_HJUSTIFY_LEFT: "left",
@@ -120,84 +70,6 @@ def writeJustify(j):
         EDA_TEXT_VJUSTIFY_T.GR_TEXT_VJUSTIFY_BOTTOM: "bottom"
     }
     return choices[j]
-
-ANCHORS = ["tl", "tr", "bl", "br", "mt", "mb", "ml", "mr", "c"]
-
-def ppLayout(section):
-    validateChoice("layout", section, "type", ["grid"])
-    validateChoice("layout", section, "alternation",
-        ["none", "rows", "cols", "rowsCols"])
-    readParameters(section, readLength,
-        ["hspace", "vspace", "space", "hbackbone", "vbackbone"])
-    readParameters(section, readAngle, ["rotation"])
-    readParameters(section, int, ["rows", "cols"])
-    readParameters(section, readBool, ["vbonecut", "hbonecut"])
-    # The space parameter overrides hspace and vspace
-    if "space" in section:
-        section["hspace"] = section["vspace"] = section["space"]
-
-def ppSource(section):
-    validateChoice("source", section, "type", ["auto", "rectangle", "annotation"])
-    readParameters(section, readLength,
-        ["tolerance", "tlx", "tly", "brx", "bry"])
-    readParameters(section, str, "ref")
-
-def ppTabs(section):
-    validateChoice("tabs", section, "type", ["none", "fixed", "spacing", "full",
-        "corner", "annotation"])
-    readParameters(section, readLength, ["vwidth", "hwidth", "width",
-        "mindistance", "spacing"])
-    readParameters(section, int, ["vcount", "hcount"])
-    if "width" in section:
-        section["vwidth"] = section["hwidth"] = section["width"]
-
-def ppCuts(section):
-    validateChoice("cuts", section, "type", ["none", "mousebites", "vcuts"])
-    readParameters(section, readLength, ["drill", "spacing", "offset",
-        "prolong", "clearance", "threshold"])
-    readParameters(section, readBool, ["cutcurves"])
-    readParameters(section, readLayer, ["layer"])
-
-def ppFraming(section):
-    validateChoice("framing", section, "type",
-        ["none", "railstb", "railslr", "frame", "tightframe"])
-    readParameters(section, readLength,
-        ["hspace", "vspace", "space", "width", "slotwidth"])
-    readParameters(section, readBool, ["cuts"])
-    # The space parameter overrides hspace and vspace
-    if "space" in section:
-        section["hspace"] = section["vspace"] = section["space"]
-
-def ppTooling(section):
-    validateChoice("tooling", section, "type", ["none", "3hole", "4hole"])
-    readParameters(section, readLength, ["hoffset", "voffset", "size"])
-    readParameters(section, readBool, ["paste"])
-
-def ppFiducials(section):
-    validateChoice("fiducials", section, "type", ["none", "3fid", "4fid"])
-    readParameters(section, readLength,
-        ["hoffset", "voffset", "coppersize", "opening"])
-
-def ppText(section):
-    validateChoice("text", section, "type", ["none", "simple"])
-    readParameters(section, readLength,
-        ["hoffset", "voffset", "width", "height", "thickness"])
-    readParameters(section, readHJustify, ["hjustify"])
-    readParameters(section, readVJustify, ["vjustify"])
-    readParameters(section, readLayer, ["layer"])
-    readParameters(section, readAngle, ["orientation"])
-    validateChoice("text", section, "anchor", ANCHORS)
-
-def ppPost(section):
-    validateChoice("type", section, "type", ["auto"])
-    readParameters(section, readBool, ["copperfill"])
-    readParameters(section, readLength, ["millradius"])
-    readParameters(section, str, ["script", "scriptarg"])
-    validateChoice("text", section, "origin", ANCHORS + [""])
-
-def ppDebug(section):
-    readParameters(section, readBool, ["drawPartitionLines",
-        "drawBackboneLines", "drawboxes", "trace"])
 
 def postProcessPreset(preset):
     process = {
