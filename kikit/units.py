@@ -30,7 +30,7 @@ class BaseValue(int):
         return self.str
 
     def __repr__(self):
-        return f"<BaseValue: {x}, {self.str} >"
+        return f"<BaseValue: {int(self)}, {self.str} >"
 
 
 def readUnit(unitDir, unitStr):
