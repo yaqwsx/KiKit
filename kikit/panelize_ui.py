@@ -191,6 +191,8 @@ def panelize(input, output, preset, layout, source, tabs, cuts, framing,
         ki.makeTabCuts(preset["cuts"], panel, tabCuts)
         ki.makeOtherCuts(preset["cuts"], panel, chain(backboneCuts, frameCuts))
 
+        ki.setStackup(preset["source"], panel)
+
         ki.runUserScript(preset["post"], panel)
 
         ki.buildDebugAnnotation(preset["debug"], panel)
@@ -238,6 +240,7 @@ def separate(input, output, source, debug):
         panel.inheritProperties(input)
         destination = wxPointMM(150, 100)
         panel.appendBoard(input, destination, sourceArea)
+        ki.setStackup(preset["source"], panel)
         panel.save(output)
     except Exception as e:
         sys.stderr.write("An error occurred: " + str(e) + "\n")

@@ -187,6 +187,15 @@ are present. You can read more about multi-board project [here](multiboard.md).
 
 **Types**: auto, rectangle, annotation
 
+**Common options**:
+
+- `stack`: specify the number of layers of the panel. Valid options are
+  `2layer`, `4layer`, `6layer` or `inehrit` (default). The use case for this
+  option is when you design a multiple boards in a single desing and you
+  separate them, however, one boards is e.g., 4 layer and one 2 layer. Then you
+  design both of them as 4 layer and you specify `stack: 2layer` for the 2 layer
+  one when panelizing or separating.
+
 #### Auto
 
 Find all board edges and use them to construct source rectangle. Suitable for

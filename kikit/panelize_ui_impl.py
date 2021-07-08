@@ -178,6 +178,23 @@ def readSourceArea(specification, board):
     except KeyError as e:
         raise PresetError(f"Missing parameter '{e}' in section 'source'")
 
+def setStackup(specification, panel):
+    """
+    Set stackup based on user preferences
+    """
+    stackup = specification["stack"]
+    if stackup == "inherit":
+        return
+    if stackup == "2layer":
+        panel.setCopperLayers(2)
+    elif stackup == "4layer":
+        panel.setCopperLayers(4)
+    elif stackup == "6layer":
+        panel.setCopperLayers(6)
+    else:
+        raise PresetError(f"Unknown type '{stackup}' of stack specification.")
+
+
 def obtainPreset(presetPaths, validate=True, **kwargs):
     """
     Given a preset paths from the user and the overrides in the form of named

@@ -21,7 +21,8 @@
         "tly": "0mm",
         "brx": "0mm",
         "brx": "0mm",
-        "ref": ""
+        "ref": "",
+        "stack": "inherit"
     },
     "tabs": {
         "type": "spacing",

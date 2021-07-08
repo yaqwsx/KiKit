@@ -1053,6 +1053,10 @@ class Panel:
         elif(self.copperLayerCount != board.GetCopperLayerCount()):
             raise RuntimeError("Attempting to panelize boards together of mixed layer counts")
 
+    def setCopperLayers(self, count):
+        self.copperLayerCount = count
+        self.board.SetCopperLayerCount(self.copperLayerCount)
+
     def copperFillNonBoardAreas(self):
         """
         Fill top and bottom layers with copper on unused areas of the panel
