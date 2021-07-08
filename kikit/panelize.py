@@ -436,13 +436,13 @@ class Panel:
         Inherit text properties from a board specified by a properties
         """
         b = pcbnew.LoadBoard(boardFilename)
-        self.setDesignSettings(b.GetDesignSettings())
+        self.board.SetProperties(b.GetProperties())
 
     def setProperties(self, properties):
         """
         Set text properties cached in the board
         """
-        self.board.SetProperties(designSettings)
+        self.board.SetProperties(properties)
 
     def appendBoard(self, filename, destination, sourceArea=None,
                     origin=Origin.Center, rotationAngle=0, shrink=False,
@@ -1046,9 +1046,8 @@ class Panel:
         Raise an error if this is attempted twice with inconsistent layer count
         boards.
         """
-        if(self.copperLayerCount is None):
-            self.copperLayerCount = board.GetCopperLayerCount()
-            self.board.SetCopperLayerCount(self.copperLayerCount)
+        if self.copperLayerCount is None:
+            self.setCopperLayers(board.GetCopperLayerCount())
 
         elif(self.copperLayerCount != board.GetCopperLayerCount()):
             raise RuntimeError("Attempting to panelize boards together of mixed layer counts")
