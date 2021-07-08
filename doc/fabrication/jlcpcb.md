@@ -9,6 +9,11 @@ When you run this command, you will find file `gerbers.zip` in `OUTPUTDIR`. This
 file can be directly uploaded to JLC PCB site. KiKit automatically detects the
 number of layers.
 
+If you want to name your files differently, you can specify `--nametemplate`.
+This option takes a string that should contain `{}`. This string will be
+replaced by `gerber`, `pos` or `bom` in the out file names. The extension is
+appended automatically.
+
 ## Assembly
 
 If you would also like to use the SMD assembly service, you have to specify

@@ -66,7 +66,7 @@ def collectPosData(board, correctionFields, posFilter=lambda x : True,
     for footprint in board.GetFootprints():
         if footprint.GetAttributes() & MODULE_ATTR_T.MOD_VIRTUAL:
             continue
-        if (posFilter(footprint)):
+        if posFilter(footprint) and footprint.GetReference() in bom:
             footprints.append(footprint)
     def getCompensation(footprint):
         if footprint.GetReference() not in bom:

@@ -20,7 +20,7 @@ def collectBom(components, lscsFields, ignore):
             continue
         if reference in ignore:
             continue
-        if getField(c, "JLCPCB_IGNORE") is not None:
+        if getField(c, "JLCPCB_IGNORE") is not None and getField(c, "JLCPCB_IGNORE") != "":
             continue
         orderCode = None
         for fieldName in lscsFields:
@@ -44,7 +44,7 @@ def bomToCsv(bomData, filename):
             writer.writerow([value, ",".join(references), footprint, lcsc])
 
 def exportJlcpcb(board, outputdir, assembly, schematic, ignore, field,
-           corrections, missingerror):
+           corrections, missingerror, nametemplate):
     """
     Prepare fabrication files for JLCPCB including their assembly service
     """
@@ -56,7 +56,8 @@ def exportJlcpcb(board, outputdir, assembly, schematic, ignore, field,
     gerberdir = os.path.join(outputdir, "gerber")
     shutil.rmtree(gerberdir, ignore_errors=True)
     gerberImpl(board, gerberdir)
-    shutil.make_archive(os.path.join(outputdir, "gerbers"), "zip", outputdir, "gerber")
+    archiveName = nametemplate.format("gerbers")
+    shutil.make_archive(os.path.join(outputdir, archiveName), "zip", outputdir, "gerber")
 
     if not assembly:
         return
@@ -66,6 +67,12 @@ def exportJlcpcb(board, outputdir, assembly, schematic, ignore, field,
     components = extractComponents(schematic)
     ordercodeFields = [x.strip() for x in field.split(",")]
     bom = collectBom(components, ordercodeFields, refsToIgnore)
+
+    posData = collectPosData(loadedBoard, correctionFields, bom=components)
+    boardReferences = set([x[0] for x in posData])
+    bom = {key: [v for v in val if v in boardReferences] for key, val in bom.items()}
+    bom = {key: val for key, val in bom.items() if len(val) > 0}
+
 
     missingFields = False
     for type, references in bom.items():
@@ -77,6 +84,5 @@ def exportJlcpcb(board, outputdir, assembly, schematic, ignore, field,
     if missingFields and missingerror:
         sys.exit("There are components with missing ordercode, aborting")
 
-    posData = collectPosData(loadedBoard, correctionFields, bom=components)
-    posDataToFile(posData, os.path.join(outputdir, "pos.csv"))
-    bomToCsv(bom, os.path.join(outputdir, "bom.csv"))
+    posDataToFile(posData, os.path.join(outputdir, nametemplate.format("pos") + ".csv"))
+    bomToCsv(bom, os.path.join(outputdir, nametemplate.format("bom") + ".csv"))

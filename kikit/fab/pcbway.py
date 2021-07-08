@@ -119,7 +119,7 @@ def bomToCsv(bomData, filename, nBoards, types):
 
 def exportPcbway(board, outputdir, assembly, schematic, ignore,
                  manufacturer, partnumber, description, notes, soldertype,
-                 footprint, corrections, missingerror, nboards):
+                 footprint, corrections, missingerror, nboards, nametemplate):
     """
     Prepare fabrication files for PCBWay including their assembly service
     """
@@ -131,7 +131,8 @@ def exportPcbway(board, outputdir, assembly, schematic, ignore,
     gerberdir = os.path.join(outputdir, "gerber")
     shutil.rmtree(gerberdir, ignore_errors=True)
     gerberImpl(board, gerberdir, settings=exportSettingsPcbway)
-    shutil.make_archive(os.path.join(outputdir, "gerbers"), "zip", outputdir, "gerber")
+    archiveName = nametemplate.format("gerbers")
+    shutil.make_archive(os.path.join(outputdir, archiveName), "zip", outputdir, "gerber")
 
     if not assembly:
         return
@@ -161,6 +162,6 @@ def exportPcbway(board, outputdir, assembly, schematic, ignore,
         sys.exit("There are components with missing ordercode, aborting")
 
     posData = collectPosData(loadedBoard, correctionFields, bom=components)
-    posDataToFile(posData, os.path.join(outputdir, "pos.csv"))
+    posDataToFile(posData, os.path.join(outputdir, nametemplate.format("pos") + ".csv"))
     types = collectSolderTypes(loadedBoard)
-    bomToCsv(bom, os.path.join(outputdir, "bom.csv"), nboards, types)
+    bomToCsv(bom, os.path.join(outputdir, nametemplate.format("bom") + ".csv"), nboards, types)

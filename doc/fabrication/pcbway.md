@@ -9,6 +9,9 @@ When you run this command, you will find file `gerbers.zip` in `OUTPUTDIR`. This
 file can be directly uploaded to the PCBWay site. KiKit automatically detects
 the number of layers.
 
+If you want to name your files differently, you can specify `--nametemplate`.
+For detailed description of this option, see [JLC PCB documentation](jlcpcb.md).
+
 ## Assembly
 
 If you would also like to use the SMD assembly service, you have to specify
