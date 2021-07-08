@@ -243,6 +243,7 @@ def separate(input, output, source, debug):
         ki.setStackup(preset["source"], panel)
         panel.save(output)
     except Exception as e:
+        import sys
         sys.stderr.write("An error occurred: " + str(e) + "\n")
         sys.stderr.write("No output files produced\n")
         if isinstance(preset, dict) and preset["debug"]["trace"]:
