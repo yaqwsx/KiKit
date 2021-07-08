@@ -96,7 +96,6 @@ def gerberImpl(boardfile, outputdir, plot_plan=fullGerberPlotPlan, drilling=True
         pctl.SetLayer(id)
         suffix = "" if settings["NoSuffix"] else name
         pctl.OpenPlotfile(suffix, PLOT_FORMAT_GERBER, comment)
-        print('plot {}'.format(pctl.GetPlotFileName()))
         jobfile_writer.AddGbrFile(id, os.path.basename(pctl.GetPlotFileName()))
         if pctl.PlotLayer() == False:
             print("plot error")
@@ -109,7 +108,6 @@ def gerberImpl(boardfile, outputdir, plot_plan=fullGerberPlotPlan, drilling=True
             pctl.SetLayer(innerlyr)
             lyrname = "" if settings["NoSuffix"] else 'inner{}'.format(innerlyr)
             pctl.OpenPlotfile(lyrname, PLOT_FORMAT_GERBER, "inner")
-            print('plot {}'.format(pctl.GetPlotFileName()))
             jobfile_writer.AddGbrFile(innerlyr, os.path.basename(pctl.GetPlotFileName()))
             if pctl.PlotLayer() == False:
                 print("plot error")
@@ -142,17 +140,14 @@ def gerberImpl(boardfile, outputdir, plot_plan=fullGerberPlotPlan, drilling=True
         drlwriter.SetFormat(metricFmt, zerosFmt)
         genDrl = True
         genMap = True
-        print('create drill and map files in {}'.format(pctl.GetPlotDirName()))
         drlwriter.CreateDrillandMapFilesSet(pctl.GetPlotDirName(), genDrl, genMap)
 
         # One can create a text file to report drill statistics
         rptfn = pctl.GetPlotDirName() + 'drill_report.rpt'
-        print('report: {}'.format(rptfn))
         drlwriter.GenDrillReportFile(rptfn)
 
     job_fn=os.path.dirname(pctl.GetPlotFileName()) + '/' + os.path.basename(boardfile)
     job_fn=os.path.splitext(job_fn)[0] + '.gbrjob'
-    print('create job file {}'.format(job_fn))
     jobfile_writer.CreateJobFile(job_fn)
 
 def pasteDxfExport(board, plotDir):
