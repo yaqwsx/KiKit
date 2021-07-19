@@ -92,9 +92,9 @@ varies by the platform, so Google up a recent guide for your platform.
 Then, pull the KiKit container via issuing one of the following commands:
 
 ```
-docker pull yaqwsx/kikit:latest # Pull latest stable version
-docker pull yaqwsx/kikit:v0.7   # Pull image with a concrete release
-docker pull yaqwsx/kikit:nighly # Pull upstream version of KiKit - content of the master branch
+docker pull yaqwsx/kikit:latest  # Pull latest stable version
+docker pull yaqwsx/kikit:v0.7    # Pull image with a concrete release
+docker pull yaqwsx/kikit:nightly # Pull upstream version of KiKit - content of the master branch
 ```
 
 To run KiKit commands for files in the current working directory issue the
@@ -104,10 +104,19 @@ following command:
 docker run -it -w /kikit -v $(pwd):/kikit yaqwsx/kikit /bin/bash
 ```
 
+Note that for Windows, the docker command differs slightly:
+
+```
+docker run -it -w /kikit -v %cd%:/kikit yaqwsx/kikit /bin/bash
+```
+
 This will run a new terminal inside the docker container. You can issue any
 kikit commands here. Note that on Windows you might have to explicitly allow for
 mounting directories outside you user account (see [the following
 topis](https://forums.docker.com/t/volume-mounts-in-windows-does-not-work/10693/5)).
+
+If you would like to run a particular version of KiKit, simply append a tag to
+the image name (e.g., `:nightly`).
 
 If you want to use Makefile for your projects, the preferable way is to invoke
 `make` inside the container. The Docker image contains several often used tools
