@@ -504,6 +504,15 @@ class Panel:
         edges = []
         annotations = []
         for footprint in footprints:
+            # We want to rotate text within footprints by the requested amount,
+            # even if that text has "keep upright" attribute set. For that,
+            # the attribute must be first removed without changing the
+            # orientation of the text.
+            for item in (*footprint.GraphicalItems(), footprint.Value(), footprint.Reference()):
+                if isinstance(item, pcbnew.TEXTE_MODULE) and item.IsKeepUpright():
+                    actualOrientation = item.GetDrawRotation()
+                    item.SetKeepUpright(False)
+                    item.SetTextAngle(actualOrientation - footprint.GetOrientation())
             footprint.Rotate(originPoint, rotationAngle)
             footprint.Move(translation)
             edges += removeCutsFromFootprint(footprint)
