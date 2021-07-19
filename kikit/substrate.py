@@ -438,7 +438,7 @@ class Substrate:
         direction = normalize(direction)
         sideOriginA = origin + makePerpendicular(direction) * width / 2
         sideOriginB = origin - makePerpendicular(direction) * width / 2
-        boundary = self.substrates.boundary
+        boundary = self.substrates.exterior
         splitPointA = closestIntersectionPoint(sideOriginA, direction,
             boundary, maxHeight)
         splitPointB = closestIntersectionPoint(sideOriginB, direction,
