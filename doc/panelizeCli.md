@@ -366,13 +366,18 @@ need more text or more sophisticated placing options, see `script` option from
 
 - `text` - The text to be displayed. Note that you can escape `;` via `\`
 - `anchor` - Origin of the text. Can be one of `tl`, `tr`, `bl`, `br` (corners),
-  `mt`, `mb`, `ml`, `mr` (middle of sides), `c` (center).
-- `hoffset`, `voffset` - specify the offset from anchor
-- `orientation` - specify the orientation (angle)
-- `width`, `height` - width and height of the text
-- `hjustify` - justification of the text. One of `left`, `right`, `center`
-- `vjustify` - justification of the text. One of `top`, `bottom`, `center`
-- `thickness` - stroke thickness
+  `mt`, `mb`, `ml`, `mr` (middle of sides), `c` (center). The anchors refer to
+  the panel outline. Default `mt`
+- `hoffset`, `voffset` - specify the offset from anchor. Respects KiCAD
+  coordinate system. Default `0mm`.
+- `orientation` - specify the orientation (angle). Default `0deg`
+- `width`, `height` - width and height of the characters (the same parameters as
+  KiCAD uses). Default `1.5mm`.
+- `hjustify` - justification of the text. One of `left`, `right`, `center`.
+  Default `center`.
+- `vjustify` - justification of the text. One of `top`, `bottom`, `center`.
+  Default `center`
+- `thickness` - stroke thickness. Default `0.3mm`.
 - `layer` - specify text layer
 
 ## Postprocess
