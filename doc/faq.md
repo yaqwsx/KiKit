@@ -20,14 +20,6 @@ How to include the components?
 - specify `tolerance: 20mm` for `source` (i.e., `--source 'tolerance: 20mm'`) to
   enlarge the board outline bounding box. The default value is 5 mm.
 
-## I rotated my board in a panel and the component references did not rotate.
-
-KiCAD, more precisely Pcbnew, has a feature for component references "Keep
-upright". When this option is on, the label will turn so it is always upright
-ignoring the component orientation. If you wish to preserve your references
-orientation even when you rotate the board, uncheck this option in reference
-properties.
-
 ## My milled slots are gone! How can I preserve them?
 
 KiKit's `millradius` parameter from the `postprocess` section simulates the
