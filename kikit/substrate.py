@@ -1,3 +1,4 @@
+from shapely import geometry
 from shapely.geometry import (Polygon, MultiPolygon, LineString,
     MultiLineString, LinearRing, Point)
 from shapely.ops import unary_union, split, nearest_points
@@ -145,6 +146,44 @@ def approximateArc(arc, endWith):
         outline.reverse()
     return outline
 
+def approximateBezier(bezier, endWith):
+    """
+    Take DRAWINGITEM bezier and approximate it using lines.
+
+    This is more-less inspired by the KiCAD code as KiCAD does not export the
+    relevant functions
+    """
+    assert bezier.GetShape() == STROKE_T.S_CURVE
+
+    CURVE_POINTS = 4 * 32 - 2
+    dt = 1.0 / CURVE_POINTS
+
+    start = np.array(bezier.GetStart())
+    bc1 = np.array(bezier.GetBezControl1())
+    bc2 = np.array(bezier.GetBezControl2())
+    end = np.array(bezier.GetEnd())
+
+    degenerated = (start == bc1).all() and (bc2 == end).all()
+
+    outline = [start]
+    if not degenerated:
+        for i in range(CURVE_POINTS):
+            t = dt * i
+            vertex = (1 - t) ** 3 * start + \
+                     3 * t * (1 - t) ** 2 * bc1 + \
+                     3 * t ** 2 * (1 - t) * bc2 + \
+                     t ** 3 * end
+            outline.append(vertex)
+    outline.append(end)
+
+    endWith = np.array(endWith)
+    first = np.array([outline[0][0], outline[0][1]])
+    last = np.array([outline[-1][0], outline[-1][1]])
+    if (np.linalg.norm(endWith - first) < np.linalg.norm(endWith - last)):
+        outline.reverse()
+
+    return outline
+
 def toShapely(ring, geometryList):
     """
     Take a list indices representing a ring from PCB_SHAPE entities and
@@ -153,11 +192,17 @@ def toShapely(ring, geometryList):
     """
     outline = []
     for idxA, idxB in zip(ring, ring[1:] + ring[:1]):
-        if geometryList[idxA].GetShape() in [STROKE_T.S_ARC, STROKE_T.S_CIRCLE]:
+        shape = geometryList[idxA].GetShape()
+        if shape in [STROKE_T.S_ARC, STROKE_T.S_CIRCLE]:
             outline += approximateArc(geometryList[idxA],
                 commonEndPoint(geometryList[idxA], geometryList[idxB]))[1:]
-        else:
+        elif shape in [STROKE_T.S_CURVE]:
+            outline += approximateBezier(geometryList[idxA],
+                commonEndPoint(geometryList[idxA], geometryList[idxB]))[1:]
+        elif shape in [STROKE_T.S_SEGMENT]:
             outline.append(commonEndPoint(geometryList[idxA], geometryList[idxB]))
+        else:
+            raise RuntimeError(f"Unsupported shape {shape} in outline")
     return Polygon(outline)
 
 def buildContainmentGraph(polygons):
