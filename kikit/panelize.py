@@ -1035,8 +1035,8 @@ class Panel:
         fill = box(*outerBounds).difference(bBoxes.buffer(SHP_EPSILON))
         self.appendSubstrate(fill.buffer(SHP_EPSILON))
 
-        # Make the cuts
-        substrateBoundaries = [linestringToSegments(s.partitionLine)
+        # Make the cuts from the bounding boxes of the PCB
+        substrateBoundaries = [linestringToSegments(rectToShpBox(s.boundingBox()).exterior)
             for s in self.substrates]
         substrateCuts = [LineString(x) for x in chain(*substrateBoundaries)]
         return substrateCuts
@@ -1156,9 +1156,14 @@ class Panel:
         for s in boundarySubstrates:
             hLines, vLines = partition.partitionSubstrate(s)
             for l in hLines:
-                hBoneLines.remove(l)
+                # When edge overlaps with boundary substrate, the line is not
+                # present
+                if l in hBoneLines:
+                    hBoneLines.remove(l)
             for l in vLines:
-                vBoneLines.remove(l)
+                # Ditto as above
+                if l in vBoneLines:
+                    vBoneLines.remove(l)
         minx, miny, maxx, maxy = self.boardSubstrate.bounds()
         # Cut backbone on substrates boundaries:
         cut = lambda xs, y: chain(*[x.cut(y) for x in xs])

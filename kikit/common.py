@@ -5,6 +5,7 @@ import os
 from itertools import product, chain, islice
 import numpy as np
 from shapely.geometry import LinearRing
+import shapely.geometry
 
 PKG_BASE = os.path.dirname(__file__)
 KIKIT_LIB = os.path.join(PKG_BASE, "resources/kikit.pretty")
@@ -206,6 +207,10 @@ def shpBBoxExpand(box, x, y=None):
 def shpBoxToRect(box):
     box = list([int(x) for x in box])
     return wxRect(box[0], box[1], box[2] - box[0], box[3] - box[1])
+
+def rectToShpBox(rect):
+    return shapely.geometry.box(rect.GetX(), rect.GetY(),
+        rect.GetX() + rect.GetWidth(), rect.GetY() + rect.GetHeight())
 
 def isLinestringCyclic(line):
     c = line.coords
