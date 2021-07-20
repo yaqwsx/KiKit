@@ -43,6 +43,9 @@ def bomToCsv(bomData, filename):
             value, footprint, lcsc = cType
             writer.writerow([value, ",".join(references), footprint, lcsc])
 
+def isNonVirtual(footprint):
+    return not (footprint.GetAttributes() & MODULE_ATTR_T.MOD_VIRTUAL)
+
 def exportJlcpcb(board, outputdir, assembly, schematic, ignore, field,
            corrections, missingerror, nametemplate):
     """
@@ -68,7 +71,8 @@ def exportJlcpcb(board, outputdir, assembly, schematic, ignore, field,
     ordercodeFields = [x.strip() for x in field.split(",")]
     bom = collectBom(components, ordercodeFields, refsToIgnore)
 
-    posData = collectPosData(loadedBoard, correctionFields, bom=components)
+    posData = collectPosData(loadedBoard, correctionFields,
+        bom=components, posFilter=isNonVirtual)
     boardReferences = set([x[0] for x in posData])
     bom = {key: [v for v in val if v in boardReferences] for key, val in bom.items()}
     bom = {key: val for key, val in bom.items() if len(val) > 0}
