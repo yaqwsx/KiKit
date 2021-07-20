@@ -45,7 +45,7 @@
         "type": "none",
         "thickness": "0mm",
         "millRadius": "0mm",
-        "cuts": true,
+        "cuts": "both",
         "copperFill": false,
         "slotwidth": "2mm"
     },

@@ -214,7 +214,20 @@ runBoardExample(autoName(),
         ["--layout", "grid; rows: 2; cols: 2; space: 2mm"],
         ["--tabs", "fixed; width: 3mm; vcount: 2"],
         ["--cuts", "mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm"],
-        ["--framing", "frame; width: 5mm; space: 3mm; cuts: true"],
+        ["--framing", "frame; width: 5mm; space: 3mm; cuts: both"],
+        ["--post", "millradius: 1mm"],
+        [SRC]])
+
+print("""
+Note that you can also use just only a vertical or horizontal frame cuts:
+""")
+
+runBoardExample(autoName(),
+    [["panelize"],
+        ["--layout", "grid; rows: 2; cols: 2; space: 2mm"],
+        ["--tabs", "fixed; width: 3mm; vcount: 2"],
+        ["--cuts", "mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm"],
+        ["--framing", "frame; width: 5mm; space: 3mm; cuts: h"],
         ["--post", "millradius: 1mm"],
         [SRC]])
 
@@ -272,7 +285,7 @@ runBoardExample(autoName(),
         ["--layout", "grid; rows: 2; cols: 2; space: 0mm; rotation: 45deg;"],
         ["--tabs", "fixed; width: 3mm;"],
         ["--cuts", "mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.75mm"],
-        ["--framing", "frame; width: 5mm; space: 3mm; cuts: true"],
+        ["--framing", "frame; width: 5mm; space: 3mm; cuts: both"],
         ["--post", "millradius: 1mm"],
         [SRC]])
 
@@ -290,7 +303,7 @@ runBoardExample(autoName(),
         ["--layout", "grid; rows: 2; cols: 2; space: 3mm; alternation: cols;"],
         ["--tabs", "fixed; width: 3mm; vcount: 2"],
         ["--cuts", "mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm"],
-        ["--framing", "frame; width: 5mm; space: 3mm; cuts: true"],
+        ["--framing", "frame; width: 5mm; space: 3mm; cuts: both"],
         ["--post", "millradius: 1mm"],
         [SRC]])
 

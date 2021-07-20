@@ -326,7 +326,8 @@ Inherit text properties from a board specified by a properties
 makeFrame(self, width, hspace, vspace)
 ```
 Build a frame around the board. Specify width and spacing between the
-boards substrates and the frame. Return frame cuts
+boards substrates and the frame. Return a tuple of vertical and
+horizontal cuts.
 
 #### `makeFrameCutsH`
 ```
@@ -423,6 +424,12 @@ Saves the panel to a file.
 setAuxiliaryOrigin(self, point)
 ```
 Set the auxiliary origin used e.g., for drill files
+
+#### `setCopperLayers`
+```
+setCopperLayers(self, count)
+```
+None
 
 #### `setDesignSettings`
 ```

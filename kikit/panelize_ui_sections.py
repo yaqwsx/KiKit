@@ -160,7 +160,7 @@ FRAMING_SECTION = {
     "space": SLength(),
     "width": SLength(),
     "slotwidth": SLength(),
-    "cuts": SBool(),
+    "cuts": SChoice(["none", "both", "v", "h"]),
     "cutcurves": SBool(),
     "layer": SLayer()
 }

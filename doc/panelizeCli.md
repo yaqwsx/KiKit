@@ -322,8 +322,8 @@ Add rail (either on top and bottom or on left and right) to the panel.
 
 Add a frame around the board.
 
-- `cuts` - true/false - specify whether to add cuts to the corners of the frame
-  for easy removal.
+- `cuts` - one of `none`, `both`, `v`, `h` - specify whether to add cuts to the
+  corners of the frame for easy removal. Default `both`.
 
 #### Tighframe
 

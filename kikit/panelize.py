@@ -706,7 +706,8 @@ class Panel:
     def makeFrame(self, width, hspace, vspace):
         """
         Build a frame around the board. Specify width and spacing between the
-        boards substrates and the frame. Return frame cuts
+        boards substrates and the frame. Return a tuple of vertical and
+        horizontal cuts.
         """
         frameInnerRect = expandRect(shpBoxToRect(self.boardsBBox()),
             hspace - SHP_EPSILON, vspace + SHP_EPSILON)
@@ -721,7 +722,7 @@ class Panel:
             innerArea = combineBoundingBoxes(innerArea, s.boundingBox())
         frameCutsV = self.makeFrameCutsV(innerArea, frameInnerRect, frameOuterRect)
         frameCutsH = self.makeFrameCutsH(innerArea, frameInnerRect, frameOuterRect)
-        return chain(frameCutsV, frameCutsH)
+        return frameCutsV, frameCutsH
 
     def makeTightFrame(self, width, slotwidth, hspace, vspace):
         """

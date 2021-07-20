@@ -196,12 +196,26 @@ kikit panelize \
     --layout 'grid; rows: 2; cols: 2; space: 2mm' \
     --tabs 'fixed; width: 3mm; vcount: 2' \
     --cuts 'mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm' \
-    --framing 'frame; width: 5mm; space: 3mm; cuts: true' \
+    --framing 'frame; width: 5mm; space: 3mm; cuts: both' \
     --post 'millradius: 1mm' \
     doc/resources/conn.kicad_pcb panel.kicad_pcb
 ```
 
 ![examplePanel9](resources/examplePanel9.png)
+
+Note that you can also use just only a vertical or horizontal frame cuts:
+
+```
+kikit panelize \
+    --layout 'grid; rows: 2; cols: 2; space: 2mm' \
+    --tabs 'fixed; width: 3mm; vcount: 2' \
+    --cuts 'mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm' \
+    --framing 'frame; width: 5mm; space: 3mm; cuts: h' \
+    --post 'millradius: 1mm' \
+    doc/resources/conn.kicad_pcb panel.kicad_pcb
+```
+
+![examplePanel10](resources/examplePanel10.png)
 
 When you use V-cuts it might make sense to not remove all material, but only
 mill a slot around the board of the board. This yields a stronger panel – and
@@ -219,7 +233,7 @@ kikit panelize \
     doc/resources/conn.kicad_pcb panel.kicad_pcb
 ```
 
-![examplePanel10](resources/examplePanel10.png)
+![examplePanel11](resources/examplePanel11.png)
 
 Once we have a frame, we can append a tooling holes, fiducials and some text to
 it:
@@ -237,7 +251,7 @@ kikit panelize \
     doc/resources/conn.kicad_pcb panel.kicad_pcb
 ```
 
-![examplePanel11](resources/examplePanel11.png)
+![examplePanel12](resources/examplePanel12.png)
 
 There are many options for text and fiducials. Be sure to read the [full
 documentation](panelizeCli.md).
@@ -257,12 +271,12 @@ kikit panelize \
     --layout 'grid; rows: 2; cols: 2; space: 0mm; rotation: 45deg;' \
     --tabs 'fixed; width: 3mm;' \
     --cuts 'mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.75mm' \
-    --framing 'frame; width: 5mm; space: 3mm; cuts: true' \
+    --framing 'frame; width: 5mm; space: 3mm; cuts: both' \
     --post 'millradius: 1mm' \
     doc/resources/conn.kicad_pcb panel.kicad_pcb
 ```
 
-![examplePanel12](resources/examplePanel12.png)
+![examplePanel13](resources/examplePanel13.png)
 
 When your board has a connector sticking one one side of the board, it makes
 sense to rotate the boards every other column, row or combination of both. KiKit
@@ -276,12 +290,12 @@ kikit panelize \
     --layout 'grid; rows: 2; cols: 2; space: 3mm; alternation: cols;' \
     --tabs 'fixed; width: 3mm; vcount: 2' \
     --cuts 'mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm' \
-    --framing 'frame; width: 5mm; space: 3mm; cuts: true' \
+    --framing 'frame; width: 5mm; space: 3mm; cuts: both' \
     --post 'millradius: 1mm' \
     doc/resources/conn.kicad_pcb panel.kicad_pcb
 ```
 
-![examplePanel13](resources/examplePanel13.png)
+![examplePanel14](resources/examplePanel14.png)
 
 Another solution might be to not put tabs on, e.g., vertical edges of the PCB.
 However, in that case your panel might be weak for further assembly. You can
@@ -301,7 +315,7 @@ kikit panelize \
     doc/resources/conn.kicad_pcb panel.kicad_pcb
 ```
 
-![examplePanel14](resources/examplePanel14.png)
+![examplePanel15](resources/examplePanel15.png)
 
 The most powerful feature of KiKit regarding tab placement are tabs via
 annotation. Remember our test board? When you open it in Pcbnew, you can see
@@ -325,7 +339,7 @@ kikit panelize \
     doc/resources/conn.kicad_pcb panel.kicad_pcb
 ```
 
-![examplePanel15](resources/examplePanel15.png)
+![examplePanel16](resources/examplePanel16.png)
 
 Well, the panel looks strange – right? That's because KiKit always constructs a
 half-bridges. When you specify the tabs location, you have to either ensure they
@@ -344,7 +358,7 @@ kikit panelize \
     doc/resources/conn.kicad_pcb panel.kicad_pcb
 ```
 
-![examplePanel16](resources/examplePanel16.png)
+![examplePanel17](resources/examplePanel17.png)
 
 Note that the annotation can have an arbitrary orientation. The arrow just must
 be outside board edge and points towards it. KiKit will also place only those
@@ -365,7 +379,7 @@ kikit panelize \
     doc/resources/conn.kicad_pcb panel.kicad_pcb
 ```
 
-![examplePanel17](resources/examplePanel17.png)
+![examplePanel18](resources/examplePanel18.png)
 
 When you use V-cuts with `copperfill` you (or your fab house) might want to
 include a clearance around the V-cuts:
@@ -380,7 +394,7 @@ kikit panelize \
     doc/resources/conn.kicad_pcb panel.kicad_pcb
 ```
 
-![examplePanel18](resources/examplePanel18.png)
+![examplePanel19](resources/examplePanel19.png)
 
 Note one last facts about V-cuts. V-cuts can only be straight and
 horizontal/vertical. But you can use them with circular boards if you want by
@@ -419,7 +433,7 @@ kikit panelize \
     doc/resources/conn.kicad_pcb panel.kicad_pcb
 ```
 
-![examplePanel19](resources/examplePanel19.png)
+![examplePanel20](resources/examplePanel20.png)
 
 You can learn more about available functions from the comment in the source code
 or in [documentation](panelization.md).

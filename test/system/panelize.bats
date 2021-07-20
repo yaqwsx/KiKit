@@ -77,7 +77,37 @@ load common
         --layout 'grid; rows: 2; cols: 2; space: 2mm' \
         --tabs 'fixed; width: 3mm; vcount: 2' \
         --cuts 'mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm' \
-        --framing 'frame; width: 5mm; space: 3mm; cuts: true' \
+        --framing 'frame; width: 5mm; space: 3mm; cuts: both' \
+        --post 'millradius: 1mm' \
+        $RES/conn.kicad_pcb panel.kicad_pcb
+}
+
+@test "Simple grid, frame" {
+    kikit panelize \
+        --layout 'grid; rows: 2; cols: 2; space: 2mm' \
+        --tabs 'fixed; width: 3mm; vcount: 2' \
+        --cuts 'mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm' \
+        --framing 'frame; width: 5mm; space: 3mm; cuts: v' \
+        --post 'millradius: 1mm' \
+        $RES/conn.kicad_pcb panel.kicad_pcb
+}
+
+@test "Simple grid, frame" {
+    kikit panelize \
+        --layout 'grid; rows: 2; cols: 2; space: 2mm' \
+        --tabs 'fixed; width: 3mm; vcount: 2' \
+        --cuts 'mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm' \
+        --framing 'frame; width: 5mm; space: 3mm; cuts: h' \
+        --post 'millradius: 1mm' \
+        $RES/conn.kicad_pcb panel.kicad_pcb
+}
+
+@test "Simple grid, frame" {
+    kikit panelize \
+        --layout 'grid; rows: 2; cols: 2; space: 2mm' \
+        --tabs 'fixed; width: 3mm; vcount: 2' \
+        --cuts 'mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm' \
+        --framing 'frame; width: 5mm; space: 3mm; cuts: none' \
         --post 'millradius: 1mm' \
         $RES/conn.kicad_pcb panel.kicad_pcb
 }
@@ -110,7 +140,7 @@ load common
         --layout 'grid; rows: 2; cols: 2; space: 3mm; alternation: cols;' \
         --tabs 'fixed; width: 3mm; vcount: 2' \
         --cuts 'mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm' \
-        --framing 'frame; width: 5mm; space: 3mm; cuts: true' \
+        --framing 'frame; width: 5mm; space: 3mm; cuts: both' \
         --post 'millradius: 1mm' \
         $RES/conn.kicad_pcb panel.kicad_pcb
 }

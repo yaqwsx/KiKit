@@ -368,7 +368,13 @@ def buildFraming(preset, panel):
             return []
         if type == "frame":
             cuts = panel.makeFrame(preset["width"], preset["hspace"], preset["vspace"])
-            return cuts if preset["cuts"] else []
+            if preset["cuts"] == "both":
+                return chain(*cuts)
+            if preset["cuts"] == "v":
+                return cuts[0]
+            if preset["cuts"] == "h":
+                return cuts[1]
+            return []
         if type == "tightframe":
             panel.makeTightFrame(preset["width"], preset["slotwidth"],
                 preset["hspace"], preset["vspace"])
