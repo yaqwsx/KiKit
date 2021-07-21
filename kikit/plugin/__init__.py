@@ -37,8 +37,8 @@ def list():
     Show available plugins.
     """
     table = [("Identifier", "Name", "Description")] + availablePlugins
-    width1 = len(max(table, key=lambda x: x[0])[0])
-    width2 = len(max(table, key=lambda x: x[1])[1])
+    width1 = len(max(table, key=lambda x: len(x[0]))[0])
+    width2 = len(max(table, key=lambda x: len(x[1]))[1])
 
     def rowStr(row):
         ident, name, help = row
