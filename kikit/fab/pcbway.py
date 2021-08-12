@@ -52,6 +52,8 @@ def collectBom(components, manufacturerFields, partNumberFields,
             continue
         if isComponentUnused(posData, c):
             continue
+        if getField(c, "PCBWAY_IGNORE") is not None and getField(c, "PCBWAY_IGNORE") != "":
+            continue
         manufacturer = None
         for manufacturerName in manufacturerFields:
             manufacturer = getField(c, manufacturerName)
@@ -124,6 +126,19 @@ def bomToCsv(bomData, filename, nBoards, types):
                              solderType, notes])
             item_no += 1
 
+def isPositonUnused(bomData, position):
+    for references in bomData.items():
+        for item in references[1]:
+            # print("references - ", references, "  position[0] - ", position[0])
+            if item == position[0]:
+                return False
+    return True
+
+def ignoreUnusedPosition(posData, bomData):
+    for x in posData:
+        if isPositonUnused(bomData, x):
+            posData.remove(x)
+    return posData
 
 def exportPcbway(board, outputdir, assembly, schematic, ignore,
                  manufacturer, partnumber, description, notes, soldertype,
@@ -159,6 +174,7 @@ def exportPcbway(board, outputdir, assembly, schematic, ignore,
     bom = collectBom(components, manufacturerFields, partNumberFields,
                      descriptionFields, notesFields, typeFields,
                      footprintFields, refsToIgnore, posData)
+    posData = ignoreUnusedPosition(posData, bom)
 
     missingFields = False
     for type, references in bom.items():
