@@ -28,9 +28,15 @@ def addVirtualToRefsToIgnore(refsToIgnore, board):
         if footprint.GetAttributes() & MODULE_ATTR_T.MOD_VIRTUAL:
             refsToIgnore.append(footprint.GetReference())
 
+def isComponentUnused(posData, commponent):
+    for x in posData:
+        if x[0] == commponent["reference"]:
+            return False
+    return True
+
 def collectBom(components, manufacturerFields, partNumberFields,
                descriptionFields, notesFields, typeFields, footprintFields,
-               ignore):
+               ignore, posData):
     bom = {}
 
     # Use KiCad footprint as fallback for footprint
@@ -43,6 +49,8 @@ def collectBom(components, manufacturerFields, partNumberFields,
             continue
         reference = c["reference"]
         if reference.startswith("#PWR") or reference.startswith("#FL") or reference in ignore:
+            continue
+        if isComponentUnused(posData, c):
             continue
         manufacturer = None
         for manufacturerName in manufacturerFields:
@@ -147,9 +155,10 @@ def exportPcbway(board, outputdir, assembly, schematic, ignore,
     typeFields          = [x.strip() for x in soldertype.split(",")]
     footprintFields     = [x.strip() for x in footprint.split(",")]
     addVirtualToRefsToIgnore(refsToIgnore, loadedBoard)
+    posData = collectPosData(loadedBoard, correctionFields, bom=components)
     bom = collectBom(components, manufacturerFields, partNumberFields,
                      descriptionFields, notesFields, typeFields,
-                     footprintFields, refsToIgnore)
+                     footprintFields, refsToIgnore, posData)
 
     missingFields = False
     for type, references in bom.items():
@@ -161,7 +170,6 @@ def exportPcbway(board, outputdir, assembly, schematic, ignore,
     if missingFields and missingerror:
         sys.exit("There are components with missing ordercode, aborting")
 
-    posData = collectPosData(loadedBoard, correctionFields, bom=components)
     posDataToFile(posData, os.path.join(outputdir, nametemplate.format("pos") + ".csv"))
     types = collectSolderTypes(loadedBoard)
     bomToCsv(bom, os.path.join(outputdir, nametemplate.format("bom") + ".csv"), nboards, types)
