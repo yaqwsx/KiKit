@@ -201,9 +201,14 @@ class PanelizeDialog(wx.Dialog):
 
         middleSizer = wx.BoxSizer(wx.HORIZONTAL)
 
+        maxDisplayArea = wx.Display().GetClientArea()
+        self.maxDialogSize = wx.Size(
+            min(500, maxDisplayArea.Width),
+            min(800, maxDisplayArea.Height - 200))
+
         self.scrollWindow = wx.ScrolledWindow(
             self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.VSCROLL)
-        self.scrollWindow.SetSizeHints(wx.Size(500, 800), wx.Size(500, -1))
+        self.scrollWindow.SetSizeHints(self.maxDialogSize, wx.Size(self.maxDialogSize.width, -1))
         self.scrollWindow.SetScrollRate(5, 5)
         self._buildSections(self.scrollWindow)
         middleSizer.Add(self.scrollWindow, 0, wx.EXPAND | wx.ALL, 5)
@@ -229,7 +234,10 @@ class PanelizeDialog(wx.Dialog):
         self.kikitCmdWidget = wx.TextCtrl(
             self, wx.ID_ANY, "KiKit Command", wx.DefaultPosition, wx.DefaultSize,
             wx.TE_MULTILINE | wx.TE_READONLY)
-        self.kikitCmdWidget.SetSizeHints(wx.Size(500, 400), wx.Size(500, -1))
+        self.kikitCmdWidget.SetSizeHints(
+            wx.Size(self.maxDialogSize.width,
+                    self.maxDialogSize.height // 2),
+            wx.Size(self.maxDialogSize.width, -1))
         cmdFont = self.kikitCmdWidget.GetFont()
         cmdFont.SetFamily(wx.FONTFAMILY_TELETYPE)
         self.kikitCmdWidget.SetFont(cmdFont)
@@ -242,7 +250,10 @@ class PanelizeDialog(wx.Dialog):
         self.kikitJsonWidget = wx.TextCtrl(
             self, wx.ID_ANY, "KiKit JSON", wx.DefaultPosition, wx.DefaultSize,
             wx.TE_MULTILINE | wx.TE_READONLY)
-        self.kikitJsonWidget.SetSizeHints(wx.Size(500, 400), wx.Size(500, -1))
+        self.kikitJsonWidget.SetSizeHints(
+            wx.Size(self.maxDialogSize.width,
+                    self.maxDialogSize.height // 2),
+            wx.Size(self.maxDialogSize.width, -1))
         cmdFont = self.kikitJsonWidget.GetFont()
         cmdFont.SetFamily(wx.FONTFAMILY_TELETYPE)
         self.kikitJsonWidget.SetFont(cmdFont)
@@ -391,7 +402,7 @@ class PanelizeDialog(wx.Dialog):
 class PanelizePlugin(pcbnew.ActionPlugin):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.dialog = PanelizeDialog()
+        self.dialog = None
 
     def defaults(self):
         self.name = "Panelize PCB"
@@ -400,6 +411,8 @@ class PanelizePlugin(pcbnew.ActionPlugin):
 
     def Run(self):
         try:
+            if self.dialog is None:
+                self.dialog = PanelizeDialog()
             board = pcbnew.GetBoard()
             self.dialog.board = board
             self.dialog.ShowModal()
