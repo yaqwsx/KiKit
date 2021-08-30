@@ -28,6 +28,7 @@ jobs:
     needs: test
     if: github.ref == 'refs/heads/master'
     steps:
+      - uses: actions/checkout@v2 # Required for kikit version estimation
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
       - name: Login to DockerHub
