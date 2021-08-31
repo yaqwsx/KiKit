@@ -29,6 +29,8 @@ jobs:
     if: github.ref == 'refs/heads/master'
     steps:
       - uses: actions/checkout@v2 # Required for kikit version estimation
+        with:
+          fetch-depth: 0 # = fetch all
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
       - name: Login to DockerHub
@@ -40,6 +42,7 @@ jobs:
         id: docker_build
         uses: docker/build-push-action@v2
         with:
+          context: . # We need path context, so .git gets included
           push: true
           tags: yaqwsx/kikit:nightly
       - name: Image digest

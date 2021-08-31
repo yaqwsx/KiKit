@@ -31,7 +31,7 @@ COPY . /src/kikit
 WORKDIR /src/kikit
 RUN python3 setup.py install
 
-# the final stage only takes the installed packages from dist-packages 
+# the final stage only takes the installed packages from dist-packages
 # and ignores the src directories
 FROM base
 COPY --from=build \
