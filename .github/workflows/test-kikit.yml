@@ -13,7 +13,7 @@ jobs:
       - uses: ./.github/actions/setup-kicad
       - name: Install dependencies and KiKit
         run: |
-          sudo apt-get install --yes --no-install-recommends \
+          sudo apt-get -qq install --yes --no-install-recommends \
             zip inkscape make git libmagickwand-dev \
             libgraphicsmagick1-dev libmagickcore-dev \
             openscad bats
