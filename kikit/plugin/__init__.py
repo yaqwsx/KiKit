@@ -9,7 +9,7 @@ from copy import deepcopy
 from datetime import datetime
 import shutil
 from kikit.sexpr import Atom, SExpr, parseSexprF
-from kikit.common import KIKIT_LIB
+from kikit.common import KIKIT_FP_LIB, KIKIT_SYM_LIB
 
 # Tuple: package, name, description
 availablePlugins = [
@@ -87,13 +87,22 @@ def getFpLibTablePath():
         raise RuntimeError(f"Usupported platform '{platform.system()}'")
     return str(Path.home() / ".config" / "kicad" / "fp-lib-table")
 
-def findLib(fpLibTable, lib):
+def getSymLibTablePath():
+    """
+    Return path to the Sym Lib table
+    """
+    # Currently, we only support Linux and stable KiKit
+    if platform.system() != "Linux":
+        raise RuntimeError(f"Usupported platform '{platform.system()}'")
+    return str(Path.home() / ".config" / "kicad" / "sym-lib-table")  
+
+def findLib(libTable, lib):
     """
     Given footprint library table, find a library entry
     """
-    if len(fpLibTable) == 0 or fpLibTable[0] != "fp_lib_table":
+    if len(libTable) == 0 or (libTable[0] != "fp_lib_table" and libTable[0] !="sym_lib_table"):
         raise RuntimeError("Invalid table")
-    for x in islice(fpLibTable, 1, None):
+    for x in islice(libTable, 1, None):
         if x[0] != "lib":
             continue
         for y in islice(x, 1, None):
@@ -103,14 +112,14 @@ def findLib(fpLibTable, lib):
                 return x
     return None
 
-def pushNewLib(fpLibTable):
+def pushNewLib(libTable):
     """
     Add new KiCAD library into the table. Try to respect the formatting. Return
     the Sexpression for the newly inserted item.
     """
-    if len(fpLibTable) == 0 or fpLibTable[0] != "fp_lib_table":
+    if len(libTable) == 0 or (libTable[0] != "fp_lib_table" and libTable[0] !="sym_lib_table"):
         raise RuntimeError("Invalid table")
-    if len(fpLibTable) == 1:
+    if len(libTable) == 1:
         # There are no libraries, we can choose formatting
         s = SExpr([
             Atom("lib"),
@@ -120,12 +129,12 @@ def pushNewLib(fpLibTable):
             SExpr([Atom("options"), Atom("", " ")]),
             SExpr([Atom("descr"), Atom("", " ")])
         ], "\n    ")
-        fpLibTable.trailingWhitespace = "\n"
-        fpLibTable.items.append(s)
+        libTable.trailingWhitespace = "\n"
+        libTable.items.append(s)
         return s
     # There are already libraries, copy last item and erase it:
-    s = deepcopy(fpLibTable[-1])
-    fpLibTable.items.append(s)
+    s = deepcopy(libTable[-1])
+    libTable.items.append(s)
     for x in islice(s, 1, None):
         x[1].value = ""
     return s
@@ -152,12 +161,14 @@ def registerlib(path):
     rewriteTable = {
         "name": "kikit",
         "type": "KiCAD",
-        "uri": KIKIT_LIB,
+        "uri": KIKIT_FP_LIB,
         "options": "",
         "descr": "KiKit Footprint library"
     }
     for x in islice(kikitLib, 1, None):
         x[1].value = rewriteTable[x[0].value]
+    
+    print(f"New footprint lib: {KIKIT_FP_LIB}")
 
     ident = datetime.now().strftime("%Y-%m-%d--%H-%M:%S")
     backupName = f"{path}.bak.{ident}"
@@ -172,6 +183,55 @@ def registerlib(path):
     print(f"KiKit footprint library successfully added to the global footprint table '{path}'. Please restart KiCAD.")
 
 
+@click.command()
+@click.option("--path", "-p",
+    type=click.Path(dir_okay=False, file_okay=True, exists=True),
+    default=None,
+    help="You can optionally specify custom path for the fp_sym_table file")
+def registersym(path):
+    """
+    Add KiKit's symbol library into the global symbol library table. If
+    the library has already been registered, update the path.
+    """
+    if path is None:
+        path = getSymLibTablePath()
+    with open(path, "r") as f:
+        symLibTable = parseSexprF(f)
+        rest = f.read()
+    kikitLib = findLib(symLibTable, "kikit")
+    if kikitLib is None:
+        kikitLib = pushNewLib(symLibTable)
+
+    rewriteTable = {
+        "name": "kikit",
+        "type": "KiCAD",
+        "uri": KIKIT_SYM_LIB,
+        "options": "",
+        "descr": "KiKit Symbol library"
+    }
+    for x in islice(kikitLib, 1, None):
+        x[1].value = rewriteTable[x[0].value]
+    
+    print(f"New footprint lib: {KIKIT_SYM_LIB}")
+
+    ident = datetime.now().strftime("%Y-%m-%d--%H-%M:%S")
+    backupName = f"{path}.bak.{ident}"
+    shutil.copy(path, backupName)
+    print(f"A copy of the original {path} was made into {backupName}. ", end="")
+    print("You can restore it if something goes wrong.", end="\n\n")
+
+    with open(path, "w") as f:
+        f.write(str(symLibTable))
+        f.write(rest)
+
+    print(f"KiKit Symbol library successfully added to the global symbol table '{path}'. Please restart KiCAD.")
+
+
+
+
+
+
+
 @click.group()
 def cli():
     """
@@ -183,6 +243,7 @@ def cli():
 cli.add_command(enable)
 cli.add_command(list)
 cli.add_command(registerlib)
+cli.add_command(registersym)
 
 if __name__ == "__main__":
     cli()

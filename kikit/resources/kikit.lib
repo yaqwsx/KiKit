@@ -1,0 +1,66 @@
+EESchema-LIBRARY Version 2.4
+#encoding utf-8
+#
+# Board
+#
+DEF Board REF** 0 0 N N 1 F N
+F0 "REF**" 0 0 50 H V C CNN
+F1 "Board" -275 0 50 H V C CNN
+F2 "kikit:Board" 0 0 50 H I C CNN
+F3 "" 0 0 50 H I C CNN
+DRAW
+P 6 0 1 0 -400 -50 125 -50 325 -250 325 -200 325 -250 275 -250 N
+ENDDRAW
+ENDDEF
+#
+# Fiducial
+#
+DEF Fiducial REF** 0 40 Y Y 1 F N
+F0 "REF**" -75 -125 100 H V C CNN
+F1 "Fiducial" 0 0 100 H V C CNN
+F2 "kikit:Fiducial" 0 0 100 H I C CNN
+F3 "" 0 0 100 H I C CNN
+DRAW
+C -100 -325 50 0 1 0 F
+C -100 -325 100 0 1 0 N
+ENDDRAW
+ENDDEF
+#
+# NPTH
+#
+DEF NPTH REF** 0 40 Y Y 1 F N
+F0 "REF**" 25 -150 100 H V C CNN
+F1 "NPTH" 0 0 100 H V C CNN
+F2 "kikit:NPTH" 0 0 100 H I C CNN
+F3 "" 0 0 100 H I C CNN
+DRAW
+C 0 -300 75 0 1 0 f
+ENDDRAW
+ENDDEF
+#
+# Tab
+#
+DEF Tab REF** 0 40 Y Y 1 F N
+F0 "REF**" 0 0 50 H V C CNN
+F1 "Tab" -200 0 50 H V C CNN
+F2 "kikit:Tab" 0 0 50 H I C CNN
+F3 "" 0 0 50 H I C CNN
+DRAW
+A -250 -88 37 -899 899 0 1 0 N -250 -125 -250 -50
+A 25 -88 37 901 -901 1 1 0 N 25 -50 25 -125
+P 2 0 1 0 -250 -125 -225 -125 N
+P 2 0 1 0 -225 -50 -250 -50 N
+P 2 0 1 0 -200 -125 -175 -125 N
+P 2 0 1 0 -175 -50 -200 -50 N
+P 2 0 1 0 -150 -125 -125 -125 N
+P 2 0 1 0 -125 -50 -150 -50 N
+P 2 0 1 0 -100 -125 -75 -125 N
+P 2 0 1 0 -75 -50 -100 -50 N
+P 2 0 1 0 -50 -125 -25 -125 N
+P 2 0 1 0 -25 -50 -50 -50 N
+P 2 0 1 0 25 -125 0 -125 N
+P 2 0 1 0 25 -50 0 -50 N
+ENDDRAW
+ENDDEF
+#
+#End Library
