@@ -1,5 +1,5 @@
 from kikit import pcbnew_compatibility
-from kikit.common import KIKIT_LIB
+from kikit.common import KIKIT_FP_LIB
 import sys
 import click
 
@@ -28,7 +28,7 @@ def lib():
     """
     Return KiKit library location
     """
-    print(KIKIT_LIB)
+    print(KIKIT_FP_LIB)
 
 
 @click.group()
