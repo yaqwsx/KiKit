@@ -139,6 +139,77 @@ def pushNewLib(libTable):
         x[1].value = ""
     return s
 
+def isFPTable(path):
+    if "fp" in path:
+        return True
+    return False
+
+def isSymTable(path):
+    if "sym" in path:
+        return True
+    return False
+
+
+def registerAnyLib(path):
+    """
+    Add KiKit's library into the global library table. 
+    Supports both symbol and footprint library based 
+    on file type(.pretty or .lib). If the library has 
+    already been registered, update the path.
+    """
+
+    type = {}
+    rewriteTable = {}
+    if isSymTable(path):
+        rewriteTable = {
+            "name": "kikit",
+            "type": "KiCAD",
+            "uri": KIKIT_SYM_LIB,
+            "options": "",
+            "descr": "KiKit Symbol library"
+        }
+        print("Registering symbol library")
+        type = "Sym"
+
+    elif isFPTable(path):
+        rewriteTable = {
+            "name": "kikit",
+            "type": "KiCAD",
+            "uri": KIKIT_FP_LIB,
+            "options": "",
+            "descr": "KiKit Footprint library"
+        }
+        print("Registering footprint library")
+        type = "FP"
+    else:
+        raise ValueError(f"Unkown library table '{path}'")
+
+
+    with open(path, "r") as f:
+        libTable = parseSexprF(f)
+        rest = f.read()
+    kikitLib = findLib(libTable, "kikit")
+    if kikitLib is None:
+        kikitLib = pushNewLib(libTable)
+
+    for x in islice(kikitLib, 1, None):
+        x[1].value = rewriteTable[x[0].value]
+
+    ident = datetime.now().strftime("%Y-%m-%d--%H-%M:%S")
+    backupName = f"{path}.bak.{ident}"
+    shutil.copy(path, backupName)
+    print(f"A copy of the original {path} was made into {backupName}. ", end="")
+    print("You can restore it if something goes wrong.", end="\n\n")
+
+    with open(path, "w") as f:
+        f.write(str(libTable))
+        f.write(rest)
+
+    print(f"KiKit {type} library successfully added to '{path}'. Please restart KiCAD.")
+
+
+
+
 @click.command()
 @click.option("--path", "-p",
     type=click.Path(dir_okay=False, file_okay=True, exists=True),
@@ -150,84 +221,10 @@ def registerlib(path):
     the library has already been registered, update the path.
     """
     if path is None:
-        path = getFpLibTablePath()
-    with open(path, "r") as f:
-        fpLibTable = parseSexprF(f)
-        rest = f.read()
-    kikitLib = findLib(fpLibTable, "kikit")
-    if kikitLib is None:
-        kikitLib = pushNewLib(fpLibTable)
-
-    rewriteTable = {
-        "name": "kikit",
-        "type": "KiCAD",
-        "uri": KIKIT_FP_LIB,
-        "options": "",
-        "descr": "KiKit Footprint library"
-    }
-    for x in islice(kikitLib, 1, None):
-        x[1].value = rewriteTable[x[0].value]
-    
-    print(f"New footprint lib: {KIKIT_FP_LIB}")
-
-    ident = datetime.now().strftime("%Y-%m-%d--%H-%M:%S")
-    backupName = f"{path}.bak.{ident}"
-    shutil.copy(path, backupName)
-    print(f"A copy of the original {path} was made into {backupName}. ", end="")
-    print("You can restore it if something goes wrong.", end="\n\n")
-
-    with open(path, "w") as f:
-        f.write(str(fpLibTable))
-        f.write(rest)
-
-    print(f"KiKit footprint library successfully added to the global footprint table '{path}'. Please restart KiCAD.")
-
-
-@click.command()
-@click.option("--path", "-p",
-    type=click.Path(dir_okay=False, file_okay=True, exists=True),
-    default=None,
-    help="You can optionally specify custom path for the fp_sym_table file")
-def registersym(path):
-    """
-    Add KiKit's symbol library into the global symbol library table. If
-    the library has already been registered, update the path.
-    """
-    if path is None:
-        path = getSymLibTablePath()
-    with open(path, "r") as f:
-        symLibTable = parseSexprF(f)
-        rest = f.read()
-    kikitLib = findLib(symLibTable, "kikit")
-    if kikitLib is None:
-        kikitLib = pushNewLib(symLibTable)
-
-    rewriteTable = {
-        "name": "kikit",
-        "type": "KiCAD",
-        "uri": KIKIT_SYM_LIB,
-        "options": "",
-        "descr": "KiKit Symbol library"
-    }
-    for x in islice(kikitLib, 1, None):
-        x[1].value = rewriteTable[x[0].value]
-    
-    print(f"New footprint lib: {KIKIT_SYM_LIB}")
-
-    ident = datetime.now().strftime("%Y-%m-%d--%H-%M:%S")
-    backupName = f"{path}.bak.{ident}"
-    shutil.copy(path, backupName)
-    print(f"A copy of the original {path} was made into {backupName}. ", end="")
-    print("You can restore it if something goes wrong.", end="\n\n")
-
-    with open(path, "w") as f:
-        f.write(str(symLibTable))
-        f.write(rest)
-
-    print(f"KiKit Symbol library successfully added to the global symbol table '{path}'. Please restart KiCAD.")
-
-
-
+        registerAnyLib(getSymLibTablePath())
+        registerAnyLib(getFpLibTablePath())
+    else:
+        registerAnyLib(path)
 
 
 
@@ -243,7 +240,6 @@ def cli():
 cli.add_command(enable)
 cli.add_command(list)
 cli.add_command(registerlib)
-cli.add_command(registersym)
 
 if __name__ == "__main__":
     cli()
