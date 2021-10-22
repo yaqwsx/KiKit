@@ -21,9 +21,17 @@ def getField(component, field):
     return None
 
 def readEeschemaLine(file):
-    line = file.readline()
-    if not line:
-        raise EeschemaException("Cannot parse EEschema, line expected, got EOF")
+    line = ""
+    quotationOpen = False
+    while True:
+        c = file.read(1)
+        if c is None:
+            raise EeschemaException("Cannot parse EEschema, line expected, got EOF")
+        if c == '"':
+            quotationOpen = not quotationOpen
+        if c == '\n' and not quotationOpen:
+            break
+        line += c
     return line.strip()
 
 def readHeader(file):
