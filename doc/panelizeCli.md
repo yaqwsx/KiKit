@@ -312,6 +312,8 @@ left/right rails.
 - `hspace`, `vspace`, `space` - specify the space between PCB and the
   frame/rail. `space` overrides `hspace and vspace`.
 - `width` - specify with of the rails or frame
+- `filleŧ`, `chamfer` - fillet/chamfer frame corners. Specify radius or chamfer
+  size.
 
 #### Railstb/Railsrl
 

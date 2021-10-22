@@ -405,6 +405,12 @@ class Substrate:
             self.substrates = unary_union([self.substrates, other])
         self.substrates = shapely.ops.orient(self.substrates)
 
+    def cut(self, piece):
+        """
+        Remove a piece of substrate given a shapely polygon.
+        """
+        self.substrates = self.substrates.difference(piece)
+
     def serialize(self):
         """
         Produces a list of PCB_SHAPE on the Edge.Cuts layer
@@ -528,7 +534,11 @@ class Substrate:
         """
         if millRadius < SHP_EPSILON:
             return
-        self.substrates = self.substrates.buffer(millRadius - SHP_EPSILON).buffer(-millRadius).buffer(SHP_EPSILON)
+        RES = 64
+        self.substrates = self.substrates.buffer(millRadius - SHP_EPSILON, resolution=RES) \
+                              .buffer(-millRadius, resolution=RES) \
+                              .buffer(SHP_EPSILON, resolution=RES)
+
 
     def removeIslands(self):
         """

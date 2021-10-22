@@ -51,7 +51,9 @@
         "copperFill": false,
         "slotwidth": "2mm",
         "hspace": "2mm",
-        "vspace": "2mm"
+        "vspace": "2mm",
+        "chamfer": "0mm",
+        "fillet": "0mm"
     },
     "tooling": {
         "type": "none",
