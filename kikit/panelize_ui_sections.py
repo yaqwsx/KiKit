@@ -307,6 +307,12 @@ FRAMING_SECTION = {
         ["none", "both", "v", "h"],
         typeIn(["frame"]),
         "Add cuts to the corners of the frame"),
+    "chamfer": SLength(
+        typeIn(["tightframe", "frame", "railslr", "railstb"]),
+        "Add chamfer to the 4 corners of the panel. Specify chamfer width."),
+    "fillet": SLength(
+        typeIn(["tightframe", "frame", "railslr", "railstb"]),
+        "Add fillet to the 4 corners of the panel. Specify fillet radius."),
 }
 
 def ppFraming(section):

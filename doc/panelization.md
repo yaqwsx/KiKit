@@ -94,6 +94,12 @@ This class has the following relevant members:
   about it in [understanding tabs](understandingTabs.md).
 
 
+#### `addCornerChamfers`
+```
+addCornerChamfers(self, size)
+```
+None
+
 #### `addCornerFiducials`
 ```
 addCornerFiducials(self, fidCount, horizontalOffset, verticalOffset, 
@@ -104,6 +110,12 @@ bottom-right corner of the board (in this order). This function expects
 there is enough space on the board/frame/rail to place the feature.
 
 The offsets are measured from the outer edges of the substrate.
+
+#### `addCornerFillets`
+```
+addCornerFillets(self, radius)
+```
+None
 
 #### `addCornerTooling`
 ```
@@ -487,6 +499,12 @@ Return bounding box as wxRect
 bounds(self)
 ```
 Return shapely bounds of substrates
+
+#### `cut`
+```
+cut(self, piece)
+```
+Remove a piece of substrate given a shapely polygon.
 
 #### `exterior`
 ```
