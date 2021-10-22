@@ -44,26 +44,26 @@ def readHeader(file):
         elif line.startswith(DESCR_STRING):
             header["size"] = line[len(DESCR_STRING):].split()
         elif line.startswith("Sheet"):
-            items = line.split(maxsplit=3)
+            items = shlex.split(line)
             header["sheet"] = (int(items[1]), int(items[2]))
         elif line.startswith("Title"):
-            header["title"] = line.split(maxsplit=2)[1]
+            header["title"] = shlex.split(line)[1]
         elif line.startswith("Date"):
-            header["date"] = line.split(maxsplit=2)[1]
+            header["date"] = shlex.split(line)[1]
         elif line.startswith("Comp"):
-            header["company"] = line.split(maxsplit=2)[1]
+            header["company"] = shlex.split(line)[1]
         elif line.startswith("Rev"):
-            header["revision"] = line.split(maxsplit=2)[1]
+            header["revision"] = shlex.split(line)[1]
         elif line.startswith("Comment1"):
-            header["comment1"] = line.split(maxsplit=2)[1]
+            header["comment1"] = shlex.split(line)[1]
         elif line.startswith("Comment2"):
-            header["comment2"] = line.split(maxsplit=2)[1]
+            header["comment2"] = shlex.split(line)[1]
         elif line.startswith("Comment3"):
-            header["comment3"] = line.split(maxsplit=2)[1]
+            header["comment3"] = shlex.split(line)[1]
         elif line.startswith("Comment4"):
-            header["comment4"] = line.split(maxsplit=2)[1]
+            header["comment4"] = shlex.split(line)[1]
         elif line.startswith("encoding"):
-            header["encoding"] = line.split(maxsplit=2)[1]
+            header["encoding"] = shlex.split(line)[1]
         else:
             raise EeschemaException(f"Unexpected line: '{line}'")
 
@@ -75,15 +75,15 @@ def readComponent(file, sheetPath=""):
             return component
 
         if line.startswith("L"):
-            items = line.split()
+            items = shlex.split(line)
             component["reference"] = items[2]
             component["name"] = items[1]
         elif line.startswith("U"):
-            items = line.split()
+            items = shlex.split(line)
             component["u"] = items[3]
             component["unit"] = int(items[1])
         elif line.startswith("P"):
-            items = line.split()
+            items = shlex.split(line)
             component["position"] = (int(items[1]), int(items[2]))
         elif line.startswith("F"):
             items = shlex.split(line)
@@ -142,7 +142,7 @@ def readSheet(file):
             items = shlex.split(line)
             sheet["f1"] = items[1]
         elif line.startswith("U "):
-            sheet["u"] = line.split()[1]
+            sheet["u"] = shlex.split(line)[1]
 
 def extractComponents(filename, path=""):
     """
