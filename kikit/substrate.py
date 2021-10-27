@@ -535,9 +535,10 @@ class Substrate:
         if millRadius < SHP_EPSILON:
             return
         RES = 64
-        self.substrates = self.substrates.buffer(millRadius - SHP_EPSILON, resolution=RES) \
+        EPS = fromMm(0.01)
+        self.substrates = self.substrates.buffer(millRadius - EPS, resolution=RES) \
                               .buffer(-millRadius, resolution=RES) \
-                              .buffer(SHP_EPSILON, resolution=RES)
+                              .buffer(EPS, resolution=RES)
 
 
     def removeIslands(self):
