@@ -228,7 +228,7 @@ individual pieces of substrate) as a shapely box.
 
 #### `buildFullTabs`
 ```
-buildFullTabs(self)
+buildFullTabs(self, framingOffsets)
 ```
 Make full tabs. This strategy basically cuts the bounding boxes of the
 PCBs. Not suitable for mousebites. Expects there is a valid partition

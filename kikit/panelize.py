@@ -952,7 +952,7 @@ class Panel:
         """
         Add tab annotations for the individual substrates based on their
         bounding boxes. Assign tabs annotations to the edges of the bounding
-        box. You provides a function countFn, widthFn that take edge length and
+        box. You provide a function countFn, widthFn that take edge length and
         direction that return number of tabs per edge or tab width
         respectively.
 
@@ -1025,7 +1025,7 @@ class Panel:
                 self.substrates[i].annotations.append(a)
 
 
-    def buildFullTabs(self):
+    def buildFullTabs(self, framingOffsets):
         """
         Make full tabs. This strategy basically cuts the bounding boxes of the
         PCBs. Not suitable for mousebites. Expects there is a valid partition
@@ -1048,6 +1048,19 @@ class Panel:
         substrateBoundaries = [linestringToSegments(rectToShpBox(s.boundingBox()).exterior)
             for s in self.substrates]
         substrateCuts = [LineString(x) for x in chain(*substrateBoundaries)]
+
+        # Remove outer edges (if any)
+        vspace, hspace = framingOffsets
+        xvalues = list(chain(*[map(lambda x: x[0], line.coords) for line in substrateCuts]))
+        yvalues = list(chain(*[map(lambda x: x[1], line.coords) for line in substrateCuts]))
+        minx, maxx = min(xvalues), max(xvalues)
+        miny, maxy = min(yvalues), max(yvalues)
+
+        substrateCuts = [x for x in substrateCuts if not (
+            (hspace is None and x.coords[0][0] == x.coords[1][0] and x.coords[0][0] in [minx, maxx]) or
+            (vspace is None and x.coords[0][1] == x.coords[1][1] and x.coords[0][1] in [miny, maxy])
+        )]
+
         return substrateCuts
 
     def inheritCopperLayers(self, board):
