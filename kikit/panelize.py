@@ -952,7 +952,7 @@ class Panel:
         """
         Add tab annotations for the individual substrates based on their
         bounding boxes. Assign tabs annotations to the edges of the bounding
-        box. You provides a function countFn, widthFn that take edge length and
+        box. You provide a function countFn, widthFn that take edge length and
         direction that return number of tabs per edge or tab width
         respectively.
 
@@ -1025,7 +1025,7 @@ class Panel:
                 self.substrates[i].annotations.append(a)
 
 
-    def buildFullTabs(self):
+    def buildFullTabs(self, framingOffsets):
         """
         Make full tabs. This strategy basically cuts the bounding boxes of the
         PCBs. Not suitable for mousebites. Expects there is a valid partition
@@ -1048,6 +1048,19 @@ class Panel:
         substrateBoundaries = [linestringToSegments(rectToShpBox(s.boundingBox()).exterior)
             for s in self.substrates]
         substrateCuts = [LineString(x) for x in chain(*substrateBoundaries)]
+
+        # Remove outer edges (if any)
+        vspace, hspace = framingOffsets
+        xvalues = list(chain(*[map(lambda x: x[0], line.coords) for line in substrateCuts]))
+        yvalues = list(chain(*[map(lambda x: x[1], line.coords) for line in substrateCuts]))
+        minx, maxx = min(xvalues), max(xvalues)
+        miny, maxy = min(yvalues), max(yvalues)
+
+        substrateCuts = [x for x in substrateCuts if not (
+            (hspace is None and x.coords[0][0] == x.coords[1][0] and x.coords[0][0] in [minx, maxx]) or
+            (vspace is None and x.coords[0][1] == x.coords[1][1] and x.coords[0][1] in [miny, maxy])
+        )]
+
         return substrateCuts
 
     def inheritCopperLayers(self, board):
@@ -1296,6 +1309,29 @@ class Panel:
         backbones = list([b.buffer(SHP_EPSILON, join_style=2) for b in pieces])
         self.appendSubstrate(backbones)
         return cuts
+
+    def addCornerFillets(self, radius):
+        corners = self.panelCorners(-SHP_EPSILON, -SHP_EPSILON)
+        filletOrigins = self.panelCorners(radius, radius)
+        for corner, opposite in zip(corners, filletOrigins):
+            square = shapely.geometry.box(
+                min(corner[0], opposite[0]),
+                min(corner[1], opposite[1]),
+                max(corner[0], opposite[0]),
+                max(corner[1], opposite[1])
+            )
+            filletCircle = Point(opposite).buffer(radius + SHP_EPSILON, resolution=16)
+
+            cutShape = square.difference(filletCircle)
+            self.boardSubstrate.cut(cutShape)
+
+    def addCornerChamfers(self, size):
+        corners = self.panelCorners(-SHP_EPSILON, -SHP_EPSILON)
+        verticalStops = self.panelCorners(-SHP_EPSILON, size)
+        horizontalStops = self.panelCorners(size, -SHP_EPSILON)
+        for t, v, h in zip(corners, verticalStops, horizontalStops):
+            cutPoly = Polygon([t, v, h, t])
+            self.boardSubstrate.cut(cutPoly)
 
 def getFootprintByReference(board, reference):
     """

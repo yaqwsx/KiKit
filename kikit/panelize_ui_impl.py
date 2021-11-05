@@ -1,3 +1,4 @@
+from kikit import panelize
 from kikit.panelize_ui import Section, PresetError
 from kikit.panelize import *
 from kikit.defs import Layer
@@ -233,7 +234,7 @@ def buildLayout(layout, panel, sourceBoard, sourceArea):
     except KeyError as e:
         raise PresetError(f"Missing parameter '{e}' in section 'layout'")
 
-def buildTabs(properties, panel, substrates, boundarySubstrates):
+def buildTabs(properties, panel, substrates, boundarySubstrates, frameOffsets):
     """
     Build tabs for the substrates in between the boards. Return a list of cuts.
     """
@@ -257,7 +258,7 @@ def buildTabs(properties, panel, substrates, boundarySubstrates):
             panel.buildTabAnnotationsCorners(properties["width"])
             return panel.buildTabsFromAnnotations()
         if type == "full":
-            return panel.buildFullTabs()
+            return panel.buildFullTabs(frameOffsets)
         if type == "annotation":
             return panel.buildTabsFromAnnotations()
         raise PresetError(f"Unknown type '{type}' of tabs specification.")
@@ -352,6 +353,26 @@ def dummyFramingSubstrate(substrates, frameOffset):
         dummy.append(polygonToSubstrate(right))
     return dummy
 
+
+def addFilletAndChamfer(preset, panel):
+    """
+    Add chamfer of frame based on the preset
+    """
+    chamfer = preset["chamfer"]
+    if chamfer < 0:
+        raise PresetError(f"Invalid chamfer value specified: {chamfer}")
+    fillet = preset["fillet"]
+    if fillet < 0:
+        raise PresetError(f"Invalid fillet value specified: {fillet}")
+    if chamfer != 0 and fillet != 0:
+        raise PresetError("You cannot specify both, chamfer and fillet. Set one of them to 0.")
+
+    if fillet > 0:
+        panel.addCornerFillets(fillet)
+    if chamfer > 0:
+        panel.addCornerChamfers(chamfer)
+
+
 def buildFraming(preset, panel):
     """
     Build frame according to the preset and return cuts
@@ -362,12 +383,15 @@ def buildFraming(preset, panel):
             return []
         if type == "railstb":
             panel.makeRailsTb(preset["width"])
+            addFilletAndChamfer(preset, panel)
             return []
         if type == "railslr":
             panel.makeRailsLr(preset["width"])
+            addFilletAndChamfer(preset, panel)
             return []
         if type == "frame":
             cuts = panel.makeFrame(preset["width"], preset["hspace"], preset["vspace"])
+            addFilletAndChamfer(preset, panel)
             if preset["cuts"] == "both":
                 return chain(*cuts)
             if preset["cuts"] == "v":
@@ -379,6 +403,7 @@ def buildFraming(preset, panel):
             panel.makeTightFrame(preset["width"], preset["slotwidth"],
                 preset["hspace"], preset["vspace"])
             panel.boardSubstrate.removeIslands()
+            addFilletAndChamfer(preset, panel)
             return []
         raise PresetError(f"Unknown type '{type}' of frame specification.")
     except KeyError as e:

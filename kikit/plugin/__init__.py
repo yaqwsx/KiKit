@@ -14,7 +14,9 @@ from kikit.common import KIKIT_FP_LIB, KIKIT_SYM_LIB
 # Tuple: package, name, description
 availablePlugins = [
     ("hideReferences", "Show/hide references",
-        "Allows you to batch show or hide references based on regular expression")
+        "Allows you to batch show or hide references based on regular expression"),
+    ("panelize", "Panelize design",
+        "Allows you to specify panelization process via GUI")
 ]
 
 def registrationRoutine(allowedPlugins):

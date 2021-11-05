@@ -20,7 +20,7 @@
         "tlx": "0mm",
         "tly": "0mm",
         "brx": "0mm",
-        "brx": "0mm",
+        "bry": "0mm",
         "ref": "",
         "stack": "inherit"
     },
@@ -39,7 +39,9 @@
         "cutcurves": false,
         "layer": "Cmts.User",
         "offset": "0mm",
-        "prolong": "0mm"
+        "prolong": "0mm",
+        "drill": "0.5mm",
+        "spacing": "0.8mm"
     },
     "framing": {
         "type": "none",
@@ -47,11 +49,17 @@
         "millRadius": "0mm",
         "cuts": "both",
         "copperFill": false,
-        "slotwidth": "2mm"
+        "slotwidth": "2mm",
+        "hspace": "2mm",
+        "vspace": "2mm",
+        "chamfer": "0mm",
+        "fillet": "0mm"
     },
     "tooling": {
         "type": "none",
         "layout": "3hole",
+        "hoffset": "0mm",
+        "voffset": "0mm",
         "paste": false
     },
     "fiducials": {
@@ -73,7 +81,7 @@
         "hjustify": "center",
         "vjustify": "center",
         "thickness": "0.3mm",
-        "layer": "F_SilkS"
+        "layer": "F.SilkS"
     },
     "post": {
         "type": "auto",
