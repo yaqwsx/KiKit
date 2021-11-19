@@ -473,8 +473,13 @@ class Panel:
             return # Nothing to merge
 
         sPath = list(self.sourcePaths)[0]
-        with open(self.getProFilepath(sPath)) as f:
-            sourcePro = json.load(f)
+        try:
+            with open(self.getProFilepath(sPath)) as f:
+                sourcePro = json.load(f)
+        except IOError:
+            # This means there is no original project file. Probably comes from
+            # v5, thus there is nothing to transfer
+            return
         with open(self.getProFilepath()) as f:
             currentPro = json.load(f, object_pairs_hook=OrderedDict)
         currentPro["board"]["design_settings"] = sourcePro["board"]["design_settings"]
