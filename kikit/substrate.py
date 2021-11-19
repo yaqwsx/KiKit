@@ -5,7 +5,7 @@ from shapely.ops import unary_union, split, nearest_points
 import shapely
 import numpy as np
 from kikit.intervals import Interval, BoxNeighbors, BoxPartitionLines
-from kikit.pcbnew_compatibility import pcbnew
+from pcbnewTransition import pcbnew, isV6
 from enum import IntEnum
 from itertools import product
 
@@ -31,11 +31,27 @@ def roundPoint(point, precision=-4):
     return pcbnew.wxPoint(round(point[0], precision), round(point[1], precision))
 
 def getStartPoint(geom):
+    if isV6():
+        if geom.GetShape() == STROKE_T.S_CIRCLE:
+            # Circle start is circle center /o\
+            point = geom.GetStart() + pcbnew.wxPoint(geom.GetRadius(), 0)
+        else:
+            point = geom.GetStart()
+        return roundPoint(point)
+
     if geom.GetShape() in [STROKE_T.S_ARC, STROKE_T.S_CIRCLE]:
         return roundPoint(geom.GetArcStart())
     return roundPoint(geom.GetStart())
 
 def getEndPoint(geom):
+    if isV6():
+        if geom.GetShape() == STROKE_T.S_CIRCLE:
+            # Circle start is circle center /o\
+            point = geom.GetStart() + pcbnew.wxPoint(geom.GetRadius(), 0)
+        else:
+            point = geom.GetEnd()
+        return roundPoint(point)
+
     if geom.GetShape() == STROKE_T.S_ARC:
         return roundPoint(geom.GetArcEnd())
     if geom.GetShape() == STROKE_T.S_CIRCLE:
@@ -132,7 +148,7 @@ def approximateArc(arc, endWith):
         endAngle = startAngle + 360
         segments = SEGMENTS_PER_FULL
     else:
-        endAngle = startAngle + arc.GetAngle() / 10
+        endAngle = startAngle + arc.GetArcAngle() / 10
         segments = abs(int((endAngle - startAngle) * SEGMENTS_PER_FULL // 360))
     theta = np.radians(np.linspace(startAngle, endAngle, segments))
     x = arc.GetCenter()[0] + arc.GetRadius() * np.cos(theta)

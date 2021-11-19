@@ -1,5 +1,5 @@
 import click
-from kikit.pcbnew_compatibility import pcbnew
+from pcbnewTransition import pcbnew
 import csv
 import os
 import re

@@ -1,4 +1,4 @@
-from kikit.pcbnew_compatibility import pcbnew, isV6, getVersion
+from pcbnewTransition import pcbnew, isV6
 import sys
 import tempfile
 import re
@@ -53,7 +53,7 @@ def readReport(reportFile):
 
 def runImpl(boardfile, useMm, strict):
     try:
-        if not isV6(getVersion()):
+        if not isV6():
             raise RuntimeError("This feature is available only with KiCAD 6.")
         units = pcbnew.EDA_UNITS_MILLIMETRES if useMm else EDA_UNITS_INCHES
         b = pcbnew.LoadBoard(boardfile)

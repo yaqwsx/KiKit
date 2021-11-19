@@ -1,4 +1,4 @@
-from kikit.pcbnew_compatibility import pcbnew
+from pcbnewTransition import pcbnew
 import wx
 import re
 from kikit import modify

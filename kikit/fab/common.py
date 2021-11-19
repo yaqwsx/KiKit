@@ -1,5 +1,5 @@
 import csv
-from  kikit.pcbnew_compatibility import pcbnew
+from pcbnewTransition import pcbnew
 from math import sin, cos, radians
 from kikit.common import *
 from kikit.defs import MODULE_ATTR_T

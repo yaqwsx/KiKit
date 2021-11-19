@@ -26,6 +26,7 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     install_requires=[
+        "pcbnewTransition==0.2.0",
         "numpy",
         "shapely",
         "click",

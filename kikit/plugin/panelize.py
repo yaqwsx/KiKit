@@ -1,7 +1,7 @@
 from sys import stderr
 from numpy.core.fromnumeric import std
 from numpy.lib.utils import source
-from kikit.pcbnew_compatibility import pcbnew
+from pcbnewTransition import pcbnew
 from kikit.panelize_ui_impl import loadPresetChain
 from kikit.panelize import appendItem
 import kikit.panelize_ui_sections

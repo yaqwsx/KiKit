@@ -167,7 +167,7 @@ def panelize(input, output, preset, layout, source, tabs, cuts, framing,
 
         board = LoadBoard(input)
 
-        panel = Panel()
+        panel = Panel(output)
         panel.inheritDesignSettings(input)
         panel.inheritProperties(input)
 
@@ -197,7 +197,7 @@ def panelize(input, output, preset, layout, source, tabs, cuts, framing,
 
         ki.buildDebugAnnotation(preset["debug"], panel)
 
-        panel.save(output)
+        panel.save()
 
         if (dump):
             with open(dump, "w") as f:
@@ -235,13 +235,13 @@ def separate(input, output, source, debug):
         board = LoadBoard(input)
         sourceArea = ki.readSourceArea(preset["source"], board)
 
-        panel = Panel()
+        panel = Panel(output)
         panel.inheritDesignSettings(input)
         panel.inheritProperties(input)
         destination = wxPointMM(150, 100)
         panel.appendBoard(input, destination, sourceArea)
         ki.setStackup(preset["source"], panel)
-        panel.save(output)
+        panel.save()
     except Exception as e:
         import sys
         sys.stderr.write("An error occurred: " + str(e) + "\n")
