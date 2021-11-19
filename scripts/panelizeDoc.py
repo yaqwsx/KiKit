@@ -7,7 +7,7 @@ Generate documentation in markdown format for panelization
 from kikit import panelize
 from kikit import substrate
 from kikit.doc import header, printHelp, printHeader
-from kikit.pcbnew_compatibility import pcbnew
+from pcbnewTransition import pcbnew
 import inspect
 
 def synopsis(object):

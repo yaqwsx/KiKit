@@ -1,24 +1,22 @@
-from kikit import pcbnew_compatibility
+
+from pcbnewTransition import KICAD_VERSION, isV6
 from kikit.common import KIKIT_LIB
 import sys
 import click
-
-version = pcbnew_compatibility.getVersion()
-
 
 @click.command()
 def kicadversion():
     """
     Return version of KiCAD
     """
-    print(f"{version[0]}.{version[1]}")
+    print(f"{KICAD_VERSION[0]}.{KICAD_VERSION[1]}")
 
 @click.command()
 def drcapi():
     """
     Return version of the DRC API
     """
-    if pcbnew_compatibility.isV6(version):
+    if isV6():
         print("1")
     else:
         print("0")

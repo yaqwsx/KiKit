@@ -1,4 +1,4 @@
-from kikit.pcbnew_compatibility import pcbnew
+from pcbnewTransition import pcbnew
 from pcbnew import wxPoint
 import numpy as np
 from kikit.common import *
