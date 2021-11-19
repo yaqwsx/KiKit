@@ -1,6 +1,9 @@
 from pcbnewTransition import pcbnew
 from pcbnew import wxPoint
 import numpy as np
+import json
+from collections import OrderedDict
+from pcbnewTransition.transition import isV6
 from kikit.common import *
 from kikit.defs import *
 from kikit.substrate import Substrate, extractRings, toShapely, linestringToKicad
@@ -29,11 +32,21 @@ def addRoundedCorner(board, center, start, end, thickness):
     corner = pcbnew.PCB_SHAPE()
     corner.SetShape(STROKE_T.S_ARC)
     corner.SetCenter(wxPoint(center[0], center[1]))
-    corner.SetArcStart(wxPoint(start[0], start[1]))
-    if np.cross(start - center, end - center) > 0:
-        corner.SetAngle(fromDegrees(90))
+    if isV6():
+        corner.SetStart(wxPoint(start[0], start[1]))
     else:
-        corner.SetAngle(fromDegrees(-90))
+        corner.SetArcStart(wxPoint(start[0], start[1]))
+
+    if np.cross(start - center, end - center) > 0:
+        if isV6():
+            corner.SetArcAngleAndEnd(fromDegrees(90), True)
+        else:
+            corner.SetAngle(fromDegrees(90))
+    else:
+        if isV6():
+            corner.SetArcAngleAndEnd(fromDegrees(-90), True)
+        else:
+            corner.SetAngle(fromDegrees(-90))
     corner.SetWidth(thickness)
     corner.SetLayer(Layer.F_Paste)
     board.Add(corner)
@@ -123,7 +136,11 @@ def addHole(board, position, radius):
     circle = pcbnew.PCB_SHAPE()
     circle.SetShape(STROKE_T.S_CIRCLE)
     circle.SetCenter(wxPoint(position[0], position[1]))
-    circle.SetArcStart(wxPoint(position[0], position[1]) + wxPoint(radius/2, 0))
+    if isV6():
+        # Set 3'oclock point of the circle to set radius
+        circle.SetEnd(wxPoint(position[0], position[1]) + wxPoint(radius/2, 0))
+    else:
+        circle.SetArcStart(wxPoint(position[0], position[1]) + wxPoint(radius/2, 0))
     circle.SetWidth(radius)
     circle.SetLayer(Layer.F_Paste)
     board.Add(circle)
@@ -288,6 +305,44 @@ def cutoutComponents(board, components):
         zone.SetLayer(Layer.B_Paste)
         board.Add(zone)
 
+def setStencilLayerVisibility(boardName):
+    if not isV6():
+        return
+    prlPath = os.path.splitext(boardName)[0] + ".kicad_prl"
+    with open(prlPath) as f:
+        # We use ordered dict, so we preserve the ordering of the keys and
+        # thus, formatting
+        prl = json.load(f, object_pairs_hook=OrderedDict)
+    prl["board"]["visible_layers"] = "ffc000c_7ffffffe"
+    prl["board"]["visible_items"] = [
+        1,
+        2,
+        3,
+        4,
+        9,
+        10,
+        12,
+        13,
+        15,
+        16,
+        19,
+        21,
+        22,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        32,
+        33,
+        34,
+        35
+    ]
+    with open(prlPath, "w") as f:
+        json.dump(prl, f, indent=2)
+    pass
 
 from pathlib import Path
 import os
@@ -306,6 +361,8 @@ def create(inputboard, outputdir, jigsize, jigthickness, pcbthickness,
 
     stencilFile = os.path.join(outputdir, "stencil.kicad_pcb")
     board.Save(stencilFile)
+
+    setStencilLayerVisibility(stencilFile)
 
     plotPlan = [
         # name, id, comment
