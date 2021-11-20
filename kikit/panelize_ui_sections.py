@@ -452,6 +452,9 @@ DEBUG_SECTION = {
     "trace": SBool(
         always(),
         "Print stacktrace"),
+    "deterministic": SBool(
+        always(),
+        "Make KiCAD IDs deterministic")
 }
 
 def ppDebug(section):

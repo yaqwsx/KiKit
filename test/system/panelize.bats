@@ -15,7 +15,7 @@ load common
         --layout 'grid; rows: 2; cols: 2;' \
         --tabs full \
         --cuts vcuts \
-        --debug 'trace: true' \
+        --debug 'trace: true; deterministic: true' \
         $RES/conn.kicad_pcb panel.kicad_pcb
 }
 
@@ -25,7 +25,7 @@ load common
         --tabs 'fixed; hwidth: 10mm; vwidth: 15mm' \
         --cuts vcuts \
         --post 'millradius: 1mm' \
-        --debug 'trace: true' \
+        --debug 'trace: true; deterministic: true' \
         $RES/conn.kicad_pcb panel.kicad_pcb
 }
 
@@ -34,7 +34,7 @@ load common
         --layout 'grid; rows: 2; cols: 2; space: 2mm' \
         --tabs 'fixed; width: 5mm' \
         --cuts 'mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm' \
-        --debug 'trace: true' \
+        --debug 'trace: true; deterministic: true' \
         $RES/conn.kicad_pcb panel.kicad_pcb
 }
 
@@ -45,7 +45,7 @@ load common
         --tabs 'fixed; width: 3mm' \
         --cuts 'mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm' \
         --post 'millradius: 1mm' \
-        --debug 'trace: true' \
+        --debug 'trace: true; deterministic: true' \
         $RES/conn.kicad_pcb panel.kicad_pcb
 }
 
@@ -55,7 +55,7 @@ load common
         --tabs 'fixed; width: 3mm; vcount: 2' \
         --cuts 'mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm' \
         --post 'millradius: 1mm' \
-        --debug 'trace: true' \
+        --debug 'trace: true; deterministic: true' \
         $RES/conn.kicad_pcb panel.kicad_pcb
 }
 
@@ -66,7 +66,7 @@ load common
         --cuts 'mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm' \
         --framing 'railstb; width: 5mm; space: 3mm;' \
         --post 'millradius: 1mm' \
-        --debug 'trace: true' \
+        --debug 'trace: true; deterministic: true' \
         $RES/conn.kicad_pcb panel.kicad_pcb
 
     kikit panelize \
@@ -75,7 +75,7 @@ load common
         --cuts 'mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm' \
         --framing 'railslr; width: 5mm; space: 3mm;' \
         --post 'millradius: 1mm' \
-        --debug 'trace: true' \
+        --debug 'trace: true; deterministic: true' \
         $RES/conn.kicad_pcb panel.kicad_pcb
 }
 
@@ -86,7 +86,7 @@ load common
         --cuts 'mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm' \
         --framing 'frame; width: 5mm; space: 3mm; cuts: both' \
         --post 'millradius: 1mm' \
-        --debug 'trace: true' \
+        --debug 'trace: true; deterministic: true' \
         $RES/conn.kicad_pcb panel.kicad_pcb
 }
 
@@ -97,7 +97,7 @@ load common
         --cuts 'mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm' \
         --framing 'frame; width: 5mm; space: 3mm; cuts: v' \
         --post 'millradius: 1mm' \
-        --debug 'trace: true' \
+        --debug 'trace: true; deterministic: true' \
         $RES/conn.kicad_pcb panel.kicad_pcb
 }
 
@@ -108,7 +108,7 @@ load common
         --cuts 'mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm' \
         --framing 'frame; width: 5mm; space: 3mm; cuts: h' \
         --post 'millradius: 1mm' \
-        --debug 'trace: true' \
+        --debug 'trace: true; deterministic: true' \
         $RES/conn.kicad_pcb panel.kicad_pcb
 }
 
@@ -119,7 +119,7 @@ load common
         --cuts 'mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm' \
         --framing 'frame; width: 5mm; space: 3mm; cuts: none' \
         --post 'millradius: 1mm' \
-        --debug 'trace: true' \
+        --debug 'trace: true; deterministic: true' \
         $RES/conn.kicad_pcb panel.kicad_pcb
 }
 
@@ -130,7 +130,7 @@ load common
         --cuts vcuts \
         --framing 'tightframe; width: 5mm; space: 3mm; ' \
         --post 'millradius: 1mm' \
-        --debug 'trace: true' \
+        --debug 'trace: true; deterministic: true' \
         $RES/conn.kicad_pcb panel.kicad_pcb
 }
 
@@ -144,7 +144,7 @@ load common
         --fiducials '3fid; hoffset: 5mm; voffset: 2.5mm; coppersize: 2mm; opening: 1mm;' \
         --text 'simple; text: yaqwsx panel; anchor: mt; voffset: 2.5mm; hjustify: center; vjustify: center;' \
         --post 'millradius: 1mm' \
-        --debug 'trace: true' \
+        --debug 'trace: true; deterministic: true' \
         $RES/conn.kicad_pcb panel.kicad_pcb
 }
 
@@ -155,7 +155,7 @@ load common
         --cuts 'mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm' \
         --framing 'frame; width: 5mm; space: 3mm; cuts: both' \
         --post 'millradius: 1mm' \
-        --debug 'trace: true' \
+        --debug 'trace: true; deterministic: true' \
         $RES/conn.kicad_pcb panel.kicad_pcb
 }
 
@@ -166,7 +166,7 @@ load common
         --cuts 'mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm' \
         --framing 'railstb; width: 5mm; space: 3mm;' \
         --post 'millradius: 1mm' \
-        --debug 'trace: true' \
+        --debug 'trace: true; deterministic: true' \
         $RES/conn.kicad_pcb panel.kicad_pcb
 }
 
@@ -178,7 +178,7 @@ load common
         --cuts 'mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm' \
         --framing 'railstb; width: 5mm; space: 3mm;' \
         --post 'millradius: 1mm' \
-        --debug 'trace: true' \
+        --debug 'trace: true; deterministic: true' \
         $RES/conn.kicad_pcb panel.kicad_pcb
 }
 
@@ -189,7 +189,7 @@ load common
         --cuts 'vcuts; clearance: 1.5mm' \
         --framing 'railstb; width: 5mm; space: 3mm;' \
         --post 'millradius: 1mm; copperfill: true' \
-        --debug 'trace: true' \
+        --debug 'trace: true; deterministic: true' \
         $RES/conn.kicad_pcb panel.kicad_pcb
 }
 
@@ -198,7 +198,7 @@ load common
         --layout 'grid; rows: 2; cols: 2; space: 2mm' \
         --tabs 'fixed; hwidth: 10mm; vwidth: 15mm' \
         --cuts 'vcuts; clearance: 1.5mm' \
-        --debug 'trace: true' \
+        --debug 'trace: true; deterministic: true' \
         $RES/conn.kicad_pcb panel-original.kicad_pcb
     kikit panelize -p preset.json $RES/conn.kicad_pcb panel-copy.kicad_pcb
 
