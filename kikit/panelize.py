@@ -520,7 +520,7 @@ class Panel:
     def appendBoard(self, filename, destination, sourceArea=None,
                     origin=Origin.Center, rotationAngle=0, shrink=False,
                     tolerance=0, bufferOutline=fromMm(0.001), netRenamer=None,
-                    refRenamer=None):
+                    refRenamer=None, inheritDrc=True):
         """
         Appends a board to the panel.
 
@@ -537,13 +537,17 @@ class Panel:
 
         You can also specify functions which will rename the net and ref names.
         By default, nets are renamed to "Board_{n}-{orig}", refs are unchanged.
-        The renamers are given board seq number and original name
+        The renamers are given board seq number and original name.
+
+        You can also decide whether you would like to inherit design rules from
+        this boards or not.
 
         Returns bounding box (wxRect) of the extracted area placed at the
         destination and the extracted substrate of the board.
         """
         board = LoadBoard(filename)
-        self.sourcePaths.add(filename)
+        if inheritDrc:
+            self.sourcePaths.add(filename)
 
         thickness = board.GetDesignSettings().GetBoardThickness()
         if len(self.substrates) == 0:
