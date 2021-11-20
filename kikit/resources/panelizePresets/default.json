@@ -96,6 +96,7 @@
         "drawPartitionLines": false,
         "drawBackboneLines": false,
         "drawboxes": false,
-        "trace": false
+        "trace": false,
+        "deterministic": false
     }
 }

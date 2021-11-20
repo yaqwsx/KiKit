@@ -154,6 +154,7 @@ def panelize(input, output, preset, layout, source, tabs, cuts, framing,
         # Hide the import in the function to make KiKit start faster
         from kikit import panelize_ui_impl as ki
         from kikit.panelize import Panel
+        from pcbnewTransition.transition import isV6, pcbnew
         from pcbnew import LoadBoard, wxPointMM
         import json
         import commentjson
@@ -164,6 +165,9 @@ def panelize(input, output, preset, layout, source, tabs, cuts, framing,
         preset = ki.obtainPreset(preset,
             layout=layout, source=source, tabs=tabs, cuts=cuts, framing=framing,
             tooling=tooling, fiducials=fiducials, text=text, post=post, debug=debug)
+
+        if preset["debug"]["deterministic"] and isV6():
+            pcbnew.KIID.SeedGenerator(42)
 
         board = LoadBoard(input)
 
@@ -228,9 +232,13 @@ def separate(input, output, source, debug):
     try:
         from kikit import panelize_ui_impl as ki
         from kikit.panelize import Panel
+        from pcbnewTransition.transition import isV6, pcbnew
         from pcbnew import LoadBoard, wxPointMM
 
         preset = ki.obtainPreset([], validate=False, source=source, debug=debug)
+
+        if preset["debug"]["deterministic"] and isV6():
+            pcbnew.KIID.SeedGenerator(42)
 
         board = LoadBoard(input)
         sourceArea = ki.readSourceArea(preset["source"], board)
