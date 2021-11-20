@@ -34,7 +34,7 @@ class Stream:
 
 
 class Atom:
-    def __init__(self, value, quoted=False, leadingWhitespace=""):
+    def __init__(self, value, leadingWhitespace="", quoted=False):
         self.value = value
         self.quoted = quoted
         self.leadingWhitespace = leadingWhitespace
