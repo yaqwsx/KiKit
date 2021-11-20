@@ -1,0 +1,4 @@
+Comment,Designator,Footprint,LCSC
+R1_VAL,R1,Resistor_SMD:R_0603_1608Metric,LCSC_R1
+R2_VAL,R2,Resistor_SMD:R_0603_1608Metric,LCSC_R2
+R3/R4_VAL,"R3,R4",Resistor_SMD:R_0402_1005Metric,LCSC_R3/R4
