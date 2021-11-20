@@ -1,4 +1,3 @@
-import itertools
 from io import StringIO
 
 # Simple white-space aware S-Expression parser (parsing and dumping yields the
@@ -8,14 +7,42 @@ from io import StringIO
 def ParseError(RuntimeError):
     pass
 
+# Python 3 does not support peeking on text files, so let's implement a stream
+# wrapper that supports it.
+class Stream:
+    def __init__(self, stream):
+        self.stream = stream
+        self.pending = None
+
+    def read(self):
+        if self.pending:
+            c = self.pending
+            self.pending = None
+            return c
+        return self.stream.read(1)
+
+    def peek(self):
+        if not self.pending:
+            self.pending = self.stream.read(1)
+        return self.pending
+
+    def shift(self, expected):
+        c = self.read()
+        if c != expected:
+            raise ParseError(f"Expected '{expected}', got {repr(c)}")
+        return c
+
+
 class Atom:
-    def __init__(self, value, leadingWhitespace=""):
+    def __init__(self, value, quoted=False, leadingWhitespace=""):
         self.value = value
+        self.quoted = quoted
         self.leadingWhitespace = leadingWhitespace
 
     def __str__(self):
-        if any([x.isspace() for x in self.value]) or len(self.value) == 0:
-            return self.leadingWhitespace + '"' + self.value + '"'
+        if self.quoted:
+            value = self.value.replace('"', '\\"')
+            return self.leadingWhitespace + '"' + value + '"'
         return self.leadingWhitespace + self.value
 
     def __repr__(self):
@@ -60,72 +87,55 @@ class SExpr:
     def __len__(self):
         return self.items.__len__()
 
-# Python 3 does not support peeking nor relative seeking on text files so we
-# implement goBack, shift and peek via seeking. It does not performs the best,
-# but it yields simple code.
-def goBack(file, n=1):
-    file.seek(file.tell() - n)
-
-def shift(stream, what=None):
-    c = stream.read(1)
-    if len(c) == 0:
-        raise ParseError("Unexpected file end")
-    if what is not None and c != what:
-        raise ParseError(f"Expected '{what}', got '{c}'")
-    return c
-
-def peek(stream):
-    c = shift(stream)
-    goBack(stream)
-    return c
 
 def atomEnd(c):
     return c.isspace() or c in set("()")
 
 def readQuotedString(stream):
-    shift(stream, '"')
+    stream.shift('"')
     s = []
     escaped = False
-    c = peek(stream)
+    c = stream.peek()
     while c != '"' or escaped:
         if c == "\\":
             escaped = True
         else:
             escaped = False
-            s.append(shift(stream))
-        c = peek(stream)
-    shift(stream, '"')
+            s.append(stream.read())
+        c = stream.peek()
+    stream.shift('"')
     return "".join(s)
 
 def readString(stream):
     s = []
-    c = peek(stream)
+    c = stream.peek()
     while not atomEnd(c):
-        s.append(shift(stream))
-        c = peek(stream)
+        s.append(stream.read())
+        c = stream.peek()
     return "".join(s)
 
 def readAtom(stream):
-    c = peek(stream)
-    if c == '"':
+    c = stream.peek()
+    quoted = c == '"'
+    if quoted:
         value = readQuotedString(stream)
     else:
         value = readString(stream)
-    return Atom(value)
+    return Atom(value, quoted=quoted)
 
 def readWhitespace(stream):
     w = []
-    c = peek(stream)
+    c = stream.peek()
     while c.isspace():
-        w.append(shift(stream))
-        c = peek(stream)
+        w.append(stream.read())
+        c = stream.peek()
     return "".join(w)
 
 def readSexpr(stream):
-    shift(stream, "(")
+    stream.shift("(")
 
     expr = SExpr()
-    c = peek(stream)
+    c = stream.peek()
     whitespace = ""
     while c != ")":
         if c.isspace():
@@ -140,12 +150,13 @@ def readSexpr(stream):
             a.leadingWhitespace = whitespace
             expr.items.append(a)
             whitespace = ""
-        c = peek(stream)
-    shift(stream, ")")
+        c = stream.peek()
+    stream.shift(")")
     expr.trailingWhitespace = whitespace
     return expr
 
-def parseSexprF(stream):
+def parseSexprF(sourceStream):
+    stream = Stream(sourceStream)
     lw = readWhitespace(stream)
     s = readSexpr(stream)
     s.leadingWhitespace = lw
