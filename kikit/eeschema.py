@@ -174,3 +174,9 @@ def extractComponents(filename, path=""):
         sheetfilename = os.path.join(dirname, s["f1"])
         components += extractComponents(sheetfilename, path + "/" + s["u"])
     return components
+
+def getUnit(component):
+    return component["unit"]
+
+def getReference(component):
+    return component["reference"]

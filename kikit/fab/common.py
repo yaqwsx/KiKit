@@ -1,9 +1,13 @@
 import csv
-from pcbnewTransition import pcbnew
+from pcbnewTransition import pcbnew, isV6
 from math import sin, cos, radians
 from kikit.common import *
 from kikit.defs import MODULE_ATTR_T
-from kikit.eeshema import getField
+
+if isV6():
+    from kikit.eeschema_v6 import getField, getUnit, getReference
+else:
+    from kikit.eeschema import getField, getUnit, getReference
 
 
 def hasNonSMDPins(footprint):
@@ -46,6 +50,12 @@ def defaultFootprintX(footprint, placeOffset, compensation):
 def defaultFootprintY(footprint, placeOffset, compensation):
     return -toMm(footprintPosition(footprint, placeOffset, compensation)[1])
 
+def excludeFromPos(footprint):
+    if isV6():
+        return footprint.GetAttributes() & pcbnew.FP_EXCLUDE_FROM_POS_FILES
+    else:
+        return footprint.GetAttributes() & MODULE_ATTR_T.MOD_VIRTUAL
+
 def collectPosData(board, correctionFields, posFilter=lambda x : True,
                    footprintX=defaultFootprintX, footprintY=defaultFootprintY, bom=None):
     """
@@ -60,11 +70,11 @@ def collectPosData(board, correctionFields, posFilter=lambda x : True,
     if bom is None:
         bom = {}
     else:
-        bom = { comp["reference"]: comp for comp in bom }
+        bom = { getReference(comp): comp for comp in bom }
     footprints = []
-    placeOffset = board.GetDesignSettings().m_AuxOrigin
+    placeOffset = board.GetDesignSettings().GetAuxOrigin()
     for footprint in board.GetFootprints():
-        if footprint.GetAttributes() & MODULE_ATTR_T.MOD_VIRTUAL:
+        if excludeFromPos(footprint):
             continue
         if posFilter(footprint) and footprint.GetReference() in bom:
             footprints.append(footprint)

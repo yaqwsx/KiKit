@@ -1,11 +1,14 @@
 import click
-from pcbnewTransition import pcbnew
+from pcbnewTransition import pcbnew, isV6
 import csv
 import os
 import sys
 import shutil
 from pathlib import Path
-from kikit.eeshema import extractComponents, getField
+if isV6():
+    from kikit.eeschema_v6 import extractComponents, getField, getUnit, getReference
+else:
+    from kikit.eeschema import extractComponents, getField, getUnit, getReference
 from kikit.fab.common import *
 from kikit.common import *
 from kikit.export import gerberImpl
@@ -13,9 +16,9 @@ from kikit.export import gerberImpl
 def collectBom(components, lscsFields, ignore):
     bom = {}
     for c in components:
-        if c["unit"] != 1:
+        if getUnit(c) != 1:
             continue
-        reference = c["reference"]
+        reference = getReference(c)
         if reference.startswith("#PWR") or reference.startswith("#FL"):
             continue
         if reference in ignore:
@@ -43,8 +46,8 @@ def bomToCsv(bomData, filename):
             value, footprint, lcsc = cType
             writer.writerow([value, ",".join(references), footprint, lcsc])
 
-def isNonVirtual(footprint):
-    return not (footprint.GetAttributes() & MODULE_ATTR_T.MOD_VIRTUAL)
+def noFilter(footprint):
+    return True
 
 def exportJlcpcb(board, outputdir, assembly, schematic, ignore, field,
            corrections, missingerror, nametemplate):
@@ -72,7 +75,7 @@ def exportJlcpcb(board, outputdir, assembly, schematic, ignore, field,
     bom = collectBom(components, ordercodeFields, refsToIgnore)
 
     posData = collectPosData(loadedBoard, correctionFields,
-        bom=components, posFilter=isNonVirtual)
+        bom=components, posFilter=noFilter)
     boardReferences = set([x[0] for x in posData])
     bom = {key: [v for v in val if v in boardReferences] for key, val in bom.items()}
     bom = {key: val for key, val in bom.items() if len(val) > 0}

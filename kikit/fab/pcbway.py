@@ -1,12 +1,15 @@
 import click
-from pcbnewTransition import pcbnew
+from pcbnewTransition import pcbnew, isV6
 import csv
 import os
 import re
 import sys
 import shutil
 from pathlib import Path
-from kikit.eeshema import extractComponents, getField
+if isV6():
+    from kikit.eeschema_v6 import extractComponents, getField
+else:
+    from kikit.eeschema import extractComponents, getField
 from kikit.fab.common import *
 from kikit.common import *
 from kikit.export import gerberImpl, exportSettingsPcbway
@@ -14,7 +17,7 @@ from kikit.export import gerberImpl, exportSettingsPcbway
 def collectSolderTypes(board):
     result = {}
     for footprint in board.GetFootprints():
-        if footprint.GetAttributes() & MODULE_ATTR_T.MOD_VIRTUAL:
+        if excludeFromPos(footprint):
             continue
         if hasNonSMDPins(footprint):
             result[footprint.GetReference()] = "thru-hole"
@@ -25,7 +28,7 @@ def collectSolderTypes(board):
 
 def addVirtualToRefsToIgnore(refsToIgnore, board):
     for footprint in board.GetFootprints():
-        if footprint.GetAttributes() & MODULE_ATTR_T.MOD_VIRTUAL:
+        if excludeFromPos(footprint):
             refsToIgnore.append(footprint.GetReference())
 
 def collectBom(components, manufacturerFields, partNumberFields,
