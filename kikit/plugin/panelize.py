@@ -1,7 +1,7 @@
 from sys import stderr
 from numpy.core.fromnumeric import std
 from numpy.lib.utils import source
-from pcbnewTransition import pcbnew
+from pcbnewTransition import pcbnew, isV6
 from kikit.panelize_ui_impl import loadPresetChain
 from kikit.panelize import appendItem
 import kikit.panelize_ui_sections
@@ -9,8 +9,14 @@ import wx
 import json
 import subprocess
 import tempfile
+import os
 from itertools import chain
 
+
+def pcbnewPythonPath():
+    return os.path.dirname(pcbnew.__file__)
+
+pcbnewPythonPath()
 
 def presetDifferential(source, target):
     result = {}
@@ -45,7 +51,11 @@ def transplateBoard(source, target):
         appendItem(target, x)
     for x in source.Zones():
         appendItem(target, x)
-    target.SetDesignSettings(source.GetDesignSettings())
+    if isV6():
+        d = target.GetDesignSettings()
+        d.CloneFrom(source.GetDesignSettings())
+    else:
+        target.SetDesignSettings(source.GetDesignSettings())
     target.SetProperties(source.GetProperties())
     target.SetPageSettings(source.GetPageSettings())
     target.SetTitleBlock(source.GetTitleBlock())
@@ -313,8 +323,12 @@ class PanelizeDialog(wx.Dialog):
                     "Running kikit", "Running kikit, please wait")
                 progressDlg.Show()
                 progressDlg.Pulse()
+
+                kikitEnv = os.environ.copy()
+                kikitEnv["PYTHONPATH"] = pcbnewPythonPath()
                 p = subprocess.run(arg,
-                                   stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
+                                   stderr=subprocess.STDOUT, stdout=subprocess.PIPE,
+                                   env=kikitEnv)
                 out = p.stdout.decode("utf-8")
                 if p.returncode != 0:
                     raise RuntimeError(out)
