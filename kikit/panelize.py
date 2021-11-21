@@ -918,9 +918,9 @@ class Panel:
         Add a drilled non-plated hole to the position (`wxPoint`) with given
         diameter. The paste option allows to place the hole on the paste layers.
         """
-        module = pcbnew.PCB_IO().FootprintLoad(KIKIT_LIB, "NPTH")
-        module.SetPosition(position)
-        for pad in module.Pads():
+        footprint = pcbnew.PCB_IO().FootprintLoad(KIKIT_LIB, "NPTH")
+        footprint.SetPosition(position)
+        for pad in footprint.Pads():
             pad.SetDrillSize(pcbnew.wxSize(diameter, diameter))
             pad.SetSize(pcbnew.wxSize(diameter, diameter))
             if paste:
@@ -928,7 +928,7 @@ class Panel:
                 layerSet.AddLayer(Layer.F_Paste)
                 layerSet.AddLayer(Layer.B_Paste)
                 pad.SetLayerSet(layerSet)
-        self.board.Add(module)
+        self.board.Add(footprint)
 
     def addFiducial(self, position, copperDiameter, openingDiameter, bottom=False):
         """

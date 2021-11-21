@@ -148,9 +148,9 @@ def removeComponents(board, references):
     Remove components with references from the board. References is a list of
     strings
     """
-    for module in board.GetFootprints():
-        if module.GetReference() in references:
-            board.Remove(module)
+    for footprint in board.GetFootprints():
+        if footprint.GetReference() in references:
+            board.Remove(footprint)
 
 def parseReferences(dStr):
     """
