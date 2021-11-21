@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from kikit.sexpr import Atom, parseSexprF
+from itertools import islice
 import os
 
 @dataclass
@@ -21,7 +22,7 @@ class SymbolInstance:
     footprint: str = None
 
 def getProperty(sexpr, field):
-    for x in sexpr[1:]:
+    for x in islice(sexpr, 1, None):
         if len(x) > 0 and \
             isinstance(x[0], Atom) and x[0].value == "property" and \
             isinstance(x[1], Atom) and x[1].value == field:
@@ -53,14 +54,14 @@ def isPath(sexpr):
     return isinstance(item, Atom) and item.value == "path"
 
 def getUuid(sexpr):
-    for x in sexpr[1:]:
+    for x in islice(sexpr, 1, None):
         if x and x[0] == "uuid":
             return x[1].value
     return None
 
 def extractSymbol(sexpr, path):
     s = Symbol()
-    for x in sexpr[1:]:
+    for x in islice(sexpr, 1, None):
         if not x:
             continue
         key = x[0]
@@ -85,7 +86,7 @@ def extractSymbol(sexpr, path):
 def extractSymbolInstance(sexpr):
     s = SymbolInstance()
     s.path = sexpr[1].value
-    for x in sexpr[2:]:
+    for x in islice(sexpr, 2, None):
         if not len(x) > 1:
             continue
         key = x[0]

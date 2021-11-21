@@ -10,6 +10,11 @@ from datetime import datetime
 import shutil
 from kikit.sexpr import Atom, SExpr, parseSexprF
 from kikit.common import KIKIT_LIB
+from pcbnewTransition import isV6, pcbnew
+from wx import PyApp, StandardPaths
+
+# wxWidgets complains about missing application, make it happy
+_dummyApp = PyApp()
 
 # Tuple: package, name, description
 availablePlugins = [
@@ -18,6 +23,27 @@ availablePlugins = [
     ("panelize", "Panelize design",
         "Allows you to specify panelization process via GUI")
 ]
+
+# getUserDocumentPath and GetUserPluginsPath are reimplemented by their
+# counterparts in KiCAD source
+def getUserDocumentPath():
+    envPath = os.environ.get( "KICAD_DOCUMENTS_HOME" )
+    if envPath:
+        path = envPath
+    else:
+        if platform.system() == "windows":
+            path = StandardPaths.Get().GetDocumentsDir()
+        else:
+            # We should first try to invoke g_get_user_data_dir, but it is
+            # hard from Python. So let's mimic practically all implementations
+            path = Path.home() / ".local" / "share"
+    return os.path.join(path, "kicad", pcbnew.GetMajorMinorVersion())
+
+def getUserPluginsPath():
+    return os.path.join(getUserDocumentPath(), "plugin")
+
+def GetUserScriptingPath():
+    return os.path.join(getUserDocumentPath(), "scripting")
 
 def registrationRoutine(allowedPlugins):
     """
@@ -74,9 +100,13 @@ def enable(all, plugin):
                 sys.exit(f"Unknown plugin '{p}'. See available plugins via kikit-plugin list")
         plugins = [p for p in availablePlugins if p[0] in plugin]
 
-    location = str(Path.home()) + "/.kicad_plugins/"
-    Path(location).mkdir(exist_ok=True)
-    location += "kikit_plugin.py"
+    if isV6():
+        location = GetUserScriptingPath()
+    else:
+        location = str(Path.home()) + "/.kicad_plugins/"
+    Path(location).mkdir(exist_ok=True, parents=True)
+    location = os.path.join(location, "kikit_plugin.py")
+    print(f"File '{location}' was created")
     with open(location, "w") as f:
         f.write(registrationRoutine(plugins))
 
@@ -84,10 +114,14 @@ def getFpLibTablePath():
     """
     Return path to the FP Lib table
     """
-    # Currently, we only support Linux and stable KiKit
-    if platform.system() != "Linux":
-        raise RuntimeError(f"Usupported platform '{platform.system()}'")
-    return str(Path.home() / ".config" / "kicad" / "fp-lib-table")
+    if not isV6():
+        # We only support Linux for v5 and stable KiKit
+        if platform.system() != "Linux":
+            raise RuntimeError(f"Usupported platform '{platform.system()}'")
+        return str(Path.home() / ".config" / "kicad" / "fp-lib-table")
+    configdir = pcbnew.SETTINGS_MANAGER.GetUserSettingsPath()
+    return os.path.join(configdir, "fp-lib-table")
+
 
 def findLib(fpLibTable, lib):
     """
