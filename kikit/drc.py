@@ -2,16 +2,19 @@ from pcbnewTransition import pcbnew, isV6
 import sys
 import tempfile
 import re
+from dataclasses import dataclass, field
+from kikit.drc_ui import ReportLevel
 
+@dataclass
 class Violation:
-    def __init__(self, type, description, severity):
-        self.type = type
-        self.description = description
-        self.severity = severity
-        self.objects = []
+    type: str
+    description: str
+    rule: str
+    severity: str
+    objects: list = field(default_factory=list)
 
     def __str__(self):
-        head = f"[{self.type}]: {self.description} Severity: {self.severity}"
+        head = f"[{self.type}]: {self.description} Severity: {self.severity}\n  {self.rule}"
         tail = "\n".join(["  " + x for x in self.objects])
         return "\n".join([head] + [tail])
 
@@ -19,10 +22,18 @@ def readViolations(reportFile):
     violations = []
     line = reportFile.readline()
     while True:
-        m = re.match(r'\[(.*)\]: (.*) Severity: (.*)\n', line)
-        if m is None:
+        headerMatch = re.match(r'\[(.*)\]: (.*)\n', line)
+        if headerMatch is None:
             break
-        v = Violation(m.group(1), m.group(2), m.group(3))
+        line = reportFile.readline()
+        bodyMatch = re.match(r'\s*(.*); Severity: (.*)', line)
+        if bodyMatch is None:
+            break
+        v = Violation(
+            type = headerMatch.group(1),
+            description = headerMatch.group(2),
+            rule = bodyMatch.group(1),
+            severity = bodyMatch.group(2))
         line = reportFile.readline()
         while line.startswith("    "):
             v.objects.append(line.strip())
@@ -51,7 +62,7 @@ def readReport(reportFile):
         line = reportFile.readline()
     return report
 
-def runImpl(boardfile, useMm, strict):
+def runImpl(boardfile, useMm, strict, level):
     try:
         if not isV6():
             raise RuntimeError("This feature is available only with KiCAD 6.")
@@ -73,10 +84,21 @@ def runImpl(boardfile, useMm, strict):
             for k, v in report.items():
                 if len(v) == 0:
                     continue
-                failed = True
-                print(f"** Found {len(v)} {errorName[k]}: **")
+                failed = False
+                failedCases = []
                 for x in v:
-                    print(x)
+                    thisFailed = False
+                    if level == ReportLevel.warning and x.severity == "warning":
+                        thisFailed = True
+                    if x.severity == "error":
+                        thisFailed = True
+                    if thisFailed:
+                        failedCases.append(x)
+                    failed = failed or thisFailed
+                if failedCases:
+                    print(f"** Found {len(failedCases)} {errorName[k]}: **")
+                    for x in failedCases:
+                        print(x)
                 print("\n")
             if not failed:
                 print("No DRC errors found.")
