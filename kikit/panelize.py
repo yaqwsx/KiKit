@@ -881,6 +881,7 @@ class Panel:
         Otherwise, raise an exception.
         """
         for cut in cuts:
+            print(cut)
             if len(cut.simplify(SHP_EPSILON).coords) > 2 and not boundCurves:
                 raise RuntimeError("Cannot V-Cut a curve")
             start = roundPoint(cut.coords[0])

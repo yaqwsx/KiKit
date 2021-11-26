@@ -2,7 +2,8 @@ from sys import stderr
 from numpy.core.fromnumeric import std
 from numpy.lib.utils import source
 from pcbnewTransition import pcbnew, isV6
-from kikit.panelize_ui_impl import loadPresetChain
+from kikit.panelize_ui_impl import loadPresetChain, obtainPreset
+from kikit import panelize_ui
 from kikit.panelize import appendItem
 import kikit.panelize_ui_sections
 import wx
@@ -10,13 +11,20 @@ import json
 import subprocess
 import tempfile
 import os
+from threading import Thread
 from itertools import chain
 
 
+class ExceptionThread(Thread):
+    def run(self):
+        self.exception = None
+        try:
+            super().run()
+        except Exception as e:
+            self.exception = e
+
 def pcbnewPythonPath():
     return os.path.dirname(pcbnew.__file__)
-
-pcbnewPythonPath()
 
 def presetDifferential(source, target):
     result = {}
@@ -317,21 +325,33 @@ class PanelizeDialog(wx.Dialog):
 
     def OnPanelize(self, event):
         with tempfile.NamedTemporaryFile(suffix=".kicad_pcb") as f:
-            arg = ["kikit", "panelize"] + self.kikitArgs() + [f.name]
             try:
                 progressDlg = wx.ProgressDialog(
                     "Running kikit", "Running kikit, please wait")
                 progressDlg.Show()
                 progressDlg.Pulse()
 
-                kikitEnv = os.environ.copy()
-                kikitEnv["PYTHONPATH"] = pcbnewPythonPath()
-                p = subprocess.run(arg,
-                                   stderr=subprocess.STDOUT, stdout=subprocess.PIPE,
-                                   env=kikitEnv)
-                out = p.stdout.decode("utf-8")
-                if p.returncode != 0:
-                    raise RuntimeError(out)
+                args = self.kikitArgs()
+                preset = obtainPreset([], **args)
+                input = self.sections["Input"].items["Input file"].getValue()
+                if len(input) == 0:
+                    dlg = wx.MessageDialog(
+                        None, f"No input file specified", "Error", wx.OK)
+                    dlg.ShowModal()
+                    dlg.Destroy()
+                    return
+                output = f.name
+                thread = ExceptionThread(target=panelize_ui.doPanelization,
+                                         args=(input, output, preset))
+                thread.daemon = True
+                thread.start()
+                while True:
+                    progressDlg.Pulse()
+                    thread.join(timeout=1)
+                    if not thread.is_alive():
+                        break
+                if thread.exception:
+                    raise thread.exception
                 panel = pcbnew.LoadBoard(f.name)
                 transplateBoard(panel, self.board)
             except Exception as e:
@@ -400,16 +420,11 @@ class PanelizeDialog(wx.Dialog):
         preset = self.collectReleventPreset()
         presetUpdates = presetDifferential(defaultPreset, preset)
 
-        args = []
+        args = {}
         for section, values in presetUpdates.items():
             if len(values) == 0:
                 continue
-            attrs = "; ".join(
-                [f"{key}: {value}" for key, value in values.items()])
-            args.append(f"--{section}")
-            args.append(attrs)
-        inputFilename = self.sections["Input"].items["Input file"].getValue()
-        args.append(inputFilename)
+            args[section] = values
         return args
 
 
