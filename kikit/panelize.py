@@ -403,7 +403,8 @@ class Panel:
         Saves the panel to a file and makes the requested changes to the prl and
         pro files.
         """
-        for edge in self.boardSubstrate.serialize():
+        newEdges = self.boardSubstrate.serialize()
+        for edge in newEdges:
             self.board.Add(edge)
         vcuts = self._renderVCutH() + self._renderVCutV()
         keepouts = []
@@ -421,7 +422,7 @@ class Panel:
         for keepout in keepouts:
             self.board.Remove(keepout)
         # Remove edges
-        for edge in collectEdges(self.board, "Edge.Cuts"):
+        for edge in newEdges:
             self.board.Remove(edge)
 
         if isV6():
