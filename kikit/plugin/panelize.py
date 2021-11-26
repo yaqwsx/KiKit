@@ -362,7 +362,7 @@ class PanelizeDialog(wx.Dialog):
             finally:
                 progressDlg.Hide()
                 progressDlg.Destroy()
-        self.EndModal(0)
+        pcbnew.Refresh()
 
     def populateInitialValue(self):
         preset = loadPresetChain([":default"])
