@@ -40,9 +40,12 @@ following
     "framing": {
         "type": "none",
         "thickness": "0mm",
-        "millRadius": "0mm",
-        "copperFill": false
-    }
+    },
+    "post": {
+        "type": "auto",
+        "millradius": "0mm",
+        "copperfill": false
+    }    
 }
 ```
 
@@ -312,7 +315,7 @@ left/right rails.
 - `hspace`, `vspace`, `space` - specify the space between PCB and the
   frame/rail. `space` overrides `hspace and vspace`.
 - `width` - specify with of the rails or frame
-- `filleŧ`, `chamfer` - fillet/chamfer frame corners. Specify radius or chamfer
+- `fillet`, `chamfer` - fillet/chamfer frame corners. Specify radius or chamfer
   size.
 
 #### Railstb/Railsrl
@@ -339,6 +342,7 @@ Add tooling holes to the (rail/frame of) the panel. The holes are positioned
 by
 
 **Types**: none, 3hole, 4hole
+
 **Common options**:
 
 - `hoffset`, `voffset` - specify the offset from from panel edges
@@ -351,6 +355,7 @@ by
 Add fiducial to the (rail/frame of) the panel.
 
 **Types**: none, 3fid, 4fid
+
 **Common options**:
 
 - `hoffset`, `voffset` - specify the offset from from panel edges
@@ -363,6 +368,7 @@ need more text or more sophisticated placing options, see `script` option from
 `postprocess`.
 
 **Types**: none, simple
+
 **Common options**:
 
 - `text` - The text to be displayed. Note that you can escape `;` via `\`
@@ -381,11 +387,12 @@ need more text or more sophisticated placing options, see `script` option from
 - `thickness` - stroke thickness. Default `0.3mm`.
 - `layer` - specify text layer
 
-## Postprocess
+## Post
 
 Finishing touches to the panel.
 
 **Types**: auto
+
 **Common options**:
 
 - `copperfill` - fill tabs and frame with copper (e.g., to save etchant or to
