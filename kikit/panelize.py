@@ -920,7 +920,7 @@ class Panel:
         Add a drilled non-plated hole to the position (`wxPoint`) with given
         diameter. The paste option allows to place the hole on the paste layers.
         """
-        footprint = pcbnew.PCB_IO().FootprintLoad(KIKIT_LIB, "NPTH")
+        footprint = pcbnew.FootprintLoad(KIKIT_LIB, "NPTH")
         footprint.SetPosition(position)
         for pad in footprint.Pads():
             pad.SetDrillSize(pcbnew.wxSize(diameter, diameter))
@@ -938,7 +938,7 @@ class Panel:
         with given copperDiameter and openingDiameter. By setting bottom to True, the fiducial
         is placed on bottom side.
         """
-        footprint = pcbnew.PCB_IO().FootprintLoad(KIKIT_LIB, "Fiducial")
+        footprint = pcbnew.FootprintLoad(KIKIT_LIB, "Fiducial")
         # As of V6, the footprint first needs to be added to the board,
         # then we can change its properties. Otherwise, it misses parent pointer
         # and KiCAD crashes.
