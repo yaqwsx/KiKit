@@ -7,14 +7,14 @@ all: doc package test
 doc: doc/panelization.md doc/examples.md
 
 doc/panelization.md: kikit/panelize.py scripts/panelizeDoc.py
-	PYTHONPATH=`pwd` python3 scripts/panelizeDoc.py > $@
+	PYTHONPATH="$(pwd):${PYTHONPATH}" python3 scripts/panelizeDoc.py > $@
 
 doc/resources/conn.png: doc/resources/conn.kicad_pcb
 	pcbdraw --silent $< $@
 	convert $@ -define png:include-chunk=none $@
 
 doc/examples.md: scripts/exampleDoc.py doc/resources/conn.png
-	PYTHONPATH=`pwd` python3 scripts/exampleDoc.py > $@
+	PYTHONPATH="$(pwd):${PYTHONPATH}" python3 scripts/exampleDoc.py > $@
 
 package:
 	rm -f dist/*
