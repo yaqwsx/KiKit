@@ -42,7 +42,7 @@ def getUserDocumentPath():
     if envPath:
         path = envPath
     else:
-        if platform.system() == "windows":
+        if platform.system() == "Windows":
             path = StandardPaths.Get().GetDocumentsDir()
         else:
             # We should first try to invoke g_get_user_data_dir, but it is
