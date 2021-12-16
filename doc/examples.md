@@ -10,6 +10,9 @@ nor proper documentation. For further details, please refer to:
 - [more detail about KiKit's algorithm for tab creation](understandingTabs.md)
 - [reference for the Python interface](panelization.md)
 
+Note that in Windows you have the enter the commands into KiCAD Command Prompt
+instead of the regular Command Prompt. You can find it under the Start menu.
+
 We will show everything on a single board located in
 `doc/resources/conn.kicad_pcb`. The board looks like this when rendered via
 PcbDraw:
