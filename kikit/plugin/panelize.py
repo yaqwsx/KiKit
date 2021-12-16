@@ -5,10 +5,10 @@ from pcbnewTransition import pcbnew, isV6
 from kikit.panelize_ui_impl import loadPresetChain, obtainPreset
 from kikit import panelize_ui
 from kikit.panelize import appendItem
+from kikit.common import PKG_BASE
 import kikit.panelize_ui_sections
 import wx
 import json
-import subprocess
 import tempfile
 import os
 from threading import Thread
@@ -434,9 +434,10 @@ class PanelizePlugin(pcbnew.ActionPlugin):
         self.dialog = None
 
     def defaults(self):
-        self.name = "Panelize PCB"
-        self.category = "Panelize PCB"
+        self.name = "KiKit: Panelize PCB"
+        self.category = "KiKit"
         self.description = "Create a panel"
+        self.icon_file_name = os.path.join(PKG_BASE, "resources", "graphics", "panelizeIcon_24x24.png")
 
     def Run(self):
         try:
