@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="198.3154mm"
+   height="198.3154mm"
+   viewBox="0 0 198.3154 198.3154"
+   version="1.1"
+   id="svg5"
+   sodipodi:docname="removeRefIcon.svg"
+   inkscape:version="1.1.1 (1:1.1+202109281949+c3084ef5ed)"
+   inkscape:export-filename="/home/xmrazek7/projects/kikit/kikit/resources/graphics/removeRefIcon.png"
+   inkscape:export-xdpi="3.0738914"
+   inkscape:export-ydpi="3.0738914"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="mm"
+     showgrid="false"
+     showguides="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:zoom="0.54099734"
+     inkscape:cx="31.423445"
+     inkscape:cy="391.86884"
+     inkscape:window-width="1920"
+     inkscape:window-height="1162"
+     inkscape:window-x="0"
+     inkscape:window-y="18"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs2">
+    <rect
+       x="436.73654"
+       y="582.1283"
+       width="140.12912"
+       height="129.96976"
+       id="rect11670" />
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath26817">
+      <path
+         style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="M 206.02839,322.32209 17.873325,510.93582 c 0,0 -0.161939,-177.95058 1.573446,-178.69042 1.735384,-0.73984 186.581619,-9.92331 186.581619,-9.92331 z"
+         id="path26819" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath19089">
+      <rect
+         style="fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
+         id="rect19091"
+         width="194.3154"
+         height="194.3154"
+         x="15.178815"
+         y="319.30051"
+         rx="10.7953"
+         ry="10.7953" />
+    </clipPath>
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-13.178815,-317.30051)">
+    <image
+       width="205.65746"
+       height="205.65746"
+       preserveAspectRatio="none"
+       style="stroke-width:0.0482447;image-rendering:optimizeQuality"
+       xlink:href="pcbBg.png"
+       id="image19085"
+       x="7.0117617"
+       y="316.65463"
+       clip-path="url(#clipPath19089)" />
+    <rect
+       style="fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect972-5-9"
+       width="194.3154"
+       height="194.3154"
+       x="15.178815"
+       y="319.30051"
+       rx="10.7953"
+       ry="10.7953" />
+    <text
+       xml:space="preserve"
+       style="font-size:4px;line-height:1.25;font-family:'Artegra Sans Alt';-inkscape-font-specification:'Artegra Sans Alt';letter-spacing:0px;word-spacing:0px;stroke-width:0.264583"
+       x="60.61903"
+       y="110.19357"
+       id="text3394"><tspan
+         sodipodi:role="line"
+         id="tspan3392"
+         style="stroke-width:0.264583"
+         x="60.61903"
+         y="110.19357" /></text>
+    <text
+       xml:space="preserve"
+       transform="scale(0.26458333)"
+       id="text11668"
+       style="font-size:113.386px;line-height:1.25;font-family:'Artegra Sans Alt';-inkscape-font-specification:'Artegra Sans Alt';text-align:center;letter-spacing:0px;word-spacing:0px;white-space:pre;shape-inside:url(#rect11670)"
+       x="5.7578702"
+       y="0" />
+    <text
+       xml:space="preserve"
+       style="font-size:4px;line-height:1.25;font-family:'Artegra Sans Alt';-inkscape-font-specification:'Artegra Sans Alt';letter-spacing:0px;word-spacing:0px;stroke-width:0.264583"
+       x="143.36734"
+       y="380.84818"
+       id="text21698"><tspan
+         sodipodi:role="line"
+         id="tspan21696"
+         style="stroke-width:0.264583"
+         x="143.36734"
+         y="380.84818" /></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:90px;line-height:1;font-family:'Artegra Sans Alt';-inkscape-font-specification:'Artegra Sans Alt Bold';text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke markers fill"
+       x="26.246572"
+       y="447.28708"
+       id="text29776"
+       clip-path="url(#clipPath26817)"><tspan
+         sodipodi:role="line"
+         id="tspan29774"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:90px;font-family:'Artegra Sans Alt';-inkscape-font-specification:'Artegra Sans Alt Bold';text-align:start;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke markers fill"
+         x="26.246572"
+         y="447.28708">REF</tspan><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:90px;font-family:'Artegra Sans Alt';-inkscape-font-specification:'Artegra Sans Alt Bold';text-align:start;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke markers fill"
+         x="26.246572"
+         y="537.28711"
+         id="tspan32298" /></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:90px;line-height:1;font-family:'Artegra Sans Alt';-inkscape-font-specification:'Artegra Sans Alt Bold';text-align:start;letter-spacing:0px;word-spacing:0px;text-anchor:start;fill:none;fill-opacity:1;stroke:#000000;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke markers fill"
+       x="25.943655"
+       y="447.73032"
+       id="text29776-1"><tspan
+         sodipodi:role="line"
+         id="tspan29774-2"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:90px;font-family:'Artegra Sans Alt';-inkscape-font-specification:'Artegra Sans Alt Bold';text-align:start;text-anchor:start;fill:none;fill-opacity:1;stroke:#000000;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke markers fill"
+         x="25.943655"
+         y="447.73032">REF</tspan><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:90px;font-family:'Artegra Sans Alt';-inkscape-font-specification:'Artegra Sans Alt Bold';text-align:start;text-anchor:start;fill:none;fill-opacity:1;stroke:#000000;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke markers fill"
+         x="25.943655"
+         y="537.73035"
+         id="tspan32298-7" /></text>
+    <path
+       style="fill:none;stroke:#ffffff;stroke-width:6;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:24, 24;stroke-dashoffset:0;stroke-opacity:1;paint-order:stroke fill markers"
+       d="M 22.275742,506.98768 202.53137,326.35004"
+       id="path26436"
+       sodipodi:nodetypes="cc"
+       inkscape:export-filename="/home/xmrazek7/projects/kikit/kikit/resources/graphics/removeRefIcon.png"
+       inkscape:export-xdpi="3.2729213"
+       inkscape:export-ydpi="3.2729213" />
+  </g>
+</svg>

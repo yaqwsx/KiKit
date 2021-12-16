@@ -24,6 +24,17 @@ availablePlugins = [
         "Allows you to specify panelization process via GUI")
 ]
 
+def importAllPlugins():
+    """
+    Bring all plugins that KiKit offers into a the global namespace. This
+    function is impure as it modifies the global variable scope. The purpose
+    of this function is to allow the PCM proxy to operate.
+    """
+    import importlib
+
+    for name, _, _ in availablePlugins:
+        importlib.import_module(f"kikit.plugin.{name}")
+
 # getUserDocumentPath and GetUserPluginsPath are reimplemented by their
 # counterparts in KiCAD source
 def getUserDocumentPath():
