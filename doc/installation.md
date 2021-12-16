@@ -1,38 +1,143 @@
 # Installation
 
-KiKit is distributed as a Python package. On most of the Linux distributions you
-just have to install KiCAD and then install KiKit via Pip:
+KiKit is distributed as a Python package. If you installed it via KiCAD's Plugin
+and Content Manager (PCM), you still have to install it via the procedures below
+as the PCM only distributes the graphical interface (note that as of KiCAD 6 it
+is impossible to distribute KiKit completely via PCM).
+
+The installation steps differ slightly based on the operating system you use, but
+consists of three steps:
+
+- perform the basic installation:
+  - [Linux/MacOS](#installation-on-linux-and-macos)
+  - [Windows](#installation-on-windows)
+  - Or you can run KiKit inside [Docker](#running-kikit-via-docker) - which
+    might be useful e.g., for continuous integration.
+  - If you would like to install special version of KiKit (e.g., nightly or a
+    specific feature under development), please follow
+    [Installing a special version of KiKit](#installing-a-special-version-of-kikit).
+- register the GUI plugins and library:
+  - either install KiKit from PCM,
+  - or [register the plugins](#enabling-plugins) and [libraries
+    manually](#enabling-kikit-annotation-footprint-library).
+- Optionally, you can install the [optional
+  dependencies](#optional-dependencies) required for certain functions.
+
+## Installation on Linux and MacOS
+
+Simply invoke in terminal:
 
 ```
-pip install KiKit # Use pip or pip3 based on your distribution
+> pip install kikit
+# or  (based on your distribution)
+> pip3 install kikit
 ```
 
-Then you are ready to use it. Note that if you would like to use GUI plugins in
-KiCAD, you have enable them. Similarly, you can also register the KiKit
-footprint library. See section "Enabling plugins" and "Enabling Kikit annotation
-footprint library". Also, there are two optional dependencies:
-
-- PcbDraw - to be able to export presentation pages (install it via `pip install
-  PcbDraw`)
-- OpenSCAD - to be able to export 3D models of stencil. Install it via your
-  system package manage.
-
-**Note that, the procedure above works on Linux and does not work on Windows or
-MacOS.** Please, follow the alternative installation and usage guides below.
-
-The reason for that is packaging of KiCAD on these platforms. There are some
-plans for overcoming this issue, but they cannot be applied until KiCAD 6 is
-released.
-
-If you have multiple KiCAD versions installed, see the section "Choosing KiCAD
-version".
-
-If you would like to use the upstream (unstable) version of KiKit, you can
-install it directly from GitHub:
+Now you can test that it works:
 
 ```
-pip3 install git+https://github.com/yaqwsx/KiKit@master
+> kikit --help
 ```
+
+You should get something like this:
+
+```
+Usage: kikit [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  --version  Show the version and exit.
+  --help     Show this message and exit.
+
+Commands:
+  drc       Validate design rules of the board
+  export    Export KiCAD boards
+  fab       Export complete manufacturing data for given fabrication houses
+  modify    Modify board items
+  panelize  Panelize boards
+  present   Prepare board presentation
+  separate  Separate a single board out of a multi-board design.
+  stencil   Create solder paste stencils
+```
+
+Now you are done with the basic installation. Don't forget to get the GUI
+frontend and libraries via PCM.
+
+This is the basic installation for CLI usage. If you would like to use the
+graphical interface inside KiCAD, you have to install the graphical interface
+via Plugin and Content Manager or [register the plugins](#enabling-plugins) and
+[libraries manually](#enabling-kikit-annotation-footprint-library). You might
+also want to consider installing the [optional
+dependencies](#optional-dependencies).
+
+## Installation on Windows
+
+To install KiKit on Windows, you have to open "KiCAD Command Prompt". You can
+find it in the start menu:
+
+![KiCAD Command Prompt in Start menu](resources/windowsCommandPrompt1.jpg)
+
+Once you have it open like this:
+
+![KiCAD Command Prompt in Start menu](resources/windowsCommandPrompt2.jpg)
+
+you can put command in there and confirm them by pressing
+enter. This is also the prompt from which you will invoke all KiKit's CLI
+commands. They, unfortunatelly, does not work in an ordinary Command prompt due
+to the way KiCAD is packaged on Windows.
+
+Then you have to enter two commands:
+
+- `pip install git+https://github.com/SolidCode/SolidPython.git@master` (the
+  older version of this library is currently incomptible with Windows, hence this extra step)
+- `pip install kikit` (install KiKit itself)
+
+Now you can test that it works:
+
+```.bash
+kikit --help
+```
+
+You should get something like this:
+
+```
+Usage: kikit [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  --version  Show the version and exit.
+  --help     Show this message and exit.
+
+Commands:
+  drc       Validate design rules of the board
+  export    Export KiCAD boards
+  fab       Export complete manufacturing data for given fabrication houses
+  modify    Modify board items
+  panelize  Panelize boards
+  present   Prepare board presentation
+  separate  Separate a single board out of a multi-board design.
+  stencil   Create solder paste stencils
+```
+
+Now you are done with the basic installation. Don't forget to get the GUI
+frontend and libraries via PCM.
+
+## Installing a special version of KiKit
+
+If you would like to install a specific version of KiKit, you can install it
+directly from git. The command for that is:
+
+```.bash
+# The master branch - the most up-to-date KiKit there is (but might me unstable)
+pip install git+https://github.com/yaqwsx/KiKit@master
+# A concrete branch, e.g., from a pull request
+pip3 install git+https://github.com/yaqwsx/KiKit@someBranchName
+```
+
+## Optional dependencies
+
+- [PcbDraw](https://github.com/yaqwsx/PcbDraw) - to be able to export
+  presentation pages
+- [OpenSCAD](https://openscad.org/) - to be able to export 3D models of stencil.
+  Install it via your system package manage.
 
 ## Enabling KiKit annotation footprint library
 
@@ -44,7 +149,6 @@ You can:
 - register the library automatically via invoking `kikit-plugin registerlib` of
 - add the library manually in KiCAD. You get the library location via
   `kikit-info lib`. Note that the library has to be named `kikit`
-
 
 ## Enabling plugins
 
@@ -60,31 +164,10 @@ hideReferences`. Note that if you want to enable multiple plugins, you have to
 specify them all at once. Also, the changes will take effect after restarting
 PcbNew.
 
-## Running KiKit in Windows Subsystem for Linux
-
-This method is applicable only on Windows.
-
-First, install WSL according to the [official
-guide](https://docs.microsoft.com/en-us/windows/wsl/install-win10). Use the
-distribution of your choice (if you are unsure, choose Ubuntu). Once you have a
-terminal inside WSL, you can follow the installation guide from the beginning of
-this document. Note that you have to install KiCAD inside WSL, the installation
-on Windows will not work for KiKit.
-
-For Ubuntu, the procedure might look like this:
-```
-sudo apt update
-sudo apt install kicad python3 python3-pip \
-    python3-wheel python3-setuptools openscad
-
-pip3 install Pcbdraw KiKit
-```
-
-Then you can verify the installation by running `kikit --help`.
-
 ## Running KiKit via Docker
 
-This method is applicable to Windows, Linux and MacOS.
+This method is applicable to Windows, Linux and MacOS. This method is suitable if
+you plan to use KiKit inside a continuous integration.
 
 First, install [Docker](https://www.docker.com/). The installation procedure
 varies by the platform, so Google up a recent guide for your platform.
@@ -158,8 +241,3 @@ propagated:
 ```
 PYTHONPATH=/usr/lib/kicad-nightly/lib/python3/dist-packages/ make
 ```
-
-Note that KiKit currently supports only KiCAD v5.0 up to v5.1.7. This support
-for nightly (v5.99) and v6 is work in progress and all the features might not
-work. The final support for KiCAD 6 will be introduced after KiCAD 6 release
-candidates is available.

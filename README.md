@@ -29,21 +29,8 @@ therefore, you can install it via pip:
 pip3 install kikit
 ```
 
-If you would like to test the upstream version (which can have more features
-implemented but is not guaranteed to be fully tested), you can install it via:
-
-```
-pip3 install git+https://github.com/yaqwsx/KiKit@master
-```
-
-Note that if you have a stable version installed, you need to add `--force` to
-upgrade it to upstream.
-
-Note that to use [KiCAD GUI plugins](doc/plugins.md), you have to enable them –
-see the [installation guide](doc/installation.md) for more details.
-
-If you would like to use KiKit on Windows or MacOS, see the [installation
-guide](doc/installation.md).
+For more detailed instructions with steps to enable GUI plugins, please see the
+[installation guide](doc/installation.md).
 
 ## Why Should I Use It?
 
