@@ -38,6 +38,16 @@ exportSettingsPcbway = {
     "ZerosFormat": GENDRILL_WRITER_BASE.SUPPRESS_LEADING,
 }
 
+exportSettingsOSHPark = {
+    "UseGerberProtelExtensions": True,
+    "UseAuxOrigin": False,
+    "ExcludeEdgeLayer": True,
+    "MinimalHeader": False,
+    "NoSuffix": False,
+    "MergeNPTH": True,
+    "ZerosFormat": GENDRILL_WRITER_BASE.DECIMAL_FORMAT,
+}
+
 
 def hasCopper(plotPlan):
     for _, layer, _ in plotPlan:

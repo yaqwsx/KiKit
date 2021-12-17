@@ -54,6 +54,19 @@ def pcbway(**kwargs):
     return pcbway.exportPcbway(**kwargs)
 
 
+@click.command()
+@click.argument("board", type=click.Path(dir_okay=False))
+@click.argument("outputdir", type=click.Path(file_okay=False))
+@click.option("--nametemplate", default="{}",
+    help="Template for naming the output files.")
+def oshpark(**kwargs):
+    """
+    Prepare fabrication files for OSH Park
+    """
+    from kikit.fab import oshpark
+    return oshpark.exportOSHPark(**kwargs)
+
+
 @click.group()
 def fab():
     """
@@ -63,3 +76,4 @@ def fab():
 
 fab.add_command(jlcpcb)
 fab.add_command(pcbway)
+fab.add_command(oshpark)
