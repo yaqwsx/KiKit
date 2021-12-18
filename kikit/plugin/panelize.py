@@ -211,7 +211,7 @@ class SectionGui():
 class PanelizeDialog(wx.Dialog):
     def __init__(self, parent=None, board=None):
         wx.Dialog.__init__(
-            self, parent, title='Specify which components to hide',
+            self, parent, title=f'Panelize a board  (version {kikit.__version__})',
             style=wx.DEFAULT_DIALOG_STYLE)
         self.Bind(wx.EVT_CLOSE, self.OnClose, id=self.GetId())
 
