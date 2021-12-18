@@ -1,8 +1,15 @@
 
+.SHELLFLAGS += -e
+
+PCM_KIKIT_RESOURCES := $(shell find pcm/kikit -type f -print) \
+	$(shell find kikit/resources/graphics -type f -print)
+PCM_LIB_RESOURCES :=  $(shell find pcm/kikit-lib -type f -print) \
+	$(shell find kikit/resources/graphics -type f -print) \
+	$(shell find kikit/resources/kikit.pretty -type f -print)
 
 .PHONY: doc clean package release test test-system test-unit
 
-all: doc package test
+all: doc package test pcm
 
 doc: doc/panelization.md doc/examples.md
 
@@ -36,6 +43,42 @@ test-unit:
 
 build/test:
 	mkdir -p $@
+
+pcm: pcm-kikit pcm-lib
+
+pcm-kikit: $(PCM_KIKIT_RESOURCES)
+	rm -rf build/pcm-kikit
+	mkdir -p build/pcm-kikit
+	mkdir -p build/pcm-kikit/resources
+	cp -r pcm/kikit/* build/pcm-kikit
+	cp kikit/resources/graphics/kikitIcon_64x64.png build/pcm-kikit/resources/icon.png
+	ls -lah build
+	scripts/setJson.py -s versions.-1.install_size=$$( du -sb build/pcm-kikit | cut -f1) \
+		build/pcm-kikit/metadata.json build/pcm-kikit/metadata.json
+	cd build/pcm-kikit && zip ../pcm-kikit.zip -r *
+	cp build/pcm-kikit/metadata.json build/pcm-kikit-metadata.json
+	scripts/setJson.py \
+		-s versions.-1.download_sha256=\"$$( sha256sum build/pcm-kikit.zip | cut -d' ' -f1)\" \
+		-s versions.-1.download_size=$$( du -sb build/pcm-kikit.zip | cut -f1) \
+		-s versions.-1.download_url=\"TBA\" \
+		build/pcm-kikit-metadata.json build/pcm-kikit-metadata.json
+
+pcm-lib: $(PCM_LIB_RESOURCES)
+	rm -rf build/pcm-kikit-lib
+	mkdir -p build/pcm-kikit-lib
+	mkdir -p build/pcm-kikit-lib/resources
+	cp -r pcm/kikit-lib/* build/pcm-kikit-lib
+	cp kikit/resources/graphics/kikitIcon_64x64.png build/pcm-kikit-lib/resources/icon.png
+	cp -r kikit/resources/kikit.pretty build/pcm-kikit-lib/footprints/
+	scripts/setJson.py -s versions.-1.install_size=$$(du -sb build/pcm-kikit-lib | cut -f1) \
+		build/pcm-kikit-lib/metadata.json build/pcm-kikit-lib/metadata.json
+	cd build/pcm-kikit-lib && zip ../pcm-kikit-lib.zip -r *
+	cp build/pcm-kikit-lib/metadata.json build/pcm-kikit-lib-metadata.json
+	scripts/setJson.py \
+		-s versions.-1.download_sha256=\"$$( sha256sum build/pcm-kikit-lib.zip | cut -d' ' -f1)\" \
+		-s versions.-1.download_size=$$( du -sb build/pcm-kikit-lib.zip | cut -f1) \
+		-s versions.-1.download_url=\"TBA\" \
+		build/pcm-kikit-lib-metadata.json build/pcm-kikit-lib-metadata.json
 
 clean:
 	rm -rf dist build
