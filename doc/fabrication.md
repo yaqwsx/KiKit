@@ -12,6 +12,7 @@ Note: click on the name of the manufacturer to see corresponding documentation:
 
 - [JLC PCB](fabrication/jlcpcb.md): board manufacturing, SMD assembly. [https://jlcpcb.com/](https://jlcpcb.com/)
 - [PCBWay](fabrication/pcbway.md): board manufacturing, assembly. [https://www.pcbway.com/](https://www.pcbway.com/)
+- [OSH Park](fabrication/oshpark.md): board manufacturing. [https://oshpark.com/](https://oshpark.com/)
 
 ## Adding New Fabrication Houses
 
