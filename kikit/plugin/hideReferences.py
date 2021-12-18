@@ -2,12 +2,13 @@ from pcbnewTransition import pcbnew
 import wx
 import re
 import os
+import kikit
 from kikit import modify
 from kikit.common import PKG_BASE
 
 class HideReferencesDialog(wx.Dialog):
     def __init__(self, parent=None, board=None):
-        wx.Dialog.__init__(self, parent, title='Specify which components to hide')
+        wx.Dialog.__init__(self, parent, title=f'Specify which components to hide (version {kikit.__version__})')
         self.board = board
 
         self.Bind(wx.EVT_CLOSE, self.OnCancel, id=self.GetId())
