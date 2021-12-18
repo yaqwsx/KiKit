@@ -1,0 +1,35 @@
+{
+    "$schema": "https://go.kicad.org/pcm/schemas/v1",
+    "name": "KiKit",
+    "description": "Automation for KiCAD",
+    "description_full": "KiKit is a Python library, KiCAD plugin and a CLI tool to automate several tasks in a standard KiCAD workflow like:\n• panelization of both, regular and oddly shaped, boards\n• automated exporting manufacturing data based on manufacturer presets\n• multi-board project in KiCAD\n• building board presentation pages\n• making 3D-printed solder stencils\n• and more",
+    "identifier": "com.github.yaqwsx.kikit",
+    "type": "library",
+    "author": {
+        "name": "Jan Mrázek",
+        "contact": {
+            "github": "https://github.com/yaqwsx",
+            "web": "https://honzamrazek.cz",
+            "twitter": "https://twitter.com/yaqwsx_cz"
+        }
+    },
+    "maintainer": {
+        "name": "Jan Mrázek",
+        "contact": {
+            "github": "https://github.com/yaqwsx",
+            "web": "https://honzamrazek.cz",
+            "twitter": "https://twitter.com/yaqwsx_cz"
+        }
+    },
+    "license": "MIT",
+    "resources": {
+        "homepage": "https://github.com/yaqwsx/KiKit"
+    },
+    "versions": [
+        {
+            "version": "0.99",
+            "status": "stable",
+            "kicad_version": "6.0"
+        }
+    ]
+}
