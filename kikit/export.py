@@ -19,13 +19,14 @@ fullGerberPlotPlan = [
 ]
 
 exportSettingsJlcpcb = {
-    "UseGerberProtelExtensions": False,
-    "UseAuxOrigin": True,
+    "UseGerberProtelExtensions": True,
+    "UseAuxOrigin": False,
     "ExcludeEdgeLayer": True,
     "MinimalHeader": False,
     "NoSuffix": False,
     "MergeNPTH": True,
     "ZerosFormat": GENDRILL_WRITER_BASE.DECIMAL_FORMAT,
+    "SubstractMaskFromSilk": True
 }
 
 exportSettingsPcbway = {
