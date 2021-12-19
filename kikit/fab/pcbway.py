@@ -122,11 +122,15 @@ def bomToCsv(bomData, filename, nBoards, types):
 
 def exportPcbway(board, outputdir, assembly, schematic, ignore,
                  manufacturer, partnumber, description, notes, soldertype,
-                 footprint, corrections, missingerror, nboards, nametemplate):
+                 footprint, corrections, missingerror, nboards, nametemplate, drc):
     """
     Prepare fabrication files for PCBWay including their assembly service
     """
     loadedBoard = pcbnew.LoadBoard(board)
+
+    if drc:
+        ensurePassingDrc(loadedBoard)
+
     refsToIgnore = parseReferences(ignore)
     removeComponents(loadedBoard, refsToIgnore)
     Path(outputdir).mkdir(parents=True, exist_ok=True)

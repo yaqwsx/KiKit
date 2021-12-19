@@ -50,11 +50,15 @@ def noFilter(footprint):
     return True
 
 def exportJlcpcb(board, outputdir, assembly, schematic, ignore, field,
-           corrections, missingerror, nametemplate):
+           corrections, missingerror, nametemplate, drc):
     """
     Prepare fabrication files for JLCPCB including their assembly service
     """
     loadedBoard = pcbnew.LoadBoard(board)
+
+    if drc:
+        ensurePassingDrc(loadedBoard)
+
     refsToIgnore = parseReferences(ignore)
     removeComponents(loadedBoard, refsToIgnore)
     Path(outputdir).mkdir(parents=True, exist_ok=True)

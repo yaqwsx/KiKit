@@ -119,7 +119,6 @@ def collectSymbols(filename, path=""):
             symbols.append(extractSymbol(item, path))
             continue
         if isSheet(item):
-            print("Got sheet!")
             f = getProperty(item, "Sheet file")
             uuid = getUuid(item)
             dirname = os.path.dirname(filename)

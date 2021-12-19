@@ -3,12 +3,23 @@ from pcbnewTransition import pcbnew, isV6
 from math import sin, cos, radians
 from kikit.common import *
 from kikit.defs import MODULE_ATTR_T
+from kikit.drc_ui import ReportLevel
+from kikit import drc
+import sys
 
 if isV6():
     from kikit.eeschema_v6 import getField, getUnit, getReference
 else:
     from kikit.eeschema import getField, getUnit, getReference
 
+
+def ensurePassingDrc(board):
+    if not isV6():
+        return # v5 cannot check DRC
+    failed = drc.runImpl(board, True, False, ReportLevel.error, lambda x: print(x))
+    if failed:
+        print("DRC failed. See report above. No files produced")
+        sys.exit(1)
 
 def hasNonSMDPins(footprint):
     for pad in footprint.Pads():

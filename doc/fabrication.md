@@ -6,6 +6,27 @@ files (e.g., special names of gerber files, different requirements for assembly
 files) there is no "universal exporter" in KiKit. Instead, KiKit offers special
 command for each supported fabrication house.
 
+## Common Options
+
+All fab subcommands has a common invocation structure:
+
+```
+kikit fab <fabhouse> <options> <sourceDir> <outputDir>
+```
+
+All commands also support the following options:
+
+- `--drc\--no-drc` (default `--drc`). Check for DRC violations before exporting
+  the files. With this options, you won't send a board that fails DRC to your
+  manufacturer.
+- `--nametemplate <str>`:  If you want to name your files differently, specify
+  this option. This option takes a string that should contain `{}`. This string
+  will be replaced by `gerber`, `pos` or `bom` in the out file names. The
+  extension is appended automatically.
+
+Each of the fab command also take additional, manufacturer specific, options.
+See documentation for the individual manufacturer below:
+
 ## Currently Supported:
 
 Note: click on the name of the manufacturer to see corresponding documentation:
@@ -13,6 +34,7 @@ Note: click on the name of the manufacturer to see corresponding documentation:
 - [JLC PCB](fabrication/jlcpcb.md): board manufacturing, SMD assembly. [https://jlcpcb.com/](https://jlcpcb.com/)
 - [PCBWay](fabrication/pcbway.md): board manufacturing, assembly. [https://www.pcbway.com/](https://www.pcbway.com/)
 - [OSH Park](fabrication/oshpark.md): board manufacturing. [https://oshpark.com/](https://oshpark.com/)
+
 
 ## Adding New Fabrication Houses
 

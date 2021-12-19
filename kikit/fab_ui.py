@@ -1,8 +1,21 @@
 import click
 
+def fabCommand(f):
+    """
+    A decorator to add the same functionality to all fab commands
+    """
+    # Note that the decorators has to be specified in a reverse order
+    f = click.argument("outputdir", type=click.Path(file_okay=False))(f)
+    f = click.argument("board", type=click.Path(dir_okay=False))(f)
+
+    f = click.option('--drc/--no-drc', is_flag=True, default=True,
+        help="Run DRC check before building the output.")(f)
+    f = click.option("--nametemplate", default="{}",
+        help="Template for naming the output files.")(f)
+    return f
+
 @click.command()
-@click.argument("board", type=click.Path(dir_okay=False))
-@click.argument("outputdir", type=click.Path(file_okay=False))
+@fabCommand
 @click.option("--assembly/--no-assembly", help="Generate files for SMT assembly (schematics is required)")
 @click.option("--schematic", type=click.Path(dir_okay=False), help="Board schematics (required for assembly files)")
 @click.option("--ignore", type=str, default="", help="Comma separated list of designators to exclude from SMT assembly")
@@ -11,8 +24,6 @@ import click
 @click.option("--corrections", type=str, default="JLCPCB_CORRECTION",
     help="Comma separated list of component fields with the correction value. First existing field is used")
 @click.option("--missingError/--missingWarn", help="If a non-ignored component misses LCSC field, fail")
-@click.option("--nametemplate", default="{}",
-    help="Template for naming the output files.")
 def jlcpcb(**kwargs):
     """
     Prepare fabrication files for JLCPCB including their assembly service
@@ -22,8 +33,7 @@ def jlcpcb(**kwargs):
 
 
 @click.command()
-@click.argument("board", type=click.Path(dir_okay=False))
-@click.argument("outputdir", type=click.Path(file_okay=False))
+@fabCommand
 @click.option("--assembly/--no-assembly", help="Generate files for SMT assembly (schematics is required)")
 @click.option("--schematic", type=click.Path(dir_okay=False), help="Board schematics (required for assembly files)")
 @click.option("--ignore", type=str, default="", help="Comma separated list of designators to exclude from SMT assembly")
@@ -44,8 +54,6 @@ def jlcpcb(**kwargs):
 @click.option("--nBoards", type=int, default=1,
     help="Number of boards per panel (default 1).")
 @click.option("--missingError/--missingWarn", help="If a non-ignored component misses Manufacturer / PartNumber field, fail")
-@click.option("--nametemplate", default="{}",
-    help="Template for naming the output files.")
 def pcbway(**kwargs):
     """
     Prepare fabrication files for PCBWAY including their assembly service
@@ -55,10 +63,7 @@ def pcbway(**kwargs):
 
 
 @click.command()
-@click.argument("board", type=click.Path(dir_okay=False))
-@click.argument("outputdir", type=click.Path(file_okay=False))
-@click.option("--nametemplate", default="{}",
-    help="Template for naming the output files.")
+@fabCommand
 def oshpark(**kwargs):
     """
     Prepare fabrication files for OSH Park

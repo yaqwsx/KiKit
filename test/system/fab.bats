@@ -12,6 +12,7 @@ load common
     fi
 
     kikit fab jlcpcb --assembly \
+        --no-drc \
         --schematic $RES/assembly_project1/assembly_project1.kicad_sch \
         $RES/assembly_project1/assembly_project1.kicad_pcb jlcpcb.assembly
 
@@ -26,4 +27,8 @@ load common
 
 @test "Fab: PcbWay without assembly" {
     kikit fab pcbway $RES/conn.kicad_pcb pcbway.noassembly
+}
+
+@test "Fab: OSHPark" {
+    kikit fab oshpark $RES/conn.kicad_pcb oshpark.noassembly
 }

@@ -1,5 +1,4 @@
 from pcbnewTransition import pcbnew, isV6
-import sys
 import tempfile
 import re
 from dataclasses import dataclass, field
@@ -62,49 +61,38 @@ def readReport(reportFile):
         line = reportFile.readline()
     return report
 
-def runImpl(boardfile, useMm, strict, level):
-    try:
-        if not isV6():
-            raise RuntimeError("This feature is available only with KiCAD 6.")
-        units = pcbnew.EDA_UNITS_MILLIMETRES if useMm else EDA_UNITS_INCHES
-        b = pcbnew.LoadBoard(boardfile)
-        with tempfile.NamedTemporaryFile(mode="w+") as tmpFile:
-            result = pcbnew.WriteDRCReport(b, tmpFile.name, units, strict)
-            assert result
+def runImpl(board, useMm, strict, level, yieldViolation):
+    units = pcbnew.EDA_UNITS_MILLIMETRES if useMm else EDA_UNITS_INCHES
+    with tempfile.NamedTemporaryFile(mode="w+") as tmpFile:
+        result = pcbnew.WriteDRCReport(board, tmpFile.name, units, strict)
+        assert result
 
-            tmpFile.seek(0)
-            report = readReport(tmpFile)
+        tmpFile.seek(0)
+        report = readReport(tmpFile)
 
-            failed = False
-            errorName = {
-                "drc": "DRC violations",
-                "unconnected": "unconnected pads",
-                "footprint": "footprints errors"
-            }
-            for k, v in report.items():
-                if len(v) == 0:
-                    continue
-                failed = False
-                failedCases = []
-                for x in v:
-                    thisFailed = False
-                    if level == ReportLevel.warning and x.severity == "warning":
-                        thisFailed = True
-                    if x.severity == "error":
-                        thisFailed = True
-                    if thisFailed:
-                        failedCases.append(x)
-                    failed = failed or thisFailed
-                if failedCases:
-                    print(f"** Found {len(failedCases)} {errorName[k]}: **")
-                    for x in failedCases:
-                        print(x)
-                print("\n")
-            if not failed:
-                print("No DRC errors found.")
-            else:
-                print("Found some DRC violations. See the report above.")
-            sys.exit(failed)
-    except Exception as e:
-        sys.stderr.write("An error occurred: " + str(e) + "\n")
-        sys.exit(1)
+    failed = False
+    errorName = {
+        "drc": "DRC violations",
+        "unconnected": "unconnected pads",
+        "footprint": "footprints errors"
+    }
+    for k, v in report.items():
+        if len(v) == 0:
+            continue
+        failed = False
+        failedCases = []
+        for x in v:
+            thisFailed = False
+            if level == ReportLevel.warning and x.severity == "warning":
+                thisFailed = True
+            if x.severity == "error":
+                thisFailed = True
+            if thisFailed:
+                failedCases.append(x)
+            failed = failed or thisFailed
+        if failedCases:
+
+            msg = f"** Found {len(failedCases)} {errorName[k]}: **\n"
+            msg += "\n".join([str(x) for x in failedCases])
+            yieldViolation(msg)
+    return failed

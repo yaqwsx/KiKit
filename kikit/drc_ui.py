@@ -42,6 +42,21 @@ def run(boardfile, usemm, strict, level):
     prints DRC report on the standard output.
     """
     from kikit.drc import runImpl
-    runImpl(boardfile, usemm, strict, level)
+    import sys
+    from pcbnewTransition import pcbnew, isV6
+
+    try:
+        if not isV6():
+            raise RuntimeError("This feature is available only with KiCAD 6.")
+        board = pcbnew.LoadBoard(boardfile)
+        failed = runImpl(board, usemm, strict, level, lambda x: print(x))
+        if not failed:
+            print("No DRC errors found.")
+        else:
+            print("Found some DRC violations. See the report above.")
+        sys.exit(failed)
+    except Exception as e:
+        sys.stderr.write("An error occurred: " + str(e) + "\n")
+        sys.exit(1)
 
 drc.add_command(run)
