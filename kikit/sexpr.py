@@ -99,6 +99,7 @@ def readQuotedString(stream):
     while c != '"' or escaped:
         if c == "\\":
             escaped = True
+            stream.read()
         else:
             escaped = False
             s.append(stream.read())
