@@ -264,7 +264,6 @@ def makeTopRegister(board, jigFrameSize, jigThickness, pcbThickness,
     """
     Create a SolidPython representation of the top register
     """
-    print("Top")
     return makeRegister(board, jigFrameSize, jigThickness, pcbThickness,
             outerBorder, innerBorder, tolerance, True)
 
@@ -274,7 +273,6 @@ def makeBottomRegister(board, jigFrameSize, jigThickness, pcbThickness,
     """
     Create a SolidPython representation of the top register
     """
-    print("Bottom")
     return makeRegister(board, jigFrameSize, jigThickness, pcbThickness,
             outerBorder, innerBorder, tolerance, False)
 
@@ -285,7 +283,6 @@ def renderScad(infile, outfile):
 
 def shapelyToSHAPE_POLY_SET(polygon):
     p = pcbnew.SHAPE_POLY_SET()
-    print(polygon.exterior)
     p.AddOutline(linestringToKicad(polygon.exterior))
     return p
 

@@ -112,7 +112,6 @@ def collectSymbols(filename, path=""):
         import time
         start_time = time.time()
         sheetSExpr = parseSexprF(f)
-        print("--- Parsing %s seconds ---" % (time.time() - start_time))
     symbols, instances = [], []
     for item in sheetSExpr.items:
         if isSymbol(item):
