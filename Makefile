@@ -5,6 +5,7 @@ PCM_KIKIT_RESOURCES := $(shell find pcm/kikit -type f -print) \
 	$(shell find kikit/resources/graphics -type f -print)
 PCM_LIB_RESOURCES :=  $(shell find pcm/kikit-lib -type f -print) \
 	$(shell find kikit/resources/graphics -type f -print) \
+	$(shell find kikit/resources/kikit.kicad_sym -type f -print) \
 	$(shell find kikit/resources/kikit.pretty -type f -print)
 
 .PHONY: doc clean package release test test-system test-unit
@@ -67,9 +68,12 @@ pcm-lib: $(PCM_LIB_RESOURCES)
 	rm -rf build/pcm-kikit-lib
 	mkdir -p build/pcm-kikit-lib
 	mkdir -p build/pcm-kikit-lib/resources
+	mkdir -p build/pcm-kikit-lib/symbols
+	mkdir -p build/pcm-kikit-lib/footprints
 	cp -r pcm/kikit-lib/* build/pcm-kikit-lib
 	cp kikit/resources/graphics/kikitIcon_64x64.png build/pcm-kikit-lib/resources/icon.png
-	cp -r kikit/resources/kikit.pretty build/pcm-kikit-lib/footprints/
+	cp -r kikit/resources/kikit.pretty build/pcm-kikit-lib/footprints
+	cp -r kikit/resources/kikit.kicad_sym build/pcm-kikit-lib/symbols
 	scripts/setJson.py -s versions.-1.install_size=$$(du -sb build/pcm-kikit-lib | cut -f1) \
 		build/pcm-kikit-lib/metadata.json build/pcm-kikit-lib/metadata.json
 	cd build/pcm-kikit-lib && zip ../pcm-kikit-lib.zip -r *
