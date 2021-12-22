@@ -27,6 +27,29 @@ jobs:
       - run: make test
       - run: make doc
       - run: sudo make package
+  build-pcm:
+    name: Build PCM packages
+    runs-on: ubuntu-20.04
+    needs: test
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ./.github/actions/setup-kicad
+        with:
+          kicad-version: nightly
+      - name: Build PCM package
+        run: make pcm
+      - name: Upload kikit-pcm package artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: kikit-pcm
+          path: build/pcm-kikit.zip
+          retention-days: 7
+      - name: Upload kikit-lib-pcm package artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: kikit-lib-pcm
+          path: build/pcm-kikit-lib.zip
+          retention-days: 7
   deploy_docker:
     name: "Build and deploy Docker container"
     runs-on: ubuntu-20.04
