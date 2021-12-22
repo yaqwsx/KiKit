@@ -42,19 +42,19 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: kikit-pcm
-          path: build/pcm-kikit.zip
+          path: build/pcm-kikit
           retention-days: 7
       - name: Upload kikit-lib-pcm package artifact
         uses: actions/upload-artifact@v2
         with:
           name: kikit-lib-pcm
-          path: build/pcm-kikit-lib.zip
+          path: build/pcm-kikit-lib
           retention-days: 7
   deploy_docker:
     name: "Build and deploy Docker container"
     runs-on: ubuntu-20.04
     needs: test
-    if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/master' && github.event_name == 'schedule'
     steps:
       - uses: actions/checkout@v2 # Required for kikit version estimation
         with:
