@@ -1,5 +1,7 @@
 # KiKit – Automation for KiCAD
 
+![KiKit Logo](kikit/resources/graphics/kikitIcon_64x64.png)
+
 KiKit is a Python library, KiCAD plugin and  a CLI tool to automate several
 tasks in a standard KiCAD workflow like:
 
@@ -14,7 +16,19 @@ tasks in a standard KiCAD workflow like:
 
 ## Do You Enjoy KiKit or Does It Save You Time?
 
+Then definitely consider [**supporting me on GitHub
+Sponsors**](https://github.com/sponsors/yaqwsx) or buy me a coffee:
+
 [![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/E1E2181LU)
+
+Your support will allow me to allocate time to properly maintain my projects
+like this.
+
+PS: Be sure to check out my other KiCAD & PCB related projects:
+
+- [Pinion](https://github.com/yaqwsx/Pinion/)
+- [PcbDraw](https://github.com/yaqwsx/PcbDraw/)
+- [JlcParts](https://github.com/yaqwsx/jlcparts)
 
 # KiKit is currently undergoing large changes. If you use stable version read!
 
