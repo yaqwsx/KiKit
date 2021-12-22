@@ -18,6 +18,9 @@ consists of three steps:
     [Installing a special version of KiKit](#installing-a-special-version-of-kikit).
 - register the GUI plugins and library:
   - either install KiKit from PCM,
+  - or download KiKit packages and install them manually:
+    - [KiKit](https://nightly.link/yaqwsx/KiKit/workflows/test-kikit/master/kikit-pcm.zip)
+    - [KiKit Libraries](https://nightly.link/yaqwsx/KiKit/workflows/test-kikit/master/kikit-lib-pcm.zip)
   - or [register the plugins](#enabling-plugins) and [libraries
     manually](#enabling-kikit-annotation-footprint-library).
 - Optionally, you can install the [optional
