@@ -72,3 +72,10 @@ is there for shell as we split our command into two lines.
 
 Note that if panelize your boards, you don't have to separate your boards first;
 just use the `--source` with the panelization command.
+
+## Preserving annotations
+
+When you use the separate command, KiKit preserves all annotations within the
+source bounding box. If you would like to strip the annotations, you can specify
+`--stripAnnotation` and KiKit will remove all annotations from the resulting
+board.

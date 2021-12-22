@@ -521,7 +521,7 @@ class Panel:
     def appendBoard(self, filename, destination, sourceArea=None,
                     origin=Origin.Center, rotationAngle=0, shrink=False,
                     tolerance=0, bufferOutline=fromMm(0.001), netRenamer=None,
-                    refRenamer=None, inheritDrc=True):
+                    refRenamer=None, inheritDrc=True, interpretAnnotations=True):
         """
         Appends a board to the panel.
 
@@ -596,7 +596,7 @@ class Panel:
             footprint.Rotate(originPoint, rotationAngle)
             footprint.Move(translation)
             edges += removeCutsFromFootprint(footprint)
-            if isAnnotation(footprint):
+            if interpretAnnotations and isAnnotation(footprint):
                 annotations.extend(convertToAnnotation(footprint))
             else:
                 appendItem(self.board, footprint)

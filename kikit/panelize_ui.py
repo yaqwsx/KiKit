@@ -228,7 +228,9 @@ def doPanelization(input, output, preset):
     help="Specify source settings.")
 @click.option("--debug", type=Section(),
     help="Include debug traces or drawings in the panel.")
-def separate(input, output, source, debug):
+@click.option("--keepAnnotations/--stripAnnotations", default=True,
+    help="Do not strip annotations" )
+def separate(input, output, source, debug, keepannotations):
     """
     Separate a single board out of a multi-board design. The separated board is
     placed in the middle of the sheet.
@@ -254,7 +256,8 @@ def separate(input, output, source, debug):
         panel.inheritDesignSettings(input)
         panel.inheritProperties(input)
         destination = wxPointMM(150, 100)
-        panel.appendBoard(input, destination, sourceArea)
+        panel.appendBoard(input, destination, sourceArea,
+            interpretAnnotations=(not keepannotations))
         ki.setStackup(preset["source"], panel)
         panel.save()
     except Exception as e:
