@@ -290,7 +290,7 @@ def readKiKitProps(footprint):
 
     Returns a dictionary of key-value pairs.
     """
-    for x in footprint.GraphicalItemsList():
+    for x in footprint.GraphicalItems():
         if not isinstance(x, pcbnew.FP_TEXT):
             continue
         text = x.GetText()
@@ -452,14 +452,17 @@ class Panel:
         default
         """
         assert isV6()
-
-        with open(self.getPrlFilepath()) as f:
-            # We use ordered dict, so we preserve the ordering of the keys and
-            # thus, formatting
-            prl = json.load(f, object_pairs_hook=OrderedDict)
-        prl["board"]["visible_layers"] = "fffffff_ffffffff"
-        with open(self.getPrlFilepath(), "w") as f:
-            json.dump(prl, f, indent=2)
+        try:
+            with open(self.getPrlFilepath()) as f:
+                # We use ordered dict, so we preserve the ordering of the keys and
+                # thus, formatting
+                prl = json.load(f, object_pairs_hook=OrderedDict)
+            prl["board"]["visible_layers"] = "fffffff_ffffffff"
+            with open(self.getPrlFilepath(), "w") as f:
+                json.dump(prl, f, indent=2)
+        except IOError:
+            # The PRL file is not always created, ignore it
+            pass
 
     def mergeDrcRules(self):
         """

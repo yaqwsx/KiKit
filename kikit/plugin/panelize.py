@@ -10,6 +10,7 @@ import kikit.panelize_ui_sections
 import wx
 import json
 import tempfile
+import shutil
 import os
 from threading import Thread
 from itertools import chain
@@ -324,8 +325,11 @@ class PanelizeDialog(wx.Dialog):
         self.EndModal(0)
 
     def OnPanelize(self, event):
-        with tempfile.NamedTemporaryFile(suffix=".kicad_pcb") as f:
+        with tempfile.NamedTemporaryFile(suffix=".kicad_pcb", delete=False) as f:
             try:
+                fname = f.name
+                f.close()
+
                 progressDlg = wx.ProgressDialog(
                     "Running kikit", "Running kikit, please wait")
                 progressDlg.Show()
@@ -340,7 +344,7 @@ class PanelizeDialog(wx.Dialog):
                     dlg.ShowModal()
                     dlg.Destroy()
                     return
-                output = f.name
+                output = fname
                 thread = ExceptionThread(target=panelize_ui.doPanelization,
                                          args=(input, output, preset))
                 thread.daemon = True
@@ -352,7 +356,12 @@ class PanelizeDialog(wx.Dialog):
                         break
                 if thread.exception:
                     raise thread.exception
-                panel = pcbnew.LoadBoard(f.name)
+                # KiCAD 6 does something strange here, so we will load
+                # an empty file if we read it directly, but we can always make
+                # a copy and read that:
+                with tempfile.NamedTemporaryFile(suffix=".kicad_pcb") as tp:
+                    shutil.copy(f.name, tp.name)
+                    panel = pcbnew.LoadBoard(tp.name)
                 transplateBoard(panel, self.board)
             except Exception as e:
                 dlg = wx.MessageDialog(
@@ -362,6 +371,10 @@ class PanelizeDialog(wx.Dialog):
             finally:
                 progressDlg.Hide()
                 progressDlg.Destroy()
+                try:
+                    os.remove(fname)
+                except Exception:
+                    pass
         pcbnew.Refresh()
 
     def populateInitialValue(self):
