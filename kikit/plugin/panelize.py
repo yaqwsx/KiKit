@@ -438,6 +438,7 @@ class PanelizePlugin(pcbnew.ActionPlugin):
         self.category = "KiKit"
         self.description = "Create a panel"
         self.icon_file_name = os.path.join(PKG_BASE, "resources", "graphics", "panelizeIcon_24x24.png")
+        self.show_toolbar_button = True
 
     def Run(self):
         try:
