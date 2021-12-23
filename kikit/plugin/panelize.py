@@ -325,6 +325,10 @@ class PanelizeDialog(wx.Dialog):
         self.EndModal(0)
 
     def OnPanelize(self, event):
+        # You might be wondering, why we specify delete=False. The reason is
+        # Windows - the file cannot be opened for the second time. So we use
+        # this only to get a valid temporary name. This is why we close the file
+        # ASAP and only use its name
         with tempfile.NamedTemporaryFile(suffix=".kicad_pcb", delete=False) as f:
             try:
                 fname = f.name
@@ -359,9 +363,11 @@ class PanelizeDialog(wx.Dialog):
                 # KiCAD 6 does something strange here, so we will load
                 # an empty file if we read it directly, but we can always make
                 # a copy and read that:
-                with tempfile.NamedTemporaryFile(suffix=".kicad_pcb") as tp:
-                    shutil.copy(f.name, tp.name)
-                    panel = pcbnew.LoadBoard(tp.name)
+                with tempfile.NamedTemporaryFile(suffix=".kicad_pcb", delete=False) as tp:
+                    tpname = tp.name
+                    tp.close()
+                    shutil.copy(f.name, tpname)
+                    panel = pcbnew.LoadBoard(tpname)
                 transplateBoard(panel, self.board)
             except Exception as e:
                 dlg = wx.MessageDialog(
@@ -373,6 +379,7 @@ class PanelizeDialog(wx.Dialog):
                 progressDlg.Destroy()
                 try:
                     os.remove(fname)
+                    os.remove(tpname)
                 except Exception:
                     pass
         pcbnew.Refresh()
