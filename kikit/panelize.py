@@ -195,8 +195,9 @@ def removeCutsFromFootprint(footprint):
     for edge in footprint.GraphicalItems():
         if edge.GetLayerName() != "Edge.Cuts":
             continue
-        footprint.Remove(edge)
         edges.append(edge)
+    for e in edges:
+        footprint.Remove(e)
     return edges
 
 def renameNets(board, renamer):
