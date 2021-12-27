@@ -1,6 +1,6 @@
 # KiKit – Automation for KiCAD
 
-![KiKit Logo](kikit/resources/graphics/kikitIcon_64x64.png)
+![KiKit Logo](https://github.com/yaqwsx/KiKit/raw/master/kikit/resources/graphics/kikitIcon_64x64.png)
 
 KiKit is a Python library, KiCAD plugin and  a CLI tool to automate several
 tasks in a standard KiCAD workflow like:
