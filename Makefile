@@ -48,13 +48,14 @@ build/test:
 pcm: pcm-kikit pcm-lib
 
 pcm-kikit: $(PCM_KIKIT_RESOURCES)
-	rm -rf build/pcm-kikit
+	rm -rf build/pcm-kikit build/pcm-kikit.zip
 	mkdir -p build/pcm-kikit
 	mkdir -p build/pcm-kikit/resources
 	cp -r pcm/kikit/* build/pcm-kikit
+	find build/pcm-kikit -name "*.pyc" -type f -delete
 	cp kikit/resources/graphics/kikitIcon_64x64.png build/pcm-kikit/resources/icon.png
 	ls -lah build
-	scripts/setJson.py -s versions.-1.install_size=$$( du -sb build/pcm-kikit | cut -f1) \
+	scripts/setJson.py -s versions.-1.install_size=$$( find build/pcm-kikit -type f -exec ls -la {} + | tr -s ' ' | cut -f5 -d' ' | paste -s -d+ - | bc ) \
 		build/pcm-kikit/metadata.json build/pcm-kikit/metadata.json
 	cd build/pcm-kikit && zip ../pcm-kikit.zip -r *
 	cp build/pcm-kikit/metadata.json build/pcm-kikit-metadata.json
@@ -65,7 +66,7 @@ pcm-kikit: $(PCM_KIKIT_RESOURCES)
 		build/pcm-kikit-metadata.json build/pcm-kikit-metadata.json
 
 pcm-lib: $(PCM_LIB_RESOURCES)
-	rm -rf build/pcm-kikit-lib
+	rm -rf build/pcm-kikit-lib build/pcm-kikit-lib.zip
 	mkdir -p build/pcm-kikit-lib
 	mkdir -p build/pcm-kikit-lib/resources
 	mkdir -p build/pcm-kikit-lib/symbols
@@ -74,7 +75,7 @@ pcm-lib: $(PCM_LIB_RESOURCES)
 	cp kikit/resources/graphics/kikitIcon_64x64.png build/pcm-kikit-lib/resources/icon.png
 	cp -r kikit/resources/kikit.pretty build/pcm-kikit-lib/footprints
 	cp -r kikit/resources/kikit.kicad_sym build/pcm-kikit-lib/symbols
-	scripts/setJson.py -s versions.-1.install_size=$$(du -sb build/pcm-kikit-lib | cut -f1) \
+	scripts/setJson.py -s versions.-1.install_size=$$(find build/pcm-kikit-lib -type f -exec ls -la {} + | tr -s ' ' | cut -f5 -d' ' | paste -s -d+ - | bc) \
 		build/pcm-kikit-lib/metadata.json build/pcm-kikit-lib/metadata.json
 	cd build/pcm-kikit-lib && zip ../pcm-kikit-lib.zip -r *
 	cp build/pcm-kikit-lib/metadata.json build/pcm-kikit-lib-metadata.json
