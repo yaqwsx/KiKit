@@ -9,6 +9,12 @@ case $1 in
     sudo apt-get install --yes --no-install-recommends kicad
     ;;
 
+  'v6')
+    sudo add-apt-repository --yes ppa:kicad/kicad-6.0-releases
+    sudo apt-get update
+    sudo apt-get install --yes --no-install-recommends kicad
+    ;;
+
   'nightly')
     sudo add-apt-repository --yes ppa:kicad/kicad-dev-nightly
     sudo apt-get update
@@ -21,7 +27,7 @@ case $1 in
     ;;
 
   *)
-    echo "Invalid version '$1' passed. Only 'v5' and 'nightly' supported" >&2
+    echo "Invalid version '$1' passed. Only 'v5', 'v6' and 'nightly' supported" >&2
     exit 1
     ;;
 esac

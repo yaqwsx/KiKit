@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        kicad-version: [v5, nightly]
+        kicad-version: [v5, v6, nightly]
     steps:
       - uses: actions/checkout@v2
       - uses: ./.github/actions/setup-kicad
@@ -35,7 +35,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: ./.github/actions/setup-kicad
         with:
-          kicad-version: nightly
+          kicad-version: v6
       - name: Build PCM package
         run: make pcm
       - name: Upload kikit-pcm package artifact

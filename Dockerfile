@@ -5,6 +5,12 @@ LABEL maintainer="Jan \"yaqwsx\" Mrázek" \
 
 ENV DISPLAY=unix:0.0
 
+RUN apt-get update && \
+    apt-get install -y software-properties-common && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN add-apt-repository --yes ppa:kicad/kicad-6.0-releases
+
 RUN export DEBIAN_FRONTEND="noninteractive" && apt-get -qq update && \
     apt-get -qq install -y --no-install-recommends \
       kicad kicad-libraries zip inkscape make git libmagickwand-dev \

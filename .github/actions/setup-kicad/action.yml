@@ -3,8 +3,8 @@ description: 'Set up a specific version of KiCAD'
 author: 'Jan "yaqwsx" Mrázek'
 inputs:
   kicad-version:
-    description: "Version of KiCAD, currently supported v5, nightly"
-    default: 'v5'
+    description: "Version of KiCAD, currently supported v5, v6, and nightly"
+    default: 'v6'
 runs:
   using: 'composite'
   steps:
