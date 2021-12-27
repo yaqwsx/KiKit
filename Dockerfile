@@ -1,4 +1,8 @@
-FROM ubuntu:20.04 AS base
+ARG REPO=ubuntu
+FROM $REPO:20.04 AS base
+
+ARG ADDITIONAL_PACKAGES
+ARG ADDITIONAL_PYTHON_PACKAGES
 
 LABEL maintainer="Jan \"yaqwsx\" Mrázek" \
       description="Container for running KiKit applications"
@@ -6,7 +10,7 @@ LABEL maintainer="Jan \"yaqwsx\" Mrázek" \
 ENV DISPLAY=unix:0.0
 
 RUN apt-get update && \
-    apt-get install -y software-properties-common && \
+    apt-get install -y software-properties-common $ADDITIONAL_PACKAGES && \
     rm -rf /var/lib/apt/lists/*
 
 RUN add-apt-repository --yes ppa:kicad/kicad-6.0-releases
@@ -14,7 +18,7 @@ RUN add-apt-repository --yes ppa:kicad/kicad-6.0-releases
 RUN export DEBIAN_FRONTEND="noninteractive" && apt-get -qq update && \
     apt-get -qq install -y --no-install-recommends \
       kicad kicad-libraries zip inkscape make git libmagickwand-dev \
-      python3 python3-pip python3-wheel python3-setuptools inkscape \
+      python3 $ADDITIONAL_PYTHON_PACKAGES python3-pip python3-wheel python3-setuptools inkscape \
       libgraphicsmagick1-dev libmagickcore-dev openscad && \
       rm -rf /var/lib/apt/lists/*
 
