@@ -10,9 +10,6 @@ nor proper documentation. For further details, please refer to:
 - [more detail about KiKit's algorithm for tab creation](understandingTabs.md)
 - [reference for the Python interface](panelization.md)
 
-Note that in Windows you have the enter the commands into KiCAD Command Prompt
-instead of the regular Command Prompt. You can find it under the Start menu.
-
 We will show everything on a single board located in
 `doc/resources/conn.kicad_pcb`. The board looks like this when rendered via
 PcbDraw:
@@ -45,6 +42,10 @@ command into multiple lines. Also note that there are single quotes around the
 key-value pair – again, to make shell happy and to interpret a string with
 spaces as a single option.
 
+Note that **on Windows you have the enter the commands into KiCAD Command
+Prompt** instead of the regular Command Prompt. You can find it under the Start
+menu.
+
 Also note that KiKit accepts all options in categories (e.g., `layout`, `tabs`,
 `cuts`, ...). You can specify the parameters as a semicolon-separated key-value
 list. To learn about the precise syntax of the CLI and about all options, please
@@ -70,7 +71,8 @@ How to include the missing components?
 - specify `--source 'tolerance: 10mm'` to enlarge the board outline bounding box
   by e.g. 10 mm. The default value is 5 mm.
 
-I told you that the panel above is not suitable for manufacturing. Let's see why:
+I told you that the panel above is not suitable for manufacturing. Let's see
+why:
 
 ```
 kikit panelize \

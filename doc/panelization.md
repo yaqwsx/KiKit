@@ -79,7 +79,8 @@ include components sticking out of the board outline, you can specify tolerance
 ```
 appendBoard(self, filename, destination, sourceArea=None, origin=Origin.Center, 
             rotationAngle=0, shrink=False, tolerance=0, bufferOutline=1000, 
-            netRenamer=None, refRenamer=None)
+            netRenamer=None, refRenamer=None, inheritDrc=True, 
+            interpretAnnotations=True)
 ```
 
 ## Panel class
@@ -189,7 +190,8 @@ Adds a horizontal V-CUT at pos (integer in KiCAD units).
 ```
 appendBoard(self, filename, destination, sourceArea=None, origin=Origin.Center, 
             rotationAngle=0, shrink=False, tolerance=0, bufferOutline=1000, 
-            netRenamer=None, refRenamer=None)
+            netRenamer=None, refRenamer=None, inheritDrc=True, 
+            interpretAnnotations=True)
 ```
 Appends a board to the panel.
 
@@ -206,7 +208,10 @@ filled zones which can reach out of the board edges.
 
 You can also specify functions which will rename the net and ref names.
 By default, nets are renamed to "Board_{n}-{orig}", refs are unchanged.
-The renamers are given board seq number and original name
+The renamers are given board seq number and original name.
+
+You can also decide whether you would like to inherit design rules from
+this boards or not.
 
 Returns bounding box (wxRect) of the extracted area placed at the
 destination and the extracted substrate of the board.
@@ -313,6 +318,18 @@ debugRenderPartitionLines(self)
 Render partition line to the panel to be easily able to inspect them via
 Pcbnew.
 
+#### `getPrlFilepath`
+```
+getPrlFilepath(self, path=None)
+```
+None
+
+#### `getProFilepath`
+```
+getProFilepath(self, path=None)
+```
+None
+
 #### `inheritCopperLayers`
 ```
 inheritCopperLayers(self, board)
@@ -368,6 +385,13 @@ patterns.
 Returns a list of the placed substrates. You can use these to generate
 tabs, frames, backbones, etc.
 
+#### `makeLayersVisible`
+```
+makeLayersVisible(self)
+```
+Modify corresponding *.prl files so all the layers are visible by
+default
+
 #### `makeMouseBites`
 ```
 makeMouseBites(self, cuts, diameter, spacing, offset=250000, prolongation=500000)
@@ -401,6 +425,13 @@ Take a list of lines to cut and performs V-CUTS. When boundCurves is
 set, approximate curved cuts by a line from the first and last point.
 Otherwise, raise an exception.
 
+#### `mergeDrcRules`
+```
+mergeDrcRules(self)
+```
+Examine DRC rules of the source boards, merge them into a single set of
+rules and store them in *.pro file
+
 #### `panelBBox`
 ```
 panelBBox(self)
@@ -427,9 +458,10 @@ Return a list of cuts
 
 #### `save`
 ```
-save(self, filename)
+save(self)
 ```
-Saves the panel to a file.
+Saves the panel to a file and makes the requested changes to the prl and
+pro files.
 
 #### `setAuxiliaryOrigin`
 ```
@@ -447,6 +479,7 @@ None
 ```
 setDesignSettings(self, designSettings)
 ```
+GetDesignSettings
 Set design settings
 
 #### `setGridOrigin`
@@ -524,6 +557,12 @@ millFillets(self, millRadius)
 ```
 Add fillets to inner conernes which will be produced a by mill with
 given radius.
+
+#### `orient`
+```
+orient(self)
+```
+Ensures that the substrate is oriented in a correct way.
 
 #### `removeIslands`
 ```
