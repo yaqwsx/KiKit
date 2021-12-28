@@ -38,9 +38,9 @@ def collectBom(components, manufacturerFields, partNumberFields,
     descriptionFields.append("Value")
 
     for c in components:
-        if c["unit"] != 1:
+        if getUnit(c) != 1:
             continue
-        reference = c["reference"]
+        reference = getReference(c)
         if reference.startswith("#PWR") or reference.startswith("#FL") or reference in ignore:
             continue
         manufacturer = None
