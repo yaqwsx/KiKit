@@ -5,12 +5,36 @@ from kikit.common import *
 from kikit.defs import MODULE_ATTR_T
 from kikit.drc_ui import ReportLevel
 from kikit import drc
+from kikit import eeschema, eeschema_v6
 import sys
 
 if isV6():
-    from kikit.eeschema_v6 import getField, getUnit, getReference
-else:
-    from kikit.eeschema import getField, getUnit, getReference
+    from kikit import eeschema_v6 # import getField, getUnit, getReference
+from kikit import eeschema #import getField, getUnit, getReference
+
+# A user can still supply v5 schematics even when we run v6, therefore,
+# we have to load the correct schematics and provide the right getters
+def extractComponents(filename):
+    if filename.endswith(".kicad_sch"):
+        return eeschema_v6.extractComponents(filename)
+    if filename.endswith(".sch"):
+        return eeschema.extractComponents(filename)
+    raise RuntimeError(f"Unknown schematic file type specified: {filename}")
+
+def getUnit(component):
+    if isinstance(component, eeschema_v6.Symbol):
+        return eeschema_v6.getUnit(component)
+    return eeschema.getUnit(component)
+
+def getField(component, field):
+    if isinstance(component, eeschema_v6.Symbol):
+        return eeschema_v6.getField(component, field)
+    return eeschema.getField(component, field)
+
+def getReference(component):
+    if isinstance(component, eeschema_v6.Symbol):
+        return eeschema_v6.getReference(component)
+    return eeschema.getReference(component)
 
 
 def ensurePassingDrc(board):

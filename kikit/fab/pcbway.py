@@ -6,10 +6,6 @@ import re
 import sys
 import shutil
 from pathlib import Path
-if isV6():
-    from kikit.eeschema_v6 import extractComponents, getField
-else:
-    from kikit.eeschema import extractComponents, getField
 from kikit.fab.common import *
 from kikit.common import *
 from kikit.export import gerberImpl, exportSettingsPcbway

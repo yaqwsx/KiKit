@@ -5,10 +5,6 @@ import os
 import sys
 import shutil
 from pathlib import Path
-if isV6():
-    from kikit.eeschema_v6 import extractComponents, getField, getUnit, getReference
-else:
-    from kikit.eeschema import extractComponents, getField, getUnit, getReference
 from kikit.fab.common import *
 from kikit.common import *
 from kikit.export import gerberImpl
