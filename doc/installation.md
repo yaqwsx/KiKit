@@ -90,8 +90,10 @@ to the way KiCAD is packaged on Windows.
 
 Then you have to enter two commands:
 
-- `pip install git+https://github.com/SolidCode/SolidPython.git@master` (the
-  older version of this library is currently incomptible with Windows, hence this extra step)
+- `pip install
+  https://github.com/SolidCode/SolidPython/archive/refs/heads/master.zip` (the
+  older version of this library is currently incompatible with Windows, hence
+  this extra step)
 - `pip install kikit` (install KiKit itself)
 
 Now you can test that it works:
