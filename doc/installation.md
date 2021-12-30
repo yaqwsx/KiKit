@@ -26,6 +26,14 @@ consists of three steps:
 - Optionally, you can install the [optional
   dependencies](#optional-dependencies) required for certain functions.
 
+## Upgrading KiKit
+
+If you want to upgrade KiKit, you have to perform two steps:
+- you upgrade the backend by running `pip install -U kikit` in the command line
+  (depending on the platform, see the installation instructions below).
+- then you can upgrade the PCM packages within KiCAD. Note that this step is
+  often not needed. If it will be needed, the release notes will say so.
+
 ## Installation on Linux and MacOS
 
 Simply invoke in terminal:
