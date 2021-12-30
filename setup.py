@@ -27,13 +27,13 @@ setuptools.setup(
     ],
     install_requires=[
         "pcbnewTransition==0.2.0",
-        "numpy",
-        "shapely",
-        "click",
-        "markdown2",
-        "pybars3",
-        "solidpython",
-        "commentjson"
+        "numpy>=1.21",
+        "shapely>=1.7",
+        "click>=7.1",
+        "markdown2>=2.4",
+        "pybars3>=0.9",
+        "solidpython>=1.1",
+        "commentjson>=0.9"
     ],
     setup_requires=[
         "versioneer"
