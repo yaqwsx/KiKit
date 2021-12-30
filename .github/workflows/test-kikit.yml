@@ -50,15 +50,32 @@ jobs:
           name: kikit-lib-pcm
           path: build/pcm-kikit-lib
           retention-days: 7
-  deploy_docker:
+  deploy-docker:
     name: "Build and deploy Docker container"
     runs-on: ubuntu-20.04
     needs: test
     if: github.ref == 'refs/heads/master' && github.event_name == 'schedule'
+    strategy:
+      matrix:
+        build-config:
+          - name: "x64"
+            suffix: ""
+            platform: linux/amd64
+            repo: ubuntu
+            additional_packages: ""
+            additional_python_packages: ""
+          - name: "m1"
+            suffix: -m1
+            platform: linux/arm64v8
+            repo: arm64v8/ubuntu
+            additional_packages: gcc-aarch64-linux-gnu
+            additional_python_packages: python3-dev
     steps:
       - uses: actions/checkout@v2 # Required for kikit version estimation
         with:
           fetch-depth: 0 # = fetch all
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
       - name: Login to DockerHub
@@ -72,8 +89,11 @@ jobs:
         with:
           context: . # We need path context, so .git gets included
           push: true
-          tags: yaqwsx/kikit:nightly
+          tags: yaqwsx/kikit:nightly${{ matrix.build-config.suffix }}
+          platforms: ${{ matrix.build-config.platform }}
+          build-args: |
+            REPO=${{ matrix.build-config.repo }}
+            ADDITIONAL_PACKAGES=${{ matrix.build-config.additional_packages }}
+            ADDITIONAL_PYTHON_PACKAGES=${{ matrix.build-config.additional_python_packages }}
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
-
-
