@@ -35,7 +35,7 @@ class MissingKiKitDialog(wx.Dialog):
         if self.IsModal():
             self.EndModal(0)
         else:
-            self.Close(true)
+            self.Close(True)
 
 
 try:
