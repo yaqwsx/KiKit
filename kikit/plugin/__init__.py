@@ -13,9 +13,6 @@ from kikit.common import KIKIT_LIB
 from pcbnewTransition import isV6, pcbnew
 from wx import PyApp, StandardPaths
 
-# wxWidgets complains about missing application, make it happy
-_dummyApp = PyApp()
-
 # Tuple: package, name, description
 availablePlugins = [
     ("hideReferences", "Show/hide references",
@@ -33,7 +30,8 @@ def importAllPlugins():
     import importlib
 
     for name, _, _ in availablePlugins:
-        importlib.import_module(f"kikit.plugin.{name}")
+        module = importlib.import_module(f"kikit.plugin.{name}")
+        module.plugin().register()
 
 # getUserDocumentPath and GetUserPluginsPath are reimplemented by their
 # counterparts in KiCAD source
@@ -232,4 +230,6 @@ cli.add_command(list)
 cli.add_command(registerlib)
 
 if __name__ == "__main__":
+    # wxWidgets complains about missing application, make it happy
+    _dummyApp = PyApp()
     cli()
