@@ -21,8 +21,6 @@ consists of three steps:
   - or download KiKit packages and install them manually:
     - [KiKit](https://nightly.link/yaqwsx/KiKit/workflows/test-kikit/master/kikit-pcm.zip)
     - [KiKit Libraries](https://nightly.link/yaqwsx/KiKit/workflows/test-kikit/master/kikit-lib-pcm.zip)
-  - or [register the plugins](#enabling-plugins) and [libraries
-    manually](#enabling-kikit-annotation-footprint-library).
 - Optionally, you can install the [optional
   dependencies](#optional-dependencies) required for certain functions.
 
@@ -152,30 +150,6 @@ pip3 install git+https://github.com/yaqwsx/KiKit@someBranchName
 - [OpenSCAD](https://openscad.org/) - to be able to export 3D models of stencil.
   Install it via your system package manage.
 
-## Enabling KiKit annotation footprint library
-
-KiKit distributes a footprint library called `kikit`. This library contains
-footprints that can be used for annotation of the PCB (e.g., mark tab
-locations). To use it, you have to add it into KiCAD.
-
-You can:
-- register the library automatically via invoking `kikit-plugin registerlib` of
-- add the library manually in KiCAD. You get the library location via
-  `kikit-info lib`. Note that the library has to be named `kikit`
-
-## Enabling plugins
-
-KiKit comes with GUI plugins for KiCAD. These plugins are not enable by default
-and you have to enable them. There is an utility `kikit-plugin` which allows you
-to select which plugins you want to enable.
-
-First, use `kikit-plugin list` to see all available plugins.
-
-Then you can enable, e.g., all plugins by: `kikit-plugin enable --all` or
-selected plugins by their identifier, e.g., `kikit-plugin enable
-hideReferences`. Note that if you want to enable multiple plugins, you have to
-specify them all at once. Also, the changes will take effect after restarting
-PcbNew.
 
 ## Running KiKit via Docker
 
