@@ -52,6 +52,9 @@ def transplateBoard(source, target):
     for x in items:
         target.Remove(x)
 
+    targetNetinfo = target.GetNetInfo()
+    targetNetinfo.RemoveUnusedNets()
+
     for x in source.GetDrawings():
         appendItem(target, x)
     for x in source.GetFootprints():
@@ -60,6 +63,9 @@ def transplateBoard(source, target):
         appendItem(target, x)
     for x in source.Zones():
         appendItem(target, x)
+    for n in [n for _, n in source.GetNetInfo().NetsByNetcode().items()]:
+        targetNetinfo.AppendNet(n)
+
     if isV6():
         d = target.GetDesignSettings()
         d.CloneFrom(source.GetDesignSettings())
