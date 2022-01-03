@@ -3,6 +3,7 @@ import tempfile
 import re
 from dataclasses import dataclass, field
 from kikit.drc_ui import ReportLevel
+import os
 
 @dataclass
 class Violation:
@@ -63,12 +64,17 @@ def readReport(reportFile):
 
 def runImpl(board, useMm, strict, level, yieldViolation):
     units = pcbnew.EDA_UNITS_MILLIMETRES if useMm else EDA_UNITS_INCHES
-    with tempfile.NamedTemporaryFile(mode="w+") as tmpFile:
-        result = pcbnew.WriteDRCReport(board, tmpFile.name, units, strict)
-        assert result
-
-        tmpFile.seek(0)
-        report = readReport(tmpFile)
+    with tempfile.NamedTemporaryFile(mode="w+", delete=False) as tmpFile:
+        try:
+            tmpFile.close()
+            result = pcbnew.WriteDRCReport(board, tmpFile.name, units, strict)
+            if not result:
+                raise RuntimeError("Cannot run DRC: Unspecified KiCAD error")
+            with open(tmpFile.name) as f:
+                report = readReport(f)
+        finally:
+            tmpFile.close()
+            os.unlink(tmpFile.name)
 
     failed = False
     errorName = {
