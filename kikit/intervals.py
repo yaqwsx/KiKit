@@ -480,7 +480,7 @@ class BoxPartitionLines:
 
         hstops, vstops = collectHardStops(boxes.values())
         hSafeStops, vSafeStops = collectHardStops([
-            shpBBoxExpand(x, safeVerticalMargin) for x in boxes.values()])
+            shpBBoxExpand(x, safeVerticalMargin, safeHorizontalMargin) for x in boxes.values()])
         hseeds, vseeds = collectSeedLines(boxes, seedFilter)
         hshadows = buildShadows(hseeds, chain(vstops, vSafeStops))
         vshadows = buildShadows(vseeds, chain(hstops, hSafeStops))

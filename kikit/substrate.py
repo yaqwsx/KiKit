@@ -669,8 +669,9 @@ class SubstratePartitionLines:
                  safeHorizontalMargin=0, safeVerticalMargin=0):
         boxes = {id(s): s.bounds() for s in chain(substrates, ghostSubstrates)}
         ghosts = set([id(s) for s in ghostSubstrates])
+        SEED_LIMIT_SIZE = pcbnew.FromMM(0.01)
         def seedFilter(idA, idB, v, l):
-            if l.length < SHP_EPSILON:
+            if l.length < SEED_LIMIT_SIZE:
                 return False
             return idA not in ghosts or idB not in ghosts
         self._partition = BoxPartitionLines(
