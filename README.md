@@ -16,10 +16,10 @@ tasks in a standard KiCAD workflow like:
 
 ## Do You Enjoy KiKit or Does It Save You Time?
 
-Then definitely consider [**supporting me on GitHub
-Sponsors**](https://github.com/sponsors/yaqwsx) or buy me a coffee:
-
-[![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/E1E2181LU)
+Then definitely consider:
+- [**supporting me on GitHub Sponsors**](https://github.com/sponsors/yaqwsx)
+- or become my [Patreon](https://patreon.com/yaqwsx),
+- or buy me a coffee: [![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/E1E2181LU)
 
 Your support will allow me to allocate time to properly maintain my projects
 like this.
@@ -38,6 +38,8 @@ therefore, you can install it via pip:
 ```
 pip3 install kikit
 ```
+
+Then you can install the Pcbnew action plugins via KiCAD's PCM.
 
 For more detailed instructions with steps to enable GUI plugins, please see the
 [installation guide](doc/installation.md).

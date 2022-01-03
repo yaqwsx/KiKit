@@ -6,6 +6,9 @@ structure. The configuration contains several categories (e.g., `layout`,
 (e.g., `tabsCount`). All categories and their parameters are described further
 below.
 
+Note that you can use the [pcbnew action plugin](panelizeGui.md) to
+interactively construct the panelization configuration structure.
+
 # Configurations
 
 The configuration can be supplied to KiKit via a JSON file with comments and
@@ -45,7 +48,7 @@ following
         "type": "auto",
         "millradius": "0mm",
         "copperfill": false
-    }    
+    }
 }
 ```
 
