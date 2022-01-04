@@ -1,6 +1,7 @@
 from shapely import geometry
 from shapely.geometry import (Polygon, MultiPolygon, LineString,
     MultiLineString, LinearRing, Point)
+from shapely.geometry.collection import GeometryCollection
 from shapely.ops import orient, unary_union, split, nearest_points
 import shapely
 import numpy as np
@@ -442,7 +443,7 @@ class Substrate:
         """
         Produces a list of PCB_SHAPE on the Edge.Cuts layer
         """
-        if isinstance(self.substrates, MultiPolygon):
+        if isinstance(self.substrates, MultiPolygon) or isinstance(self.substrates, GeometryCollection):
             geoms = self.substrates.geoms
         elif isinstance(self.substrates, Polygon):
             geoms = [self.substrates]
