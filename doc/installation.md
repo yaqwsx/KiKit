@@ -91,16 +91,14 @@ Once you have it open like this:
 
 you can put command in there and confirm them by pressing
 enter. This is also the prompt from which you will invoke all KiKit's CLI
-commands. They, unfortunatelly, does not work in an ordinary Command prompt due
+commands. They, unfortunately, does not work in an ordinary Command prompt due
 to the way KiCAD is packaged on Windows.
 
-Then you have to enter two commands:
+Then you have to enter the following command to install it:
 
-- `pip install
-  https://github.com/SolidCode/SolidPython/archive/refs/heads/master.zip` (the
-  older version of this library is currently incompatible with Windows, hence
-  this extra step)
-- `pip install kikit` (install KiKit itself)
+```.bash
+pip install kikit
+```
 
 Now you can test that it works:
 
@@ -163,7 +161,7 @@ Then, pull the KiKit container via issuing one of the following commands:
 
 ```
 docker pull yaqwsx/kikit:latest  # Pull latest stable version
-docker pull yaqwsx/kikit:v1.0.0  # Pull image with a concrete release
+docker pull yaqwsx/kikit:v1.0.2  # Pull image with a concrete release
 docker pull yaqwsx/kikit:nightly # Pull upstream version of KiKit - content of the master branch
 ```
 
