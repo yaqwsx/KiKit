@@ -1,4 +1,4 @@
-from pcbnewTransition import pcbnew
+from pcbnewTransition import pcbnew, isV6
 from kikit.intervals import Interval, AxialLine
 from pcbnew import wxPoint, wxRect
 import os
@@ -49,7 +49,7 @@ def collectEdges(board, layerName, sourceArea=None):
     for edge in chain(board.GetDrawings(), *[m.GraphicalItems() for m in board.GetFootprints()]):
         if edge.GetLayerName() != layerName:
             continue
-        if isinstance(edge, pcbnew.PCB_DIMENSION_BASE):
+        if isV6() and isinstance(edge, pcbnew.PCB_DIMENSION_BASE):
             continue
         if not sourceArea or fitsIn(edge.GetBoundingBox(), sourceArea):
             edges.append(edge)
