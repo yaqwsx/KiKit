@@ -163,7 +163,7 @@ Then, pull the KiKit container via issuing one of the following commands:
 
 ```
 docker pull yaqwsx/kikit:latest  # Pull latest stable version
-docker pull yaqwsx/kikit:v0.7    # Pull image with a concrete release
+docker pull yaqwsx/kikit:v1.0.0  # Pull image with a concrete release
 docker pull yaqwsx/kikit:nightly # Pull upstream version of KiKit - content of the master branch
 ```
 
@@ -187,6 +187,8 @@ topis](https://forums.docker.com/t/volume-mounts-in-windows-does-not-work/10693/
 
 If you would like to run a particular version of KiKit, simply append a tag to
 the image name (e.g., `:nightly`).
+
+There are also nightly containers of Mac M1 available with tag `nightly-m1`.
 
 If you want to use Makefile for your projects, the preferable way is to invoke
 `make` inside the container. The Docker image contains several often used tools
