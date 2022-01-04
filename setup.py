@@ -32,7 +32,7 @@ setuptools.setup(
         "click>=7.1",
         "markdown2>=2.4",
         "pybars3>=0.9",
-        "solidpython>=1.1",
+        "solidpython>=1.1.2",
         "commentjson>=0.9"
     ],
     setup_requires=[
