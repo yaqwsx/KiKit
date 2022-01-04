@@ -85,8 +85,9 @@ KiKit](https://roboticsbrno.github.io/RB0002-BatteryPack).
 
 Read the [CLI documentation](doc/cli.md) and the [panelize
 documentation](doc/panelization.md). Also don't miss the
-[examples](doc/examples.md). If you are interested in generating solder paste
-stencils, see [Stencil documentation](doc/stencil.md)
+[examples](doc/examples.md). There is also a quick not on how to use
+[panelization action plugin](doc/panelizeGui.md). If you are interested in
+generating solder paste stencils, see [Stencil documentation](doc/stencil.md)
 
 ## KiKit Is Broken or Does Not Work as Expected
 
