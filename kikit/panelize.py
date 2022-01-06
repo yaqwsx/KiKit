@@ -485,11 +485,16 @@ class Panel:
             # This means there is no original project file. Probably comes from
             # v5, thus there is nothing to transfer
             return
-        with open(self.getProFilepath()) as f:
-            currentPro = json.load(f, object_pairs_hook=OrderedDict)
-        currentPro["board"]["design_settings"] = sourcePro["board"]["design_settings"]
-        with open(self.getProFilepath(), "w") as f:
-            json.dump(currentPro, f, indent=2)
+        try:
+            with open(self.getProFilepath()) as f:
+                currentPro = json.load(f, object_pairs_hook=OrderedDict)
+            currentPro["board"]["design_settings"] = sourcePro["board"]["design_settings"]
+            with open(self.getProFilepath(), "w") as f:
+                json.dump(currentPro, f, indent=2)
+        except KeyError:
+            # This means the source board has no DRC setting. Probably a board
+            # without attached project
+            pass
 
 
     def inheritDesignSettings(self, boardFilename):
