@@ -32,6 +32,8 @@ def getStartPoint(geom):
         if geom.GetShape() == STROKE_T.S_CIRCLE:
             # Circle start is circle center /o\
             point = geom.GetStart() + pcbnew.wxPoint(geom.GetRadius(), 0)
+        elif geom.GetShape() == STROKE_T.S_RECT:
+            point = geom.GetStart()
         else:
             point = geom.GetStart()
         return roundPoint(point)
@@ -45,6 +47,9 @@ def getEndPoint(geom):
         if geom.GetShape() == STROKE_T.S_CIRCLE:
             # Circle start is circle center /o\
             point = geom.GetStart() + pcbnew.wxPoint(geom.GetRadius(), 0)
+        elif geom.GetShape() == STROKE_T.S_RECT:
+            # Rectangle is closed, so it starts at the same point as it ends
+            point = geom.GetStart()
         else:
             point = geom.GetEnd()
         return roundPoint(point)
@@ -197,6 +202,14 @@ def approximateBezier(bezier, endWith):
 
     return outline
 
+def createRectangle(rect):
+    """
+    Take PCB_SHAPE and convert it into outline
+    """
+    tl = rect.GetStart()
+    br = rect.GetEnd()
+    return [tl, (br[0], tl[1]), br, (tl[0], br[1]), tl]
+
 def toShapely(ring, geometryList):
     """
     Take a list indices representing a ring from PCB_SHAPE entities and
@@ -212,6 +225,8 @@ def toShapely(ring, geometryList):
         elif shape in [STROKE_T.S_CURVE]:
             outline += approximateBezier(geometryList[idxA],
                 commonEndPoint(geometryList[idxA], geometryList[idxB]))[1:]
+        elif shape in [STROKE_T.S_RECT]:
+            outline += createRectangle(geometryList[idxA])
         elif shape in [STROKE_T.S_SEGMENT]:
             outline.append(commonEndPoint(geometryList[idxA], geometryList[idxB]))
         else:
