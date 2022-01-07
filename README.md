@@ -98,8 +98,3 @@ If you would like to have a feature in KiKit that is currently not on a roadmap,
 or if you need to prepare custom panelization script (e.g., multi-design panels,
 panels with specific arrangement), you can consider hiring me to do the job.
 Just reach out to me via e-mail and we can discuss further details.
-
-## How To Use It CI?
-
-To use KiKit in CI (e.g., Travis) you can use prepared Docker image
-`yaqwsx/kikit`. Also see [example `.travis.yml`](https://github.com/RoboticsBrno/RB0002-BatteryPack/blob/master/.travis.yml).
