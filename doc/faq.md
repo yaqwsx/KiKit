@@ -55,26 +55,15 @@ everywhere.
 If you don't want to put mouse bites inside your board, just specify zero or
 negative offset.
 
+## I have board with no spacing, but some V-cuts are missing.
+
+The default style of tabs (`spacing`) does not generate in such a case any tabs,
+and, therefore, not cuts. Please use tab style `full`.
+
 ## I get error `ModuleNotFoundError: No module named 'pcbnew'`
 
-See the following question
-
-## I want to use KiKit on Windows and I get various errors
-
-Unfortunately, KiCAD includes it's own version of Python interpreter on Windows.
-That means that the `pcbnew` module is not installed for your system Python
-installation. The KiCAD's Python does not allow to install libraries with binary
-dependencies, therefore you cannot install KiKit in it.
-
-I have plans for solving this issue, unfortunately, I cannot implement them
-until KiCAD on Windows migrate to Python 3 which should come with 6.0 release.
-
-Until then you have two options to use KiKit on Windows:
-- use the pre-built [Docker image](https://hub.docker.com/r/yaqwsx/kikit) with KiKit
-- install KiCAD and KiKit inside [WSL](https://docs.microsoft.com/en-us/windows/wsl/about)
-
-Both of these procedures are described in the [installation
-document](installation.md).
+You probably installed KiKit via Windows command prompt, not KiCAD Command
+Prompt.
 
 ## I would like to make a panel out of different designs, but there is no such option in help
 
@@ -94,9 +83,11 @@ people already know it.
 
 ## There are no plugins in KiCAD!
 
-You have to enable them. See [the installation guide](installation.md).
+You have to install them via KiCAD PCM. See [the installation
+guide](installation.md).
 
 ## How do I run KiKit with KiCAD nightly?
 
 See section "Choosing KiCAD version" in [the installation
-guide](installation.md).
+guide](installation.md). However, at the moment KiCAD is incompatible with KiCAD
+6.99.
