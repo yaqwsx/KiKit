@@ -383,7 +383,9 @@ class Panel:
     """
     def __init__(self, panelFilename):
         """
-        Initializes empty panel.
+        Initializes empty panel. Note that due to the restriction of KiCAD 6,
+        when boards are always associated with a project, you have to pass a
+        name of the resulting file.
         """
         self.filename = panelFilename
         self.board = pcbnew.NewBoard(panelFilename)
@@ -505,7 +507,7 @@ class Panel:
         self.setDesignSettings(b.GetDesignSettings())
 
     def setDesignSettings(self, designSettings):
-        """GetDesignSettings
+        """
         Set design settings
         """
         if isV6():
@@ -1243,13 +1245,19 @@ class Panel:
         """
         Set the auxiliary origin used e.g., for drill files
         """
-        self.board.SetAuxOrigin(point)
+        if isV6():
+            self.board.GetDesignSettings().SetAuxOrigin(point)
+        else:
+            self.board.SetAuxOrigin(point)
 
     def setGridOrigin(self, point):
         """
         Set grid origin
         """
-        self.board.SetGridOrigin(point)
+        if isV6():
+            self.board.GetDesignSettings().SetGridOrigin(point)
+        else:
+            self.board.SetGridOrigin(point)
 
     def _buildPartitionLineFromBB(self, partition):
         for s in self.substrates:
@@ -1291,7 +1299,9 @@ class Panel:
     def buildPartitionLineFromBB(self, boundarySubstrates=[], safeMargin=0):
         """
         Builds partition & backbone line from bounding boxes of the substrates.
-        You can optionally pass extra substrates (e.g., for frame).
+        You can optionally pass extra substrates (e.g., for frame). Without
+        these extra substrates no partition line would be generated on the side
+        where the boundary is, therefore, there won't be any tabs.
         """
         partition = substrate.SubstratePartitionLines(
             self.substrates, boundarySubstrates,

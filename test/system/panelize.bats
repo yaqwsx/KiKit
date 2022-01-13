@@ -193,6 +193,13 @@ load common
         $RES/conn.kicad_pcb panel.kicad_pcb
 }
 
+@test "Set aux origin" {
+    kikit panelize \
+        --post 'origin: bl;' \
+        --debug 'trace: true; deterministic: true' \
+        $RES/conn.kicad_pcb panel.kicad_pcb
+}
+
 @test "Dumping preset" {
     kikit panelize --dump preset.json \
         --layout 'grid; rows: 2; cols: 2; space: 2mm' \
