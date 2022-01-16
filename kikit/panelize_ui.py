@@ -189,8 +189,9 @@ def doPanelization(input, output, preset):
     board = LoadBoard(input)
 
     panel = Panel(output)
-    panel.inheritDesignSettings(input)
-    panel.inheritProperties(input)
+    panel.inheritDesignSettings(board)
+    panel.inheritProperties(board)
+    panel.inheritTitleBlock(board)
 
     sourceArea = ki.readSourceArea(preset["source"], board)
     substrates = ki.buildLayout(preset["layout"], panel, input, sourceArea)
@@ -253,8 +254,10 @@ def separate(input, output, source, debug, keepannotations):
         sourceArea = ki.readSourceArea(preset["source"], board)
 
         panel = Panel(output)
-        panel.inheritDesignSettings(input)
-        panel.inheritProperties(input)
+        panel.inheritDesignSettings(board)
+        panel.inheritProperties(board)
+        panel.inheritTitleBlock(board)
+
         destination = wxPointMM(150, 100)
         panel.appendBoard(input, destination, sourceArea,
             interpretAnnotations=(not keepannotations))

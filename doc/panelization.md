@@ -77,9 +77,9 @@ include components sticking out of the board outline, you can specify tolerance
 
 #### `appendBoard`
 ```
-appendBoard(self, filename, destination, sourceArea=None, origin=Origin.Center,
-            rotationAngle=0, shrink=False, tolerance=0, bufferOutline=1000,
-            netRenamer=None, refRenamer=None, inheritDrc=True,
+appendBoard(self, filename, destination, sourceArea=None, origin=Origin.Center, 
+            rotationAngle=0, shrink=False, tolerance=0, bufferOutline=1000, 
+            netRenamer=None, refRenamer=None, inheritDrc=True, 
             interpretAnnotations=True)
 ```
 
@@ -103,7 +103,7 @@ None
 
 #### `addCornerFiducials`
 ```
-addCornerFiducials(self, fidCount, horizontalOffset, verticalOffset,
+addCornerFiducials(self, fidCount, horizontalOffset, verticalOffset, 
                    copperDiameter, openingDiameter)
 ```
 Add up to 4 fiducials to the top-left, top-right, bottom-left and
@@ -120,7 +120,7 @@ None
 
 #### `addCornerTooling`
 ```
-addCornerTooling(self, holeCount, horizontalOffset, verticalOffset, diameter,
+addCornerTooling(self, holeCount, horizontalOffset, verticalOffset, diameter, 
                  paste=False)
 ```
 Add up to 4 tooling holes to the top-left, top-right, bottom-left and
@@ -166,9 +166,9 @@ diameter. The paste option allows to place the hole on the paste layers.
 
 #### `addText`
 ```
-addText(self, text, position, orientation=0, width=1500000, height=1500000,
-        thickness=300000, hJustify=EDA_TEXT_HJUSTIFY_T.GR_TEXT_HJUSTIFY_CENTER,
-        vJustify=EDA_TEXT_VJUSTIFY_T.GR_TEXT_VJUSTIFY_CENTER,
+addText(self, text, position, orientation=0, width=1500000, height=1500000, 
+        thickness=300000, hJustify=EDA_TEXT_HJUSTIFY_T.GR_TEXT_HJUSTIFY_CENTER, 
+        vJustify=EDA_TEXT_VJUSTIFY_T.GR_TEXT_VJUSTIFY_CENTER, 
         layer=Layer.F_SilkS)
 ```
 Add text at given position to the panel. If appending to the bottom
@@ -188,9 +188,9 @@ Adds a horizontal V-CUT at pos (integer in KiCAD units).
 
 #### `appendBoard`
 ```
-appendBoard(self, filename, destination, sourceArea=None, origin=Origin.Center,
-            rotationAngle=0, shrink=False, tolerance=0, bufferOutline=1000,
-            netRenamer=None, refRenamer=None, inheritDrc=True,
+appendBoard(self, filename, destination, sourceArea=None, origin=Origin.Center, 
+            rotationAngle=0, shrink=False, tolerance=0, bufferOutline=1000, 
+            netRenamer=None, refRenamer=None, inheritDrc=True, 
             interpretAnnotations=True)
 ```
 Appends a board to the panel.
@@ -246,7 +246,9 @@ Return a list of cuts.
 buildPartitionLineFromBB(self, boundarySubstrates=[], safeMargin=0)
 ```
 Builds partition & backbone line from bounding boxes of the substrates.
-You can optionally pass extra substrates (e.g., for frame).
+You can optionally pass extra substrates (e.g., for frame). Without
+these extra substrates no partition line would be generated on the side
+where the boundary is, therefore, there won't be any tabs.
 
 #### `buildTabAnnotationsCorners`
 ```
@@ -256,7 +258,7 @@ Add tab annotations to the corners of the individual substrates.
 
 #### `buildTabAnnotationsFixed`
 ```
-buildTabAnnotationsFixed(self, hcount, vcount, hwidth, vwidth, minDistance,
+buildTabAnnotationsFixed(self, hcount, vcount, hwidth, vwidth, minDistance, 
                          ghostSubstrates)
 ```
 Add tab annotations for the individual substrates based on number of
@@ -340,15 +342,22 @@ boards.
 
 #### `inheritDesignSettings`
 ```
-inheritDesignSettings(self, boardFilename)
+inheritDesignSettings(self, board)
 ```
-Inherit design settings from the given board specified by a filename
+Inherit design settings from the given board specified by a filename or
+a board
 
 #### `inheritProperties`
 ```
-inheritProperties(self, boardFilename)
+inheritProperties(self, board)
 ```
-Inherit text properties from a board specified by a properties
+Inherit text properties from a board specified by a filename or a board
+
+#### `inheritTitleBlock`
+```
+inheritTitleBlock(self, board)
+```
+Inherit title block from a board specified by a filename or a board
 
 #### `makeFrame`
 ```
@@ -372,9 +381,9 @@ Generate vertical cuts for the frame corners and return them
 
 #### `makeGrid`
 ```
-makeGrid(self, boardfile, sourceArea, rows, cols, destination, verSpace,
-         horSpace, rotation,
-         placementClass=<class 'kikit.panelize.BasicGridPosition'>,
+makeGrid(self, boardfile, sourceArea, rows, cols, destination, verSpace, 
+         horSpace, rotation, 
+         placementClass=<class 'kikit.panelize.BasicGridPosition'>, 
          netRenamePattern=Board_{n}-{orig}, refRenamePattern=Board_{n}-{orig})
 ```
 Place the given board in a regular grid pattern with given spacing
@@ -479,7 +488,6 @@ None
 ```
 setDesignSettings(self, designSettings)
 ```
-GetDesignSettings
 Set design settings
 
 #### `setGridOrigin`
@@ -493,6 +501,12 @@ Set grid origin
 setProperties(self, properties)
 ```
 Set text properties cached in the board
+
+#### `setTitleBlock`
+```
+setTitleBlock(self, titleBlock)
+```
+Set panel title block
 
 #### `setVCutClearance`
 ```
@@ -510,7 +524,7 @@ Set layer on which the V-Cuts will be rendered
 
 This class represents a pice of substrate (with no components). Basically it is
 just a relatively thin wrapper around shapely polygons. On top of that, it keeps
-a partition line for the substrate. ead more about partition lines in
+a partition line for the substrate. Read more about partition lines in
 [understanding tabs](understandingTabs.md).
 
 

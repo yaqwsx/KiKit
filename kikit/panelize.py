@@ -499,12 +499,14 @@ class Panel:
             pass
 
 
-    def inheritDesignSettings(self, boardFilename):
+    def inheritDesignSettings(self, board):
         """
-        Inherit design settings from the given board specified by a filename
+        Inherit design settings from the given board specified by a filename or
+        a board
         """
-        b = pcbnew.LoadBoard(boardFilename)
-        self.setDesignSettings(b.GetDesignSettings())
+        if not isinstance(board, pcbnew.BOARD):
+            board = pcbnew.LoadBoard(board)
+        self.setDesignSettings(board.GetDesignSettings())
 
     def setDesignSettings(self, designSettings):
         """
@@ -516,18 +518,33 @@ class Panel:
         else:
             self.board.SetDesignSettings(designSettings)
 
-    def inheritProperties(self, boardFilename):
+    def inheritProperties(self, board):
         """
-        Inherit text properties from a board specified by a properties
+        Inherit text properties from a board specified by a filename or a board
         """
-        b = pcbnew.LoadBoard(boardFilename)
-        self.board.SetProperties(b.GetProperties())
+        if not isinstance(board, pcbnew.BOARD):
+            board = pcbnew.LoadBoard(board)
+        self.board.SetProperties(board.GetProperties())
 
     def setProperties(self, properties):
         """
         Set text properties cached in the board
         """
         self.board.SetProperties(properties)
+
+    def inheritTitleBlock(self, board):
+        """
+        Inherit title block from a board specified by a filename or a board
+        """
+        if not isinstance(board, pcbnew.BOARD):
+            board = pcbnew.LoadBoard(board)
+        self.setTitleBlock(board.GetTitleBlock())
+
+    def setTitleBlock(self, titleBlock):
+        """
+        Set panel title block
+        """
+        self.board.SetTitleBlock(titleBlock)
 
     def appendBoard(self, filename, destination, sourceArea=None,
                     origin=Origin.Center, rotationAngle=0, shrink=False,
