@@ -152,6 +152,8 @@ def approximateArc(arc, endWith):
     else:
         endAngle = startAngle + arc.GetArcAngle() / 10
         segments = abs(int((endAngle - startAngle) * SEGMENTS_PER_FULL // 360))
+    # Ensure a minimal number of segments for small angle section of arcs
+    segments = max(segments, 12)
     theta = np.radians(np.linspace(startAngle, endAngle, segments))
     x = arc.GetCenter()[0] + arc.GetRadius() * np.cos(theta)
     y = arc.GetCenter()[1] + arc.GetRadius() * np.sin(theta)
