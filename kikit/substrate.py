@@ -16,12 +16,14 @@ from kikit.defs import STROKE_T, Layer
 
 class PositionError(RuntimeError):
     def __init__(self, message, point):
-        super().__init__(message.format(pcbnew.ToMM(point[0]), pcbnew.ToMM(point[1])))
+        super().__init__(message.format(toMm(point[0]), toMm(point[1])))
         self.point = point
         self.origMessage = message
 
 class NoIntersectionError(RuntimeError):
-    pass
+    def __init__(self, message, point):
+        super().__init__(message)
+        self.point = point
 
 def roundPoint(point, precision=-4):
     return (round(point[0], precision), round(point[1], precision))
@@ -388,7 +390,7 @@ def closestIntersectionPoint(origin, direction, outline, maxDistance):
     testLine = LineString([origin, origin + direction * maxDistance])
     inter = testLine.intersection(outline)
     if inter.is_empty:
-        raise NoIntersectionError("No intersection found within given distance")
+        raise NoIntersectionError(f"No intersection found within given distance", origin)
     origin = Point(origin[0], origin[1])
     if isinstance(inter, Point):
         geoms = [inter]
@@ -411,7 +413,7 @@ class Substrate:
     Represents (possibly multiple) PCB substrates reconstructed from a list of
     geometry
     """
-    def __init__(self, geometryList, bufferDistance=0):
+    def __init__(self, geometryList, bufferDistance=0, revertTransformation=None):
         polygons = [toShapely(ring, geometryList) for ring in extractRings(geometryList)]
         self.substrates = unary_union(substratesFrom(polygons))
         self.substrates = self.substrates.buffer(bufferDistance)
@@ -420,6 +422,15 @@ class Substrate:
         self.partitionLine = shapely.geometry.GeometryCollection()
         self.annotations = []
         self.oriented = True
+        self.revertTransformation = revertTransformation
+
+    def backToSource(self, point):
+        """
+        Return a point in the source form (if a reverse transformation was set)
+        """
+        if self.revertTransformation is not None:
+            return self.revertTransformation(point)
+        return point
 
     def orient(self):
         """
@@ -533,46 +544,63 @@ class Substrate:
         self.orient()
 
         origin = np.array(origin)
-        direction = normalize(direction)
-        sideOriginA = origin + makePerpendicular(direction) * width / 2
-        sideOriginB = origin - makePerpendicular(direction) * width / 2
-        boundary = self.substrates.exterior
-        splitPointA = closestIntersectionPoint(sideOriginA, direction,
-            boundary, maxHeight)
-        splitPointB = closestIntersectionPoint(sideOriginB, direction,
-            boundary, maxHeight)
-        tabFace = biteBoundary(boundary, splitPointB, splitPointA)
-        if partitionLine is None:
-            # There is nothing else to do, return the tab
-            tab = Polygon(list(tabFace.coords) + [sideOriginA, sideOriginB])
-            return tab, tabFace
-        # Span the tab towwards the partition line
-        # There might be multiple geometries in the partition line, so try them
-        # individually.
-        direction = -direction
-        for p in listGeometries(partitionLine):
-            try:
-                partitionSplitPointA = closestIntersectionPoint(splitPointA.coords[0],
-                        direction, p, maxHeight)
-                partitionSplitPointB = closestIntersectionPoint(splitPointB.coords[0],
-                    direction, p, maxHeight)
-            except NoIntersectionError: # We cannot span towards the partition line
-                continue
-            if isLinestringCyclic(p):
-                candidates = [(partitionSplitPointA, partitionSplitPointB)]
-            else:
-                candidates = [(partitionSplitPointA, partitionSplitPointB),
-                    (partitionSplitPointB, partitionSplitPointA)]
-            for i, (spa, spb) in enumerate(candidates):
-                partitionFace = biteBoundary(p, spa, spb)
-                if partitionFace is None:
-                    continue
-                partitionFaceCoord = list(partitionFace.coords)
-                if i == 1:
-                    partitionFaceCoord = partitionFaceCoord[::-1]
-                tab = Polygon(list(tabFace.coords) + partitionFaceCoord)
+        try:
+            direction = normalize(direction)
+            sideOriginA = origin + makePerpendicular(direction) * width / 2
+            sideOriginB = origin - makePerpendicular(direction) * width / 2
+            boundary = self.substrates.exterior
+            splitPointA = closestIntersectionPoint(sideOriginA, direction,
+                boundary, maxHeight)
+            splitPointB = closestIntersectionPoint(sideOriginB, direction,
+                boundary, maxHeight)
+            tabFace = biteBoundary(boundary, splitPointB, splitPointA)
+            if partitionLine is None:
+                # There is nothing else to do, return the tab
+                tab = Polygon(list(tabFace.coords) + [sideOriginA, sideOriginB])
                 return tab, tabFace
-        return None, None
+            # Span the tab towwards the partition line
+            # There might be multiple geometries in the partition line, so try them
+            # individually.
+            direction = -direction
+            for p in listGeometries(partitionLine):
+                try:
+                    partitionSplitPointA = closestIntersectionPoint(splitPointA.coords[0],
+                            direction, p, maxHeight)
+                    partitionSplitPointB = closestIntersectionPoint(splitPointB.coords[0],
+                        direction, p, maxHeight)
+                except NoIntersectionError: # We cannot span towards the partition line
+                    continue
+                if isLinestringCyclic(p):
+                    candidates = [(partitionSplitPointA, partitionSplitPointB)]
+                else:
+                    candidates = [(partitionSplitPointA, partitionSplitPointB),
+                        (partitionSplitPointB, partitionSplitPointA)]
+                for i, (spa, spb) in enumerate(candidates):
+                    partitionFace = biteBoundary(p, spa, spb)
+                    if partitionFace is None:
+                        continue
+                    partitionFaceCoord = list(partitionFace.coords)
+                    if i == 1:
+                        partitionFaceCoord = partitionFaceCoord[::-1]
+                    tab = Polygon(list(tabFace.coords) + partitionFaceCoord)
+                    return tab, tabFace
+            return None, None
+        except NoIntersectionError as e:
+            message = "Cannot create tab:\n"
+            message += f"  Annotation position {self._strPosition(origin)}\n"
+            message += f"  Tab ray origin that failed: {self._strPosition(origin)}\n"
+            message += "Possible causes:\n"
+            message += "- too wide tab so it does not hit the board,\n"
+            message += "- annotation is placed inside the board,\n"
+            message += "- ray length is not sufficient,\n"
+            raise RuntimeError(message)
+
+    def _strPosition(self, point):
+        msg = f"[{toMm(point[0])}, {toMm(point[1])}]"
+        if self.revertTransformation:
+            rp = self.revertTransformation(point)
+            msg += f"([{toMm(rp[0])}, {toMm(rp[1])}] in source board)"
+        return msg
 
     def millFillets(self, millRadius):
         """

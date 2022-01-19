@@ -180,7 +180,7 @@ def undoTransformation(point, rotation, origin, translation):
     # Abuse PcbNew to do so
     segment = pcbnew.PCB_SHAPE()
     segment.SetShape(STROKE_T.S_SEGMENT)
-    segment.SetStart(wxPoint(point[0], point[1]))
+    segment.SetStart(wxPoint(int(point[0]), int(point[1])))
     segment.SetEnd(wxPoint(0, 0))
     segment.Move(wxPoint(-translation[0], -translation[1]))
     segment.Rotate(origin, -rotation)
@@ -645,8 +645,16 @@ class Panel:
             drawing.Move(translation)
         edges += [edge for edge in drawings if isBoardEdge(edge)]
         otherDrawings = [edge for edge in drawings if not isBoardEdge(edge)]
+
+        def makeRevertTransformation(angle, origin, translation):
+            def f(point):
+                return undoTransformation(point, angle, origin, translation)
+            return f
+
+        revertTransformation = makeRevertTransformation(rotationAngle, originPoint, translation)
         try:
-            o = Substrate(edges, -bufferOutline)
+            o = Substrate(edges, -bufferOutline,
+                revertTransformation=revertTransformation)
             s = Substrate(edges, bufferOutline)
             self.boardSubstrate.union(s)
             self.substrates.append(o)

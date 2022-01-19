@@ -24,7 +24,7 @@ def fromMm(mm):
 
 def toMm(kiUnits):
     """Convert KiCAD internal units to millimeters"""
-    return pcbnew.ToMM(kiUnits)
+    return pcbnew.ToMM(int(kiUnits))
 
 def fitsIn(what, where):
     """ Return true iff 'what' (wxRect) is fully contained in 'where' (wxRect) """
