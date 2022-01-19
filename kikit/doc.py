@@ -45,8 +45,25 @@ def quote(args):
             return x
     return [q(x) for x in args]
 
+def panelizeAndDraw(name, command):
+    dirname = tempfile.mkdtemp()
+    output = os.path.join(dirname, "x.kicad_pcb")
+    try:
+        outimage = f"doc/resources/{name}.png"
+        subprocess.run(command + [output], check=True, capture_output=True)
+        subprocess.run(["pcbdraw", "--vcuts", "--silent", output,
+                outimage], check=True, capture_output=True)
+        subprocess.run(["convert", outimage, "-define",
+            "png:include-chunk=none", outimage], check=True, capture_output=True)
+    except subprocess.CalledProcessError as e:
+        print("Command: " + " ".join(e.cmd), file=sys.stderr)
+        print("Stdout: " + e.stdout.decode("utf8"), file=sys.stderr)
+        print("Stderr: " + e.stderr.decode("utf8"), file=sys.stderr)
+        sys.exit(1)
+    shutil.rmtree(dirname)
 
-runBoardExampleThreads = []
+
+runExampleThreads = []
 
 def runBoardExample(name, args):
     """
@@ -56,9 +73,7 @@ def runBoardExample(name, args):
     Generating images runs in parallel, so do not forget to invoke
     runBoardExampleJoin() at the end of your script.
     """
-    dirname = tempfile.mkdtemp()
-    output = os.path.join(dirname, "x.kicad_pcb")
-    realArgs = ["python3", "-m", "kikit.ui"] + list(chain(*args)) + [output]
+    realArgs = ["python3", "-m", "kikit.ui"] + list(chain(*args))
 
     # We print first, so in a case of failure we have the command in a nice
     # copy-paste-ready form
@@ -73,26 +88,34 @@ def runBoardExample(name, args):
     print("```\n")
     print("![{0}](resources/{0}.png)".format(name))
 
-    def run():
-        try:
-            outimage = f"doc/resources/{name}.png"
-            subprocess.run(realArgs, check=True, capture_output=True)
-            subprocess.run(["pcbdraw", "--vcuts", "--silent", output,
-                    outimage], check=True, capture_output=True)
-            subprocess.run(["convert", outimage, "-define",
-                "png:include-chunk=none", outimage], check=True, capture_output=True)
-        except subprocess.CalledProcessError as e:
-            print("Command: " + " ".join(e.cmd), file=sys.stderr)
-            print("Stdout: " + e.stdout.decode("utf8"), file=sys.stderr)
-            print("Stderr: " + e.stderr.decode("utf8"), file=sys.stderr)
-            sys.exit(1)
-        shutil.rmtree(dirname)
-    t = threading.Thread(target=run)
+    t = threading.Thread(target=lambda: panelizeAndDraw(name, realArgs))
     t.start()
-    global runBoardExampleThreads
-    runBoardExampleThreads.append(t)
+    global runExampleThreads
+    runExampleThreads.append(t)
 
-def runBoardExampleJoin():
-    for t in runBoardExampleThreads:
+def runScriptingExample(name, args):
+    """
+    Run a Python panelization script that takes the name of the output as a last
+    argument and create a drawing of it.
+    """
+
+    realArgs = ["python3"] + list(chain(*args))
+    print("```")
+    for i, c in enumerate(args):
+        if i != 0:
+            print("    ", end="")
+        end = "\n" if i + 1 == len(args) else " \\\n"
+        print(" ".join(quote(c)), end=end)
+    print("```\n")
+    print("![{0}](resources/{0}.png)".format(name))
+
+    t = threading.Thread(target=lambda: panelizeAndDraw(name, realArgs))
+    t.start()
+    global runExampleThreads
+    runExampleThreads.append(t)
+
+
+def runExampleJoin():
+    for t in runExampleThreads:
         t.join()
 

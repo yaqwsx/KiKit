@@ -122,7 +122,7 @@ print(f"""
 
 This class represents a pice of substrate (with no components). Basically it is
 just a relatively thin wrapper around shapely polygons. On top of that, it keeps
-a partition line for the substrate. ead more about partition lines in
+a partition line for the substrate. Read more about partition lines in
 [understanding tabs](understandingTabs.md).
 
 """)

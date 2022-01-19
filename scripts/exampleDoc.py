@@ -5,7 +5,7 @@ Generate documentation in markdown format for examples
 """
 
 import sys
-from kikit.doc import runBoardExample, runBoardExampleJoin
+from kikit.doc import runBoardExample, runExampleJoin
 from pcbnewTransition import pcbnew
 
 counter = 0
@@ -543,4 +543,4 @@ kikit panelize -p :jlcTooling <otheroptions>
 """)
 
 
-runBoardExampleJoin()
+runExampleJoin()
