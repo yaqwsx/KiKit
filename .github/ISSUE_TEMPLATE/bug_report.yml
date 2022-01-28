@@ -1,0 +1,53 @@
+name: Bug report
+description: Create a report to help us improve
+body:
+- type: checkboxes
+  attributes:
+    label: Prerequisites
+    options:
+    - label: I have read [FAQ](https://github.com/yaqwsx/KiKit/blob/master/doc/faq.md)
+      required: true
+    - label: I use the KiKit at least 1.0.0 (older version are not supported)
+      required: true
+- type: input
+  attributes:
+    label: KiKit version
+    description: The output of `kikit --version`
+  validations:
+    required: true
+- type: input
+  attributes:
+    label: KiCAD version
+    description: available in KiCAD under Help -> About KiCAD
+  validations:
+    required: true
+- type: input
+  attributes:
+    label: Operating system
+    description: for Linux, please specify the distribution
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: Description
+    description: >
+      A description of the bug. If applicable please specify what behavior do
+      you expect and what behavior did you observe.
+
+      If you run into KiKit crashing, please rerun the command with `--debug:
+      'trace: true'` and include the output in the error log.
+
+      If applicable, add screenshots to explain your problem. Note that if file
+      type is not supported by GitHub, you can put them in a ZIP archive.
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: Steps to Reproduce
+    description: >
+      Please specify the steps to reproduce the issue. Do not forget to include
+      the KiKit command and also, please include any input boards you use. If
+      the boards are confidential, please reach out to me via e-mail to discuss
+      details.
+  validations:
+    required: true
