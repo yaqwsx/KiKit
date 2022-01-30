@@ -73,10 +73,8 @@ frontend and libraries via PCM.
 
 This is the basic installation for CLI usage. If you would like to use the
 graphical interface inside KiCAD, you have to install the graphical interface
-via Plugin and Content Manager or [register the plugins](#enabling-plugins) and
-[libraries manually](#enabling-kikit-annotation-footprint-library). You might
-also want to consider installing the [optional
-dependencies](#optional-dependencies).
+and libraries via Plugin and Content Manager. You might also want to consider
+installing the [optional dependencies](#optional-dependencies).
 
 ## Installation on Windows
 
