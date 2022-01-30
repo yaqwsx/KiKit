@@ -1,6 +1,8 @@
 import pytest
 from kikit.intervals import *
 
+def identity(x):
+    return x
 
 def test_intersection():
     a = Interval(0, 2)
@@ -122,22 +124,22 @@ def test_bounds():
     b = [2, 4, 6, 8, 10, 12, 14]
     c = [1, 2, 2, 2, 2, 3, 4]
 
-    assert a[upperBound(a, 5)] == 6
-    assert b[upperBound(b, 5)] == 6
-    assert b[upperBound(b, 1)] == 2
-    assert upperBound(b, 14) == 7
-    assert upperBound(b, 15) == 7
-    assert upperBound(c, 2) == 5
-    assert upperBound(c, 1) == 1
+    assert a[upperBound(a, 5, identity)] == 6
+    assert b[upperBound(b, 5, identity)] == 6
+    assert b[upperBound(b, 1, identity)] == 2
+    assert upperBound(b, 14, identity) == 7
+    assert upperBound(b, 15, identity) == 7
+    assert upperBound(c, 2, identity) == 5
+    assert upperBound(c, 1, identity) == 1
 
-    assert lowerBound(a, 1) == -1
-    assert a[lowerBound(a, 3)] == 2
-    assert a[lowerBound(a, 5)] == 4
-    assert b[lowerBound(b, 5)] == 4
-    assert a[lowerBound(a, 14)] == 8
-    assert b[lowerBound(b, 15)] == 14
-    assert lowerBound(c, 2) == 0
-    assert lowerBound(c, 1) == -1
+    assert lowerBound(a, 1, identity) == -1
+    assert a[lowerBound(a, 3, identity)] == 2
+    assert a[lowerBound(a, 5, identity)] == 4
+    assert b[lowerBound(b, 5, identity)] == 4
+    assert a[lowerBound(a, 14, identity)] == 8
+    assert b[lowerBound(b, 15, identity)] == 14
+    assert lowerBound(c, 2, identity) == 0
+    assert lowerBound(c, 1, identity) == -1
 
 
 def test_buildShadows():

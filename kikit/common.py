@@ -1,3 +1,5 @@
+from typing import Optional
+from kikit.typing import Box
 from pcbnewTransition import pcbnew, isV6
 from kikit.intervals import Interval, AxialLine
 from pcbnew import wxPoint, wxRect
@@ -185,7 +187,7 @@ def shpBBoxBottom(bbox):
     """
     return AxialLine(bbox[3], bbox[0], bbox[2])
 
-def shpBBoxMerge(a, b):
+def shpBBoxMerge(a: Box, b: Box) -> Box:
     """
     Given two shapely bounding boxes, return smallest bounding box where both
     can fit.
@@ -197,7 +199,7 @@ def shpBBoxMerge(a, b):
         max(a[3], b[3])
     )
 
-def shpBBoxExpand(box, x, y=None):
+def shpBBoxExpand(box: Box, x: float, y: Optional[float]=None) -> Box:
     """
     Given a shapely bounding box, return new one expanded by given amount. If y
     is not supplied, it the same as x.

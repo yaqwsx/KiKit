@@ -1,3 +1,7 @@
+from __future__ import annotations
+import typing
+from typing import Any, Dict, List, Optional, Union, Tuple, Callable, Iterable
+from kikit.typing import Box, T, ComparableT
 from itertools import islice, chain
 from math import isclose
 from copy import copy
@@ -6,14 +10,14 @@ class Interval:
     """
     Basic interval representation
     """
-    def __init__(self, a, b):
+    def __init__(self, a: float, b: float) -> None:
         self.min = min(a, b)
         self.max = max(a, b)
 
-    def __contains__(self, item):
+    def __contains__(self, item: float) -> bool:
         return self.min <= item and item <= self.max
 
-    def intersect(self, other):
+    def intersect(self, other: Interval) -> Optional[Interval]:
         """
         Return a new interval representing the overlap, otherwise None
         """
@@ -21,7 +25,7 @@ class Interval:
             return None
         return Interval(max(self.min, other.min), min(self.max, other.max))
 
-    def nontrivialIntersect(self, other):
+    def nontrivialIntersect(self, other: Interval) -> Optional[Interval]:
         """
         Return a new interval representing the overlap larger than a single
         point, otherwise None
@@ -31,40 +35,42 @@ class Interval:
             return None
         return i
 
-    def trivial(self):
+    def trivial(self) -> bool:
         return self.min == self.max
 
     @property
-    def length(self):
+    def length(self) -> float:
         return self.max - self.min
 
-    def __eq__(self, other):
-        return isclose(self.min, other.min) and isclose(self.max, other.max)
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, Interval) and \
+               isclose(self.min, other.min) and isclose(self.max, other.max)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"I({self.min}, {self.max})"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"<{self.min}, {self.max}>"
 
 class IntervalList:
-    def __init__(self, intervals):
+    def __init__(self, intervals: List[Interval]) -> None:
         self.intervals = self._normalize(self._toList(intervals))
 
-    def __eq__(self, other):
-        return self.intervals == self._toList(other)
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, IntervalList) and \
+               self.intervals == self._toList(other)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"IL[ {', '.join([x.__repr__() for x in self.intervals])} ]"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"IL[ {', '.join([x.__str__() for x in self.intervals])} ]"
 
-    def trivial(self):
+    def trivial(self) -> bool:
         return len(self.intervals) == 0
 
     @staticmethod
-    def _toList(object):
+    def _toList(object: Union[Interval, List[Interval], IntervalList]) -> List[Interval]:
         """
         Convert the object into a list of intervals
         """
@@ -77,9 +83,9 @@ class IntervalList:
         raise RuntimeError("Uknown object")
 
     @staticmethod
-    def _normalize(intervals):
+    def _normalize(intervals: List[Interval]) -> List[Interval]:
         intervals.sort(key=lambda x: x.min)
-        newIntervals = []
+        newIntervals: List[Interval] = []
         for b in intervals:
             if b.trivial():
                 continue
@@ -94,7 +100,7 @@ class IntervalList:
         return newIntervals
 
     @staticmethod
-    def _eventList(intervals0, intervals1):
+    def _eventList(intervals0: List[Interval], intervals1: List[Interval]) -> List[Tuple[int, float, int]]:
         """
         Build event list; event is a tuple (1/0, x, event). Event +1 means open
         interval, -1 means close interval. The events are sorted by x
@@ -105,13 +111,13 @@ class IntervalList:
         l.sort(key=lambda x: x[1])
         return l
 
-    def union(self, other):
+    def union(self, other: Union[Interval, IntervalList]) -> IntervalList:
         """
         Union this interval with other and return new instance
         """
         return IntervalList(self.intervals + self._toList(other))
 
-    def intersect(self, other):
+    def intersect(self, other: Union[Interval, IntervalList]) -> IntervalList:
         """
         Perform self / other and return new instance
         """
@@ -126,11 +132,11 @@ class IntervalList:
             assert visibleIntervals >= 0 and visibleIntervals <= 2
         return IntervalList(intervals)
 
-    def difference(self, other):
+    def difference(self, other: Union[Interval, IntervalList]) -> IntervalList:
         """
         Perform self / other and return new instance
         """
-        intervals = []
+        intervals: List[Interval] = []
         aOpen = 0
         bOpen = 0
         for ident, p, e in self._eventList(self.intervals, self._toList(other)):
@@ -150,7 +156,6 @@ class IntervalList:
             assert bOpen >= 0 and bOpen <= 1
         return IntervalList(intervals)
 
-
 class BoxNeighbors:
     """
     Given a set of axially arranged non-overlapping boxes answers the query for
@@ -159,14 +164,14 @@ class BoxNeighbors:
     Neighbor is defined as the closest box in a given direction that has
     non-empty intersection of their projections in the given direction.
     """
-    def __init__(self, boxes):
+    def __init__(self, boxes: Dict[object, Box]) -> None:
         """
         Given a dictionary id -> box initializes the structure.
 
         Boxes are represented by a tuple (minx, miny, maxx, maxy)
         """
-        xProj = lambda b: Interval(b[0], b[2])
-        yProj = lambda b: Interval(b[1], b[3])
+        xProj: Callable[[Box], Interval] = lambda b: Interval(b[0], b[2])
+        yProj: Callable[[Box], Interval] = lambda b: Interval(b[1], b[3])
 
         leftList = self._prepareProjection(yProj, lambda b: -b[2], boxes)
         self._leftQ = self._computeQuery(leftList)
@@ -178,17 +183,19 @@ class BoxNeighbors:
         self._bottomQ = self._computeQuery(bottomList)
 
     @staticmethod
-    def _prepareProjection(getInterval, getDistance, boxes):
+    def _prepareProjection(getInterval: Callable[[Box], Interval],
+                           getDistance: Callable[[Box], float],
+                           boxes: Dict[object, Box]) -> List[Tuple[object, Interval, float]]:
         x = [(ident, getInterval(b), getDistance(b)) for ident, b in boxes.items()]
         x.sort(key=lambda t: t[2])
         return x
 
     @staticmethod
-    def _computeQuery(list):
+    def _computeQuery(list: List[Tuple[object, Interval, float]]) -> Dict[object, List[Tuple[object, IntervalList]]]:
         neighbors = {}
         for i, (ident, interval, pos) in enumerate(list):
-            n = []
-            rest = IntervalList(interval)
+            n: List[Tuple[object, IntervalList]] = []
+            rest = IntervalList([interval])
             for j in range(i + 1, len(list)):
                 nIdent, nInterval, nPos = list[j]
                 shadow = rest.intersect(nInterval)
@@ -202,31 +209,31 @@ class BoxNeighbors:
         return neighbors
 
     @staticmethod
-    def _simplify(result):
+    def _simplify(result: List[Tuple[object, Any]]) -> List[object]:
         return [ident for ident, _ in result]
 
-    def left(self, ident):
+    def left(self, ident: object) -> List[object]:
         return self._simplify(self._leftQ[ident])
 
-    def leftC(self, ident):
+    def leftC(self, ident: object) -> List[Tuple[object, IntervalList]]:
         return self._leftQ[ident]
 
-    def right(self, ident):
+    def right(self, ident: object) -> List[object]:
         return self._simplify(self._rightQ[ident])
 
-    def rightC(self, ident):
+    def rightC(self, ident: object) -> List[Tuple[object, IntervalList]]:
         return self._rightQ[ident]
 
-    def top(self, ident):
+    def top(self, ident: object) -> List[object]:
         return self._simplify(self._topQ[ident])
 
-    def topC(self, ident):
+    def topC(self, ident: object) -> List[Tuple[object, IntervalList]]:
         return self._topQ[ident]
 
-    def bottom(self, ident):
+    def bottom(self, ident: object) -> List[object]:
         return self._simplify(self._bottomQ[ident])
 
-    def bottomC(self, ident):
+    def bottomC(self, ident: object) -> List[Tuple[object, IntervalList]]:
         return self._bottomQ[ident]
 
 
@@ -234,12 +241,12 @@ class AxialLine(Interval):
     """
     Representation of a horizontal or vertical line
     """
-    def __init__(self, x, y1, y2, tag=None):
+    def __init__(self, x: float, y1: float, y2: float, tag: Optional[Any]=None) -> None:
         super().__init__(y1, y2)
         self.x = x
         self.tag = tag
 
-    def cut(self, y):
+    def cut(self, y: float) -> List[AxialLine]:
         """
         Cut the line at y. Return a list of newly created AxialLines
         """
@@ -250,13 +257,14 @@ class AxialLine(Interval):
             AxialLine(self.x, y, self.max, self.tag)
         ]
 
-    def __eq__(self, other):
-        return isclose(self.x, other.x) and super().__eq__(other)
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, AxialLine) and \
+               isclose(self.x, other.x) and super().__eq__(other)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Line[{self.tag}]({self.x}, {self.min}, {self.max})"
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((self.x, self.min, self.max, self.tag))
 
 class ShadowLine:
@@ -264,24 +272,25 @@ class ShadowLine:
     Represents a horizontal or vertical line with a shadow (possible
     prolongation)
     """
-    def __init__(self, line, shadow):
+    def __init__(self, line: AxialLine, shadow: Interval) -> None:
         assert isinstance(line, AxialLine)
         assert isinstance(shadow, Interval)
         self.line = line
         self.shadow = shadow
 
     @property
-    def shadowLine(self):
+    def shadowLine(self) -> AxialLine:
         return AxialLine(self.line.x, self.shadow.min, self.shadow.max,
             self.line.tag)
 
-    def __eq__(self, other):
-        return self.line == other.line and self.shadow == other.shadow
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, ShadowLine) and \
+               self.line == other.line and self.shadow == other.shadow
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Shadow({self.line.__repr__()}, {self.shadow.__repr__()})"
 
-def collectBoxEdges(box):
+def collectBoxEdges(box: Box) -> Tuple[List[AxialLine], List[AxialLine]]:
     """
     Given a box, return a tuple (horiz edges, vert edges) as lists of AxialLine
     """
@@ -290,7 +299,7 @@ def collectBoxEdges(box):
         [AxialLine(box[0], box[1], box[3]), AxialLine(box[2], box[1], box[3])]
     )
 
-def collectHardStops(boxes):
+def collectHardStops(boxes: Iterable[Box]) -> Tuple[List[AxialLine], List[AxialLine]]:
     """
     Given an iterable of boxes, return all partition lines hard stops - i.e.,
     union of all edges as a tuple (horiz edges, vert edges) as lists of
@@ -299,7 +308,7 @@ def collectHardStops(boxes):
     from kikit.common import shpBBoxMerge
 
     hedges, vedges = set(), set()
-    commonBox = None
+    commonBox: Optional[Box] = None
     for b in boxes:
         if commonBox is None:
             commonBox = b
@@ -308,15 +317,17 @@ def collectHardStops(boxes):
         h, v = collectBoxEdges(b)
         hedges.update(h)
         vedges.update(v)
+    assert commonBox is not None
     h, v = collectBoxEdges(commonBox)
     hedges.update(h)
     vedges.update(v)
     return list(hedges), list(vedges)
 
-def defaultSeedFilter(boxIdA, boxIdB, vertical, seedline):
+def defaultSeedFilter(boxIdA: object, boxIdB: object, vertical: bool, seedline: AxialLine) -> bool:
     return True
 
-def collectSeedLines(boxes, seedFilter):
+def collectSeedLines(boxes: Dict[object, Box], seedFilter: Callable[[object, object, bool, AxialLine], bool]) \
+        -> Tuple[List[AxialLine], List[AxialLine]]:
     """
     Given a dictionary ident -> box return a list of all midlines between
     neighboring boxes.
@@ -328,7 +339,8 @@ def collectSeedLines(boxes, seedFilter):
     Returns (horlines, verlines), where the lines are tagged with ident
     """
     neighbors = BoxNeighbors(boxes)
-    horlines, verlines = [], []
+    horlines: List[AxialLine] = []
+    verlines: List[AxialLine] = []
     for identA, boxA in boxes.items():
         for identB, shadow in neighbors.leftC(identA):
             mid = (boxA[0] + boxes[identB][2]) / 2
@@ -356,7 +368,7 @@ def collectSeedLines(boxes, seedFilter):
                 if seedFilter(identA, identB, False, x)])
     return horlines, verlines
 
-def upperBound(sortedCollection, item, key=lambda x: x):
+def upperBound(sortedCollection: List[T], item: ComparableT, key: Callable[[T], ComparableT]) -> int:
     """
     Given a sorted collection, perform binary search to find element x for which
     the following holds: item < key(x) and the value key(x) is the smallest.
@@ -372,7 +384,7 @@ def upperBound(sortedCollection, item, key=lambda x: x):
             lo = mid + 1
     return lo
 
-def lowerBound(sortedCollection, item, key=lambda x: x):
+def lowerBound(sortedCollection: List[T], item: ComparableT, key: Callable[[T], ComparableT]) -> int:
     """
     Given a sorted collection, perform binary search to find element x for which
     the following holds: item > key(x) and the value key(x) is the largest.
@@ -388,7 +400,7 @@ def lowerBound(sortedCollection, item, key=lambda x: x):
             hi = mid
     return lo - 1
 
-def buildShadows(lines, boundaries):
+def buildShadows(lines: Iterable[AxialLine], boundaries: Iterable[AxialLine]) -> List[ShadowLine]:
     """
     Given an iterable of AxialLines, build their prolonged shadows. Shadows
     stop at the boundaries. Lines and boundaries are expected to be
@@ -398,7 +410,7 @@ def buildShadows(lines, boundaries):
     boundaries = list(boundaries)
     boundaries.sort(key=lambda line: line.x)
 
-    shadowLines = []
+    shadowLines: List[ShadowLine] = []
     for l in lines:
         # Extend to right
         righStart = lowerBound(boundaries, l.max, key=lambda line: line.x)
@@ -419,14 +431,14 @@ def buildShadows(lines, boundaries):
         shadowLines.append(ShadowLine(l, Interval(leftExtend, rightExtend)))
     return shadowLines
 
-def trimShadows(shadows, boundaries):
+def trimShadows(shadows: Iterable[ShadowLine], boundaries: Iterable[AxialLine]) -> List[ShadowLine]:
     """
     Given an iterable of ShadowLines and Axial lines as boudaries, trim the
     shadows so they do not cross any boundary. Return new shadows.
     """
     boundaries = list(boundaries)
     boundaries.sort(key=lambda line: line.x)
-    newShadows = []
+    newShadows: List[ShadowLine] = []
     for l in shadows:
         # Trim right
         rightStart = upperBound(boundaries, l.line.min, key=lambda line: line.x)
@@ -466,8 +478,9 @@ class BoxPartitionLines:
     +---+ | +----+   |   +----+
     """
 
-    def __init__(self, boxes, seedFilter=defaultSeedFilter,
-                 safeHorizontalMargin=0, safeVerticalMargin=0):
+    def __init__(self, boxes: Dict[object, Box],
+                 seedFilter: Callable[[object, object, bool, AxialLine], bool]=defaultSeedFilter,
+                 safeHorizontalMargin: float=0, safeVerticalMargin: float=0) -> None:
         """
         Given a dictionary id -> box initializes the structure.
 
@@ -490,7 +503,7 @@ class BoxPartitionLines:
         vPartition = trimShadows(vshadows, chain(
             [x.shadowLine for x in hshadows], hSafeStops))
 
-        self.query = { ident: ([], []) for ident in boxes.keys() }
+        self.query: Dict[object, Tuple[List[AxialLine], List[AxialLine]]] = { ident: ([], []) for ident in boxes.keys() }
         for l in hPartition:
             self.query[l.line.tag][0].append(
                 AxialLine(l.line.x, l.shadow.min, l.shadow.max))
@@ -498,13 +511,14 @@ class BoxPartitionLines:
             self.query[l.line.tag][1].append(
                 AxialLine(l.line.x, l.shadow.min, l.shadow.max))
 
-    def partitionLines(self, ident):
+    def partitionLines(self, ident: object) -> Tuple[List[AxialLine], List[AxialLine]]:
         """
         Return a tuple (horiz. lines, vert. lines) represented as AxialLine
         """
         return self.query[ident]
 
-    def _visualize(self, vars):
+    @typing.no_type_check
+    def _visualize(self, vars: Dict[str, Any]) -> None:
         """
         When debugging, you can invoke self._visualize(locals()) in __init__ to
         see what is happening.
