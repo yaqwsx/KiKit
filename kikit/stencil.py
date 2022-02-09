@@ -279,7 +279,18 @@ def makeBottomRegister(board, jigFrameSize, jigThickness, pcbThickness,
 def renderScad(infile, outfile):
     infile = os.path.abspath(infile)
     outfile = os.path.abspath(outfile)
-    subprocess.check_call(["openscad", "-o", outfile, infile])
+    try:
+        subprocess.check_call(["openscad", "-o", outfile, infile],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    except subprocess.CalledProcessError as e:
+        message = f"Cannot render {outfile}, OpenSCAD error:\n"
+        message += e.stdout.decode("utf-8") + "\n"
+        message += e.stderr.decode("utf-8") + "\n"
+        raise RuntimeError(message)
+    except FileNotFoundError as e:
+        message = f"OpenSCAD is not available.\n"
+        message += f"Did you install it? Program `openscad` has to be in PATH"
+        raise RuntimeError(message)
 
 def shapelyToSHAPE_POLY_SET(polygon):
     p = pcbnew.SHAPE_POLY_SET()
