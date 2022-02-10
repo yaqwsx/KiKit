@@ -471,6 +471,13 @@ def createPrinted(inputboard, outputdir, pcbthickness, thickness, framewidth,
     # versions.
     height = min(pcbthickness, max(0.5, pcbthickness - 0.3))
     bottomPaste, topPaste, outline = pasteDxfExport(board, outputdir)
+    # On Windows, OpenSCAD requires to use forward slashes instead of backslashes,
+    # hence, the replacement:
+    if os.name == "nt":
+        bottomPaste = bottomPaste.replace("\\", "/")
+        topPaste = topPaste.replace("\\", "/")
+        outline = outline.replace("\\", "/")
+
     topCutout = extractComponentPolygons(cutoutComponents, "F.CrtYd")
     bottomCutout = extractComponentPolygons(cutoutComponents, "B.CrtYd")
     topStencil = printedStencil(outline, topPaste, topCutout, thickness, height,
