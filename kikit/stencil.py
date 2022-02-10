@@ -280,12 +280,12 @@ def renderScad(infile, outfile):
     infile = os.path.abspath(infile)
     outfile = os.path.abspath(outfile)
     try:
-        subprocess.check_call(["openscad", "-o", outfile, infile],
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        subprocess.run(["openscad", "-o", outfile, infile],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
     except subprocess.CalledProcessError as e:
         message = f"Cannot render {outfile}, OpenSCAD error:\n"
-        message += e.stdout.decode("utf-8") + "\n"
-        message += e.stderr.decode("utf-8") + "\n"
+        message += (e.stdout.decode("utf-8") + "\n") if e.stdout is not None else ""
+        message += (e.stderr.decode("utf-8") + "\n") if e.stderr is not None else ""
         raise RuntimeError(message)
     except FileNotFoundError as e:
         message = f"OpenSCAD is not available.\n"

@@ -1,4 +1,5 @@
 import click
+import sys
 
 
 @click.command()
@@ -23,7 +24,10 @@ def createPrinted(**kwargs):
     Create a 3D printed self-registering stencil.
     """
     from kikit import stencil
-    return stencil.createPrinted(**kwargs)
+    try:
+        return stencil.createPrinted(**kwargs)
+    except Exception as e:
+        sys.stderr.write(f"{e}\n")
 
 @click.command()
 @click.argument("inputBoard", type=click.Path(dir_okay=False))
@@ -48,7 +52,10 @@ def create(**kwargs):
     See more details at: https://github.com/yaqwsx/KiKit/blob/master/doc/stencil.md
     """
     from kikit import stencil
-    return stencil.create(**kwargs)
+    try:
+        return stencil.create(**kwargs)
+    except Exception as e:
+            sys.stderr.write(f"{e}\n")
 
 
 @click.group()
