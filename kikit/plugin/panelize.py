@@ -2,7 +2,7 @@ from sys import stderr
 from numpy.core.fromnumeric import std
 from numpy.lib.utils import source
 from pcbnewTransition import pcbnew, isV6
-from kikit.panelize_ui_impl import loadPresetChain, obtainPreset
+from kikit.panelize_ui_impl import loadPresetChain, obtainPreset, mergePresets
 from kikit import panelize_ui
 from kikit.panelize import appendItem
 from kikit.common import PKG_BASE
@@ -216,11 +216,13 @@ class SectionGui():
 
 
 class PanelizeDialog(wx.Dialog):
-    def __init__(self, parent=None, board=None):
+    def __init__(self, parent=None, board=None, preset=None):
         wx.Dialog.__init__(
             self, parent, title=f'Panelize a board  (version {kikit.__version__})',
             style=wx.DEFAULT_DIALOG_STYLE)
         self.Bind(wx.EVT_CLOSE, self.OnClose, id=self.GetId())
+
+        self.board = board
 
         topMostBoxSizer = wx.BoxSizer(wx.VERTICAL)
 
@@ -244,7 +246,7 @@ class PanelizeDialog(wx.Dialog):
         self._buildBottomButtons(topMostBoxSizer)
 
         self.SetSizer(topMostBoxSizer)
-        self.populateInitialValue()
+        self.populateInitialValue(preset)
         self.buildOutputSections()
         self.showOnlyRelevantFields()
         self.OnResize()
@@ -390,8 +392,9 @@ class PanelizeDialog(wx.Dialog):
                     pass
         pcbnew.Refresh()
 
-    def populateInitialValue(self):
+    def populateInitialValue(self, initialPreset=None):
         preset = loadPresetChain([":default"])
+        mergePresets(preset, initialPreset)
         for name, section in self.sections.items():
             if name.lower() not in preset:
                 continue
@@ -457,7 +460,7 @@ class PanelizeDialog(wx.Dialog):
 class PanelizePlugin(pcbnew.ActionPlugin):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.dialog = None
+        self.preset = {}
 
     def defaults(self):
         self.name = "KiKit: Panelize PCB"
@@ -468,25 +471,27 @@ class PanelizePlugin(pcbnew.ActionPlugin):
 
     def Run(self):
         try:
-            if self.dialog is None:
-                self.dialog = PanelizeDialog()
-            board = pcbnew.GetBoard()
-            self.dialog.board = board
-            self.dialog.ShowModal()
+            dialog = PanelizeDialog(None, pcbnew.GetBoard(), self.preset)
+            dialog.ShowModal()
+            self.preset = dialog.collectPreset()
         except Exception as e:
             dlg = wx.MessageDialog(
                 None, f"Cannot perform: {e}", "Error", wx.OK)
             dlg.ShowModal()
             dlg.Destroy()
+        finally:
+            if "dialog" in locals():
+                dialog.Destroy()
 
 
 plugin = PanelizePlugin
 
 if __name__ == "__main__":
     # Run test dialog
-    app = wx.App()
+    # app = wx.App()
 
-    dialog = PanelizeDialog()
-    dialog.ShowModal()
+    # dialog = PanelizeDialog()
+    # dialog.ShowModal()
 
-    app.MainLoop()
+    # app.MainLoop()
+    pass
