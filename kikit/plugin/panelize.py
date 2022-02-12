@@ -146,6 +146,9 @@ class InputFileWidget(ParameterWidgetBase):
     def getValue(self):
         return self.widget.GetPath()
 
+    def setValue(self, value):
+        self.widget.SetPath(value)
+
 
 def obtainParameterWidget(parameter):
     if isinstance(parameter, kikit.panelize_ui_sections.SChoiceBase):
@@ -395,7 +398,8 @@ class PanelizeDialog(wx.Dialog):
 
     def populateInitialValue(self, initialPreset=None):
         preset = loadPresetChain([":default"])
-        mergePresets(preset, initialPreset)
+        if initialPreset is not None:
+            mergePresets(preset, initialPreset)
         for name, section in self.sections.items():
             if name.lower() not in preset:
                 continue
@@ -405,8 +409,10 @@ class PanelizeDialog(wx.Dialog):
         for section in self.sections.values():
             section.showOnlyRelevantFields()
 
-    def collectPreset(self):
+    def collectPreset(self, includeInput=False):
         preset = loadPresetChain([":default"])
+        if includeInput:
+            preset["input"] = {}
         for name, section in self.sections.items():
             if name.lower() not in preset:
                 continue
@@ -474,7 +480,7 @@ class PanelizePlugin(pcbnew.ActionPlugin):
         try:
             dialog = PanelizeDialog(None, pcbnew.GetBoard(), self.preset)
             dialog.ShowModal()
-            self.preset = dialog.collectPreset()
+            self.preset = dialog.collectPreset(includeInput=True)
         except Exception as e:
             dlg = wx.MessageDialog(
                 None, f"Cannot perform: {e}", "Error", wx.OK)
@@ -489,10 +495,11 @@ plugin = PanelizePlugin
 
 if __name__ == "__main__":
     # Run test dialog
-    # app = wx.App()
+    import json
+    app = wx.App()
 
-    # dialog = PanelizeDialog()
-    # dialog.ShowModal()
+    dialog = PanelizeDialog()
+    dialog.ShowModal()
+    print(json.dumps(dialog.collectPreset(True), indent=4))
 
-    # app.MainLoop()
-    pass
+
