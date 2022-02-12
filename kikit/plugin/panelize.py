@@ -343,7 +343,8 @@ class PanelizeDialog(wx.Dialog):
                 f.close()
 
                 progressDlg = wx.ProgressDialog(
-                    "Running kikit", "Running kikit, please wait")
+                    "Running kikit", "Running kikit, please wait",
+                    parent=self)
                 progressDlg.Show()
                 progressDlg.Pulse()
 
