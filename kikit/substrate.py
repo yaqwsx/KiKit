@@ -181,8 +181,12 @@ def approximateBezier(bezier, endWith):
     dt = 1.0 / CURVE_POINTS
 
     start = np.array(bezier.GetStart())
-    bc1 = np.array(bezier.GetBezControl1())
-    bc2 = np.array(bezier.GetBezControl2())
+    if hasattr(bezier, "GetBezierC1"):
+      bc1 = np.array(bezier.GetBezierC1())
+      bc2 = np.array(bezier.GetBezierC2())
+    else:
+      bc1 = np.array(bezier.GetBezControl1())
+      bc2 = np.array(bezier.GetBezControl2())
     end = np.array(bezier.GetEnd())
 
     degenerated = (start == bc1).all() and (bc2 == end).all()
