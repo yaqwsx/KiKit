@@ -118,7 +118,11 @@ def extractRings(geometryList):
     for point, items in coincidencePoints.items():
         l = len(items)
         if l == 1:
-            raise PositionError("Discontinuous outline at [{}, {}]", point)
+            raise PositionError("Discontinuous outline at [{}, {}]. This may have several causes:\n" +
+                                "    - The outline in really discontinuous. Check the coordinates in your source board.\n" +
+                                "    - You haven't included all the outlines or in the case of multi-design,\n" +
+                                "      you have included a part of outline from a neighboring board.",
+                                point)
         if l == 2:
             continue
         raise PositionError("Multiple outlines ({}) at [{{}}, {{}}]".format(l), point)
