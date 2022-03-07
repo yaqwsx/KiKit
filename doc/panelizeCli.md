@@ -312,7 +312,7 @@ Use mousebites to
 KiKit allows you to frame the panel with a full frame, or bottom/top or
 left/right rails.
 
-**Types**: none, railstb, railsrl, frame, tightframe
+**Types**: none, railstb, railslr, frame, tightframe
 **Common options**:
 
 - `hspace`, `vspace`, `space` - specify the space between PCB and the
@@ -321,7 +321,7 @@ left/right rails.
 - `fillet`, `chamfer` - fillet/chamfer frame corners. Specify radius or chamfer
   size.
 
-#### Railstb/Railsrl
+#### Railstb/Railslr
 
 Add rail (either on top and bottom or on left and right) to the panel.
 
