@@ -717,11 +717,10 @@ class Panel:
 
         revertTransformation = makeRevertTransformation(rotationAngle, originPoint, translation)
         try:
-            o = Substrate(edges, -bufferOutline,
+            s = Substrate(edges, 0,
                 revertTransformation=revertTransformation)
-            s = Substrate(edges, bufferOutline)
             self.boardSubstrate.union(s)
-            self.substrates.append(o)
+            self.substrates.append(s)
             self.substrates[-1].annotations = annotations
         except substrate.PositionError as e:
             point = undoTransformation(e.point, rotationAngle, originPoint, translation)
@@ -898,9 +897,8 @@ class Panel:
         boards substrates and the frame. Return a tuple of vertical and
         horizontal cuts.
         """
-        frameInnerRect = expandRect(shpBoxToRect(self.boardsBBox()),
-            hspace - SHP_EPSILON, vspace + SHP_EPSILON)
-        frameOuterRect = expandRect(frameInnerRect, width + SHP_EPSILON)
+        frameInnerRect = expandRect(shpBoxToRect(self.boardsBBox()), hspace, vspace)
+        frameOuterRect = expandRect(frameInnerRect, width)
         outerRing = rectToRing(frameOuterRect)
         innerRing = rectToRing(frameInnerRect)
         polygon = Polygon(outerRing, [innerRing])
@@ -930,9 +928,8 @@ class Panel:
         Adds a rail to top and bottom.
         """
         minx, miny, maxx, maxy = self.panelBBox()
-        thickness -= SHP_EPSILON
-        topRail = box(minx, maxy - SHP_EPSILON, maxx, maxy + thickness)
-        bottomRail = box(minx, miny + SHP_EPSILON, maxx, miny - thickness)
+        topRail = box(minx, maxy, maxx, maxy + thickness)
+        bottomRail = box(minx, miny, maxx, miny - thickness)
         self.appendSubstrate(topRail)
         self.appendSubstrate(bottomRail)
 
@@ -941,9 +938,8 @@ class Panel:
         Adds a rail to left and right.
         """
         minx, miny, maxx, maxy = self.panelBBox()
-        thickness -= SHP_EPSILON
-        leftRail = box(minx - thickness + SHP_EPSILON, miny, minx, maxy)
-        rightRail = box(maxx - SHP_EPSILON, miny, maxx + thickness, maxy)
+        leftRail = box(minx - thickness, miny, minx, maxy)
+        rightRail = box(maxx, miny, maxx + thickness, maxy)
         self.appendSubstrate(leftRail)
         self.appendSubstrate(rightRail)
 
@@ -1225,8 +1221,8 @@ class Panel:
         outerBounds = self.substrates[0].partitionLine.bounds
         for s in islice(self.substrates, 1, None):
             outerBounds = shpBBoxMerge(outerBounds, s.partitionLine.bounds)
-        fill = box(*outerBounds).difference(bBoxes.buffer(SHP_EPSILON))
-        self.appendSubstrate(fill.buffer(SHP_EPSILON))
+        fill = box(*outerBounds).difference(bBoxes)
+        self.appendSubstrate(fill)
 
         # Make the cuts from the bounding boxes of the PCB
         substrateBoundaries = [linestringToSegments(rectToShpBox(s.boundingBox()).exterior)
@@ -1510,12 +1506,11 @@ class Panel:
                         (x[0] - c * vthickness // 2, x[1]),
                         (x[0] + c * vthickness // 2, x[1])])
                     cuts.append(cut)
-        backbones = list([b.buffer(SHP_EPSILON, join_style=2) for b in pieces])
-        self.appendSubstrate(backbones)
+        self.appendSubstrate(pieces)
         return cuts
 
     def addCornerFillets(self, radius):
-        corners = self.panelCorners(-SHP_EPSILON, -SHP_EPSILON)
+        corners = self.panelCorners()
         filletOrigins = self.panelCorners(radius, radius)
         for corner, opposite in zip(corners, filletOrigins):
             square = shapely.geometry.box(
@@ -1524,15 +1519,15 @@ class Panel:
                 max(corner[0], opposite[0]),
                 max(corner[1], opposite[1])
             )
-            filletCircle = Point(opposite).buffer(radius + SHP_EPSILON, resolution=16)
+            filletCircle = Point(opposite).buffer(radius, resolution=16)
 
             cutShape = square.difference(filletCircle)
             self.boardSubstrate.cut(cutShape)
 
     def addCornerChamfers(self, size):
-        corners = self.panelCorners(-SHP_EPSILON, -SHP_EPSILON)
-        verticalStops = self.panelCorners(-SHP_EPSILON, size)
-        horizontalStops = self.panelCorners(size, -SHP_EPSILON)
+        corners = self.panelCorners()
+        verticalStops = self.panelCorners(0, size)
+        horizontalStops = self.panelCorners(size, 0)
         for t, v, h in zip(corners, verticalStops, horizontalStops):
             cutPoly = Polygon([t, v, h, t])
             self.boardSubstrate.cut(cutPoly)

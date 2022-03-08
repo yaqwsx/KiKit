@@ -615,11 +615,11 @@ class Substrate:
         Add fillets to inner conernes which will be produced a by mill with
         given radius.
         """
-        if millRadius < SHP_EPSILON:
+        EPS = fromMm(0.01)
+        RES = 32
+        if millRadius < EPS:
             return
         self.orient()
-        RES = 64
-        EPS = fromMm(0.01)
         self.substrates = self.substrates.buffer(millRadius - EPS, resolution=RES) \
                               .buffer(-millRadius, resolution=RES) \
                               .buffer(EPS, resolution=RES)

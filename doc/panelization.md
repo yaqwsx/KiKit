@@ -320,6 +320,18 @@ debugRenderPartitionLines(self)
 Render partition line to the panel to be easily able to inspect them via
 Pcbnew.
 
+#### `getAuxiliaryOrigin`
+```
+getAuxiliaryOrigin(self)
+```
+None
+
+#### `getGridOrigin`
+```
+getGridOrigin(self)
+```
+None
+
 #### `getPrlFilepath`
 ```
 getPrlFilepath(self, path=None)
@@ -346,6 +358,12 @@ inheritDesignSettings(self, board)
 ```
 Inherit design settings from the given board specified by a filename or
 a board
+
+#### `inheritPageSize`
+```
+inheritPageSize(self, board)
+```
+Inherit page size from a board specified by a filename or a board
 
 #### `inheritProperties`
 ```
@@ -496,6 +514,12 @@ setGridOrigin(self, point)
 ```
 Set grid origin
 
+#### `setPageSize`
+```
+setPageSize(self, size)
+```
+Set page size - either a string name (e.g., A4) or size in KiCAD units
+
 #### `setProperties`
 ```
 setProperties(self, properties)
@@ -520,6 +544,14 @@ setVCutLayer(self, layer)
 ```
 Set layer on which the V-Cuts will be rendered
 
+#### `translate`
+```
+translate(self, vec)
+```
+Translates the whole panel by vec. Such a feature can be useful to
+specify the panel placement in the sheet. When we translate panel as the
+last operation, none of the operations have to be placement-aware.
+
 ## Substrate class
 
 This class represents a pice of substrate (with no components). Basically it is
@@ -528,6 +560,12 @@ a partition line for the substrate. Read more about partition lines in
 [understanding tabs](understandingTabs.md).
 
 
+
+#### `backToSource`
+```
+backToSource(self, point)
+```
+Return a point in the source form (if a reverse transformation was set)
 
 #### `boundary`
 ```
@@ -607,6 +645,12 @@ a tuple (None, None).
 
 Returns a pair tab and cut outline. Add the tab it via union - batch
 adding of geometry is more efficient.
+
+#### `translate`
+```
+translate(self, vec)
+```
+Translate substrate by vec
 
 #### `union`
 ```

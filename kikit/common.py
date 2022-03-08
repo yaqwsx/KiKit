@@ -12,7 +12,7 @@ import shapely.geometry
 PKG_BASE = os.path.dirname(__file__)
 KIKIT_LIB = os.path.join(PKG_BASE, "resources/kikit.pretty")
 SHP_EPSILON = pcbnew.FromMM(0.001) # Common factor of enlarging substrates to
-                                  # cover up numerical imprecisions of Shapely
+                                   # cover up numerical imprecisions of Shapely
 
 def fromDegrees(angle):
     return angle * 10
@@ -37,13 +37,14 @@ def fitsIn(what, where):
 
 def combineBoundingBoxes(a, b):
     """ Retrun wxRect as a combination of source bounding boxes """
-    x = min(a.GetX(), b.GetX())
-    y = min(a.GetY(), b.GetY())
-    topLeft = wxPoint(x, y)
-    x = max(a.GetX() + a.GetWidth(), b.GetX() + b.GetWidth())
-    y = max(a.GetY() + a.GetHeight(), b.GetY() + b.GetHeight())
-    bottomRight = wxPoint(x, y)
-    return wxRect(topLeft, bottomRight)
+    x1 = min(a.GetX(), b.GetX())
+    y1 = min(a.GetY(), b.GetY())
+    x2 = max(a.GetX() + a.GetWidth(), b.GetX() + b.GetWidth())
+    y2 = max(a.GetY() + a.GetHeight(), b.GetY() + b.GetHeight())
+    # Beware that we cannot use the following code! It will add 1 to width and
+    # height. See https://github.com/wxWidgets/wxWidgets/blob/e43895e5317a1e82e295788264553d9839190337/src/common/gdicmn.cpp#L94-L114
+    # return wxRect(topLeft, bottomRight)
+    return wxRect(x1, y1, x2 - x1, y2 - y1)
 
 def collectEdges(board, layerName, sourceArea=None):
     """ Collect edges in sourceArea on given layer including footprints """
