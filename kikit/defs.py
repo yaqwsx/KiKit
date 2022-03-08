@@ -47,3 +47,6 @@ class MODULE_ATTR_T(IntEnum):
     MOD_CMS     = 1
     MOD_VIRTUAL = 2
 
+PAPER_SIZES = [f"A{size}" for size in range(6)] + ["A", "B", "C", "D", "E"] + \
+              ["USLetter", "USLegal", "USLedger"]
+PAPER_SIZES = PAPER_SIZES + [f"{paper}-portrait" for paper in PAPER_SIZES]

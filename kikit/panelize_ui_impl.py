@@ -83,6 +83,7 @@ def postProcessPreset(preset):
         "fiducials": ppFiducials,
         "text": ppText,
         "post": ppPost,
+        "page": ppPage,
         "debug": ppDebug
     }
     for name, section in preset.items():
@@ -136,7 +137,7 @@ def validateSections(preset):
     validate all required keys are present. Ignores excessive keys.
     """
     VALID_SECTIONS = ["layout", "source", "tabs", "cuts", "framing", "tooling",
-        "fiducials", "text", "post", "debug"]
+        "fiducials", "text", "page", "post", "debug"]
     extraSections = set(preset.keys()).difference(VALID_SECTIONS)
     if len(extraSections) != 0:
         raise PresetError(f"Extra sections {', '.join(extraSections)} in preset")
@@ -524,3 +525,31 @@ def buildDebugAnnotation(preset, panel):
             panel.debugRenderBoundingBoxes()
     except KeyError as e:
         raise PresetError(f"Missing parameter '{e}' in section 'debug'")
+
+
+def positionPanel(preset, panel):
+    """
+    Position the panel on the paper
+    """
+    try:
+        origin = resolveAnchor(preset["anchor"])(panel.boardSubstrate.boundingBox())
+        translateVec = (-origin[0] + preset["posx"], -origin[1] + preset["posy"])
+        panel.translate(translateVec)
+    except KeyError as e:
+        raise PresetError(f"Missing parameter '{e}' in section 'page'")
+
+def setPageSize(preset, panel, sourceBoard):
+    """
+    Set page size of the panel file
+    """
+    try:
+        pageSize = preset["type"]
+        if pageSize == "inherit":
+            panel.inheritPageSize(sourceBoard)
+            return
+        if pageSize == "user":
+            panel.setPageSize((preset["width"], preset["height"]))
+            return
+        panel.setPageSize(pageSize)
+    except KeyError as e:
+        raise PresetError(f"Missing parameter '{e}' in section 'page'")

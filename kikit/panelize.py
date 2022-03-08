@@ -1,13 +1,17 @@
 from pcbnewTransition import pcbnew, isV6
+from kikit import sexpr
 from kikit.common import normalize
 
+from typing import Tuple, Union
+
 from pcbnew import (GetBoard, LoadBoard,
-    FromMM, ToMM, wxPoint, wxRect, wxRectMM, wxPointMM)
+                    FromMM, ToMM, wxPoint, wxRect, wxRectMM, wxPointMM)
 from enum import Enum
 from shapely.geometry import (Polygon, MultiPolygon, Point, LineString, box,
-    GeometryCollection, MultiLineString)
+                              GeometryCollection, MultiLineString)
 from shapely.prepared import prep
 import shapely
+import shapely.affinity
 from itertools import product, chain
 import numpy as np
 import os
@@ -17,9 +21,9 @@ from collections import OrderedDict
 from kikit import substrate
 from kikit import units
 from kikit.substrate import Substrate, linestringToKicad, extractRings
-from kikit.defs import STROKE_T, Layer, EDA_TEXT_HJUSTIFY_T, EDA_TEXT_VJUSTIFY_T
-
+from kikit.defs import STROKE_T, Layer, EDA_TEXT_HJUSTIFY_T, EDA_TEXT_VJUSTIFY_T, PAPER_SIZES
 from kikit.common import *
+from kikit.sexpr import parseSexprF, SExpr, Atom
 
 class PanelError(RuntimeError):
     pass
@@ -381,6 +385,7 @@ class Panel:
     we have to specify a filename when creating a panel. Corresponding project
     file will be created.
     """
+
     def __init__(self, panelFilename):
         """
         Initializes empty panel. Note that due to the restriction of KiCAD 6,
@@ -400,6 +405,7 @@ class Panel:
         self.vCutClearance = 0
         self.copperLayerCount = None
         self.zonesToRefill = pcbnew.ZONES()
+        self.pageSize: Union[None, str, Tuple[int, int]] = None
 
     def save(self):
         """
@@ -431,6 +437,7 @@ class Panel:
         if isV6():
             self.makeLayersVisible() # as they are not in KiCAD 6
             self.mergeDrcRules()
+        self._adjustPageSize()
 
     def _uniquePrefix(self):
         return "Board_{}-".format(len(self.substrates))
@@ -498,6 +505,46 @@ class Panel:
             # without attached project
             pass
 
+    def _adjustPageSize(self) -> None:
+        """
+        Open the just saved panel file and syntactically change the page size.
+        At the moment, there is no API do so, therefore this extra step is
+        required.
+        """
+        if self.pageSize is None:
+            return
+        with open(self.filename, "r") as f:
+            tree = parseSexprF(f)
+        # Find paper property
+        paperExpr = None
+        for subExpr in tree:
+            if not isinstance(subExpr, SExpr):
+                continue
+            if len(subExpr) > 0 and isinstance(subExpr[0], Atom) and subExpr[0].value == "paper":
+                paperExpr = subExpr
+                break
+        assert paperExpr is not None
+
+        if isinstance(self.pageSize, str):
+            paperProps = self.pageSize.split("-")
+            paperExpr.items = [
+                Atom("paper"),
+                Atom(paperProps[0], " ", quoted=True)
+            ]
+            if len(paperProps) > 1:
+                paperExpr.items.append(Atom("portrait", " "))
+        else:
+            pageSize = [float(x) / units.mm for x in self.pageSize]
+            paperExpr.items = [
+                Atom("paper"),
+                Atom("User", " ", quoted=True),
+                Atom(str(pageSize[0]), " "),
+                Atom(str(pageSize[1]), " "),
+            ]
+
+        with open(self.filename, "w") as f:
+            f.write(str(tree))
+
 
     def inheritDesignSettings(self, board):
         """
@@ -525,6 +572,23 @@ class Panel:
         if not isinstance(board, pcbnew.BOARD):
             board = pcbnew.LoadBoard(board)
         self.board.SetProperties(board.GetProperties())
+
+    def inheritPageSize(self, board: Union[pcbnew.BOARD, str]) -> None:
+        """
+        Inherit page size from a board specified by a filename or a board
+        """
+        if not isinstance(board, pcbnew.BOARD):
+            board = pcbnew.LoadBoard(board)
+        self.board.SetPageSettings(board.GetPageSettings())
+
+    def setPageSize(self, size: Union[str, Tuple[int, int]] ) -> None:
+        """
+        Set page size - either a string name (e.g., A4) or size in KiCAD units
+        """
+        if isinstance(size, str):
+            if size not in PAPER_SIZES:
+                raise RuntimeError(f"Unknown paper size: {size}")
+        self.pageSize = size
 
     def setProperties(self, properties):
         """
@@ -1275,6 +1339,12 @@ class Panel:
         else:
             self.board.SetAuxOrigin(point)
 
+    def getAuxiliaryOrigin(self):
+        if isV6():
+            return self.board.GetDesignSettings().GetAuxOrigin()
+        else:
+            return self.board.GetAuxOrigin()
+
     def setGridOrigin(self, point):
         """
         Set grid origin
@@ -1283,6 +1353,12 @@ class Panel:
             self.board.GetDesignSettings().SetGridOrigin(point)
         else:
             self.board.SetGridOrigin(point)
+
+    def getGridOrigin(self):
+        if isV6():
+            return self.board.GetDesignSettings().GetGridOrigin()
+        else:
+            self.board.GetGridOrigin()
 
     def _buildPartitionLineFromBB(self, partition):
         for s in self.substrates:
@@ -1460,6 +1536,34 @@ class Panel:
         for t, v, h in zip(corners, verticalStops, horizontalStops):
             cutPoly = Polygon([t, v, h, t])
             self.boardSubstrate.cut(cutPoly)
+
+    def translate(self, vec):
+        """
+        Translates the whole panel by vec. Such a feature can be useful to
+        specify the panel placement in the sheet. When we translate panel as the
+        last operation, none of the operations have to be placement-aware.
+        """
+        vec = wxPoint(vec[0], vec[1])
+        for drawing in self.board.GetDrawings():
+            drawing.Move(vec)
+        for footprint in self.board.GetFootprints():
+            footprint.Move(vec)
+        for track in self.board.GetTracks():
+            track.Move(vec)
+        for zone in self.board.Zones():
+            zone.Move(vec)
+        for substrate in self.substrates:
+            substrate.translate(vec)
+        self.boardSubstrate.translate(vec)
+        self.backboneLines = [shapely.affinity.translate(bline, vec[0], vec[1])
+                              for bline in self.backboneLines]
+        self.hVCuts = [c + vec[1] for c in self.hVCuts]
+        self.vVCuts = [c + vec[0] for c in self.vVCuts]
+        for c in self.vVCuts:
+            c += vec[1]
+        self.setAuxiliaryOrigin(self.getAuxiliaryOrigin() + vec)
+        self.setGridOrigin(self.getGridOrigin() + vec)
+
 
 def getFootprintByReference(board, reference):
     """

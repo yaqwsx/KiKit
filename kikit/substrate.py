@@ -652,6 +652,23 @@ class Substrate:
         """
         return isinstance(self.substrates, Polygon)
 
+    def translate(self, vec):
+        """
+        Translate substrate by vec
+        """
+        self.substrates = shapely.affinity.translate(self.substrates, vec[0], vec[1])
+        self.partitionLine = shapely.affinity.translate(self.partitionLine, vec[0], vec[1])
+        for annotation in self.annotations:
+            o = annotation.origin
+            annotation.origin = (o[0] + vec[0], o[1] + vec[1])
+
+        def newRevertTransformation(point, orig=self.revertTransformation, vec=vec):
+            prevPoint = (point[0] - vec[0], point[1] - vec[1])
+            if orig is not None:
+                return orig(prevPoint)
+            return prevPoint
+        self.revertTransformation = newRevertTransformation
+
 def showPolygon(polygon):
     import matplotlib.pyplot as plt
 

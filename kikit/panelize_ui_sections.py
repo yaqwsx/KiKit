@@ -1,10 +1,11 @@
 from kikit.units import readLength, readAngle
-from kikit.defs import Layer, EDA_TEXT_HJUSTIFY_T, EDA_TEXT_VJUSTIFY_T
+from kikit.defs import Layer, EDA_TEXT_HJUSTIFY_T, EDA_TEXT_VJUSTIFY_T, PAPER_SIZES
 
 class PresetError(RuntimeError):
     pass
 
 ANCHORS = ["tl", "tr", "bl", "br", "mt", "mb", "ml", "mr", "c"]
+PAPERS = ["inherit"] + PAPER_SIZES + ["user"]
 
 class SectionBase:
     def __init__(self, isGuiRelevant, description):
@@ -434,6 +435,32 @@ POST_SECTION = {
 
 def ppPost(section):
     section = validateSection("post", POST_SECTION, section)
+
+PAGE_SECTION = {
+    "type": SChoice(
+        PAPERS,
+        always(),
+        "Size of paper"),
+    "anchor": SChoice(
+        ANCHORS,
+        typeIn(["simple"]),
+        "Anchor for positioning the panel on the page"),
+    "posx": SLength(
+        always(),
+        "X position of the panel"),
+    "posy": SLength(
+        always(),
+        "Y position of the panel"),
+    "width": SLength(
+        typeIn(["user"]),
+        "Width of custom paper"),
+    "height": SLength(
+        typeIn(["user"]),
+        "Height of custom paper"),
+}
+
+def ppPage(section):
+    section = validateSection("page", PAGE_SECTION, section)
 
 DEBUG_SECTION = {
     "type": SChoice(

@@ -390,6 +390,31 @@ need more text or more sophisticated placing options, see `script` option from
 - `thickness` - stroke thickness. Default `0.3mm`.
 - `layer` - specify text layer
 
+## Page
+
+Sets page size on the resulting panel and position the panel in the page. The
+type of style dictates paper size. The default `inherit` option inherits paper
+size from the source board.
+
+**Types**: `inherit`, `custom`, `A0`, `A1`, `A2`, `A3`, `A4`, `A5`, `A`, `B`,
+`C`, `D`, `E`, `USLetter`, `USLegal`, `USLedger`, `A0-portrait`, `A1-portrait`,
+`A2-portrait`, `A3-portrait`, `A4-portrait`, `A5-portrait`, `A-portrait`,
+`B-portrait`, `C-portrait`, `D-portrait`, `E-portrait`, `USLetter-portrait`,
+`USLegal-portrait`, `USLedger-portrait`
+
+**Common options**:
+
+- `anchor` - Point of the panel to be placed at given position. Can be one of
+  `tl`, `tr`, `bl`, `br` (corners), `mt`, `mb`, `ml`, `mr` (middle of sides),
+  `c` (center). The anchors refer to the panel outline. Default `tl`
+- `posx`, `posy` - the position of the panel on the page. Default `15mm`
+
+### Custom
+
+Instead of the pre-defined paper size you can also specify a custom paper size
+via `width` and `height`.
+
+
 ## Post
 
 Finishing touches to the panel.

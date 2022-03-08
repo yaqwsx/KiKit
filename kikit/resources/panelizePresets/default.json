@@ -89,7 +89,15 @@
         "millradius": "0mm",
         "script": "",
         "scriptarg": "",
-        "origin": ""
+        "origin": "tl"
+    },
+    "page": {
+        "type": "inherit",
+        "anchor": "tl",
+        "posx": "15mm",
+        "posy": "15mm",
+        "width": "1000mm",
+        "height": "1000mm"
     },
     "debug": {
         "type": "none",

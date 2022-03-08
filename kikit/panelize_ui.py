@@ -137,8 +137,11 @@ def completeSection(section):
 @click.option("--text", "-t", type=Section(),
     help="Override text settings.",
     autocompletion=completeSection(TEXT_SECTION))
+@click.option("--page", "-P", type=Section(),
+    help="Override page settings.",
+    autocompletion=completeSection(POST_SECTION))
 @click.option("--post", "-z", type=Section(),
-    help="Override post processing settings settings.",
+    help="Override post processing settings.",
     autocompletion=completeSection(POST_SECTION))
 @click.option("--debug", type=Section(),
     help="Include debug traces or drawings in the panel.",
@@ -146,7 +149,7 @@ def completeSection(section):
 @click.option("--dump", "-d", type=click.Path(file_okay=True, dir_okay=False),
     help="Dump constructured preset into a JSON file.")
 def panelize(input, output, preset, layout, source, tabs, cuts, framing,
-                tooling, fiducials, text, post, debug, dump):
+                tooling, fiducials, text, page, post, debug, dump):
     """
     Panelize boards
     """
@@ -157,7 +160,8 @@ def panelize(input, output, preset, layout, source, tabs, cuts, framing,
 
         preset = ki.obtainPreset(preset,
             layout=layout, source=source, tabs=tabs, cuts=cuts, framing=framing,
-            tooling=tooling, fiducials=fiducials, text=text, post=post, debug=debug)
+            tooling=tooling, fiducials=fiducials, text=text, page=page, post=post,
+            debug=debug)
 
         doPanelization(input, output, preset)
 
@@ -214,6 +218,8 @@ def doPanelization(input, output, preset):
     ki.makeOtherCuts(preset["cuts"], panel, chain(backboneCuts, frameCuts))
 
     ki.setStackup(preset["source"], panel)
+    ki.positionPanel(preset["page"], panel)
+    ki.setPageSize(preset["page"], panel, board)
 
     ki.runUserScript(preset["post"], panel)
 
@@ -227,11 +233,14 @@ def doPanelization(input, output, preset):
 @click.argument("output", type=click.Path(dir_okay=False))
 @click.option("--source", "-s", type=Section(),
     help="Specify source settings.")
+@click.option("--page", "-P", type=Section(),
+    help="Override page settings.",
+    autocompletion=completeSection(POST_SECTION))
 @click.option("--debug", type=Section(),
     help="Include debug traces or drawings in the panel.")
 @click.option("--keepAnnotations/--stripAnnotations", default=True,
     help="Do not strip annotations" )
-def separate(input, output, source, debug, keepannotations):
+def separate(input, output, source, page, debug, keepannotations):
     """
     Separate a single board out of a multi-board design. The separated board is
     placed in the middle of the sheet.
@@ -245,7 +254,7 @@ def separate(input, output, source, debug, keepannotations):
         from pcbnewTransition.transition import isV6, pcbnew
         from pcbnew import LoadBoard, wxPointMM
 
-        preset = ki.obtainPreset([], validate=False, source=source, debug=debug)
+        preset = ki.obtainPreset([], validate=False, source=source, page=page, debug=debug)
 
         if preset["debug"]["deterministic"] and isV6():
             pcbnew.KIID.SeedGenerator(42)
@@ -262,6 +271,9 @@ def separate(input, output, source, debug, keepannotations):
         panel.appendBoard(input, destination, sourceArea,
             interpretAnnotations=(not keepannotations))
         ki.setStackup(preset["source"], panel)
+        ki.positionPanel(preset["page"], panel)
+        ki.setPageSize(preset["page"], panel, board)
+
         panel.save()
     except Exception as e:
         import sys
