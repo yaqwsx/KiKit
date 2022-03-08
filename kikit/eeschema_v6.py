@@ -2,24 +2,25 @@ from dataclasses import dataclass, field
 from kikit.sexpr import Atom, parseSexprF
 from itertools import islice
 import os
+from typing import Optional
 
 @dataclass
 class Symbol:
-    uuid: str = None
-    path: str = None
-    unit: int = None
-    lib_id: str = None
-    in_bom: bool = None
-    on_board: bool = None
+    uuid: Optional[str] = None
+    path: Optional[str] = None
+    unit: Optional[int] = None
+    lib_id: Optional[str] = None
+    in_bom: Optional[bool] = None
+    on_board: Optional[bool] = None
     properties: dict = field(default_factory=dict)
 
 @dataclass
 class SymbolInstance:
-    path: str = None
-    reference: str = None
-    unit: int = None
-    value: str = None
-    footprint: str = None
+    path: Optional[str] = None
+    reference: Optional[str] = None
+    unit: Optional[int] = None
+    value: Optional[str] = None
+    footprint: Optional[str] = None
 
 def getProperty(sexpr, field):
     for x in islice(sexpr, 1, None):
