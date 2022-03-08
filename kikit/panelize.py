@@ -1358,7 +1358,7 @@ class Panel:
         if isV6():
             return self.board.GetDesignSettings().GetGridOrigin()
         else:
-            self.board.GetGridOrigin()
+            return self.board.GetGridOrigin()
 
     def _buildPartitionLineFromBB(self, partition):
         for s in self.substrates:
