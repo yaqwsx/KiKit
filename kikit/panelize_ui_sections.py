@@ -443,7 +443,7 @@ PAGE_SECTION = {
         "Size of paper"),
     "anchor": SChoice(
         ANCHORS,
-        typeIn(["simple"]),
+        always(),
         "Anchor for positioning the panel on the page"),
     "posx": SLength(
         always(),
@@ -496,6 +496,7 @@ availableSections = {
     "Tooling": TOOLING_SECTION,
     "Fiducials": FIDUCIALS_SECTION,
     "Text": TEXT_SECTION,
+    "Page": PAGE_SECTION,
     "Post": POST_SECTION,
     "Debug": DEBUG_SECTION,
 }
