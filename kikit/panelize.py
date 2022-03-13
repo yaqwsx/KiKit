@@ -626,7 +626,8 @@ class Panel:
         rotation (origin it is placed to destination). It is possible to specify
         coarse source area and automatically shrink it if shrink is True.
         Tolerance enlarges (even shrinked) source area - useful for inclusion of
-        filled zones which can reach out of the board edges.
+        filled zones which can reach out of the board edges or footprints that
+        extend outside the board outline, like connectors.
 
         You can also specify functions which will rename the net and ref names.
         By default, nets are renamed to "Board_{n}-{orig}", refs are unchanged.
@@ -873,29 +874,64 @@ class Panel:
                     verSpace, horSpace, rotation,
                     placementClass=BasicGridPosition,
                     netRenamePattern="Board_{n}-{orig}",
-                    refRenamePattern="Board_{n}-{orig}"):
+                    refRenamePattern="Board_{n}-{orig}", tolerance=0):
         """
         Place the given board in a regular grid pattern with given spacing
         (verSpace, horSpace). The board position can be fine-tuned via
         placementClass. The nets and references are renamed according to the
         patterns.
 
+        Parameters:
+        boardfile - the path to the filename of the board to be added
+        sourceArea - the region within the file specified to be selected (see also tolerance, below)
+            set to None to automatically calculate the board area from the board file with the given tolerance
+        rows - the number of boards to place in the vertical direction
+        cols - the number of boards to place in the horizontal direction
+        destination - the center coordinates of the first board in the grid (for example, wxPointMM(100,50))
+        verSpace - the vertical spacing (distance, not pitch) between boards
+        horSpace - the horizontal spacing (distance, not pitch) between boards
+        rotation - the rotation angle to be applied to the source board before placing it
+        placementClass - the placement rules for boards. The builtin classes are:
+            BasicGridPosition - places each board in its original orientation
+            OddEvenColumnPosition - every second column has the boards rotated by 180 degrees
+            OddEvenRowPosition - every second row has the boards rotated by 180 degrees
+            OddEvenRowsColumnsPosition - every second row and column has the boards rotated by 180 degrees
+        netRenamePattern - the pattern according to which the net names are transformed
+            The default pattern is "Board_{n}-{orig}" which gives each board its own instance of its nets, 
+            i.e. GND becomes Board_0-GND for the first board , and Board_1-GND for the second board etc
+        refRenamePattern - the pattern according to which the reference designators are transformed
+            The default pattern is "Board_{n}-{orig}" which gives each board its own instance of its reference designators,
+            so R1 becomes Board_0-R1 for the first board, Board_1-R1 for the recond board etc. To keep references the
+            same as in the original, set this to "{orig}"
+        tolerance - if no sourceArea is specified, the distance by which the selection 
+            area for the board should extend outside the board edge.
+            If you have any objects that are on or outside the board edge, make sure this is big enough to include them.
+            Such objects often include zone outlines and connectors.
+            
         Returns a list of the placed substrates. You can use these to generate
         tabs, frames, backbones, etc.
         """
+        
         substrateCount = len(self.substrates)
         netRenamer = lambda x, y: netRenamePattern.format(n=x, orig=y)
         refRenamer = lambda x, y: refRenamePattern.format(n=x, orig=y)
         self._placeBoardsInGrid(boardfile, rows, cols, destination,
-                                sourceArea, 0, verSpace, horSpace,
+                                sourceArea, tolerance, verSpace, horSpace,
                                 rotation, netRenamer, refRenamer, placementClass)
         return self.substrates[substrateCount:]
 
     def makeFrame(self, width, hspace, vspace):
         """
-        Build a frame around the board. Specify width and spacing between the
+        Build a frame around the boards. Specify width and spacing between the
         boards substrates and the frame. Return a tuple of vertical and
         horizontal cuts.
+        
+        Parameters:
+        width - width of substrate around board outlines
+        slotwidth - width of milled-out perimeter around board outline
+        hspace - horizontal space between board outline and substrate
+        vspace - vertical space between board outline and substrate
+        
         """
         frameInnerRect = expandRect(shpBoxToRect(self.boardsBBox()), hspace, vspace)
         frameOuterRect = expandRect(frameInnerRect, width)
@@ -914,6 +950,13 @@ class Panel:
     def makeTightFrame(self, width, slotwidth, hspace, vspace):
         """
         Build a full frame with board perimeter milled out.
+        Add your boards to the panel first using appendBoard or makeGrid.
+        
+        Parameters:
+        width - width of substrate around board outlines
+        slotwidth - width of milled-out perimeter around board outline
+        hspace - horizontal space between board outline and substrate
+        vspace - vertical space between board outline and substrate
         """
         self.makeFrame(width, hspace, vspace)
         boardSlot = GeometryCollection()
@@ -1256,16 +1299,23 @@ class Panel:
             raise RuntimeError("Attempting to panelize boards together of mixed layer counts")
 
     def setCopperLayers(self, count):
+        """
+        Sets the copper layer count of the panel
+        """
         self.copperLayerCount = count
         self.board.SetCopperLayerCount(self.copperLayerCount)
 
-    def copperFillNonBoardAreas(self):
+    def copperFillNonBoardAreas(self, layers=[Layer.F_Cu,Layer.B_Cu]):
         """
-        Fill top and bottom layers with copper on unused areas of the panel
+        Fill given layers with copper on unused areas of the panel
         (frame, rails and tabs)
+        
+        takes a list of layer ids (Default [kikit.defs.Layer.F_Cu, kikit.defs.Layer.B_Cu])
         """
         if not self.boardSubstrate.isSinglePiece():
             raise RuntimeError("The substrate has to be a single piece to fill unused areas")
+        if not len(layers)>0:
+            raise RuntimeError("No layers to add copper to")
         increaseZonePriorities(self.board)
 
         zoneContainer = pcbnew.ZONE(self.board)
@@ -1275,15 +1325,28 @@ class Panel:
             boundary = substrate.exterior().boundary
             zoneContainer.Outline().AddHole(linestringToKicad(boundary))
         zoneContainer.SetPriority(0)
-
-        zoneContainer.SetLayer(Layer.F_Cu)
+        
+        zoneContainer.SetLayer(layers[0])
         self.board.Add(zoneContainer)
         self.zonesToRefill.append(zoneContainer)
+        for l in layers[1:]:
+            zoneContainer = zoneContainer.Duplicate()
+            zoneContainer.SetLayer(l)
+            self.board.Add(zoneContainer)
+            self.zonesToRefill.append(zoneContainer)
 
-        zoneContainer = zoneContainer.Duplicate()
-        zoneContainer.SetLayer(Layer.B_Cu)
-        self.board.Add(zoneContainer)
-        self.zonesToRefill.append(zoneContainer)
+    def locateBoard(inputFilename, expandDist=None):
+        """
+        Given a board filename, find its source area and optionally expand it by the given distance.
+        
+        inputFilename - the path to the board file
+        expandDist - the distance by which to expand the board outline in each direction to ensure elements that are outside the board are included
+        """
+        inputBoard = pcbnew.LoadBoard(inputFilename)
+        boardArea=findBoardBoundingBox(inputBoard)
+        if expandDist is None:
+            return boardArea
+        sourceArea=expandRect(boardArea, expandDist)
 
     def addKeepout(self, area, noTracks=True, noVias=True, noCopper=True):
         """
