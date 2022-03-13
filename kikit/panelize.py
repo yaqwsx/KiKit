@@ -490,7 +490,7 @@ class Panel:
         try:
             with open(self.getProFilepath(sPath)) as f:
                 sourcePro = json.load(f)
-        except IOError:
+        except (IOError, FileNotFoundError):
             # This means there is no original project file. Probably comes from
             # v5, thus there is nothing to transfer
             return
@@ -500,7 +500,7 @@ class Panel:
             currentPro["board"]["design_settings"] = sourcePro["board"]["design_settings"]
             with open(self.getProFilepath(), "w") as f:
                 json.dump(currentPro, f, indent=2)
-        except KeyError:
+        except (KeyError, FileNotFoundError):
             # This means the source board has no DRC setting. Probably a board
             # without attached project
             pass
