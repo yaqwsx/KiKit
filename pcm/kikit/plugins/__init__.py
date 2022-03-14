@@ -52,3 +52,4 @@ if __name__ == "__main__":
 
     dialog = MissingKiKitDialog()
     dialog.ShowModal()
+    dialog.Destroy()
