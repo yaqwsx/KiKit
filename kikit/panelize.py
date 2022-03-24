@@ -71,7 +71,7 @@ class OddEvenRowsColumnsPosition(BasicGridPosition):
     Rotate boards by 180 for every row and column
     """
     def rotation(self, i, j):
-        if (i * j) % 2 == 0:
+        if (i % 2) == (j % 2):
             return 0
         return 1800
 
