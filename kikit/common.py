@@ -315,7 +315,11 @@ def fakeKiCADGui():
     function of the command
     """
     import wx
+    import os
+
+    if os.name != "nt" and os.environ.get("DISPLAY", "").strip() == "":
+        return None
 
     app = wx.App()
     app.InitLocale()
-    return
+    return app
