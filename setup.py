@@ -2,6 +2,20 @@
 
 import setuptools
 import versioneer
+import os
+
+try:
+    import pcbnew
+except ImportError:
+    if os.name == "nt":
+        raise RuntimeError("No Pcbnew Python module found.\n" +
+                           "Please make sure that you use KiCAD command prompt," +
+                           "not the standard Command Prompt. See https://github.com/yaqwsx/KiKit/blob/master/doc/installation.md#installation-on-windows")
+    else:
+        raise RuntimeError("No Pcbnew Python module found for the current Python interpreter.\n" +
+                           "First, make sure that KiCAD is actually installed\n." +
+                           "Then, make sure that you use the same Python interpreter as KiCAD uses.\n" +
+                           "Usually a good way is to invoke 'python3 -m pip install kikit'.")
 
 
 
