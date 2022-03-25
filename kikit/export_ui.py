@@ -12,6 +12,9 @@ def export():
 @click.argument("outputdir", type=click.Path(file_okay=False), default=None)
 def gerber(boardfile, outputdir):
     from kikit.export import gerberImpl
+    from kikit.common import fakeKiCADGui
+    app = fakeKiCADGui()
+
     gerberImpl(boardfile, outputdir)
 
 @click.command()
@@ -26,6 +29,9 @@ def dxf(boardfile, outputdir):
     This command is designed for building 3D printed stencils
     """
     from kikit.export import dxfImpl
+    from kikit.common import fakeKiCADGui
+    app = fakeKiCADGui()
+
     dxfImpl(boardfile, outputdir)
 
 export.add_command(gerber)

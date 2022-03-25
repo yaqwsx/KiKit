@@ -157,6 +157,8 @@ def panelize(input, output, preset, layout, source, tabs, cuts, framing,
         # Hide the import in the function to make KiKit start faster
         from kikit import panelize_ui_impl as ki
         import sys
+        from kikit.common import fakeKiCADGui
+        app = fakeKiCADGui()
 
         preset = ki.obtainPreset(preset,
             layout=layout, source=source, tabs=tabs, cuts=cuts, framing=framing,
@@ -253,6 +255,8 @@ def separate(input, output, source, page, debug, keepannotations):
         from kikit.panelize import Panel
         from pcbnewTransition.transition import isV6, pcbnew
         from pcbnew import LoadBoard, wxPointMM
+        from kikit.common import fakeKiCADGui
+        app = fakeKiCADGui()
 
         preset = ki.obtainPreset([], validate=False, source=source, page=page, debug=debug)
 

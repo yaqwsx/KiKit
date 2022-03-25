@@ -29,6 +29,9 @@ def jlcpcb(**kwargs):
     Prepare fabrication files for JLCPCB including their assembly service
     """
     from kikit.fab import jlcpcb
+    from kikit.common import fakeKiCADGui
+    app = fakeKiCADGui()
+
     return jlcpcb.exportJlcpcb(**kwargs)
 
 
@@ -59,6 +62,9 @@ def pcbway(**kwargs):
     Prepare fabrication files for PCBWAY including their assembly service
     """
     from kikit.fab import pcbway
+    from kikit.common import fakeKiCADGui
+    app = fakeKiCADGui()
+
     return pcbway.exportPcbway(**kwargs)
 
 
@@ -69,6 +75,9 @@ def oshpark(**kwargs):
     Prepare fabrication files for OSH Park
     """
     from kikit.fab import oshpark
+    from kikit.common import fakeKiCADGui
+    app = fakeKiCADGui()
+
     return oshpark.exportOSHPark(**kwargs)
 
 

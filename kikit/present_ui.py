@@ -18,6 +18,9 @@ def boardpage(**kwargs):
     download links for board sources and gerbers.
     """
     from kikit import present
+    from kikit.common import fakeKiCADGui
+    app = fakeKiCADGui()
+
     return present.boardpage(**kwargs)
 
 @click.group()

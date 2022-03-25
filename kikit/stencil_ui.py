@@ -52,6 +52,9 @@ def create(**kwargs):
     See more details at: https://github.com/yaqwsx/KiKit/blob/master/doc/stencil.md
     """
     from kikit import stencil
+    from kikit.common import fakeKiCADGui
+    app = fakeKiCADGui()
+
     try:
         return stencil.create(**kwargs)
     except Exception as e:

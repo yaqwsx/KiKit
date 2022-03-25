@@ -44,6 +44,8 @@ def run(boardfile, usemm, strict, level):
     from kikit.drc import runImpl
     import sys
     from pcbnewTransition import pcbnew, isV6
+    from kikit.common import fakeKiCADGui
+    app = fakeKiCADGui()
 
     try:
         if not isV6():
