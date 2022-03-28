@@ -229,6 +229,7 @@ class PanelizeDialog(wx.Dialog):
         self.Bind(wx.EVT_CLOSE, self.OnClose, id=self.GetId())
 
         self.board = board
+        self.dirty = False
 
         topMostBoxSizer = wx.BoxSizer(wx.VERTICAL)
 
@@ -358,6 +359,15 @@ class PanelizeDialog(wx.Dialog):
                     dlg.ShowModal()
                     dlg.Destroy()
                     return
+                if os.path.realpath(input) == os.path.realpath(pcbnew.GetBoard().GetFileName()):
+                    dlg = wx.MessageDialog(
+                        None,
+                        f"The file {input} is the same as currently opened board. Cannot continue.\n\n" + \
+                         "Please, run the panelization tool when no board is opened in pcbnew.",
+                        "Error", wx.OK)
+                    dlg.ShowModal()
+                    dlg.Destroy()
+                    return
                 thread = ExceptionThread(target=panelize_ui.doPanelization,
                                          args=(input, panelFile, preset))
                 thread.daemon = True
@@ -382,6 +392,7 @@ class PanelizeDialog(wx.Dialog):
                     pass
                 panel = pcbnew.LoadBoard(copyPanelName)
                 transplateBoard(panel, self.board)
+                self.dirty = True
             except Exception as e:
                 dlg = wx.MessageDialog(
                     None, f"Cannot perform:\n\n{e}", "Error", wx.OK)
@@ -464,6 +475,7 @@ class PanelizePlugin(pcbnew.ActionPlugin):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.preset = {}
+        self.dirty = False
 
     def defaults(self):
         self.name = "KiKit: Panelize PCB"
@@ -474,9 +486,23 @@ class PanelizePlugin(pcbnew.ActionPlugin):
 
     def Run(self):
         try:
+            if not self.dirty and not pcbnew.GetBoard().IsEmpty():
+                dlg = wx.MessageDialog(
+                    None,
+                    "The currently opened board is not empty and it will be " + \
+                    "replaced by the panel. Do you wish to continue?\n\n" + \
+                    "Note that the panelization tool is supposed to be invoked from a stand-alone pcbnew instance.",
+                    "Confirm",
+                    wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
+                ret = dlg.ShowModal()
+                dlg.Destroy()
+                if ret == wx.ID_NO:
+                    return
+
             dialog = PanelizeDialog(None, pcbnew.GetBoard(), self.preset)
             dialog.ShowModal()
             self.preset = dialog.collectPreset(includeInput=True)
+            self.dirty = self.dirty or dialog.dirty
         except Exception as e:
             dlg = wx.MessageDialog(
                 None, f"Cannot perform: {e}", "Error", wx.OK)
