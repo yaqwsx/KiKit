@@ -45,6 +45,7 @@ try:
 except ImportError:
     dialog = MissingKiKitDialog()
     dialog.Show()
+    dialog.Destroy()
 
 if __name__ == "__main__":
     # Run test dialog
