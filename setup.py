@@ -3,21 +3,25 @@
 import setuptools
 import versioneer
 import os
+import sys
 
 try:
     import pcbnew
 except ImportError:
     if os.name == "nt":
-        raise RuntimeError("No Pcbnew Python module found.\n" +
-                           "Please make sure that you use KiCAD command prompt," +
-                           "not the standard Command Prompt. See https://github.com/yaqwsx/KiKit/blob/master/doc/installation.md#installation-on-windows")
+        message = "No Pcbnew Python module found.\n" + \
+                  "Please make sure that you use KiCAD command prompt, " + \
+                  "not the standard Command Prompt or Power Shell\n" + \
+                  "See https://github.com/yaqwsx/KiKit/blob/master/doc/installation.md#installation-on-windows"
     else:
-        raise RuntimeError("No Pcbnew Python module found for the current Python interpreter.\n" +
-                           "First, make sure that KiCAD is actually installed\n." +
-                           "Then, make sure that you use the same Python interpreter as KiCAD uses.\n" +
-                           "Usually a good way is to invoke 'python3 -m pip install kikit'.")
-
-
+        message = "No Pcbnew Python module found for the current Python interpreter.\n" + \
+                  "First, make sure that KiCAD is actually installed\n." + \
+                  "Then, make sure that you use the same Python interpreter as KiCAD uses.\n" + \
+                  "Usually a good way is to invoke 'python3 -m pip install kikit'."
+    delimiter = 100 * "=" + "\n" + 100 * "=" + "\n"
+    sys.stderr.write(
+        delimiter + f"** Cannot install KiKit**\n{message}\n" + delimiter)
+    raise RuntimeError("Cannot install KiKit, see error message above") from None
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
