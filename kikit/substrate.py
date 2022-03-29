@@ -10,6 +10,8 @@ from pcbnewTransition import pcbnew, isV6
 from enum import IntEnum
 from itertools import product
 
+from typing import List, Tuple, Union
+
 from kikit.common import *
 
 from kikit.defs import STROKE_T, Layer
@@ -222,6 +224,30 @@ def createRectangle(rect):
     br = rect.GetEnd()
     return [tl, (br[0], tl[1]), br, (tl[0], br[1]), tl]
 
+def shapeLinechainToList(l: pcbnew.SHAPE_LINE_CHAIN) -> List[Tuple[int, int]]:
+    return [(p.x, p.y) for p in l.CPoints()]
+
+def shapePolyToShapely(p: pcbnew.SHAPE_POLY_SET) \
+        -> Union[shapely.geometry.Polygon, shapely.geometry.MultiPolygon]:
+    """
+    Take SHAPE_POLY_SET and create a shapely polygon out of it.
+    """
+    polygons = []
+    for pIdx in range(p.OutlineCount()):
+        kOutline = p.Outline(pIdx)
+        assert kOutline.IsClosed()
+        outline = shapeLinechainToList(kOutline)
+        holes = []
+        for hIdx in range(p.HoleCount(pIdx)):
+            kHole = p.Hole(hIdx)
+            assert kHole.isClosed()
+            holes.append(shapeLinechainToList(kHole))
+        polygons.append(Polygon(outline, holes=holes))
+    if len(polygons) == 1:
+        return polygons[0]
+    return MultiPolygon(polygons=polygons)
+
+
 def toShapely(ring, geometryList):
     """
     Take a list indices representing a ring from PCB_SHAPE entities and
@@ -239,6 +265,10 @@ def toShapely(ring, geometryList):
                 commonEndPoint(geometryList[idxA], geometryList[idxB]))[1:]
         elif shape in [STROKE_T.S_RECT]:
             outline += createRectangle(geometryList[idxA])
+        elif shape in [STROKE_T.S_POLYGON]:
+            # Polygons are always closed, so they should appear as stand-alone
+            assert len(ring) in [1, 2]
+            return shapePolyToShapely(geometryList[idxA].GetPolyShape())
         elif shape in [STROKE_T.S_SEGMENT]:
             outline.append(commonEndPoint(geometryList[idxA], geometryList[idxB]))
         else:
