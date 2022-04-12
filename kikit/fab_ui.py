@@ -32,7 +32,13 @@ def jlcpcb(**kwargs):
     from kikit.common import fakeKiCADGui
     app = fakeKiCADGui()
 
-    return jlcpcb.exportJlcpcb(**kwargs)
+    try:
+        return jlcpcb.exportJlcpcb(**kwargs)
+    except Exception as e:
+        import sys
+        sys.stderr.write("An error occurred: " + str(e) + "\n")
+        sys.stderr.write("No output files produced\n")
+        sys.exit(1)
 
 
 @click.command()
@@ -65,7 +71,13 @@ def pcbway(**kwargs):
     from kikit.common import fakeKiCADGui
     app = fakeKiCADGui()
 
-    return pcbway.exportPcbway(**kwargs)
+    try:
+        return pcbway.exportPcbway(**kwargs)
+    except Exception as e:
+        import sys
+        sys.stderr.write("An error occurred: " + str(e) + "\n")
+        sys.stderr.write("No output files produced\n")
+        sys.exit(1)
 
 
 @click.command()
@@ -78,7 +90,13 @@ def oshpark(**kwargs):
     from kikit.common import fakeKiCADGui
     app = fakeKiCADGui()
 
-    return oshpark.exportOSHPark(**kwargs)
+    try:
+        return oshpark.exportOSHPark(**kwargs)
+    except Exception as e:
+        import sys
+        sys.stderr.write("An error occurred: " + str(e) + "\n")
+        sys.stderr.write("No output files produced\n")
+        sys.exit(1)
 
 
 @click.group()
