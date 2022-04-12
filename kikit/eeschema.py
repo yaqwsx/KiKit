@@ -16,6 +16,8 @@ def getField(component, field):
             return f["text"]
         if field == "Footprint" and n == 2:
             return f["text"]
+        if field == "Datasheet" and n == 3:
+            return f["text"]
         if "name" in f and field == f["name"]:
             return f["text"]
     return None
