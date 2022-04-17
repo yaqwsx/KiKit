@@ -259,10 +259,10 @@ def toShapely(ring, geometryList):
         shape = geometryList[idxA].GetShape()
         if shape in [STROKE_T.S_ARC, STROKE_T.S_CIRCLE]:
             outline += approximateArc(geometryList[idxA],
-                commonEndPoint(geometryList[idxA], geometryList[idxB]))[1:]
+                commonEndPoint(geometryList[idxA], geometryList[idxB]))[:-1]
         elif shape in [STROKE_T.S_CURVE]:
             outline += approximateBezier(geometryList[idxA],
-                commonEndPoint(geometryList[idxA], geometryList[idxB]))[1:]
+                commonEndPoint(geometryList[idxA], geometryList[idxB]))[:-1]
         elif shape in [STROKE_T.S_RECT]:
             outline += createRectangle(geometryList[idxA])
         elif shape in [STROKE_T.S_POLYGON]:
