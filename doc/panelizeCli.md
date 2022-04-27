@@ -432,6 +432,9 @@ Finishing touches to the panel.
 - `millradius` - simulate the milling operation (add fillets to the internal
   corners). Specify mill radius (usually 1 mm). 0 radius disables the
   functionality.
+- `reconstructarcs` - the panelization process works on top of a polygonal
+  representation of the board. This options allows to reconstruct the arcs in
+  the design before saving the panel.
 - `script` - a path to custom Python file. The file should contain a function
   `kikitPostprocess(panel, args)` that receives the prepared panel as the
   `kikit.panelize.Panel` object and the user-supplied arguments as a string -

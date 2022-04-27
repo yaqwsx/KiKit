@@ -259,10 +259,10 @@ def toShapely(ring, geometryList):
         shape = geometryList[idxA].GetShape()
         if shape in [STROKE_T.S_ARC, STROKE_T.S_CIRCLE]:
             outline += approximateArc(geometryList[idxA],
-                commonEndPoint(geometryList[idxA], geometryList[idxB]))[:-1]
+                commonEndPoint(geometryList[idxA], geometryList[idxB]))
         elif shape in [STROKE_T.S_CURVE]:
             outline += approximateBezier(geometryList[idxA],
-                commonEndPoint(geometryList[idxA], geometryList[idxB]))[:-1]
+                commonEndPoint(geometryList[idxA], geometryList[idxB]))
         elif shape in [STROKE_T.S_RECT]:
             outline += createRectangle(geometryList[idxA])
         elif shape in [STROKE_T.S_POLYGON]:
@@ -349,31 +349,49 @@ def substratesFrom(polygons):
         substrates.append(Polygon(polygon.exterior, holes))
     return substrates
 
+def commonCircleKiCAD(a, b, c):
+    """
+    Get a common circle using KiCAD APIs (a little abusive)
+    """
+    arc = pcbnew.PCB_SHAPE()
+    arc.SetShape(STROKE_T.S_ARC)
+    arc.SetArcGeometry(wxPoint(*a), wxPoint(*b), wxPoint(*c))
+    center = [int(x) for x in arc.GetCenter()]
+    mid = [(a[i] + b[i]) // 2 for i in range(2)]
+    if center == mid:
+        return None
+    return roundPoint(center, -8)
+
+def commonCirclePython(a, b, c):
+    """
+    Get a common circle using pure Python implementation
+    """
+    o_l = [(a[i] + b[i]) / 2 for i in range(2)]
+    o_r = [(b[i] + c[i]) / 2 for i in range(2)]
+    d_l = [(b[i] - a[i]) for i in range(2)]
+    d_r = [(c[i] - b[i]) for i in range(2)]
+    n_l = (d_l[1], -d_l[0])
+    n_r = (d_r[1], -d_r[0])
+
+    t_denom = n_l[0] * n_r[1] - n_l[1] * n_r[0]
+    if t_denom == 0:
+        return None # The normal vectors are parallel
+    t = (n_r[0] * (o_l[1] - o_r[1]) + n_r[1] * (o_r[1] - o_l[1])) / t_denom
+    intersection = [o_l[i] + n_l[i] * t for i in range(2)]
+    return roundPoint(intersection)
+
+
 def commonCircle(a, b, c):
     """
     Given three 2D points return (x, y, r) of the circle they lie on or None if
     they lie in a line
     """
-    # Based on http://web.archive.org/web/20161011113446/http://www.abecedarical.com/zenosamples/zs_circle3pts.html
-    m11 = np.matrix([[a[0], a[1], 1],
-                     [b[0], b[1], 1],
-                     [c[0], c[1], 1]])
-    m11d = np.linalg.det(m11)
-    if m11d == 0:
-        return None
-    m12 = np.matrix([[a[0]*a[0] + a[1]*a[1], a[1], 1],
-                     [b[0]*b[0] + b[1]*b[1], b[1], 1],
-                     [c[0]*c[0] + c[1]*c[1], c[1], 1]])
-    m13 = np.matrix([[a[0]*a[0] + a[1]*a[1], a[0], 1],
-                     [b[0]*b[0] + b[1]*b[1], b[0], 1],
-                     [c[0]*c[0] + c[1]*c[1], c[0], 1]])
-    m14 = np.matrix([[a[0]*a[0] + a[1]*a[1], a[0], a[1]],
-                     [b[0]*b[0] + b[1]*b[1], b[0], b[1]],
-                     [c[0]*c[0] + c[1]*c[1], c[0], c[1]]])
-    x = 0.5 * np.linalg.det(m12) / m11d
-    y = -0.5 * np.linalg.det(m13) / m11d
-    r = np.sqrt(x*x + y*y + np.linalg.det(m14) / m11d)
-    return (x, y, r)
+    # We use the KiCAD's API implementation as it seems faster, but v5 doesn't
+    # offer it
+    if isV6():
+        return commonCircleKiCAD(a, b, c)
+    return commonCirclePython(a, b, c)
+
 
 def liesOnSegment(start, end, point, tolerance=fromMm(0.01)):
     """
@@ -505,7 +523,7 @@ class Substrate:
         """
         self.substrates = self.substrates.difference(piece)
 
-    def serialize(self):
+    def serialize(self, reconstructArcs=False):
         """
         Produces a list of PCB_SHAPE on the Edge.Cuts layer
         """
@@ -517,25 +535,58 @@ class Substrate:
             raise RuntimeError("Uknown type '{}' of substrate geometry".format(type(self.substrates)))
         items = []
         for polygon in geoms:
-            items += self._serializeRing(polygon.exterior)
+            items += self._serializeRing(polygon.exterior, reconstructArcs)
             for interior in polygon.interiors:
-                items += self._serializeRing(interior)
+                items += self._serializeRing(interior, reconstructArcs)
         return items
 
-    def _serializeRing(self, ring):
-        coords = list(ring.simplify(pcbnew.FromMM(0.001)).coords)
+    def _serializeRing(self, ring, reconstructArcs):
+        coords = ring.coords
         segments = []
-        # ToDo: Reconstruct arcs
         if coords[0] != coords[-1]:
             raise RuntimeError("Ring is incomplete")
-        for a, b in zip(coords, coords[1:]):
-            segment = pcbnew.PCB_SHAPE()
-            segment.SetShape(STROKE_T.S_SEGMENT)
-            segment.SetLayer(Layer.Edge_Cuts)
-            segment.SetStart(wxPoint(*a))
-            segment.SetEnd(wxPoint(*b))
-            segments.append(segment)
+        i = 0
+        while i < len(coords):
+            j = i # in the case the following cycle never happens
+            if reconstructArcs:
+                for j in range(i, len(coords) - 3): # Just walk until there is an arc
+                    cc1 = commonCircle(coords[j], coords[j + 1], coords[j + 2])
+                    cc2 = commonCircle(coords[j + 1], coords[j + 2], coords[j + 3])
+                    if cc1 is None or cc2 is None or cc1 != cc2:
+                        break
+            if j - i > 10:
+                j += 2
+                # Yield a circle
+                a = coords[i]
+                b = coords[(i + j) // 2]
+                c = coords[j]
+                segments.append(self._constructArc(a, b, c))
+                i = j
+            else:
+                # Yield a line
+                a = coords[i]
+                b = coords[(i + 1) % len(coords)]
+                segments.append(self._constructEdgeSegment(a, b))
+                i += 1
         return segments
+
+    def _constructEdgeSegment(self, a, b):
+        segment = pcbnew.PCB_SHAPE()
+        segment.SetShape(STROKE_T.S_SEGMENT)
+        segment.SetLayer(Layer.Edge_Cuts)
+        segment.SetStart(wxPoint(*a))
+        segment.SetEnd(wxPoint(*b))
+        return segment
+
+    def _constructArc(self, a, b, c):
+        """
+        Construct arc based on three points
+        """
+        arc = pcbnew.PCB_SHAPE()
+        arc.SetShape(STROKE_T.S_ARC)
+        arc.SetLayer(Layer.Edge_Cuts)
+        arc.SetArcGeometry(wxPoint(*a), wxPoint(*b), wxPoint(*c))
+        return arc
 
     def boundingBox(self):
         """

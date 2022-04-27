@@ -87,6 +87,7 @@
     "post": {
         "type": "auto",
         "copperfill": false,
+        "reconstructarcs": false,
         "millradius": "0mm",
         "script": "",
         "scriptarg": "",

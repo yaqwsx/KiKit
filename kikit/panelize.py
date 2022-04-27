@@ -374,12 +374,12 @@ class Panel:
         self.annotationReader: AnnotationReader = AnnotationReader.getDefault()
         self.drcExclusions: List[DrcExclusion] = []
 
-    def save(self):
+    def save(self, reconstructArcs=False):
         """
         Saves the panel to a file and makes the requested changes to the prl and
         pro files.
         """
-        newEdges = self.boardSubstrate.serialize()
+        newEdges = self.boardSubstrate.serialize(reconstructArcs)
         for edge in newEdges:
             self.board.Add(edge)
         vcuts = self._renderVCutH() + self._renderVCutV()
