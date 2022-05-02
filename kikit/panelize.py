@@ -284,7 +284,7 @@ def isAnnotation(footprint):
     Given a footprint, decide if it is KiKit annotation
     """
     info = footprint.GetFPID()
-    if info.GetLibNickname() != "kikit":
+    if str(info.GetLibNickname()).lower() != "kikit":
         return False
     return info.GetLibItemName() in ["Tab", "Board"]
 
