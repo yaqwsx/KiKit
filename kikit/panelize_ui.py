@@ -209,6 +209,11 @@ def doPanelization(input, output, preset):
     board = LoadBoard(input)
 
     panel = Panel(output)
+
+    # Register extra footprints for annotations
+    for tabFootprint in preset["tabs"]["tabfootprints"]:
+        panel.annotationReader.registerTab(tabFootprint.lib, tabFootprint.footprint)
+
     panel.inheritDesignSettings(board)
     panel.inheritProperties(board)
     panel.inheritTitleBlock(board)

@@ -31,7 +31,8 @@
         "hwidth": "3mm",
         "vwidth": "3mm",
         "mindistance": "0mm",
-        "spacing": "10mm"
+        "spacing": "10mm",
+        "tabfootprints": "kikit:Tab"
     },
     "cuts": {
         "type": "none",
