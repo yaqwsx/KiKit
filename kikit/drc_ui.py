@@ -32,7 +32,7 @@ def drc():
 @click.option("--useMm/--useInch", default=True)
 @click.option("--strict/--weak", default=False,
     help="Check all track errors")
-@click.option("--ignoreExcluded/--reportExcluded", default=True,
+@click.option("--ignoreExcluded/--reportExcluded", default=False,
     help="Report items that are excluded")
 @click.option("--level", type=EnumType(ReportLevel), default=ReportLevel.error,
     help="Minimum severity to report")

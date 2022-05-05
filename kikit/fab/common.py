@@ -40,7 +40,12 @@ def getReference(component):
 def ensurePassingDrc(board):
     if not isV6():
         return # v5 cannot check DRC
-    failed = drc.runImpl(board, True, False, ReportLevel.error, lambda x: print(x))
+    failed = drc.runImpl(board,
+        useMm=True,
+        ignoreExcluded=True,
+        strict=False,
+        level=ReportLevel.error,
+        yieldViolation=lambda x: print(x))
     if failed:
         print("DRC failed. See report above. No files produced")
         sys.exit(1)

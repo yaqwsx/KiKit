@@ -211,10 +211,10 @@ def readBoardDrcExclusions(board: pcbnew.BOARD) -> List[DrcExclusion]:
                                 objects))
     return res
 
-def runImpl(board, useMm, ignoreexcluded, strict, level, yieldViolation):
+def runImpl(board, useMm, ignoreExcluded, strict, level, yieldViolation):
     units = pcbnew.EDA_UNITS_MILLIMETRES if useMm else EDA_UNITS_INCHES
     report = runBoardDrc(board, strict)
-    if ignoreexcluded:
+    if ignoreExcluded:
         report.pruneExclusions(readBoardDrcExclusions(board))
 
     failed = False
