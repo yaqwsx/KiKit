@@ -32,9 +32,11 @@ def drc():
 @click.option("--useMm/--useInch", default=True)
 @click.option("--strict/--weak", default=False,
     help="Check all track errors")
+@click.option("--ignoreExcluded/--reportExcluded", default=True,
+    help="Report items that are excluded")
 @click.option("--level", type=EnumType(ReportLevel), default=ReportLevel.error,
     help="Minimum severity to report")
-def run(boardfile, usemm, strict, level):
+def run(boardfile, usemm, ignoreexcluded, strict, level):
     """
     Check DRC rules. If no rules are validated, the process exists with code 0.
 
@@ -51,13 +53,14 @@ def run(boardfile, usemm, strict, level):
         if not isV6():
             raise RuntimeError("This feature is available only with KiCAD 6.")
         board = pcbnew.LoadBoard(boardfile)
-        failed = runImpl(board, usemm, strict, level, lambda x: print(x))
+        failed = runImpl(board, usemm, ignoreexcluded, strict, level, lambda x: print(x))
         if not failed:
             print("No DRC errors found.")
         else:
             print("Found some DRC violations. See the report above.")
         sys.exit(failed)
     except Exception as e:
+        raise e
         sys.stderr.write("An error occurred: " + str(e) + "\n")
         sys.exit(1)
 
