@@ -190,6 +190,24 @@ def runBoardDrc(board: pcbnew.BOARD, strict: bool) -> DrcReport:
             os.unlink(tmpFile.name)
     return report
 
+def deserializeExclusion(exclusionText: str, board: pcbnew.BOARD) -> DrcExclusion:
+    items = exclusionText.split("|")
+    objects = [board.GetItem(pcbnew.KIID(x)) for x in items[3:]]
+    objects = [x for x in objects if x is not None]
+    return DrcExclusion(items[0],
+                        pcbnew.wxPoint(int(items[1]), int(items[2])),
+                        objects)
+
+def serializeExclusion(exclusion: DrcExclusion) -> str:
+    objIds = [x.m_Uuid.AsString() for x in exclusion.objects]
+    while len(objIds) < 2:
+        objIds.append("00000000-0000-0000-0000-000000000000")
+    return "|".join([
+        str(exclusion.type),
+        str(exclusion.position[0]),
+        str(exclusion.position[1])] + objIds
+    )
+
 def readBoardDrcExclusions(board: pcbnew.BOARD) -> List[DrcExclusion]:
     projectFilename = os.path.splitext(board.GetFileName())[0]+'.kicad_pro'
     try:
@@ -201,15 +219,7 @@ def readBoardDrcExclusions(board: pcbnew.BOARD) -> List[DrcExclusion]:
         exclusions = project["board"]["design_settings"]["drc_exclusions"]
     except KeyError:
         return [] # There are no exclusions
-    res = []
-    for exlusionText in exclusions:
-        items = exlusionText.split("|")
-        objects = [board.GetItem(pcbnew.KIID(x)) for x in items[3:]]
-        objects = [x for x in objects if x is not None]
-        res.append(DrcExclusion(items[0],
-                                pcbnew.wxPoint(int(items[1]), int(items[2])),
-                                objects))
-    return res
+    return [deserializeExclusion(e, board) for e in exclusions]
 
 def runImpl(board, useMm, ignoreExcluded, strict, level, yieldViolation):
     units = pcbnew.EDA_UNITS_MILLIMETRES if useMm else EDA_UNITS_INCHES

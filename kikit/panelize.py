@@ -2,7 +2,7 @@ from pcbnewTransition import pcbnew, isV6
 from kikit import sexpr
 from kikit.common import normalize
 
-from typing import Tuple, Union
+from typing import Any, Callable, Dict, List, Tuple, Union
 
 from pcbnew import (GetBoard, LoadBoard,
                     FromMM, ToMM, wxPoint, wxRect, wxRectMM, wxPointMM)
@@ -25,6 +25,7 @@ from kikit.defs import STROKE_T, Layer, EDA_TEXT_HJUSTIFY_T, EDA_TEXT_VJUSTIFY_T
 from kikit.common import *
 from kikit.sexpr import parseSexprF, SExpr, Atom
 from kikit.annotations import AnnotationReader, TabAnnotation
+from kikit.drc import DrcExclusion, readBoardDrcExclusions, serializeExclusion
 
 class PanelError(RuntimeError):
     pass
@@ -98,33 +99,33 @@ def getOriginCoord(origin, bBox):
     if origin == Origin.BottomRight:
         return wxPoint(bBox.GetX() + bBox.GetWidth(), bBox.GetY() + bBox.GetHeight())
 
-def appendItem(board, item):
+def appendItem(board: pcbnew.BOARD, item: pcbnew.BOARD_ITEM,
+               yieldMapping: Optional[Callable[[str, str], None]]=None) -> None:
     """
     Make a coppy of the item and append it to the board. Allows to append items
     from one board to another.
+
+    It can also yield mapping between old item identifier and a new one via the
+    yieldMapping callback. This callback is invoked with an old ID and the new
+    ID. Mapping is applicable only in v6.
     """
     try:
         newItem = item.Duplicate()
     except TypeError: # Footprint has overridden the method, cannot be called directly
         newItem = pcbnew.Cast_to_BOARD_ITEM(item).Duplicate().Cast()
     board.Add(newItem)
-
-def transformArea(board, sourceArea, translate, origin, rotationAngle):
-    """
-    Rotates and translates all board items in given source area
-    """
-    for drawing in collectItems(board.GetDrawings(), sourceArea):
-        drawing.Rotate(origin, rotationAngle)
-        drawing.Move(translate)
-    for footprint in collectItems(board.GetFootprints(), sourceArea):
-        footprint.Rotate(origin, rotationAngle)
-        footprint.Move(translate)
-    for track in collectItems(board.GetTracks(), sourceArea):
-        track.Rotate(origin, rotationAngle)
-        track.Move(translate)
-    for zone in collectItems(board.Zones(), sourceArea):
-        zone.Rotate(origin, rotationAngle)
-        zone.Move(translate)
+    if not isV6() or not yieldMapping:
+        return
+    if isinstance(item, pcbnew.FOOTPRINT):
+        newFootprint = pcbnew.Cast_to_FOOTPRINT(newItem)
+        for getter in [lambda x: x.Pads(), lambda x: x.GraphicalItems(), lambda x: x.Zones()]:
+            oldList = getter(item)
+            newList = getter(newFootprint)
+            assert len(oldList) == len(newList)
+            for o, n in zip(oldList, newList):
+                assert o.GetPosition() == n.GetPosition()
+                yieldMapping(o.m_Uuid.AsString(), n.m_Uuid.AsString())
+    yieldMapping(item.m_Uuid.AsString(), newItem.m_Uuid.AsString())
 
 def collectNetNames(board):
     return [str(x) for x in board.GetNetInfo().NetsByName() if len(str(x)) > 0]
@@ -176,6 +177,19 @@ def roundPoint(point, precision=-4):
         return Point(round(point.x, precision), round(point.y, precision))
     return Point(round(point[0], precision), round(point[1], precision))
 
+def doTransformation(point: KiKitPoint, rotation: int, origin: KiKitPoint, translation: KiKitPoint) -> wxPoint:
+    """
+    Abuses KiCAD to perform a tranformation of a point
+    """
+    segment = pcbnew.PCB_SHAPE()
+    segment.SetShape(STROKE_T.S_SEGMENT)
+    segment.SetStart(wxPoint(int(point[0]), int(point[1])))
+    segment.SetEnd(wxPoint(0, 0))
+    segment.Rotate(wxPoint(int(origin[0]), int(origin[1])), -rotation)
+    segment.Move(wxPoint(translation[0], translation[1]))
+    # We build a fresh wxPoint - otherwise there is a shared reference
+    return wxPoint(segment.GetStartX(), segment.GetStartY())
+
 def undoTransformation(point, rotation, origin, translation):
     """
     We apply a transformation "Rotate around origin and then translate" when
@@ -189,7 +203,8 @@ def undoTransformation(point, rotation, origin, translation):
     segment.SetEnd(wxPoint(0, 0))
     segment.Move(wxPoint(-translation[0], -translation[1]))
     segment.Rotate(origin, -rotation)
-    return segment.GetStart()
+    # We build a fresh wxPoint - otherwise there is a shared reference
+    return wxPoint(segment.GetStartX(), segment.GetStartY())
 
 def removeCutsFromFootprint(footprint):
     """
@@ -356,7 +371,8 @@ class Panel:
         self.zonesToRefill = pcbnew.ZONES()
         self.pageSize: Union[None, str, Tuple[int, int]] = None
 
-        self.annotationReader = AnnotationReader.getDefault()
+        self.annotationReader: AnnotationReader = AnnotationReader.getDefault()
+        self.drcExclusions: List[DrcExclusion] = []
 
     def save(self):
         """
@@ -428,7 +444,8 @@ class Panel:
     def mergeDrcRules(self):
         """
         Examine DRC rules of the source boards, merge them into a single set of
-        rules and store them in *.pro file
+        rules and store them in *.kicad_pro file. Also stores board DRC
+        exclusions.
         """
         assert isV6()
 
@@ -449,6 +466,8 @@ class Panel:
             with open(self.getProFilepath()) as f:
                 currentPro = json.load(f, object_pairs_hook=OrderedDict)
             currentPro["board"]["design_settings"] = sourcePro["board"]["design_settings"]
+            currentPro["board"]["design_settings"]["drc_exclusions"] = [
+                serializeExclusion(e) for e in self.drcExclusions]
             with open(self.getProFilepath(), "w") as f:
                 json.dump(currentPro, f, indent=2)
         except (KeyError, FileNotFoundError):
@@ -625,6 +644,11 @@ class Panel:
         tracks = collectItems(board.GetTracks(), enlargedSourceArea)
         zones = collectItems(board.Zones(), enlargedSourceArea)
 
+        itemMapping: Dict[str, str] = {} # string KIID to string KIID
+        def yieldMapping(old: str, new: str) -> None:
+            nonlocal itemMapping
+            itemMapping[old] = new
+
         edges = []
         annotations = []
         for footprint in footprints:
@@ -643,15 +667,15 @@ class Panel:
             if interpretAnnotations and self.annotationReader.isAnnotation(footprint):
                 annotations.extend(self.annotationReader.convertToAnnotation(footprint))
             else:
-                appendItem(self.board, footprint)
+                appendItem(self.board, footprint, yieldMapping)
         for track in tracks:
             track.Rotate(originPoint, rotationAngle)
             track.Move(translation)
-            appendItem(self.board, track)
+            appendItem(self.board, track, yieldMapping)
         for zone in zones:
             zone.Rotate(originPoint, rotationAngle)
             zone.Move(translation)
-            appendItem(self.board, zone)
+            appendItem(self.board, zone, yieldMapping)
         for netId in board.GetNetInfo().NetsByNetcode():
             self.board.Add(board.GetNetInfo().GetNetItem(netId))
 
@@ -678,7 +702,22 @@ class Panel:
             point = undoTransformation(e.point, rotationAngle, originPoint, translation)
             raise substrate.PositionError(filename + ": " + e.origMessage, point)
         for drawing in otherDrawings:
-            appendItem(self.board, drawing)
+            appendItem(self.board, drawing, yieldMapping)
+
+        if isV6():
+            exclusions = readBoardDrcExclusions(board)
+            for drcE in exclusions:
+                try:
+                    newObjects = [self.board.GetItem(pcbnew.KIID(itemMapping[x.m_Uuid.AsString()])) for x in drcE.objects]
+                    assert all(x is not None for x in newObjects)
+                    newPosition = doTransformation(drcE.position, rotationAngle, originPoint, translation)
+                    self.drcExclusions.append(DrcExclusion(
+                        drcE.type,
+                        newPosition,
+                        newObjects
+                    ))
+                except KeyError as e:
+                    continue # We cannot handle DRC exclusions with board edges
         return findBoundingBox(edges)
 
     def appendSubstrate(self, substrate):
@@ -1596,6 +1635,8 @@ class Panel:
             c += vec[1]
         self.setAuxiliaryOrigin(self.getAuxiliaryOrigin() + vec)
         self.setGridOrigin(self.getGridOrigin() + vec)
+        for drcE in self.drcExclusions:
+            drcE.position += vec
 
 
 def getFootprintByReference(board, reference):
