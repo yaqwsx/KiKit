@@ -214,7 +214,7 @@ def readBoardDrcExclusions(board: pcbnew.BOARD) -> List[DrcExclusion]:
         with open(projectFilename) as f:
             project = json.load(f)
     except FileNotFoundError:
-        raise RuntimeError(f"Board '{board.GetFileName()}' has no project, cannot read DRC exclusions")
+        raise FileNotFoundError(f"Board '{board.GetFileName()}' has no project, cannot read DRC exclusions")
     try:
         exclusions = project["board"]["design_settings"]["drc_exclusions"]
     except KeyError:

@@ -705,19 +705,22 @@ class Panel:
             appendItem(self.board, drawing, yieldMapping)
 
         if isV6():
-            exclusions = readBoardDrcExclusions(board)
-            for drcE in exclusions:
-                try:
-                    newObjects = [self.board.GetItem(pcbnew.KIID(itemMapping[x.m_Uuid.AsString()])) for x in drcE.objects]
-                    assert all(x is not None for x in newObjects)
-                    newPosition = doTransformation(drcE.position, rotationAngle, originPoint, translation)
-                    self.drcExclusions.append(DrcExclusion(
-                        drcE.type,
-                        newPosition,
-                        newObjects
-                    ))
-                except KeyError as e:
-                    continue # We cannot handle DRC exclusions with board edges
+            try:
+                exclusions = readBoardDrcExclusions(board)
+                for drcE in exclusions:
+                    try:
+                        newObjects = [self.board.GetItem(pcbnew.KIID(itemMapping[x.m_Uuid.AsString()])) for x in drcE.objects]
+                        assert all(x is not None for x in newObjects)
+                        newPosition = doTransformation(drcE.position, rotationAngle, originPoint, translation)
+                        self.drcExclusions.append(DrcExclusion(
+                            drcE.type,
+                            newPosition,
+                            newObjects
+                        ))
+                    except KeyError as e:
+                        continue # We cannot handle DRC exclusions with board edges
+            except FileNotFoundError:
+                pass # Ignore boards without a project
         return findBoundingBox(edges)
 
     def appendSubstrate(self, substrate):
