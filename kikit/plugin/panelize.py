@@ -164,6 +164,7 @@ def obtainParameterWidget(parameter):
 class SectionGui():
     def __init__(self, parent, name, section, onResize, onChange):
         self.name = name
+        self.parent = parent
         self.container = wx.CollapsiblePane(
             parent, wx.ID_ANY, name, wx.DefaultPosition, wx.DefaultSize,
             wx.CP_DEFAULT_STYLE)
@@ -176,7 +177,7 @@ class SectionGui():
         self.itemGrid = wx.FlexGridSizer(0, 2, 2, 2)
         self.itemGrid.AddGrowableCol(1)
         self.itemGrid.SetFlexibleDirection(wx.BOTH)
-        self.itemGrid.SetNonFlexibleGrowMode(wx.FLEX_GROWMODE_SPECIFIED)
+        self.itemGrid.SetNonFlexibleGrowMode(wx.FLEX_GROWMODE_ALL)
 
         self.items = {
             name: obtainParameterWidget(param)(
@@ -190,12 +191,6 @@ class SectionGui():
                               wx.ALIGN_CENTER_VERTICAL | wx.EXPAND | wx.RIGHT, 5)
 
         self.container.GetPane().SetSizer(self.itemGrid)
-        self.onResize()
-
-    def onResize(self):
-        self.itemGrid.Layout()
-        self.container.GetPane().Fit()
-        self.container.Fit()
 
     def populateInitialValue(self, values):
         for name, widget in self.items.items():
@@ -212,7 +207,10 @@ class SectionGui():
             if name not in preset:
                 continue
             widget.showIfRelevant(preset)
-        self.onResize()
+        # This is hacky, but it is the only reliable way to force collapsible
+        # pane to correctly adjust its size
+        self.container.Collapse()
+        self.container.Expand()
 
     def collectReleventPreset(self):
         preset = self.collectPreset()
@@ -328,11 +326,9 @@ class PanelizeDialog(wx.Dialog):
                         wx.LEFT | wx.RIGHT | wx.BOTTOM, 20)
 
     def OnResize(self):
-        for section in self.sections.values():
-            section.onResize()
         self.scrollWindow.GetSizer().Layout()
-        self.scrollWindow.FitInside()
         self.scrollWindow.Fit()
+        self.scrollWindow.FitInside()
         self.GetSizer().Layout()
         self.Fit()
 
