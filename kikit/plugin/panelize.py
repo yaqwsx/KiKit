@@ -15,6 +15,7 @@ import os
 from threading import Thread
 from itertools import chain
 
+PLATFORMS = ["Linux/MacOS", "Windows"]
 
 class ExceptionThread(Thread):
     def run(self):
@@ -266,6 +267,15 @@ class PanelizeDialog(wx.Dialog):
                                  size=wx.DefaultSize, style=wx.ALIGN_LEFT)
         internalSizer.Add(cliLabel, 0, wx.EXPAND | wx.ALL, 2)
 
+        self.platformSelector = wx.Choice(self, wx.ID_ANY, wx.DefaultPosition,
+            wx.DefaultSize, PLATFORMS, 0)
+        if os.name == "nt":
+            self.platformSelector.SetSelection(PLATFORMS.index("Windows"))
+        else:
+            self.platformSelector.SetSelection(0) # Choose posix by default
+        self.platformSelector.Bind(wx.EVT_CHOICE, lambda evt: self.buildOutputSections())
+        internalSizer.Add(self.platformSelector, 0, wx.EXPAND | wx.ALL, 2 )
+
         self.kikitCmdWidget = wx.TextCtrl(
             self, wx.ID_ANY, "KiKit Command", wx.DefaultPosition, wx.DefaultSize,
             wx.TE_MULTILINE | wx.TE_READONLY)
@@ -444,6 +454,12 @@ class PanelizeDialog(wx.Dialog):
 
         self.kikitJsonWidget.ChangeValue(json.dumps(presetUpdates, indent=4))
 
+        command = self._buildUnixCommand(presetUpdates) \
+                    if self.platformSelector.GetSelection() == 0 \
+                    else self._buildWindowsCommand(presetUpdates)
+        self.kikitCmdWidget.ChangeValue(command)
+
+    def _buildUnixCommand(self, presetUpdates):
         kikitCommand = "kikit panelize \\\n"
         for section, values in presetUpdates.items():
             if len(values) == 0:
@@ -455,7 +471,22 @@ class PanelizeDialog(wx.Dialog):
         if len(inputFilename) == 0:
             inputFilename = "<missingInput>"
         kikitCommand += f"    {inputFilename} panel.kicad_pcb"
-        self.kikitCmdWidget.ChangeValue(kikitCommand)
+        return kikitCommand
+
+    def _buildWindowsCommand(self, presetUpdates):
+        kikitCommand = "kikit panelize^\n"
+        for section, values in presetUpdates.items():
+            if len(values) == 0:
+                continue
+            attrs = "; ".join(
+                [f"{key}: {value}" for key, value in values.items()])
+            kikitCommand += f"    --{section} \"{attrs}\" ^\n"
+        inputFilename = self.sections["Input"].items["Input file"].getValue()
+        if len(inputFilename) == 0:
+            inputFilename = "<missingInput>"
+        kikitCommand += f"    {inputFilename} panel.kicad_pcb"
+        return kikitCommand
+
 
     def kikitArgs(self):
         defaultPreset = loadPresetChain([":default"])
