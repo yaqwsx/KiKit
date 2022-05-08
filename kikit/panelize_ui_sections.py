@@ -283,7 +283,7 @@ def ppTabs(section):
 
 CUTS_SECTION = {
     "type": SChoice(
-        ["none", "mousebites", "vcuts"],
+        ["none", "mousebites", "vcuts", "layer"],
         always(),
         "Cut type"),
     "drill": SLength(
@@ -296,7 +296,7 @@ CUTS_SECTION = {
         typeIn(["mousebites", "vcuts"]),
         "Offset cuts into the board"),
     "prolong": SLength(
-        typeIn(["mousebites"]),
+        typeIn(["mousebites", "layer"]),
         "Tangentiall prolong cuts (to cut mill fillets)"),
     "clearance": SLength(
         typeIn(["vcuts"]),
@@ -305,8 +305,8 @@ CUTS_SECTION = {
         typeIn(["vcuts"]),
         "Approximate curves with straight cut"),
     "layer": SLayer(
-        typeIn(["vcuts"]),
-        "Draw V-cuts into a specified layer")
+        typeIn(["vcuts", "layer"]),
+        "Specify layer for the drawings")
 }
 
 def ppCuts(section):

@@ -286,7 +286,7 @@ field of the component as `KIKIT:<propertyname>`:
 
 Specify how to perform the cuts on the tabs separating the board.
 
-**Types**: none, mousebites, vcuts
+**Types**: none, mousebites, vcuts, layer
 
 #### None
 
@@ -309,6 +309,16 @@ Use mousebites to
 - `cutcurves` - true/false - specify if curves should be approximated by
   straight cuts (e.g., for cutting tabs on circular boards)
 - `layer` - specify the layer to render V-cuts on.
+
+#### Layer
+
+When KiKit reports it cannot perform cuts, you can render the cuts into a layer
+with this option to understand what's going on. Shouldn't be used for the final
+design.
+
+- `layer` - specify the layer to render the cuts on.
+- `prolong` - distance for tangential prolongation of the cuts. It has the same
+  meaning as mousebites.
 
 
 ## Framing

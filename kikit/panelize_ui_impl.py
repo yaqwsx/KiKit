@@ -319,6 +319,9 @@ def makeCuts(properties, panel, cuts, ignoreOffset):
             offset = 0 if ignoreOffset else properties["offset"]
             panel.makeMouseBites(cuts, properties["drill"],
                 properties["spacing"], offset, properties["prolong"])
+        elif type == "layer":
+            panel.makeCutsToLayer(cuts,
+                layer=properties["layer"], prolongation=properties["prolong"])
         else:
             raise PresetError(f"Unknown type '{type}' of cuts specification.")
     except KeyError as e:

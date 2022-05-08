@@ -392,6 +392,17 @@ inputFilename - the path to the board file
 
 expandDist - the distance by which to expand the board outline in each direction to ensure elements that are outside the board are included
 
+#### `makeCutsToLayer`
+```
+makeCutsToLayer(self, cuts, layer=Layer.Cmts_User, prolongation=0)
+```
+Take a list of cuts and render them as lines on given layer. The cuts
+can be prolonged just like with mousebites.
+
+The purpose of this is to aid debugging when KiKit refuses to perform
+cuts. Rendering them into lines can give the user better understanding
+of where is the problem.
+
 #### `makeFrame`
 ```
 makeFrame(self, width, hspace, vspace)
@@ -562,7 +573,7 @@ Return a list of cuts
 
 #### `save`
 ```
-save(self)
+save(self, reconstructArcs=False)
 ```
 Saves the panel to a file and makes the requested changes to the prl and
 pro files.
@@ -702,7 +713,7 @@ of another board
 
 #### `serialize`
 ```
-serialize(self)
+serialize(self, reconstructArcs=False)
 ```
 Produces a list of PCB_SHAPE on the Edge.Cuts layer
 

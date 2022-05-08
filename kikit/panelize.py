@@ -1067,6 +1067,26 @@ class Panel:
                 if bloatedSubstrate.intersects(hole):
                     self.addNPTHole(wxPoint(hole.x, hole.y), diameter)
 
+    def makeCutsToLayer(self, cuts, layer=Layer.Cmts_User, prolongation=fromMm(0)):
+        """
+        Take a list of cuts and render them as lines on given layer. The cuts
+        can be prolonged just like with mousebites.
+
+        The purpose of this is to aid debugging when KiKit refuses to perform
+        cuts. Rendering them into lines can give the user better understanding
+        of where is the problem.
+        """
+        for cut in cuts:
+            cut = prolongCut(cut, prolongation)
+            for a, b in zip(cut.coords, cut.coords[1:]):
+                segment = pcbnew.PCB_SHAPE()
+                segment.SetShape(STROKE_T.S_SEGMENT)
+                segment.SetLayer(layer)
+                segment.SetStart(wxPoint(*a))
+                segment.SetEnd(wxPoint(*b))
+                segment.SetWidth(fromMm(0.3))
+                self.board.Add(segment)
+
     def addNPTHole(self, position, diameter, paste=False):
         """
         Add a drilled non-plated hole to the position (`wxPoint`) with given
