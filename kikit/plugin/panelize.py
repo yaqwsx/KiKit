@@ -256,6 +256,9 @@ class PanelizeDialog(wx.Dialog):
         self.showOnlyRelevantFields()
         self.OnResize()
 
+        self.SetBackgroundColour( wx.SystemSettings.GetColour(wx.SYS_COLOUR_BACKGROUND))
+
+
     def _buildOutputSections(self, sizer):
         internalSizer = wx.BoxSizer(wx.VERTICAL)
 
