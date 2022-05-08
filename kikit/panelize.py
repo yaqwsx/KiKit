@@ -2,7 +2,7 @@ from pcbnewTransition import pcbnew, isV6
 from kikit import sexpr
 from kikit.common import normalize
 
-from typing import Tuple, Union
+from typing import Any, Callable, Dict, List, Tuple, Union
 
 from pcbnew import (GetBoard, LoadBoard,
                     FromMM, ToMM, wxPoint, wxRect, wxRectMM, wxPointMM)
@@ -24,6 +24,8 @@ from kikit.substrate import Substrate, linestringToKicad, extractRings
 from kikit.defs import STROKE_T, Layer, EDA_TEXT_HJUSTIFY_T, EDA_TEXT_VJUSTIFY_T, PAPER_SIZES
 from kikit.common import *
 from kikit.sexpr import parseSexprF, SExpr, Atom
+from kikit.annotations import AnnotationReader, TabAnnotation
+from kikit.drc import DrcExclusion, readBoardDrcExclusions, serializeExclusion
 
 class PanelError(RuntimeError):
     pass
@@ -97,33 +99,33 @@ def getOriginCoord(origin, bBox):
     if origin == Origin.BottomRight:
         return wxPoint(bBox.GetX() + bBox.GetWidth(), bBox.GetY() + bBox.GetHeight())
 
-def appendItem(board, item):
+def appendItem(board: pcbnew.BOARD, item: pcbnew.BOARD_ITEM,
+               yieldMapping: Optional[Callable[[str, str], None]]=None) -> None:
     """
     Make a coppy of the item and append it to the board. Allows to append items
     from one board to another.
+
+    It can also yield mapping between old item identifier and a new one via the
+    yieldMapping callback. This callback is invoked with an old ID and the new
+    ID. Mapping is applicable only in v6.
     """
     try:
         newItem = item.Duplicate()
     except TypeError: # Footprint has overridden the method, cannot be called directly
         newItem = pcbnew.Cast_to_BOARD_ITEM(item).Duplicate().Cast()
     board.Add(newItem)
-
-def transformArea(board, sourceArea, translate, origin, rotationAngle):
-    """
-    Rotates and translates all board items in given source area
-    """
-    for drawing in collectItems(board.GetDrawings(), sourceArea):
-        drawing.Rotate(origin, rotationAngle)
-        drawing.Move(translate)
-    for footprint in collectItems(board.GetFootprints(), sourceArea):
-        footprint.Rotate(origin, rotationAngle)
-        footprint.Move(translate)
-    for track in collectItems(board.GetTracks(), sourceArea):
-        track.Rotate(origin, rotationAngle)
-        track.Move(translate)
-    for zone in collectItems(board.Zones(), sourceArea):
-        zone.Rotate(origin, rotationAngle)
-        zone.Move(translate)
+    if not isV6() or not yieldMapping:
+        return
+    if isinstance(item, pcbnew.FOOTPRINT):
+        newFootprint = pcbnew.Cast_to_FOOTPRINT(newItem)
+        for getter in [lambda x: x.Pads(), lambda x: x.GraphicalItems(), lambda x: x.Zones()]:
+            oldList = getter(item)
+            newList = getter(newFootprint)
+            assert len(oldList) == len(newList)
+            for o, n in zip(oldList, newList):
+                assert o.GetPosition() == n.GetPosition()
+                yieldMapping(o.m_Uuid.AsString(), n.m_Uuid.AsString())
+    yieldMapping(item.m_Uuid.AsString(), newItem.m_Uuid.AsString())
 
 def collectNetNames(board):
     return [str(x) for x in board.GetNetInfo().NetsByName() if len(str(x)) > 0]
@@ -175,6 +177,19 @@ def roundPoint(point, precision=-4):
         return Point(round(point.x, precision), round(point.y, precision))
     return Point(round(point[0], precision), round(point[1], precision))
 
+def doTransformation(point: KiKitPoint, rotation: int, origin: KiKitPoint, translation: KiKitPoint) -> wxPoint:
+    """
+    Abuses KiCAD to perform a tranformation of a point
+    """
+    segment = pcbnew.PCB_SHAPE()
+    segment.SetShape(STROKE_T.S_SEGMENT)
+    segment.SetStart(wxPoint(int(point[0]), int(point[1])))
+    segment.SetEnd(wxPoint(0, 0))
+    segment.Rotate(wxPoint(int(origin[0]), int(origin[1])), -rotation)
+    segment.Move(wxPoint(translation[0], translation[1]))
+    # We build a fresh wxPoint - otherwise there is a shared reference
+    return wxPoint(segment.GetStartX(), segment.GetStartY())
+
 def undoTransformation(point, rotation, origin, translation):
     """
     We apply a transformation "Rotate around origin and then translate" when
@@ -188,7 +203,8 @@ def undoTransformation(point, rotation, origin, translation):
     segment.SetEnd(wxPoint(0, 0))
     segment.Move(wxPoint(-translation[0], -translation[1]))
     segment.Rotate(origin, -rotation)
-    return segment.GetStart()
+    # We build a fresh wxPoint - otherwise there is a shared reference
+    return wxPoint(segment.GetStartX(), segment.GetStartY())
 
 def removeCutsFromFootprint(footprint):
     """
@@ -279,58 +295,6 @@ def polygonToZone(polygon, board):
         zone.Outline().AddHole(linestringToKicad(boundary))
     return zone
 
-def isAnnotation(footprint):
-    """
-    Given a footprint, decide if it is KiKit annotation
-    """
-    info = footprint.GetFPID()
-    if info.GetLibNickname() != "kikit":
-        return False
-    return info.GetLibItemName() in ["Tab", "Board"]
-
-def readKiKitProps(footprint):
-    """
-    Given a footprint, returns a string containing KiKit annotations.
-    Annotations are in FP_TEXT starting with prefix `KIKIT:`.
-
-    Returns a dictionary of key-value pairs.
-    """
-    for x in footprint.GraphicalItems():
-        if not isinstance(x, pcbnew.FP_TEXT):
-            continue
-        text = x.GetText()
-        if text.startswith("KIKIT:"):
-            return readParameterList(text[len("KIKIT:"):])
-    return {}
-
-class TabAnnotation:
-    def __init__(self, ref, origin, direction, width, maxLength=fromMm(100)):
-        self.ref = ref
-        self.origin = origin
-        self.direction = direction
-        self.width = width
-        self.maxLength = maxLength
-
-    @staticmethod
-    def fromFootprint(footprint):
-        origin = footprint.GetPosition()
-        radOrientaion = footprint.GetOrientationRadians()
-        direction = (np.cos(radOrientaion), -np.sin(radOrientaion))
-        props = readKiKitProps(footprint)
-        width = units.readLength(props["width"])
-        return TabAnnotation(footprint.GetReference(), origin, direction, width)
-
-def convertToAnnotation(footprint):
-    """
-    Given a footprint, convert it into an annotation. One footprint might
-    represent a zero or multiple annotations, so this function returns a list.
-    """
-    name = footprint.GetFPID().GetLibItemName()
-    if name == "Tab":
-        return [TabAnnotation.fromFootprint(footprint)]
-    # We ignore Board annotation
-    return []
-
 def buildTabs(substrate, partitionLines, tabAnnotations):
     """
     Given substrate, partitionLines of the substrate and an iterable of tab
@@ -407,6 +371,9 @@ class Panel:
         self.zonesToRefill = pcbnew.ZONES()
         self.pageSize: Union[None, str, Tuple[int, int]] = None
 
+        self.annotationReader: AnnotationReader = AnnotationReader.getDefault()
+        self.drcExclusions: List[DrcExclusion] = []
+
     def save(self):
         """
         Saves the panel to a file and makes the requested changes to the prl and
@@ -477,7 +444,8 @@ class Panel:
     def mergeDrcRules(self):
         """
         Examine DRC rules of the source boards, merge them into a single set of
-        rules and store them in *.pro file
+        rules and store them in *.kicad_pro file. Also stores board DRC
+        exclusions.
         """
         assert isV6()
 
@@ -498,6 +466,8 @@ class Panel:
             with open(self.getProFilepath()) as f:
                 currentPro = json.load(f, object_pairs_hook=OrderedDict)
             currentPro["board"]["design_settings"] = sourcePro["board"]["design_settings"]
+            currentPro["board"]["design_settings"]["drc_exclusions"] = [
+                serializeExclusion(e) for e in self.drcExclusions]
             with open(self.getProFilepath(), "w") as f:
                 json.dump(currentPro, f, indent=2)
         except (KeyError, FileNotFoundError):
@@ -674,6 +644,11 @@ class Panel:
         tracks = collectItems(board.GetTracks(), enlargedSourceArea)
         zones = collectItems(board.Zones(), enlargedSourceArea)
 
+        itemMapping: Dict[str, str] = {} # string KIID to string KIID
+        def yieldMapping(old: str, new: str) -> None:
+            nonlocal itemMapping
+            itemMapping[old] = new
+
         edges = []
         annotations = []
         for footprint in footprints:
@@ -689,18 +664,18 @@ class Panel:
             footprint.Rotate(originPoint, rotationAngle)
             footprint.Move(translation)
             edges += removeCutsFromFootprint(footprint)
-            if interpretAnnotations and isAnnotation(footprint):
-                annotations.extend(convertToAnnotation(footprint))
+            if interpretAnnotations and self.annotationReader.isAnnotation(footprint):
+                annotations.extend(self.annotationReader.convertToAnnotation(footprint))
             else:
-                appendItem(self.board, footprint)
+                appendItem(self.board, footprint, yieldMapping)
         for track in tracks:
             track.Rotate(originPoint, rotationAngle)
             track.Move(translation)
-            appendItem(self.board, track)
+            appendItem(self.board, track, yieldMapping)
         for zone in zones:
             zone.Rotate(originPoint, rotationAngle)
             zone.Move(translation)
-            appendItem(self.board, zone)
+            appendItem(self.board, zone, yieldMapping)
         for netId in board.GetNetInfo().NetsByNetcode():
             self.board.Add(board.GetNetInfo().GetNetItem(netId))
 
@@ -727,7 +702,25 @@ class Panel:
             point = undoTransformation(e.point, rotationAngle, originPoint, translation)
             raise substrate.PositionError(filename + ": " + e.origMessage, point)
         for drawing in otherDrawings:
-            appendItem(self.board, drawing)
+            appendItem(self.board, drawing, yieldMapping)
+
+        if isV6():
+            try:
+                exclusions = readBoardDrcExclusions(board)
+                for drcE in exclusions:
+                    try:
+                        newObjects = [self.board.GetItem(pcbnew.KIID(itemMapping[x.m_Uuid.AsString()])) for x in drcE.objects]
+                        assert all(x is not None for x in newObjects)
+                        newPosition = doTransformation(drcE.position, rotationAngle, originPoint, translation)
+                        self.drcExclusions.append(DrcExclusion(
+                            drcE.type,
+                            newPosition,
+                            newObjects
+                        ))
+                    except KeyError as e:
+                        continue # We cannot handle DRC exclusions with board edges
+            except FileNotFoundError:
+                pass # Ignore boards without a project
         return findBoundingBox(edges)
 
     def appendSubstrate(self, substrate):
@@ -882,48 +875,48 @@ class Panel:
         patterns.
 
         Parameters:
-        
+
         boardfile - the path to the filename of the board to be added
-        
+
         sourceArea - the region within the file specified to be selected (see also tolerance, below)
             set to None to automatically calculate the board area from the board file with the given tolerance
-        
+
         rows - the number of boards to place in the vertical direction
-        
+
         cols - the number of boards to place in the horizontal direction
-        
+
         destination - the center coordinates of the first board in the grid (for example, wxPointMM(100,50))
-        
+
         verSpace - the vertical spacing (distance, not pitch) between boards
-        
+
         horSpace - the horizontal spacing (distance, not pitch) between boards
-        
+
         rotation - the rotation angle to be applied to the source board before placing it
-        
+
         placementClass - the placement rules for boards. The builtin classes are:
             BasicGridPosition - places each board in its original orientation
             OddEvenColumnPosition - every second column has the boards rotated by 180 degrees
             OddEvenRowPosition - every second row has the boards rotated by 180 degrees
             OddEvenRowsColumnsPosition - every second row and column has the boards rotated by 180 degrees
-        
+
         netRenamePattern - the pattern according to which the net names are transformed
-            The default pattern is "Board_{n}-{orig}" which gives each board its own instance of its nets, 
+            The default pattern is "Board_{n}-{orig}" which gives each board its own instance of its nets,
             i.e. GND becomes Board_0-GND for the first board , and Board_1-GND for the second board etc
-        
+
         refRenamePattern - the pattern according to which the reference designators are transformed
             The default pattern is "Board_{n}-{orig}" which gives each board its own instance of its reference designators,
             so R1 becomes Board_0-R1 for the first board, Board_1-R1 for the recond board etc. To keep references the
             same as in the original, set this to "{orig}"
-        
-        tolerance - if no sourceArea is specified, the distance by which the selection 
+
+        tolerance - if no sourceArea is specified, the distance by which the selection
             area for the board should extend outside the board edge.
             If you have any objects that are on or outside the board edge, make sure this is big enough to include them.
             Such objects often include zone outlines and connectors.
-            
+
         Returns a list of the placed substrates. You can use these to generate
         tabs, frames, backbones, etc.
         """
-        
+
         substrateCount = len(self.substrates)
         netRenamer = lambda x, y: netRenamePattern.format(n=x, orig=y)
         refRenamer = lambda x, y: refRenamePattern.format(n=x, orig=y)
@@ -937,17 +930,17 @@ class Panel:
         Build a frame around the boards. Specify width and spacing between the
         boards substrates and the frame. Return a tuple of vertical and
         horizontal cuts.
-        
+
         Parameters:
-        
+
         width - width of substrate around board outlines
-        
+
         slotwidth - width of milled-out perimeter around board outline
-        
+
         hspace - horizontal space between board outline and substrate
-        
+
         vspace - vertical space between board outline and substrate
-        
+
         """
         frameInnerRect = expandRect(shpBoxToRect(self.boardsBBox()), hspace, vspace)
         frameOuterRect = expandRect(frameInnerRect, width)
@@ -967,17 +960,17 @@ class Panel:
         """
         Build a full frame with board perimeter milled out.
         Add your boards to the panel first using appendBoard or makeGrid.
-        
+
         Parameters:
-        
+
         width - width of substrate around board outlines
-        
+
         slotwidth - width of milled-out perimeter around board outline
-        
+
         hspace - horizontal space between board outline and substrate
-        
+
         vspace - vertical space between board outline and substrate
-        
+
         """
         self.makeFrame(width, hspace, vspace)
         boardSlot = GeometryCollection()
@@ -1330,7 +1323,7 @@ class Panel:
         """
         Fill given layers with copper on unused areas of the panel
         (frame, rails and tabs)
-        
+
         takes a list of layer ids (Default [kikit.defs.Layer.F_Cu, kikit.defs.Layer.B_Cu])
         """
         if not self.boardSubstrate.isSinglePiece():
@@ -1346,7 +1339,7 @@ class Panel:
             boundary = substrate.exterior().boundary
             zoneContainer.Outline().AddHole(linestringToKicad(boundary))
         zoneContainer.SetPriority(0)
-        
+
         zoneContainer.SetLayer(layers[0])
         self.board.Add(zoneContainer)
         self.zonesToRefill.append(zoneContainer)
@@ -1359,11 +1352,11 @@ class Panel:
     def locateBoard(inputFilename, expandDist=None):
         """
         Given a board filename, find its source area and optionally expand it by the given distance.
-        
+
         Parameters:
-        
+
         inputFilename - the path to the board file
-        
+
         expandDist - the distance by which to expand the board outline in each direction to ensure elements that are outside the board are included
         """
         inputBoard = pcbnew.LoadBoard(inputFilename)
@@ -1645,6 +1638,8 @@ class Panel:
             c += vec[1]
         self.setAuxiliaryOrigin(self.getAuxiliaryOrigin() + vec)
         self.setGridOrigin(self.getGridOrigin() + vec)
+        for drcE in self.drcExclusions:
+            drcE.position += vec
 
 
 def getFootprintByReference(board, reference):

@@ -7,7 +7,7 @@ body:
     options:
     - label: I have read [FAQ](https://github.com/yaqwsx/KiKit/blob/master/doc/faq.md)
       required: true
-    - label: I use the KiKit at least 1.0.0 (older version are not supported)
+    - label: I use the KiKit at least 1.0.4 (older version are not supported)
       required: true
 - type: input
   attributes:

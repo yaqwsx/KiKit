@@ -38,9 +38,11 @@ def encodePreset(value):
     if isinstance(value, str):
         return value
     if isinstance(value, list):
-        return [encodePreset(x) for x in list]
+        return ",".join([encodePreset(x) for x in value])
     if isinstance(value, dict):
         return {encodePreset(k): encodePreset(v) for k, v in value.items()}
+    if isinstance(value, FootprintId):
+        return f"{value.lib}:{value.footprint}"
     raise RuntimeError(f"Cannot serialize {value} of type {type(value)}")
 
 def dumpPreset(preset):

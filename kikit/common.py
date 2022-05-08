@@ -1,4 +1,5 @@
-from typing import Optional
+from __future__ import annotations
+from typing import Optional, Tuple, Union
 from kikit.typing import Box
 from pcbnewTransition import pcbnew, isV6
 from kikit.intervals import Interval, AxialLine
@@ -13,6 +14,8 @@ PKG_BASE = os.path.dirname(__file__)
 KIKIT_LIB = os.path.join(PKG_BASE, "resources/kikit.pretty")
 SHP_EPSILON = pcbnew.FromMM(0.001) # Common factor of enlarging substrates to
                                    # cover up numerical imprecisions of Shapely
+
+KiKitPoint = Union[pcbnew.wxPoint, Tuple[int, int]]
 
 def fromDegrees(angle):
     return angle * 10

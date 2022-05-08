@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+from typing import Any, List
 from kikit.units import readLength, readAngle
 from kikit.defs import Layer, EDA_TEXT_HJUSTIFY_T, EDA_TEXT_VJUSTIFY_T, PAPER_SIZES
 
@@ -7,10 +9,18 @@ class PresetError(RuntimeError):
 ANCHORS = ["tl", "tr", "bl", "br", "mt", "mb", "ml", "mr", "c"]
 PAPERS = ["inherit"] + PAPER_SIZES + ["user"]
 
+@dataclass
+class FootprintId:
+    lib: str
+    footprint: str
+
 class SectionBase:
     def __init__(self, isGuiRelevant, description):
         self.description = description
         self.isGuiRelevant = isGuiRelevant
+
+    def validate(self, x: str) -> Any:
+        raise NotImplementedError("Validate was not overridden for SectionBase")
 
 class SLength(SectionBase):
     def __init__(self, *args, **kwargs):
@@ -69,7 +79,7 @@ class SBool(SChoiceBase):
             if sl in ["0", "false", "no"]:
                 return False
             raise PresetError(f"Uknown boolean value '{s}'")
-        raise RuntimeError(f"Got {s}, expected boolean value")
+        raise PresetError(f"Got {s}, expected boolean value")
 
 class SHJustify(SChoiceBase):
     def __init__(self, *args, **kwargs):
@@ -109,10 +119,25 @@ class SLayer(SChoiceBase):
         if isinstance(s, int):
             if s in tuple(item.value for item in Layer):
                 return Layer(s)
-            raise RuntimeError(f"{s} is not a valid layer number")
+            raise PresetError(f"{s} is not a valid layer number")
         if isinstance(s, str):
             return Layer[s.replace(".", "_")]
-        raise RuntimeError(f"Got {s}, expected layer name or number")
+        raise PresetError(f"Got {s}, expected layer name or number")
+
+class SList(SectionBase):
+    def validate(self, x: str) -> Any:
+        return [v.strip() for v in x.split(",")]
+
+class SFootprintList(SList):
+    def validate(self, x: str) -> Any:
+        result: List[FootprintId] = []
+        for v in super().validate(x):
+            s = v.split(":", 1)
+            if len(s) != 2:
+                PresetError(f"'{v}' is not a valid footprint name in the form '<lib>:<footprint>'")
+            result.append(FootprintId(s[0], s[1]))
+        return result
+
 
 def validateSection(name, sectionDefinition, section):
     try:
@@ -245,7 +270,10 @@ TABS_SECTION = {
         "Number of tabs in a given direction."),
     "hcount": SNum(
         typeIn(["fixed"]),
-        "Number of tabs in a given direction.")
+        "Number of tabs in a given direction."),
+    "tabfootprints": SFootprintList(
+        typeIn(["annotation"]),
+        "Specify custom footprints that will be used for tab annotations.")
 }
 
 def ppTabs(section):

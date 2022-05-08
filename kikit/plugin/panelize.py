@@ -15,6 +15,7 @@ import os
 from threading import Thread
 from itertools import chain
 
+PLATFORMS = ["Linux/MacOS", "Windows"]
 
 class ExceptionThread(Thread):
     def run(self):
@@ -164,6 +165,7 @@ def obtainParameterWidget(parameter):
 class SectionGui():
     def __init__(self, parent, name, section, onResize, onChange):
         self.name = name
+        self.parent = parent
         self.container = wx.CollapsiblePane(
             parent, wx.ID_ANY, name, wx.DefaultPosition, wx.DefaultSize,
             wx.CP_DEFAULT_STYLE)
@@ -176,7 +178,7 @@ class SectionGui():
         self.itemGrid = wx.FlexGridSizer(0, 2, 2, 2)
         self.itemGrid.AddGrowableCol(1)
         self.itemGrid.SetFlexibleDirection(wx.BOTH)
-        self.itemGrid.SetNonFlexibleGrowMode(wx.FLEX_GROWMODE_SPECIFIED)
+        self.itemGrid.SetNonFlexibleGrowMode(wx.FLEX_GROWMODE_ALL)
 
         self.items = {
             name: obtainParameterWidget(param)(
@@ -190,12 +192,6 @@ class SectionGui():
                               wx.ALIGN_CENTER_VERTICAL | wx.EXPAND | wx.RIGHT, 5)
 
         self.container.GetPane().SetSizer(self.itemGrid)
-        self.onResize()
-
-    def onResize(self):
-        self.itemGrid.Layout()
-        self.container.GetPane().Fit()
-        self.container.Fit()
 
     def populateInitialValue(self, values):
         for name, widget in self.items.items():
@@ -212,7 +208,10 @@ class SectionGui():
             if name not in preset:
                 continue
             widget.showIfRelevant(preset)
-        self.onResize()
+        # This is hacky, but it is the only reliable way to force collapsible
+        # pane to correctly adjust its size
+        self.container.Collapse()
+        self.container.Expand()
 
     def collectReleventPreset(self):
         preset = self.collectPreset()
@@ -258,12 +257,24 @@ class PanelizeDialog(wx.Dialog):
         self.showOnlyRelevantFields()
         self.OnResize()
 
+        self.SetBackgroundColour( wx.SystemSettings.GetColour(wx.SYS_COLOUR_BACKGROUND))
+
+
     def _buildOutputSections(self, sizer):
         internalSizer = wx.BoxSizer(wx.VERTICAL)
 
         cliLabel = wx.StaticText(self, label="KiKit CLI command:",
                                  size=wx.DefaultSize, style=wx.ALIGN_LEFT)
         internalSizer.Add(cliLabel, 0, wx.EXPAND | wx.ALL, 2)
+
+        self.platformSelector = wx.Choice(self, wx.ID_ANY, wx.DefaultPosition,
+            wx.DefaultSize, PLATFORMS, 0)
+        if os.name == "nt":
+            self.platformSelector.SetSelection(PLATFORMS.index("Windows"))
+        else:
+            self.platformSelector.SetSelection(0) # Choose posix by default
+        self.platformSelector.Bind(wx.EVT_CHOICE, lambda evt: self.buildOutputSections())
+        internalSizer.Add(self.platformSelector, 0, wx.EXPAND | wx.ALL, 2 )
 
         self.kikitCmdWidget = wx.TextCtrl(
             self, wx.ID_ANY, "KiKit Command", wx.DefaultPosition, wx.DefaultSize,
@@ -292,6 +303,23 @@ class PanelizeDialog(wx.Dialog):
         cmdFont.SetFamily(wx.FONTFAMILY_TELETYPE)
         self.kikitJsonWidget.SetFont(cmdFont)
         internalSizer.Add(self.kikitJsonWidget, 0, wx.EXPAND | wx.ALL, 2)
+
+        ieButtonsSizer = wx.BoxSizer(wx.HORIZONTAL)
+        ieButtonsSizer.Add((0, 0), 1, wx.EXPAND, 5)
+
+        self.importButton = wx.Button(self, wx.ID_ANY, u"Import JSON configuration",
+            wx.DefaultPosition, wx.DefaultSize, 0)
+        self.importButton.SetBitmap(wx.ArtProvider.GetBitmap(wx.ART_FILE_OPEN))
+        ieButtonsSizer.Add(self.importButton, 0, wx.ALL, 5)
+        self.importButton.Bind(wx.EVT_BUTTON, self.onImport)
+
+        self.exportButton = wx.Button(self, wx.ID_ANY, u"Export JSON configuration",
+            wx.DefaultPosition, wx.DefaultSize, 0)
+        self.exportButton.SetBitmap(wx.ArtProvider.GetBitmap(wx.ART_FILE_SAVE))
+        ieButtonsSizer.Add(self.exportButton, 0, wx.ALL, 5)
+        self.exportButton.Bind(wx.EVT_BUTTON, self.onExport)
+
+        internalSizer.Add(ieButtonsSizer, 1, wx.EXPAND, 5)
 
         sizer.Add(internalSizer, 0, wx.EXPAND | wx.ALL, 2)
 
@@ -325,14 +353,12 @@ class PanelizeDialog(wx.Dialog):
         button_box.Add(self.okButton, 1)
 
         parentSizer.Add(button_box, 0, wx.ALIGN_RIGHT |
-                        wx.LEFT | wx.RIGHT | wx.BOTTOM, 20)
+                        wx.LEFT | wx.RIGHT | wx.BOTTOM, 10)
 
     def OnResize(self):
-        for section in self.sections.values():
-            section.onResize()
         self.scrollWindow.GetSizer().Layout()
-        self.scrollWindow.FitInside()
         self.scrollWindow.Fit()
+        self.scrollWindow.FitInside()
         self.GetSizer().Layout()
         self.Fit()
 
@@ -445,6 +471,12 @@ class PanelizeDialog(wx.Dialog):
 
         self.kikitJsonWidget.ChangeValue(json.dumps(presetUpdates, indent=4))
 
+        command = self._buildUnixCommand(presetUpdates) \
+                    if self.platformSelector.GetSelection() == 0 \
+                    else self._buildWindowsCommand(presetUpdates)
+        self.kikitCmdWidget.ChangeValue(command)
+
+    def _buildUnixCommand(self, presetUpdates):
         kikitCommand = "kikit panelize \\\n"
         for section, values in presetUpdates.items():
             if len(values) == 0:
@@ -456,7 +488,22 @@ class PanelizeDialog(wx.Dialog):
         if len(inputFilename) == 0:
             inputFilename = "<missingInput>"
         kikitCommand += f"    {inputFilename} panel.kicad_pcb"
-        self.kikitCmdWidget.ChangeValue(kikitCommand)
+        return kikitCommand
+
+    def _buildWindowsCommand(self, presetUpdates):
+        kikitCommand = "kikit panelize^\n"
+        for section, values in presetUpdates.items():
+            if len(values) == 0:
+                continue
+            attrs = "; ".join(
+                [f"{key}: {value}" for key, value in values.items()])
+            kikitCommand += f"    --{section} \"{attrs}\" ^\n"
+        inputFilename = self.sections["Input"].items["Input file"].getValue()
+        if len(inputFilename) == 0:
+            inputFilename = "<missingInput>"
+        kikitCommand += f"    {inputFilename} panel.kicad_pcb"
+        return kikitCommand
+
 
     def kikitArgs(self):
         defaultPreset = loadPresetChain([":default"])
@@ -469,6 +516,41 @@ class PanelizeDialog(wx.Dialog):
                 continue
             args[section] = values
         return args
+
+    def onExport(self, evt):
+        with wx.FileDialog(self, "Export configuration", wildcard="KiKit configurations (*.json)|*.json",
+                style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as fileDialog:
+
+            if fileDialog.ShowModal() == wx.ID_CANCEL:
+                return
+
+            pathname = fileDialog.GetPath()
+            try:
+                defaultPreset = loadPresetChain([":default"])
+                preset = self.collectReleventPreset()
+                presetUpdates = presetDifferential(defaultPreset, preset)
+                with open(pathname, "w") as file:
+                    json.dump(presetUpdates, file, indent=4)
+                wx.MessageBox(f"Configuration exported to {pathname}", "Success",
+                    style=wx.OK | wx.ICON_INFORMATION, parent=self)
+            except IOError as e:
+                wx.MessageBox(f"Cannot export to file {pathname}: {e}", "Error",
+                    style=wx.OK | wx.ICON_ERROR, parent=self)
+
+    def onImport(self, evt):
+        with wx.FileDialog(self, "Open KiKit configuration", wildcard="KiKit configurations (*.json)|*.json",
+                       style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST) as fileDialog:
+
+            if fileDialog.ShowModal() == wx.ID_CANCEL:
+                return
+            pathname = fileDialog.GetPath()
+            try:
+                with open(pathname, "r") as file:
+                    preset = json.load(file)
+                    self.populateInitialValue(preset)
+            except Exception as e:
+                wx.MessageBox(f"Cannot load configuration: {e}", "Error",
+                    style=wx.OK | wx.ICON_ERROR, parent=self)
 
 
 class PanelizePlugin(pcbnew.ActionPlugin):

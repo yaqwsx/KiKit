@@ -8,6 +8,20 @@ from kikit.panelize_ui_sections import *
 
 PKG_BASE = os.path.dirname(__file__)
 PRESETS = os.path.join(PKG_BASE, "resources/panelizePresets")
+IS_CLICK_V8 = click.__version__.startswith("8.")
+
+# We would like to support both, click v7 and v8 in order to maximize
+# compatibility. However, since click v8.1 there is breaking change in the way
+# shell completion works. This functions hides the differences and should allow
+# us to use both. Pass to it as **addCompatibleCompletion(completionFunction)
+def addCompatibleShellCompletion(completionFn):
+    if IS_CLICK_V8:
+        import click.shell_completion
+        def completion(*args, **kwargs):
+            return [click.shell_completion.CompletionItem(x) for x in completionFn(*args, **kwargs)]
+        return {"shell_complete": completionFn}
+    else:
+        return {"autocompletion": completionFn}
 
 def splitStr(delimiter, escapeChar, s):
     """
@@ -107,45 +121,45 @@ def completeSection(section):
 
 @click.command()
 @click.argument("input", type=click.Path(dir_okay=False),
-    autocompletion=pathCompletion(".kicad_pcb"))
+    **addCompatibleShellCompletion(pathCompletion(".kicad_pcb")))
 @click.argument("output", type=click.Path(dir_okay=False),
-    autocompletion=pathCompletion(".kicad_pcb"))
+    **addCompatibleShellCompletion(pathCompletion(".kicad_pcb")))
 @click.option("--preset", "-p", multiple=True,
     help="A panelization preset file; use prefix ':' for built-in styles.",
-    autocompletion=completePreset)
+    **addCompatibleShellCompletion(completePreset))
 @click.option("--layout", "-l", type=Section(),
     help="Override layout settings.",
-    autocompletion=completeSection(LAYOUT_SECTION))
+    **addCompatibleShellCompletion(completeSection(LAYOUT_SECTION)))
 @click.option("--source", "-s", type=Section(),
     help="Override source settings.",
-    autocompletion=completeSection(SOURCE_SECTION))
+    **addCompatibleShellCompletion(completeSection(SOURCE_SECTION)))
 @click.option("--tabs", "-t", type=Section(),
     help="Override tab settings.",
-    autocompletion=completeSection(TABS_SECTION))
+    **addCompatibleShellCompletion(completeSection(TABS_SECTION)))
 @click.option("--cuts", "-c", type=Section(),
     help="Override cut settings.",
-    autocompletion=completeSection(CUTS_SECTION))
+    **addCompatibleShellCompletion(completeSection(CUTS_SECTION)))
 @click.option("--framing", "-r", type=Section(),
     help="Override framing settings.",
-    autocompletion=completeSection(FRAMING_SECTION))
+    **addCompatibleShellCompletion(completeSection(FRAMING_SECTION)))
 @click.option("--tooling", "-o", type=Section(),
     help="Override tooling settings.",
-    autocompletion=completeSection(TOOLING_SECTION))
+    **addCompatibleShellCompletion(completeSection(TOOLING_SECTION)))
 @click.option("--fiducials", "-f", type=Section(),
     help="Override fiducials settings.",
-    autocompletion=completeSection(FIDUCIALS_SECTION))
+    **addCompatibleShellCompletion(completeSection(FIDUCIALS_SECTION)))
 @click.option("--text", "-t", type=Section(),
     help="Override text settings.",
-    autocompletion=completeSection(TEXT_SECTION))
+    **addCompatibleShellCompletion(completeSection(TEXT_SECTION)))
 @click.option("--page", "-P", type=Section(),
     help="Override page settings.",
-    autocompletion=completeSection(POST_SECTION))
+    **addCompatibleShellCompletion(completeSection(POST_SECTION)))
 @click.option("--post", "-z", type=Section(),
     help="Override post processing settings.",
-    autocompletion=completeSection(POST_SECTION))
+    **addCompatibleShellCompletion(completeSection(POST_SECTION)))
 @click.option("--debug", type=Section(),
     help="Include debug traces or drawings in the panel.",
-    autocompletion=completeSection(DEBUG_SECTION))
+    **addCompatibleShellCompletion(completeSection(DEBUG_SECTION)))
 @click.option("--dump", "-d", type=click.Path(file_okay=True, dir_okay=False),
     help="Dump constructured preset into a JSON file.")
 def panelize(input, output, preset, layout, source, tabs, cuts, framing,
@@ -195,6 +209,11 @@ def doPanelization(input, output, preset):
     board = LoadBoard(input)
 
     panel = Panel(output)
+
+    # Register extra footprints for annotations
+    for tabFootprint in preset["tabs"]["tabfootprints"]:
+        panel.annotationReader.registerTab(tabFootprint.lib, tabFootprint.footprint)
+
     panel.inheritDesignSettings(board)
     panel.inheritProperties(board)
     panel.inheritTitleBlock(board)
@@ -237,7 +256,7 @@ def doPanelization(input, output, preset):
     help="Specify source settings.")
 @click.option("--page", "-P", type=Section(),
     help="Override page settings.",
-    autocompletion=completeSection(POST_SECTION))
+    **addCompatibleShellCompletion(completeSection(POST_SECTION)))
 @click.option("--debug", type=Section(),
     help="Include debug traces or drawings in the panel.")
 @click.option("--keepAnnotations/--stripAnnotations", default=True,

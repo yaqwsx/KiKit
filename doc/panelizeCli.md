@@ -273,8 +273,12 @@ Create tabs in the corners of the PCB.
 
 Add tabs based on PCB annotations. Place a footprint `kikit:Tab` at the edges of
 your PCB. You can edit the text field prefixed with `KIKIT: ` to adjust the tab
-parameters. There are no extra parameters. However, the individual tabs can have
-the following properties specified in the text field of the component:
+parameters. If you want to specify a custom tab symbol (e.g., with predefined)
+width, you can specify `tabfootprints` as a list of footprints separated by
+comma. For example: `myLib:Tab2mm, myLib:Tab3mm`.
+
+The individual tabs can have the following properties specified in the text
+field of the component as `KIKIT:<propertyname>`:
 
 - `width`: width of the tab.
 
