@@ -304,6 +304,23 @@ class PanelizeDialog(wx.Dialog):
         self.kikitJsonWidget.SetFont(cmdFont)
         internalSizer.Add(self.kikitJsonWidget, 0, wx.EXPAND | wx.ALL, 2)
 
+        ieButtonsSizer = wx.BoxSizer(wx.HORIZONTAL)
+        ieButtonsSizer.Add((0, 0), 1, wx.EXPAND, 5)
+
+        self.importButton = wx.Button(self, wx.ID_ANY, u"Import JSON configuration",
+            wx.DefaultPosition, wx.DefaultSize, 0)
+        self.importButton.SetBitmap(wx.ArtProvider.GetBitmap(wx.ART_FILE_OPEN))
+        ieButtonsSizer.Add(self.importButton, 0, wx.ALL, 5)
+        self.importButton.Bind(wx.EVT_BUTTON, self.onImport)
+
+        self.exportButton = wx.Button(self, wx.ID_ANY, u"Export JSON configuration",
+            wx.DefaultPosition, wx.DefaultSize, 0)
+        self.exportButton.SetBitmap(wx.ArtProvider.GetBitmap(wx.ART_FILE_SAVE))
+        ieButtonsSizer.Add(self.exportButton, 0, wx.ALL, 5)
+        self.exportButton.Bind(wx.EVT_BUTTON, self.onExport)
+
+        internalSizer.Add(ieButtonsSizer, 1, wx.EXPAND, 5)
+
         sizer.Add(internalSizer, 0, wx.EXPAND | wx.ALL, 2)
 
     def _buildSections(self, parentWindow):
@@ -336,7 +353,7 @@ class PanelizeDialog(wx.Dialog):
         button_box.Add(self.okButton, 1)
 
         parentSizer.Add(button_box, 0, wx.ALIGN_RIGHT |
-                        wx.LEFT | wx.RIGHT | wx.BOTTOM, 20)
+                        wx.LEFT | wx.RIGHT | wx.BOTTOM, 10)
 
     def OnResize(self):
         self.scrollWindow.GetSizer().Layout()
@@ -499,6 +516,41 @@ class PanelizeDialog(wx.Dialog):
                 continue
             args[section] = values
         return args
+
+    def onExport(self, evt):
+        with wx.FileDialog(self, "Export configuration", wildcard="KiKit configurations (*.json)|*.json",
+                style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as fileDialog:
+
+            if fileDialog.ShowModal() == wx.ID_CANCEL:
+                return
+
+            pathname = fileDialog.GetPath()
+            try:
+                defaultPreset = loadPresetChain([":default"])
+                preset = self.collectReleventPreset()
+                presetUpdates = presetDifferential(defaultPreset, preset)
+                with open(pathname, "w") as file:
+                    json.dump(presetUpdates, file, indent=4)
+                wx.MessageBox(f"Configuration exported to {pathname}", "Success",
+                    style=wx.OK | wx.ICON_INFORMATION, parent=self)
+            except IOError as e:
+                wx.MessageBox(f"Cannot export to file {pathname}: {e}", "Error",
+                    style=wx.OK | wx.ICON_ERROR, parent=self)
+
+    def onImport(self, evt):
+        with wx.FileDialog(self, "Open KiKit configuration", wildcard="KiKit configurations (*.json)|*.json",
+                       style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST) as fileDialog:
+
+            if fileDialog.ShowModal() == wx.ID_CANCEL:
+                return
+            pathname = fileDialog.GetPath()
+            try:
+                with open(pathname, "r") as file:
+                    preset = json.load(file)
+                    self.populateInitialValue(preset)
+            except Exception as e:
+                wx.MessageBox(f"Cannot load configuration: {e}", "Error",
+                    style=wx.OK | wx.ICON_ERROR, parent=self)
 
 
 class PanelizePlugin(pcbnew.ActionPlugin):
