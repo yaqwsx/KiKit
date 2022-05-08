@@ -33,14 +33,26 @@ def printHeader(func):
 def printHelp(x):
     print(inspect.getdoc(x))
 
-def quote(args):
+def quotePosix(args):
     """
     Given a list of command line arguments, quote them so they can be can be
-    printed
+    printed on POSIX
     """
     def q(x):
         if " " in x:
             return "'" + x + "'"
+        else:
+            return x
+    return [q(x) for x in args]
+
+def quoteWindows(args):
+    """
+    Given a list of command line arguments, quote them so they can be can be
+    printed in Windows CLI
+    """
+    def q(x):
+        if " " in x:
+            return '"' + x + '"'
         else:
             return x
     return [q(x) for x in args]
@@ -51,8 +63,16 @@ def panelizeAndDraw(name, command):
     try:
         outimage = f"doc/resources/{name}.png"
         subprocess.run(command + [output], check=True, capture_output=True)
-        subprocess.run(["pcbdraw", "--vcuts", "--silent", output,
-                outimage], check=True, capture_output=True)
+
+        r = subprocess.run(["pcbdraw", "plot", "--help"], capture_output=True)
+        if r.returncode == 0:
+            # We have a new PcbDraw
+            r = subprocess.run(["pcbdraw", "plot", "--vcuts", "Cmts.User", "--silent", output,
+                    outimage], check=True, capture_output=True)
+        else:
+            # We have an old PcbDraw
+            r = subprocess.run(["pcbdraw", "--vcuts", "--silent", output,
+                    outimage], check=True, capture_output=True)
         subprocess.run(["convert", outimage, "-define",
             "png:include-chunk=none", outimage], check=True, capture_output=True)
     except subprocess.CalledProcessError as e:
@@ -80,11 +100,18 @@ def runBoardExample(name, args):
     args[0] = ["kikit"] + args[0]
     args[-1] = args[-1] + ["panel.kicad_pcb"]
     print("```")
+    print("# Linux")
     for i, c in enumerate(args):
         if i != 0:
             print("    ", end="")
         end = "\n" if i + 1 == len(args) else " \\\n"
-        print(" ".join(quote(c)), end=end)
+        print(" ".join(quotePosix(c)), end=end)
+    print("\n# Windows")
+    for i, c in enumerate(args):
+        if i != 0:
+            print("    ", end="")
+        end = "\n" if i + 1 == len(args) else " ^\n"
+        print(" ".join(quoteWindows(c)), end=end)
     print("```\n")
     print("![{0}](resources/{0}.png)".format(name))
 

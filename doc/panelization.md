@@ -461,7 +461,7 @@ placementClass - the placement rules for boards. The builtin classes are:
     OddEvenRowsColumnsPosition - every second row and column has the boards rotated by 180 degrees
 
 netRenamePattern - the pattern according to which the net names are transformed
-    The default pattern is "Board_{n}-{orig}" which gives each board its own instance of its nets, 
+    The default pattern is "Board_{n}-{orig}" which gives each board its own instance of its nets,
     i.e. GND becomes Board_0-GND for the first board , and Board_1-GND for the second board etc
 
 refRenamePattern - the pattern according to which the reference designators are transformed
@@ -469,11 +469,11 @@ refRenamePattern - the pattern according to which the reference designators are 
     so R1 becomes Board_0-R1 for the first board, Board_1-R1 for the recond board etc. To keep references the
     same as in the original, set this to "{orig}"
 
-tolerance - if no sourceArea is specified, the distance by which the selection 
+tolerance - if no sourceArea is specified, the distance by which the selection
     area for the board should extend outside the board edge.
     If you have any objects that are on or outside the board edge, make sure this is big enough to include them.
     Such objects often include zone outlines and connectors.
-    
+
 Returns a list of the placed substrates. You can use these to generate
 tabs, frames, backbones, etc.
 
@@ -533,7 +533,8 @@ Otherwise, raise an exception.
 mergeDrcRules(self)
 ```
 Examine DRC rules of the source boards, merge them into a single set of
-rules and store them in *.pro file
+rules and store them in *.kicad_pro file. Also stores board DRC
+exclusions.
 
 #### `panelBBox`
 ```
