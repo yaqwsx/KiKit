@@ -100,11 +100,16 @@ class ParameterWidgetBase:
                                    size=wx.Size(150, -1),
                                    style=wx.ALIGN_RIGHT)
         self.label.SetToolTip(parameter.description)
+        self.fresh = True
 
     def showIfRelevant(self, preset):
         relevant = self.parameter.isGuiRelevant(preset)
-        self.label.Show(relevant)
-        self.widget.Show(relevant)
+        if self.fresh or self.label.IsShown() != relevant:
+            self.label.Show(relevant)
+            self.widget.Show(relevant)
+            self.fresh = False
+            return True
+        return False
 
 
 class TextWidget(ParameterWidgetBase):
@@ -203,15 +208,19 @@ class SectionGui():
         return {name: widget.getValue() for name, widget in self.items.items()}
 
     def showOnlyRelevantFields(self):
+        changed = False
         preset = self.collectPreset()
         for name, widget in self.items.items():
             if name not in preset:
                 continue
-            widget.showIfRelevant(preset)
-        # This is hacky, but it is the only reliable way to force collapsible
-        # pane to correctly adjust its size
-        self.container.Collapse()
-        self.container.Expand()
+            ch = widget.showIfRelevant(preset)
+            changed = changed or ch
+        if changed:
+            # This is hacky, but it is the only reliable way to force collapsible
+            # pane to correctly adjust its size
+            self.container.Collapse()
+            self.container.Expand()
+        return changed
 
     def collectReleventPreset(self):
         preset = self.collectPreset()
@@ -257,7 +266,8 @@ class PanelizeDialog(wx.Dialog):
         self.showOnlyRelevantFields()
         self.OnResize()
 
-        self.SetBackgroundColour( wx.SystemSettings.GetColour(wx.SYS_COLOUR_BACKGROUND))
+        if os.name != "nt":
+            self.SetBackgroundColour( wx.SystemSettings.GetColour(wx.SYS_COLOUR_BACKGROUND))
 
 
     def _buildOutputSections(self, sizer):
@@ -439,8 +449,11 @@ class PanelizeDialog(wx.Dialog):
             section.populateInitialValue(preset[name.lower()])
 
     def showOnlyRelevantFields(self):
+        changed = False
         for section in self.sections.values():
-            section.showOnlyRelevantFields()
+            sectionChanged = section.showOnlyRelevantFields()
+            changed = changed or sectionChanged
+        return changed
 
     def collectPreset(self, includeInput=False):
         preset = loadPresetChain([":default"])
@@ -460,8 +473,8 @@ class PanelizeDialog(wx.Dialog):
         return preset
 
     def OnChange(self):
-        self.showOnlyRelevantFields()
-        self.OnResize()
+        if self.showOnlyRelevantFields():
+            self.OnResize()
         self.buildOutputSections()
 
     def buildOutputSections(self):
