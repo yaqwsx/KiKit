@@ -309,14 +309,14 @@ def makeCuts(properties, panel, cuts, ignoreOffset):
     """
     try:
         type = properties["type"]
+        offset = 0 if ignoreOffset else properties["offset"]
         if type == "none":
             return
         if type == "vcuts":
-            panel.makeVCuts(cuts, properties["cutcurves"])
+            panel.makeVCuts(cuts, properties["cutcurves"], offset)
             panel.setVCutLayer(properties["layer"])
             panel.setVCutClearance(properties["clearance"])
         elif type == "mousebites":
-            offset = 0 if ignoreOffset else properties["offset"]
             panel.makeMouseBites(cuts, properties["drill"],
                 properties["spacing"], offset, properties["prolong"])
         elif type == "layer":

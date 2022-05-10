@@ -305,9 +305,11 @@ Use mousebites to
 
 #### V-Cuts
 
-- `clearance` - specify clearance for copper in V-cuts
+- `clearance` - specify clearance for copper around V-cuts
 - `cutcurves` - true/false - specify if curves should be approximated by
   straight cuts (e.g., for cutting tabs on circular boards)
+- `offset` - specify the offset, positive offset puts the cuts into the board,
+  negative puts the cuts into the tabs
 - `layer` - specify the layer to render V-cuts on.
 
 #### Layer

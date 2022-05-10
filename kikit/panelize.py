@@ -1028,7 +1028,7 @@ class Panel:
         cuts += [ [(x_coords[2], y_coord), (x_coords[3], y_coord)] for y_coord in y_coords ]
         return map(LineString, cuts)
 
-    def makeVCuts(self, cuts, boundCurves=False):
+    def makeVCuts(self, cuts, boundCurves=False, offset=fromMm(0)):
         """
         Take a list of lines to cut and performs V-CUTS. When boundCurves is
         set, approximate curved cuts by a line from the first and last point.
@@ -1037,6 +1037,7 @@ class Panel:
         for cut in cuts:
             if len(cut.simplify(SHP_EPSILON).coords) > 2 and not boundCurves:
                 raise RuntimeError("Cannot V-Cut a curve")
+            cut = cut.parallel_offset(offset, "left")
             start = roundPoint(cut.coords[0])
             end = roundPoint(cut.coords[-1])
             if start.x == end.x or (abs(start.x - end.x) <= fromMm(0.5) and boundCurves):
