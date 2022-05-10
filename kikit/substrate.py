@@ -671,7 +671,12 @@ class Substrate:
                     partitionFaceCoord = list(partitionFace.coords)
                     if i == 1:
                         partitionFaceCoord = partitionFaceCoord[::-1]
-                    tab = Polygon(list(tabFace.coords) + partitionFaceCoord)
+                    # We offset the tab face a little so we can be sure that we
+                    # penetrate the board substrate. Otherwise, there is a
+                    # numerical instability on small slopes that yields
+                    # artifacts on substrate union
+                    offsetTabFace = [(p[0] - SHP_EPSILON * direction[0], p[1] - SHP_EPSILON * direction[1]) for p in tabFace.coords]
+                    tab = Polygon(offsetTabFace + partitionFaceCoord)
                     return tab, tabFace
             return None, None
         except NoIntersectionError as e:

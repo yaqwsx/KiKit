@@ -200,7 +200,7 @@ def doPanelization(input, output, preset):
     from kikit import panelize_ui_impl as ki
     from kikit.panelize import Panel
     from pcbnewTransition.transition import isV6, pcbnew
-    from pcbnew import LoadBoard
+    from pcbnew import LoadBoard, FromMM
     from itertools import chain
 
     if preset["debug"]["deterministic"] and isV6():
@@ -222,7 +222,7 @@ def doPanelization(input, output, preset):
     substrates = ki.buildLayout(preset["layout"], panel, input, sourceArea)
     framingSubstrates = ki.dummyFramingSubstrate(substrates,
         ki.frameOffset(preset["framing"]))
-    panel.buildPartitionLineFromBB(framingSubstrates)
+    panel.buildPartitionLineFromBB(framingSubstrates, FromMM(0.001))
 
     tabCuts = ki.buildTabs(preset["tabs"], panel, substrates,
         framingSubstrates, ki.frameOffset(preset["framing"]))
