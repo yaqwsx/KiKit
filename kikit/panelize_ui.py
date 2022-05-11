@@ -222,7 +222,7 @@ def doPanelization(input, output, preset):
     substrates = ki.buildLayout(preset["layout"], panel, input, sourceArea)
     framingSubstrates = ki.dummyFramingSubstrate(substrates,
         ki.frameOffset(preset["framing"]))
-    panel.buildPartitionLineFromBB(framingSubstrates, FromMM(0.001))
+    panel.buildPartitionLineFromBB(framingSubstrates)
 
     tabCuts = ki.buildTabs(preset["tabs"], panel, substrates,
         framingSubstrates, ki.frameOffset(preset["framing"]))
