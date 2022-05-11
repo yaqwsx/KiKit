@@ -3,6 +3,7 @@ from kikit.panelize_ui import Section, PresetError
 from kikit.panelize import *
 from kikit.defs import Layer
 from shapely.geometry import box
+from kikit.plugin import HookPlugin
 from kikit.units import BaseValue
 from kikit.panelize_ui_sections import *
 from kikit.substrate import SubstrateNeighbors
@@ -561,3 +562,58 @@ def setPageSize(preset, panel, sourceBoard):
         panel.setPageSize(pageSize)
     except KeyError as e:
         raise PresetError(f"Missing parameter '{e}' in section 'page'")
+
+HookPluginInvoker = Callable[[HookPlugin], None]
+
+def loadHookPlugins(pluginSpec: List[Tuple[str, str, str]], board: pcbnew.BOARD,
+                   preset: Dict[str, Dict[str, Any]]) -> Callable[[HookPluginInvoker], None]:
+    """
+    Loads hook plugins based on the specification and returns a function that
+    will invoke given callable on each of the loaded plugins.
+
+    This function assumes it is called only once during the whole execution of
+    the process.
+    """
+    plugins: List[HookPlugin] = []
+    for moduleName, pluginName, arg in pluginSpec:
+        try:
+            if moduleName.endswith(".py"):
+                plugin = loadHookPluginFromFile(moduleName, pluginName, arg, board, preset, len(plugins))
+                plugins.append(plugin)
+            else:
+                plugin = loadHookPluginFromModule(moduleName, pluginName, arg, board, preset)
+                plugins.append(plugin)
+        except Exception as e:
+            raise RuntimeError(f"Cannot instantiate '{moduleName}:{pluginName}': {e}") from None
+
+    def usePlugins(invoker: HookPluginInvoker) -> None:
+        nonlocal plugins
+        for p in plugins:
+            invoker(p)
+    return usePlugins
+
+def loadHookPluginFromFile(moduleName: str, pluginName: str, arg: str,
+                           board: pcbnew.BOARD, preset: Dict[str, Dict[str, Any]],
+                           seq: int) -> HookPlugin:
+    import importlib.util
+
+    if not os.path.exists(moduleName):
+        raise RuntimeError(f"File doesn't exist")
+
+    spec = importlib.util.spec_from_file_location(
+                f"kikit.user.hook_plugin{seq}",
+                moduleName)
+    if spec is None:
+        raise RuntimeError(f"Plugin module '{moduleName}' doesn't exist")
+    pluginModule = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(pluginModule)
+    pluginType = getattr(pluginModule, pluginName)
+    return pluginType(arg, board, preset)
+
+def loadHookPluginFromModule(moduleName: str, pluginName: str, arg: str,
+                           board: pcbnew.BOARD, preset: Dict[str, Dict[str, Any]]) \
+                                -> HookPlugin:
+    import importlib
+    pluginModule = importlib.import_module(moduleName)
+    pluginType = getattr(pluginModule, pluginName)
+    return pluginType(arg, board, preset)

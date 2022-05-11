@@ -63,6 +63,23 @@ class Section(click.ParamType):
                 param,
                 ctx)
 
+class HookPlugin(click.ParamType):
+    """
+    A CLI argument type for a HookPlugin. The format is <moduleName or
+    path>:<plugin name>:<arg>. The arg is optional.
+    """
+    name = "<module>:<plugin>:[arg]"
+
+    def convert(self, value, param, ctx):
+        pieces = value.split(":", maxsplit=2)
+        if len(pieces) < 2:
+            self.fail(f"{value} is not a valid plugin specification")
+        module = pieces[0]
+        pluginName = pieces[1]
+        arg = "" if len(pieces) <= 2 else pieces[2]
+        return (module, pluginName, arg)
+
+
 def completePath(prefix, fileSuffix=""):
     """
     This is rather hacky and  far from ideal, however, until Click 8 we probably
@@ -127,6 +144,9 @@ def completeSection(section):
 @click.option("--preset", "-p", multiple=True,
     help="A panelization preset file; use prefix ':' for built-in styles.",
     **addCompatibleShellCompletion(completePreset))
+@click.option("--plugin", multiple=True, type=HookPlugin(),
+    help="A hook plugin to use during the panelization",
+    **addCompatibleShellCompletion(completePreset))
 @click.option("--layout", "-l", type=Section(),
     help="Override layout settings.",
     **addCompatibleShellCompletion(completeSection(LAYOUT_SECTION)))
@@ -162,8 +182,8 @@ def completeSection(section):
     **addCompatibleShellCompletion(completeSection(DEBUG_SECTION)))
 @click.option("--dump", "-d", type=click.Path(file_okay=True, dir_okay=False),
     help="Dump constructured preset into a JSON file.")
-def panelize(input, output, preset, layout, source, tabs, cuts, framing,
-                tooling, fiducials, text, page, post, debug, dump):
+def panelize(input, output, preset, plugin, layout, source, tabs, cuts, framing,
+             tooling, fiducials, text, page, post, debug, dump):
     """
     Panelize boards
     """
@@ -179,7 +199,7 @@ def panelize(input, output, preset, layout, source, tabs, cuts, framing,
             tooling=tooling, fiducials=fiducials, text=text, page=page, post=post,
             debug=debug)
 
-        doPanelization(input, output, preset)
+        doPanelization(input, output, preset, plugin)
 
         if (dump):
             with open(dump, "w") as f:
@@ -192,7 +212,7 @@ def panelize(input, output, preset, layout, source, tabs, cuts, framing,
             traceback.print_exc(file=sys.stderr)
         sys.exit(1)
 
-def doPanelization(input, output, preset):
+def doPanelization(input, output, preset, plugins=[]):
     """
     The panelization logic is separated into a separate function so we can
     handle errors based on the context; e.g., CLI vs GUI
@@ -207,8 +227,11 @@ def doPanelization(input, output, preset):
         pcbnew.KIID.SeedGenerator(42)
 
     board = LoadBoard(input)
-
     panel = Panel(output)
+
+    useHookPlugins = ki.loadHookPlugins(plugins, board, preset)
+
+    useHookPlugins(lambda x: x.prePanelSetup(panel))
 
     # Register extra footprints for annotations
     for tabFootprint in preset["tabs"]["tabfootprints"]:
@@ -218,17 +241,26 @@ def doPanelization(input, output, preset):
     panel.inheritProperties(board)
     panel.inheritTitleBlock(board)
 
+    useHookPlugins(lambda x: x.afterPanelSetup(panel))
+
     sourceArea = ki.readSourceArea(preset["source"], board)
     substrates = ki.buildLayout(preset["layout"], panel, input, sourceArea)
     framingSubstrates = ki.dummyFramingSubstrate(substrates,
         ki.frameOffset(preset["framing"]))
     panel.buildPartitionLineFromBB(framingSubstrates)
 
+    useHookPlugins(lambda x: x.afterLayout(panel, substrates))
+
     tabCuts = ki.buildTabs(preset["tabs"], panel, substrates,
         framingSubstrates, ki.frameOffset(preset["framing"]))
     backboneCuts = ki.buildBackBone(preset["layout"], panel, substrates,
         ki.frameOffset(preset["framing"]))
+
+    useHookPlugins(lambda x: x.afterTabs(panel, tabCuts, backboneCuts))
+
     frameCuts = ki.buildFraming(preset["framing"], panel)
+
+    useHookPlugins(lambda x: x.afterFraming(panel, frameCuts))
 
     ki.buildTooling(preset["tooling"], panel)
     ki.buildFiducials(preset["fiducials"], panel)
@@ -238,11 +270,14 @@ def doPanelization(input, output, preset):
     ki.makeTabCuts(preset["cuts"], panel, tabCuts)
     ki.makeOtherCuts(preset["cuts"], panel, chain(backboneCuts, frameCuts))
 
+    useHookPlugins(lambda x: x.afterCuts(panel))
+
     ki.setStackup(preset["source"], panel)
     ki.positionPanel(preset["page"], panel)
     ki.setPageSize(preset["page"], panel, board)
 
     ki.runUserScript(preset["post"], panel)
+    useHookPlugins(lambda x: x.finish(panel))
 
     ki.buildDebugAnnotation(preset["debug"], panel)
 

@@ -39,7 +39,7 @@ class MissingKiKitDialog(wx.Dialog):
 
 
 try:
-    from kikit.plugin import importAllPlugins
+    from kikit.actionPlugins import importAllPlugins
 
     importAllPlugins()
 except ImportError:
