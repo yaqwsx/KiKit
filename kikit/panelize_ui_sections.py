@@ -1,5 +1,7 @@
 from dataclasses import dataclass
+import os
 from typing import Any, List
+from kikit import plugin
 from kikit.units import readLength, readAngle
 from kikit.defs import Layer, EDA_TEXT_HJUSTIFY_T, EDA_TEXT_VJUSTIFY_T, PAPER_SIZES
 
@@ -49,6 +51,47 @@ class SStr(SectionBase):
 
     def validate(self, x):
         return str(x)
+
+class SPlugin(SectionBase):
+    seq: int = 0
+
+    def __init__(self, pluginType, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.pluginType = pluginType
+
+    def validate(self, x):
+        if x == "none":
+            return None
+        self.seq += 1
+
+        pieces = str(x).rsplit(".", maxsplit=1)
+        if len(pieces) != 2:
+            raise RuntimeError(f"Invalid plugin specification '{x}'")
+        moduleName, pluginName = pieces[0], pieces[1]
+        plugin = self.loadFromFile(moduleName, pluginName) if moduleName.endswith(".py") \
+                 else self.loadFromModule(moduleName, pluginName)
+        if not issubclass(plugin, self.pluginType):
+            raise RuntimeError(f"Invalid plugin type specified, {self.pluginType.__name__} expected")
+        return plugin
+
+    def loadFromFile(self, file, name):
+        import importlib.util
+
+        if not os.path.exists(file):
+            raise RuntimeError(f"File {file} doesn't exist")
+        spec = importlib.util.spec_from_file_location(
+                f"kikit.user.SPlugin_{self.seq}",
+                file)
+        if spec is None:
+            raise RuntimeError(f"Plugin module '{file}' doesn't exist")
+        pluginModule = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(pluginModule)
+        return getattr(pluginModule, name)
+
+    def loadFromModule(self, module, name):
+        import importlib
+        pluginModule = importlib.import_module(module)
+        return getattr(pluginModule, name)
 
 class SChoiceBase(SectionBase):
     def __init__(self, vals, *args, **kwargs):
@@ -160,7 +203,7 @@ def never():
 
 LAYOUT_SECTION = {
     "type": SChoice(
-        ["grid"],
+        ["grid", "plugin"],
         always(),
         "Layout type"),
     "alternation": SChoice(
@@ -177,34 +220,39 @@ LAYOUT_SECTION = {
         never(),
         "Specify the gap between the boards in both direction"),
     "hbackbone": SLength(
-        always(),
+        typeIn(["grid"]),
         "The width of vertical and horizontal backbone (0 means no backbone)"),
     "vbackbone": SLength(
-        always(),
+        typeIn(["grid"]),
         "The width of vertical and horizontal backbone (0 means no backbone)"),
     "rotation": SAngle(
         always(),
         "Rotate the boards before placing them in the panel"),
     "rows": SNum(
-        always(),
+        typeIn(["grid"]),
         "Specify the number of boards in the grid pattern"),
     "cols": SNum(
-        always(),
+        typeIn(["grid"]),
         "Specify the number of boards in the grid pattern"),
     "vbonecut": SBool(
-        always(),
+        typeIn(["grid"]),
         "Cut backone in vertical direction"),
     "hbonecut": SBool(
-        always(),
+        typeIn(["grid"]),
         "Cut backone in horizontal direction"),
     "renamenet": SStr(
         always(),
-        "Net renaming pattern"
-    ),
+        "Net renaming pattern"),
     "renameref": SStr(
         always(),
-        "Reference renaming pattern"
-    )
+        "Reference renaming pattern"),
+    "code": SPlugin(
+        plugin.LayoutPlugin,
+        typeIn(["plugin"]),
+        "Plugin specification as moduleName:pluginName"),
+    "arg": SStr(
+        typeIn(["plugin"]),
+        "String argument for the layout plugin")
 }
 
 def ppLayout(section):

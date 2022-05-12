@@ -68,15 +68,16 @@ class HookPlugin(click.ParamType):
     A CLI argument type for a HookPlugin. The format is <moduleName or
     path>:<plugin name>:<arg>. The arg is optional.
     """
-    name = "<module>:<plugin>:[arg]"
+    name = "<module>.<plugin>:[arg]"
 
     def convert(self, value, param, ctx):
-        pieces = value.split(":", maxsplit=2)
-        if len(pieces) < 2:
+        pieces = value.split(":", maxsplit=1)
+        specPieces = pieces[0].rsplit(".", maxsplit=1)
+        if len(specPieces) < 2:
             self.fail(f"{value} is not a valid plugin specification")
-        module = pieces[0]
-        pluginName = pieces[1]
-        arg = "" if len(pieces) <= 2 else pieces[2]
+        module = specPieces[0]
+        pluginName = specPieces[1]
+        arg = "" if len(pieces) == 2 else pieces[1]
         return (module, pluginName, arg)
 
 
@@ -244,17 +245,13 @@ def doPanelization(input, output, preset, plugins=[]):
     useHookPlugins(lambda x: x.afterPanelSetup(panel))
 
     sourceArea = ki.readSourceArea(preset["source"], board)
-    substrates = ki.buildLayout(preset["layout"], panel, input, sourceArea)
-    framingSubstrates = ki.dummyFramingSubstrate(substrates,
-        ki.frameOffset(preset["framing"]))
-    panel.buildPartitionLineFromBB(framingSubstrates)
+    substrates, framingSubstrates, backboneCuts = \
+        ki.buildLayout(preset["layout"], panel, input, sourceArea, preset["framing"])
 
     useHookPlugins(lambda x: x.afterLayout(panel, substrates))
 
     tabCuts = ki.buildTabs(preset["tabs"], panel, substrates,
         framingSubstrates, ki.frameOffset(preset["framing"]))
-    backboneCuts = ki.buildBackBone(preset["layout"], panel, substrates,
-        ki.frameOffset(preset["framing"]))
 
     useHookPlugins(lambda x: x.afterTabs(panel, tabCuts, backboneCuts))
 

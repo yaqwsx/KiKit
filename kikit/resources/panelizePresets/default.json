@@ -12,7 +12,9 @@
         "hbackbone": "0mm",
         "vbackbone": "0mm",
         "vbonecut": true,
-        "hbonecut": true
+        "hbonecut": true,
+        "code": "none",
+        "arg": ""
     },
     "source": {
         "type": "auto",

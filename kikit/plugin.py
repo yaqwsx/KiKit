@@ -13,10 +13,6 @@ from pcbnewTransition import pcbnew
 from shapely.geometry import LineString
 
 
-class KiKitDefault(NotImplementedError):
-    pass
-
-
 class HookPlugin:
     """
     This type of plugin has a number of callbacks that are invoked during the
@@ -93,10 +89,17 @@ class LayoutPlugin:
     """
     This type of plugin can create user specified board layouts
     """
-    def __init__(self, userArg: str) -> None:
+    def __init__(self, userArg: str, netPattern: str, refPattern: str,
+                 vspace: int, hspace: int, rotation: int) -> None:
         self.userArg = userArg
+        self.netPattern = netPattern
+        self.refPattern = refPattern
+        self.vspace = vspace
+        self.hspace = hspace
+        self.rotation = rotation
 
-    def buildLayout(self, panel: Panel, inputFile: str) -> Iterable[Substrate]:
+    def buildLayout(self, panel: Panel, inputFile: str,
+                    sourceArea: pcbnew.wxRect) -> Iterable[Substrate]:
         """
         This function is supposed to build the layout (append the boards to the
         panel) and return an iterable of substrates of these boards.
@@ -109,14 +112,14 @@ class LayoutPlugin:
         iterable of extra substrates that represent soon-to-be frame of the
         panel.
         """
-        raise KiKitDefault()
+        return panel.buildPartitionLineFromBB(framingSubstrates)
 
     def buildExtraCuts(self, panel: Panel) -> Iterable[LineString]:
         """
         This function can return extra cuts, e.g., from internal backbone. It
         shouldn't deal with tab cuts.
         """
-        raise KiKitDefault()
+        return []
 
 
 class FramingPlugin:

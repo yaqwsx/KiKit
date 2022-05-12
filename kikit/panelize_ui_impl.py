@@ -217,23 +217,38 @@ def obtainPreset(presetPaths, validate=True, **kwargs):
     postProcessPreset(preset)
     return preset
 
-def buildLayout(layout, panel, sourceBoard, sourceArea):
+def buildLayout(layout, panel, sourceBoard, sourceArea, framing):
     """
     Build layout for the boards - e.g., make a grid out of them.
 
-    Return the list of created substrates.
+    Return the list of created substrates and framing substrates. Also ensures
+    that the partition line is build properly.
     """
     try:
         type = layout["type"]
-        if type in ["grid"]:
+        if type == "grid":
             placementClass = getPlacementClass(layout["alternation"])
-            return panel.makeGrid(
+            substrates = panel.makeGrid(
                 boardfile=sourceBoard, sourceArea=sourceArea,
                 rows=layout["rows"], cols=layout["cols"], destination=wxPointMM(50, 50),
                 rotation=layout["rotation"],
                 verSpace=layout["vspace"], horSpace=layout["hspace"],
                 placementClass=placementClass,
                 netRenamePattern=layout["renamenet"], refRenamePattern=layout["renameref"])
+            framingSubstrates = dummyFramingSubstrate(substrates, frameOffset(framing))
+            panel.buildPartitionLineFromBB(framingSubstrates)
+            backboneCuts = buildBackBone(layout, panel, substrates, framing)
+            return substrates, framingSubstrates, backboneCuts
+        if type == "plugin":
+            lPlugin = layout["code"](layout["arg"], layout["renamenet"],
+                                       layout["renameref"], layout["vspace"],
+                                       layout["hspace"], layout["rotation"])
+            substrates = lPlugin.buildLayout(panel, sourceBoard, sourceArea)
+            framingSubstrates = dummyFramingSubstrate(substrates, frameOffset(framing))
+            lPlugin.buildPartitionLine(panel, framingSubstrates)
+            backboneCuts = lPlugin.buildExtraCuts(panel)
+            return substrates, framingSubstrates, backboneCuts
+
         raise PresetError(f"Unknown type '{type}' of layout specification.")
     except KeyError as e:
         raise PresetError(f"Missing parameter '{e}' in section 'layout'")
