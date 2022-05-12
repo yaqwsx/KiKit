@@ -26,6 +26,10 @@ def encodePreset(value):
     """
     Convert a preset into its stringified version.
     """
+    if hasattr(value, "__kikit_preset_repr"):
+        return getattr(value, "__kikit_preset_repr")
+    if value is None:
+        return "none"
     if isinstance(value, BaseValue):
         return str(value)
     if isinstance(value, EDA_TEXT_HJUSTIFY_T) or isinstance(value, EDA_TEXT_VJUSTIFY_T):

@@ -72,6 +72,7 @@ class SPlugin(SectionBase):
                  else self.loadFromModule(moduleName, pluginName)
         if not issubclass(plugin, self.pluginType):
             raise RuntimeError(f"Invalid plugin type specified, {self.pluginType.__name__} expected")
+        setattr(plugin, "__kikit_preset_repr", x)
         return plugin
 
     def loadFromFile(self, file, name):
