@@ -10,6 +10,15 @@ When you do not specify the source are explicitly, KiKit takes the board outline
 bounding box as the source area. Therefore, by default, components outside the
 board substrate are not copied to panel.
 
+**Since version 1.1 this behavior, however, changes for footprints**. KiKit
+decides whether to keep a footprint or not based on whether its origin fits
+inside the source area or not. For graphical items, the behavior remains the
+same. The reason for this change is that often footprints reach out beyond the
+board edge (e.g., connectors) and the users don't want to remove them. On the
+other hand, graphical items (e.g., texts or arrows towards the board) are purely
+for documentation purposes and thus, they shouldn't be included in the panelized
+design.
+
 Note that this is intended behavior; for once it is consistent with KiCAD
 behavior of user selection and also it allows to easily ignore surrounding
 comments and drawings in the board sheet (it makes no sense to have 12 same
@@ -68,10 +77,8 @@ Prompt.
 ## I would like to make a panel out of different designs, but there is no such option in help
 
 KiKit supports such feature. But it is not available from CLI. You have to write
-a simple Python script describing the panel and use KiKit as a library. An
-example of such a script can be found
-[here](https://github.com/RoboticsBrno/RB0002-BatteryPack/blob/baa010a6cda7d175eb96d8e656043b8ac2444515/scripts/panelizeBattery.py).
-Also, please refer to the [panelization
+a simple Python script describing the panel and use KiKit as a library. Also,
+please refer to the [panelization
 documentation](https://github.com/yaqwsx/KiKit/blob/master/doc/panelization.md).
 
 If you wonder why is it in such way: there are infinitely many ways to panel

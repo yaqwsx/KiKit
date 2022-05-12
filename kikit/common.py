@@ -3,7 +3,7 @@ from typing import Optional, Tuple, Union
 from kikit.typing import Box
 from pcbnewTransition import pcbnew, isV6
 from kikit.intervals import Interval, AxialLine
-from pcbnew import wxPoint, wxRect
+from pcbnew import wxPoint, wxRect, EDA_RECT
 import os
 from itertools import product, chain, islice
 import numpy as np
@@ -31,12 +31,22 @@ def toMm(kiUnits):
     """Convert KiCAD internal units to millimeters"""
     return pcbnew.ToMM(int(kiUnits))
 
-def fitsIn(what, where):
-    """ Return true iff 'what' (wxRect) is fully contained in 'where' (wxRect) """
-    return (what.GetX() >= where.GetX() and
-            what.GetX() + what.GetWidth() <= where.GetX() + where.GetWidth() and
-            what.GetY() >= where.GetY() and
-            what.GetY() + what.GetHeight() <= where.GetY() + where.GetHeight())
+def fitsIn(what: Union[wxRect, wxPoint, EDA_RECT], where: wxRect) -> bool:
+    """
+    Return true iff 'what' (wxRect or wxPoint) is fully contained in 'where'
+    (wxRect)
+    """
+    assert isinstance(what, (wxRect, EDA_RECT, wxPoint))
+    if isinstance(what, wxPoint):
+        return (what[0] >= where.GetX() and
+                what[0] <= where.GetX() + where.GetWidth() and
+                what[1] >= where.GetY() and
+                what[1] <= where.GetY() + where.GetHeight())
+    else:
+        return (what.GetX() >= where.GetX() and
+                what.GetX() + what.GetWidth() <= where.GetX() + where.GetWidth() and
+                what.GetY() >= where.GetY() and
+                what.GetY() + what.GetHeight() <= where.GetY() + where.GetHeight())
 
 def combineBoundingBoxes(a, b):
     """ Retrun wxRect as a combination of source bounding boxes """
@@ -66,8 +76,10 @@ def collectItems(boardCollection, sourceArea):
     return list([x for x in boardCollection if fitsIn(x.GetBoundingBox(), sourceArea)])
 
 def collectFootprints(boardCollection, sourceArea):
-    """ Returns a list of board footprints fully contained in the source area ignoring reference a value label"""
-    return list([x for x in boardCollection if fitsIn(x.GetBoundingBox(False, False), sourceArea)])
+    """
+    Returns a list of board footprints Which origin fits inside the source area.
+    """
+    return list([x for x in boardCollection if fitsIn(x.GetPosition(), sourceArea)])
 
 def getBBoxWithoutContours(edge):
     width = edge.GetWidth()
