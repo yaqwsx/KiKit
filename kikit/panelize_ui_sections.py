@@ -250,7 +250,7 @@ LAYOUT_SECTION = {
     "code": SPlugin(
         plugin.LayoutPlugin,
         typeIn(["plugin"]),
-        "Plugin specification as moduleName:pluginName"),
+        "Plugin specification as moduleName.pluginName"),
     "arg": SStr(
         typeIn(["plugin"]),
         "String argument for the layout plugin")
@@ -296,7 +296,7 @@ def ppSource(section):
 
 TABS_SECTION = {
     "type": SChoice(
-        ["none", "fixed", "spacing", "full", "corner", "annotation"],
+        ["none", "fixed", "spacing", "full", "corner", "annotation", "plugin"],
         always(),
         "Tab type"),
     "vwidth": SLength(
@@ -322,7 +322,14 @@ TABS_SECTION = {
         "Number of tabs in a given direction."),
     "tabfootprints": SFootprintList(
         typeIn(["annotation"]),
-        "Specify custom footprints that will be used for tab annotations.")
+        "Specify custom footprints that will be used for tab annotations."),
+    "code": SPlugin(
+        plugin.TabsPlugin,
+        typeIn(["plugin"]),
+        "Plugin specification as moduleName.pluginName"),
+    "arg": SStr(
+        typeIn(["plugin"]),
+        "String argument for the layout plugin")
 }
 
 def ppTabs(section):
@@ -332,7 +339,7 @@ def ppTabs(section):
 
 CUTS_SECTION = {
     "type": SChoice(
-        ["none", "mousebites", "vcuts", "layer"],
+        ["none", "mousebites", "vcuts", "layer", "plugin"],
         always(),
         "Cut type"),
     "drill": SLength(
@@ -355,7 +362,14 @@ CUTS_SECTION = {
         "Approximate curves with straight cut"),
     "layer": SLayer(
         typeIn(["vcuts", "layer"]),
-        "Specify layer for the drawings")
+        "Specify layer for the drawings"),
+    "code": SPlugin(
+        plugin.CutsPlugin,
+        typeIn(["plugin"]),
+        "Plugin specification as moduleName.pluginName"),
+    "arg": SStr(
+        typeIn(["plugin"]),
+        "String argument for the layout plugin")
 }
 
 def ppCuts(section):
@@ -363,7 +377,7 @@ def ppCuts(section):
 
 FRAMING_SECTION = {
     "type": SChoice(
-        ["none", "railstb", "railslr", "frame", "tightframe"],
+        ["none", "railstb", "railslr", "frame", "tightframe", "plugin"],
         always(),
         "Framing type"),
     "hspace": SLength(
@@ -391,6 +405,13 @@ FRAMING_SECTION = {
     "fillet": SLength(
         typeIn(["tightframe", "frame", "railslr", "railstb"]),
         "Add fillet to the 4 corners of the panel. Specify fillet radius."),
+    "code": SPlugin(
+        plugin.FramingPlugin,
+        typeIn(["plugin"]),
+        "Plugin specification as moduleName.pluginName"),
+    "arg": SStr(
+        typeIn(["plugin"]),
+        "String argument for the layout plugin")
 }
 
 def ppFraming(section):
@@ -401,7 +422,7 @@ def ppFraming(section):
 
 TOOLING_SECTION = {
     "type": SChoice(
-        ["none", "3hole", "4hole"],
+        ["none", "3hole", "4hole", "plugin"],
         always(),
         "Tooling type"),
     "hoffset": SLength(
@@ -415,7 +436,14 @@ TOOLING_SECTION = {
         "Hole diameter"),
     "paste": SBool(
         typeIn(["3hole", "4hole"]),
-        "Include holes on the paste layer")
+        "Include holes on the paste layer"),
+    "code": SPlugin(
+        plugin.ToolingPlugin,
+        typeIn(["plugin"]),
+        "Plugin specification as moduleName.pluginName"),
+    "arg": SStr(
+        typeIn(["plugin"]),
+        "String argument for the layout plugin")
 }
 
 def ppTooling(section):
@@ -423,7 +451,7 @@ def ppTooling(section):
 
 FIDUCIALS_SECTION = {
     "type": SChoice(
-        ["none", "3fid", "4fid"],
+        ["none", "3fid", "4fid", "plugin"],
         always(),
         "Fiducial type"),
     "hoffset": SLength(
@@ -437,7 +465,14 @@ FIDUCIALS_SECTION = {
         "Diameter of the copper part"),
     "opening": SLength(
         typeIn(["3fid", "4fid"]),
-        "Diameter of the opening")
+        "Diameter of the opening"),
+    "code": SPlugin(
+        plugin.FiducialsPlugin,
+        typeIn(["plugin"]),
+        "Plugin specification as moduleName.pluginName"),
+    "arg": SStr(
+        typeIn(["plugin"]),
+        "String argument for the layout plugin")
 }
 
 def ppFiducials(section):

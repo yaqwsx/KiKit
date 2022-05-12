@@ -34,7 +34,9 @@
         "vwidth": "3mm",
         "mindistance": "0mm",
         "spacing": "10mm",
-        "tabfootprints": "kikit:Tab"
+        "tabfootprints": "kikit:Tab",
+        "code": "none",
+        "arg": ""
     },
     "cuts": {
         "type": "none",
@@ -44,7 +46,9 @@
         "offset": "0mm",
         "prolong": "0mm",
         "drill": "0.5mm",
-        "spacing": "0.8mm"
+        "spacing": "0.8mm",
+        "code": "none",
+        "arg": ""
     },
     "framing": {
         "type": "none",
@@ -56,21 +60,27 @@
         "hspace": "2mm",
         "vspace": "2mm",
         "chamfer": "0mm",
-        "fillet": "0mm"
+        "fillet": "0mm",
+        "code": "none",
+        "arg": ""
     },
     "tooling": {
         "type": "none",
         "layout": "3hole",
         "hoffset": "0mm",
         "voffset": "0mm",
-        "paste": false
+        "paste": false,
+        "code": "none",
+        "arg": ""
     },
     "fiducials": {
         "type": "none",
         "hoffset": "0mm",
         "voffset": "0mm",
         "coppersize": "1mm",
-        "opening": "1mm"
+        "opening": "1mm",
+        "code": "none",
+        "arg": ""
     },
     "text": {
         "type": "none",

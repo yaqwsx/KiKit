@@ -209,6 +209,42 @@ load common
         $RES/conn.kicad_pcb panel-original.kicad_pcb
 }
 
+@test "Use framing plugin" {
+    kikit panelize --dump preset.json \
+        --layout "grid" \
+        --tabs 'fixed; hwidth: 10mm; vwidth: 15mm' \
+        --framing "plugin; code: $RES/testplugin.py.MyFraming" \
+        --cuts 'vcuts; clearance: 1.5mm' \
+        --debug 'trace: true; deterministic: true' \
+        $RES/conn.kicad_pcb panel-original.kicad_pcb
+}
+
+@test "Use tabs plugin" {
+    kikit panelize --dump preset.json \
+        --layout "grid" \
+        --tabs "plugin; code: $RES/testplugin.py.MyTabs" \
+        --cuts 'vcuts; clearance: 1.5mm' \
+        --debug 'trace: true; deterministic: true' \
+        $RES/conn.kicad_pcb panel-original.kicad_pcb
+}
+
+@test "Use cuts plugin" {
+    kikit panelize --dump preset.json \
+        --layout "grid" \
+        --cuts "plugin; code: $RES/testplugin.py.MyCuts" \
+        --debug 'trace: true; deterministic: true' \
+        $RES/conn.kicad_pcb panel-original.kicad_pcb
+}
+
+@test "Use fiducials and tooling plugin" {
+    kikit panelize --dump preset.json \
+        --layout "grid" \
+        --fiducials "plugin; code: $RES/testplugin.py.MyFiducials" \
+        --tooling "plugin; code: $RES/testplugin.py.MyTooling" \
+        --debug 'trace: true; deterministic: true' \
+        $RES/conn.kicad_pcb panel-original.kicad_pcb
+}
+
 @test "Dumping preset" {
     kikit panelize --dump preset.json \
         --layout 'grid; rows: 2; cols: 2; space: 2mm' \

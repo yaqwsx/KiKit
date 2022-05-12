@@ -1,8 +1,9 @@
 from typing import Iterable
 from kikit.panelize import Panel
-from kikit.plugin import HookPlugin, LayoutPlugin
+from kikit.plugin import CutsPlugin, FiducialsPlugin, FramingPlugin, HookPlugin, LayoutPlugin, TabsPlugin, ToolingPlugin
 from kikit.substrate import Substrate
 from pcbnewTransition import pcbnew
+from shapely.geometry import LineString
 
 class MyPlugin(HookPlugin):
     def prePanelSetup(self, panel: Panel) -> None:
@@ -32,3 +33,29 @@ class MyLayout(LayoutPlugin):
         panel.appendBoard(inputFile, pcbnew.wxPointMM(0, 0), sourceArea)
         panel.appendBoard(inputFile, pcbnew.wxPointMM(100, 100), sourceArea)
         return panel.substrates
+
+class MyFraming(FramingPlugin):
+    def buildFraming(self, panel: Panel) -> Iterable[LineString]:
+        return []
+
+    def buildDummyFramingSubstrates(self, substrates: Iterable[Substrate]) -> Iterable[Substrate]:
+        return []
+
+class MyTabs(TabsPlugin):
+    def buildTabAnnotations(self, panel: Panel) -> None:
+       pass
+
+class MyCuts(CutsPlugin):
+    def renderTabCuts(self, panel: Panel, cuts: Iterable[LineString]) -> None:
+        pass
+
+    def renderOtherCuts(self, panel: Panel, cuts: Iterable[LineString]) -> None:
+        pass
+
+class MyFiducials(FiducialsPlugin):
+    def buildFiducials(self, panel: Panel) -> None:
+        pass
+
+class MyTooling(ToolingPlugin):
+    def buildTooling(self, panel: Panel) -> None:
+        pass

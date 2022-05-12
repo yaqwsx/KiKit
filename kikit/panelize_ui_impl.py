@@ -239,7 +239,7 @@ def buildLayout(layout, panel, sourceBoard, sourceArea, framing):
                 verSpace=layout["vspace"], horSpace=layout["hspace"],
                 placementClass=placementClass,
                 netRenamePattern=layout["renamenet"], refRenamePattern=layout["renameref"])
-            framingSubstrates = dummyFramingSubstrate(substrates, frameOffset(framing))
+            framingSubstrates = dummyFramingSubstrate(substrates, framing)
             panel.buildPartitionLineFromBB(framingSubstrates)
             backboneCuts = buildBackBone(layout, panel, substrates, framing)
             return substrates, framingSubstrates, backboneCuts
@@ -248,7 +248,7 @@ def buildLayout(layout, panel, sourceBoard, sourceArea, framing):
                                        layout["renameref"], layout["vspace"],
                                        layout["hspace"], layout["rotation"])
             substrates = lPlugin.buildLayout(panel, sourceBoard, sourceArea)
-            framingSubstrates = dummyFramingSubstrate(substrates, frameOffset(framing))
+            framingSubstrates = dummyFramingSubstrate(substrates, framing)
             lPlugin.buildPartitionLine(panel, framingSubstrates)
             backboneCuts = lPlugin.buildExtraCuts(panel)
             return substrates, framingSubstrates, backboneCuts
@@ -284,6 +284,9 @@ def buildTabs(properties, panel, substrates, boundarySubstrates, frameOffsets):
             return panel.buildFullTabs(frameOffsets)
         if type == "annotation":
             return panel.buildTabsFromAnnotations()
+        if type == "plugin":
+            pluginInst = properties["code"](properties["arg"])
+            return pluginInst.buildTabs(panel)
         raise PresetError(f"Unknown type '{type}' of tabs specification.")
     except KeyError as e:
         raise PresetError(f"Missing parameter '{e}' in section 'tabs'")
@@ -315,12 +318,18 @@ def makeTabCuts(properties, panel, cuts):
     """
     Perform cuts on tab (does not ignore offset)
     """
+    if properties["type"] == "plugin":
+        pluginInst = properties["code"](properties["arg"])
+        return pluginInst.renderTabCuts(panel, cuts)
     makeCuts(properties, panel, cuts, False)
 
 def makeOtherCuts(properties, panel, cuts):
     """
     Perform non-tab cuts (ignore offset)
     """
+    if properties["type"] == "plugin":
+        pluginInst = properties["code"](properties["arg"])
+        return pluginInst.renderOtherCuts(panel, cuts)
     makeCuts(properties, panel, cuts, True)
 
 def makeCuts(properties, panel, cuts, ignoreOffset):
@@ -353,11 +362,14 @@ def polygonToSubstrate(polygon):
     s.union(polygon)
     return s
 
-def dummyFramingSubstrate(substrates, frameOffset):
+def dummyFramingSubstrate(substrates, framingPreset):
     """
     Generate dummy substrates that pretend to be the frame (to appear)
     """
-    vSpace, hSpace = frameOffset
+    if framingPreset["type"] == "plugin":
+        pluginInst = framingPreset["code"](framingPreset["arg"])
+        return pluginInst.buildDummyFramingSubstrates(substrates)
+    vSpace, hSpace = frameOffset(framingPreset)
     dummy = []
     minx, miny, maxx, maxy = substrates[0].bounds()
     for s in substrates:
@@ -434,6 +446,9 @@ def buildFraming(preset, panel):
             panel.boardSubstrate.removeIslands()
             addFilletAndChamfer(preset, panel)
             return []
+        if type == "plugin":
+            framePlugin = preset["code"](preset["arg"])
+            return framePlugin.buildFraming(panel)
         raise PresetError(f"Unknown type '{type}' of frame specification.")
     except KeyError as e:
         raise PresetError(f"Missing parameter '{e}' in section 'framing'")
@@ -446,6 +461,9 @@ def buildTooling(preset, panel):
         type = preset["type"]
         if type == "none":
             return
+        if type == "plugin":
+            pluginInst = preset["code"](preset["arg"])
+            return pluginInst.buildTooling(panel)
         hoffset, voffset = preset["hoffset"], preset["voffset"]
         diameter = preset["size"]
         paste = preset["paste"]
@@ -467,6 +485,9 @@ def buildFiducials(preset, panel):
         type = preset["type"]
         if type == "none":
             return
+        if type == "plugin":
+            pluginInst = preset["code"](preset["arg"])
+            return pluginInst.buildFiducials(panel)
         hoffset, voffset = preset["hoffset"], preset["voffset"]
         coppersize, opening = preset["coppersize"], preset["opening"]
         if type == "3fid":
