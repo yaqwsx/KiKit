@@ -94,7 +94,8 @@
         "hjustify": "center",
         "vjustify": "center",
         "thickness": "0.3mm",
-        "layer": "F.SilkS"
+        "layer": "F.SilkS",
+        "plugin": "none"
     },
     "post": {
         "type": "auto",

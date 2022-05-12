@@ -516,7 +516,11 @@ TEXT_SECTION = {
     "anchor": SChoice(
         ANCHORS,
         typeIn(["simple"]),
-        "Anchor for positioning the text")
+        "Anchor for positioning the text"),
+    "plugin": SPlugin(
+        plugin.TextVariablePlugin,
+        typeIn(["simple"]),
+        "Plugin for extra text variables")
 }
 
 def ppText(section):

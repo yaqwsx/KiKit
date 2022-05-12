@@ -1,5 +1,6 @@
 import datetime as dt
 from typing import Callable, Optional, Dict, Any
+from pcbnewTransition import pcbnew
 
 
 class Formatter:
@@ -15,7 +16,7 @@ class Formatter:
             self.value = self.fn()
         return self.value
 
-def kikitTextVars() -> Dict[str, Any]:
+def kikitTextVars(board: pcbnew.BOARD) -> Dict[str, Any]:
     return {
         "date": Formatter(lambda: dt.datetime.today().strftime("%Y-%m-%d")),
         "time24": Formatter(lambda: dt.datetime.today().strftime("%-H:%M")),

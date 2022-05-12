@@ -4,6 +4,7 @@ from kikit.panelize import *
 from kikit.defs import Layer
 from shapely.geometry import box
 from kikit.plugin import HookPlugin
+from kikit.text import kikitTextVars
 from kikit.units import BaseValue
 from kikit.panelize_ui_sections import *
 from kikit.substrate import SubstrateNeighbors
@@ -508,12 +509,19 @@ def buildText(preset, panel):
         type = preset["type"]
         if type == "none":
             return
+        variables = kikitTextVars(panel.board)
+        if preset["plugin"] is not None:
+            variables.update(preset["plugin"](panel.board).variables())
+        try:
+            text = preset["text"].format(**variables)
+        except KeyError as e:
+            raise RuntimeError(f"Unknown variable {e} in text:\n{preset['text']}") from None
         if type == "simple":
             origin = resolveAnchor(preset["anchor"])(panel.boardSubstrate.boundingBox())
             origin += wxPoint(preset["hoffset"], preset["voffset"])
 
             panel.addText(
-                text=preset["text"],
+                text=text,
                 position=origin,
                 orientation=preset["orientation"],
                 width=preset["width"],
