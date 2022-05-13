@@ -447,6 +447,7 @@ class PanelizeDialog(wx.Dialog):
             if name.lower() not in preset:
                 continue
             section.populateInitialValue(preset[name.lower()])
+        self.buildOutputSections()
 
     def showOnlyRelevantFields(self):
         changed = False
