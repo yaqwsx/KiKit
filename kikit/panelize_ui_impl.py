@@ -379,18 +379,18 @@ def dummyFramingSubstrate(substrates, framingPreset):
         miny = min(miny, miny2)
         maxx = max(maxx, maxx2)
         maxy = max(maxy, maxy2)
-    width = fromMm(0)
     # Note that the constructed substrates has to have a non-zero width/height.
     # If the width is zero, we break the input condition of the neighbor finding
     # algorithm (as there is no distinguishion between left and right side)
+    width = fromMm(1)
     if vSpace is not None:
-        top = box(minx, miny - 2 * vSpace - width - 1, maxx, miny - 2 * vSpace)
-        bottom = box(minx, maxy + 2 * vSpace, maxx, maxy + 2 * vSpace + width + 1)
+        top = box(minx, miny - 2 * vSpace - width, maxx, miny - 2 * vSpace)
+        bottom = box(minx, maxy + 2 * vSpace, maxx, maxy + 2 * vSpace + width)
         dummy.append(polygonToSubstrate(top))
         dummy.append(polygonToSubstrate(bottom))
     if hSpace is not None:
-        left = box(minx - 2 * hSpace - width - 1, miny, minx - 2 * hSpace, maxy)
-        right = box(maxx + 2 * hSpace, miny, maxx + 2 * hSpace + width + 1, maxy)
+        left = box(minx - 2 * hSpace - width, miny, minx - 2 * hSpace, maxy)
+        right = box(maxx + 2 * hSpace, miny, maxx + 2 * hSpace + width, maxy)
         dummy.append(polygonToSubstrate(left))
         dummy.append(polygonToSubstrate(right))
     return dummy
