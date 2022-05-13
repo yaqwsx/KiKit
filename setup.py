@@ -45,7 +45,6 @@ setuptools.setup(
     ],
     install_requires=[
         "pcbnewTransition==0.2.0",
-        "numpy>=1.21",
         "shapely>=1.7",
         "click>=7.1",
         "markdown2>=2.4",
