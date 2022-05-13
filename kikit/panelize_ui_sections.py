@@ -381,10 +381,10 @@ FRAMING_SECTION = {
         always(),
         "Framing type"),
     "hspace": SLength(
-        typeIn(["frame", "railslr"]),
+        typeIn(["frame", "railslr", "tightframe"]),
         "Horizontal space between PCBs and the frame"),
     "vspace": SLength(
-        typeIn(["frame", "railstb"]),
+        typeIn(["frame", "railstb", "tightframe"]),
         "Vertical space between PCBs and the frame"),
     "space": SLength(
         never(),
