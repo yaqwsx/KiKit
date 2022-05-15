@@ -155,34 +155,43 @@ the CLI by specifying it first and omitting the `type` word; e.g., `--cuts
 
 ## Layout
 
-**Types**: grid
+**Types**: grid, plugin
 
 **Common options**:
 
-- `rows`, `cols`: Specify the number of boards in the grid pattern
 - `hspace`, `vspace`, `space`: Specify the gap between the boards. You can
   specify separately vertical and horizontal spacing or you can specify `space`
   to make them the same (it has higher priority).
 - `rotation`: Rotate the boards before placing them in the panel
+- `renamenet`, `renameref`: A pattern by which to rename the nets and
+  references. You can use `{n}` and `{orig}` to get the board number and
+  original name. Default values are `Board_{n}-{orig}` for nets and `{orig}` for
+  references.
+
+#### Grid
+
+The boars are placed in a grid pattern connected by tabs. There are no special
+options.
+
+- `rows`, `cols`: Specify the number of boards in the grid pattern
 - `alternation`: Specify alternations of board rotation.
     - `none`: Do not alternate
     - `rows`: Rotate boards by 180° on every next row
     - `cols`: Rotate boards by 180° on every next column
     - `rowsCols`: Rotate boards by 180° based on a chessboard pattern
-- `renamenet`, `renameref`: A pattern by which to rename the nets and
-  references. You can use `{n}` and `{orig}` to get the board number and
-  original name. Default values are `Board_{n}-{orig}` for nets and `{orig}` for
-  references.
 - `vbackbone`, `hbackbone`: The width of vertical and horizontal backbone (0
   means no backbone). The backbone does not increase the spacing of the boards.
 - `vbonecut`, `hbonecut`: true/false. If there are both backbones specified,
   specifies if there should be a vertical or horizontal cut (or both) where the
   backbones cross.
 
-#### Grid
+#### Plugin
 
-The boars are placed in a grid pattern connected by tabs. There are no special
-options.
+Implements a custom layout based on a plugin.
+
+- `code`: the plugin specification. See (plugin documentation)[plugin.md] for
+  more details
+- `arg`: text argument for the user plugin
 
 ## Source
 
@@ -231,7 +240,7 @@ must lie inside the
 
 ## Tabs
 
-**Types**: fixed, spacing, full, annotation
+**Types**: fixed, spacing, full, annotation, plugin
 
 Place tabs. To make some of the options clear, please see the [explanation of
 tab placement process](understandingTabs.md).
@@ -282,11 +291,20 @@ field of the component as `KIKIT:<propertyname>`:
 
 - `width`: width of the tab.
 
+#### Plugin
+
+Tabs based on a plugin.
+
+- `code`: the plugin specification. See (plugin documentation)[plugin.md] for
+  more details
+- `arg`: text argument for the user plugin
+
+
 ## Cuts
 
 Specify how to perform the cuts on the tabs separating the board.
 
-**Types**: none, mousebites, vcuts, layer
+**Types**: none, mousebites, vcuts, layer, plugin
 
 #### None
 
@@ -322,13 +340,21 @@ design.
 - `prolong` - distance for tangential prolongation of the cuts. It has the same
   meaning as mousebites.
 
+#### Plugin
+
+Cuts based on a plugin.
+
+- `code`: the plugin specification. See (plugin documentation)[plugin.md] for
+  more details
+- `arg`: text argument for the user plugin
+
 
 ## Framing
 
 KiKit allows you to frame the panel with a full frame, or bottom/top or
 left/right rails.
 
-**Types**: none, railstb, railslr, frame, tightframe
+**Types**: none, railstb, railslr, frame, tightframe, plugin
 **Common options**:
 
 - `hspace`, `vspace`, `space` - specify the space between PCB and the
@@ -355,12 +381,20 @@ boards have just a milled slot around their perimeter.
 
 - `slotwidth` - width of the milled slot.
 
+#### Plugin
+
+Frame based on a plugin.
+
+- `code`: the plugin specification. See (plugin documentation)[plugin.md] for
+  more details
+- `arg`: text argument for the user plugin
+
 ## Tooling
 
 Add tooling holes to the (rail/frame of) the panel. The holes are positioned
 by
 
-**Types**: none, 3hole, 4hole
+**Types**: none, 3hole, 4hole, plugin
 
 **Common options**:
 
@@ -369,16 +403,32 @@ by
 - `paste` - if true, the holes are included in the paste layer (therefore they
   appear on the stencil).
 
+#### Plugin
+
+Tooling based on a plugin.
+
+- `code`: the plugin specification. See (plugin documentation)[plugin.md] for
+  more details
+- `arg`: text argument for the user plugin
+
 ## Fiducials
 
 Add fiducial to the (rail/frame of) the panel.
 
-**Types**: none, 3fid, 4fid
+**Types**: none, 3fid, 4fid, plugin
 
 **Common options**:
 
 - `hoffset`, `voffset` - specify the offset from from panel edges
 - `coppersize`, `opening` - diameter of the copper spot and solder mask opening
+
+#### Plugin
+
+Fiducials based on a plugin.
+
+- `code`: the plugin specification. See (plugin documentation)[plugin.md] for
+  more details
+- `arg`: text argument for the user plugin
 
 ## Text
 
