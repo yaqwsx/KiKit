@@ -407,6 +407,7 @@ need more text or more sophisticated placing options, see `script` option from
   Default `center`
 - `thickness` - stroke thickness. Default `0.3mm`.
 - `layer` - specify text layer
+- `plugin` - specify the plugin that provides extra variables for the text
 
 ### Available variables in text
 
@@ -417,6 +418,9 @@ need more text or more sophisticated placing options, see `script` option from
 - `boardRevision` - the revision from the source board
 - `boardCompany` - the company from the source board
 - `boardComment1`-`boardComment9` - comments from the source board
+
+You can get extra variables by providing custom [text plugin](plugins.md) via
+the `plugin` field.
 
 ## Page
 
