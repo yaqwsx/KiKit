@@ -382,7 +382,9 @@ Add fiducial to the (rail/frame of) the panel.
 
 ## Text
 
-Add text to the panel. Allows you to put a single block of text on panel. If you
+Add text to the panel. Allows you to put a single block of text on panel. You
+can use variables enclosed in `{}`. E.g. `{boardTitle} | {boardDate}`. The list
+of all available variables in listed bellow.  If you
 need more text or more sophisticated placing options, see `script` option from
 `postprocess`.
 
@@ -405,6 +407,16 @@ need more text or more sophisticated placing options, see `script` option from
   Default `center`
 - `thickness` - stroke thickness. Default `0.3mm`.
 - `layer` - specify text layer
+
+### Available variables in text
+
+- `date` - formats current date as `<year>-<month>-<day>`
+- `time24` - formats current time in 24-hour format
+- `boardTitle` - the title from the source board
+- `boardDate` - the date from the source board
+- `boardRevision` - the revision from the source board
+- `boardCompany` - the company from the source board
+- `boardComment1`-`boardComment9` - comments from the source board
 
 ## Page
 

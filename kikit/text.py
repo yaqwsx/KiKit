@@ -17,7 +17,16 @@ class Formatter:
         return self.value
 
 def kikitTextVars(board: pcbnew.BOARD) -> Dict[str, Any]:
-    return {
+    vars = {
         "date": Formatter(lambda: dt.datetime.today().strftime("%Y-%m-%d")),
         "time24": Formatter(lambda: dt.datetime.today().strftime("%-H:%M")),
+        "boardTitle": Formatter(lambda: board.GetTitleBlock().GetTitle()),
+        "boardDate": Formatter(lambda: board.GetTitleBlock().GetDate()),
+        "boardRevision": Formatter(lambda: board.GetTitleBlock().GetRevision()),
+        "boardCompany": Formatter(lambda: board.GetTitleBlock().GetCompany())
     }
+
+    for i in range(10):
+        vars[f"boardComment{i + 1}"] = Formatter(lambda: board.GetTitleBlock().GetComment(i))
+
+    return vars
