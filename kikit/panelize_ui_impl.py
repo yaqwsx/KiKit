@@ -233,12 +233,11 @@ def buildLayout(layout, panel, sourceBoard, sourceArea, framing):
         type = layout["type"]
         if type == "grid":
             placementClass = getPlacementClass(layout["alternation"])
+            placer = placementClass(verSpace=layout["vspace"], horSpace=layout["hspace"])
             substrates = panel.makeGrid(
                 boardfile=sourceBoard, sourceArea=sourceArea,
-                rows=layout["rows"], cols=layout["cols"], destination=wxPointMM(50, 50),
-                rotation=layout["rotation"],
-                verSpace=layout["vspace"], horSpace=layout["hspace"],
-                placementClass=placementClass,
+                rows=layout["rows"], cols=layout["cols"], destination=wxPointMM(0, 0),
+                rotation=layout["rotation"], placer=placer,
                 netRenamePattern=layout["renamenet"], refRenamePattern=layout["renameref"])
             framingSubstrates = dummyFramingSubstrate(substrates, framing)
             panel.buildPartitionLineFromBB(framingSubstrates)

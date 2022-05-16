@@ -33,28 +33,47 @@ class PanelError(RuntimeError):
 def identity(x):
     return x
 
-class BasicGridPosition:
+class GridPlacerBase:
+    def position(self, i: int, j: int, boardSize: Optional[wxRect]) -> wxPoint:
+        """
+        Given row and col coords of a board, return physical physical position
+        of the board. All function calls (except for 0, 0) also receive board
+        size.
+
+        The position of the board is relative to the top-left board, coordinates
+        (0, 0) should yield placement (0, 0).
+        """
+        raise NotImplementedError("GridPlacerBase.position has to be overridden")
+
+    def rotation(self, i: int, j: int) -> int:
+        """
+        Given row and col coords of a board, return the orientation of the board
+        """
+        return 0
+
+class BasicGridPosition(GridPlacerBase):
     """
-    Specify board position in the grid. This class
+    Specify board position in the grid.
     """
-    def __init__(self, destination, boardSize, horSpace, verSpace):
-        self.destination = destination
-        self.boardSize = boardSize
+    def __init__(self, horSpace: int, verSpace: int) -> None:
         self.horSpace = horSpace
         self.verSpace = verSpace
 
-    def position(self, i, j):
-        return wxPoint(self.destination[0] + j * (self.boardSize.GetWidth() + self.horSpace),
-                       self.destination[1] + i * (self.boardSize.GetHeight() + self.verSpace))
+    def position(self, i: int, j: int, boardSize: Optional[wxRect]) -> wxPoint:
+        if boardSize is None:
+            assert i == 0 and j == 0
+            return wxPoint(0, 0)
+        return wxPoint(j * (boardSize.GetWidth() + self.horSpace),
+                       i * (boardSize.GetHeight() + self.verSpace))
 
-    def rotation(self, i, j):
+    def rotation(self, i: int, j: int) -> int:
         return 0
 
 class OddEvenRowsPosition(BasicGridPosition):
     """
     Rotate boards by 180° for every row
     """
-    def rotation(self, i, j):
+    def rotation(self, i: int, j: int) -> int:
         if i % 2 == 0:
             return 0
         return 1800
@@ -63,7 +82,7 @@ class OddEvenColumnPosition(BasicGridPosition):
     """
     Rotate boards by 180° for every column
     """
-    def rotation(self, i, j):
+    def rotation(self, i: int, j: int) -> int:
         if j % 2 == 0:
             return 0
         return 1800
@@ -72,7 +91,7 @@ class OddEvenRowsColumnsPosition(BasicGridPosition):
     """
     Rotate boards by 180 for every row and column
     """
-    def rotation(self, i, j):
+    def rotation(self, i: int, j: int) -> int:
         if (i % 2) == (j % 2):
             return 0
         return 1800
@@ -840,20 +859,74 @@ class Panel:
             segments.append((label, None))
         return segments
 
-    def _placeBoardsInGrid(self, boardfile, rows, cols, destination, sourceArea, tolerance,
-                  verSpace, horSpace, rotation, netRenamer, refRenamer,
-                  placementClass):
+    def makeGrid(self, boardfile: str, sourceArea: wxRect, rows: int, cols: int,
+                 destination: wxPoint, placer: GridPlacerBase,
+                 rotation: int=0, netRenamePattern: str="Board_{n}-{orig}",
+                 refRenamePattern: str="Board_{n}-{orig}", tolerance: int=0) \
+                     -> List[Substrate]:
         """
-        Create a grid of boards, return source board size aligned at the top
-        left corner
+        Place the given board in a grid pattern with given spacing. The board
+        position of the gride is guided via placer. The nets and references are
+        renamed according to the patterns.
+
+        Parameters:
+
+        boardfile - the path to the filename of the board to be added
+
+        sourceArea - the region within the file specified to be selected (see
+        also tolerance, below)
+            set to None to automatically calculate the board area from the board
+            file with the given tolerance
+
+        rows - the number of boards to place in the vertical direction
+
+        cols - the number of boards to place in the horizontal direction
+
+        destination - the center coordinates of the first board in the grid (for
+        example, wxPointMM(100,50))
+
+        rotation - the rotation angle to be applied to the source board before
+        placing it
+
+        placer - the placement rules for boards. The builtin classes are:
+            BasicGridPosition - places each board in its original orientation
+            OddEvenColumnPosition - every second column has the boards rotated
+            by 180 degrees OddEvenRowPosition - every second row has the boards
+            rotated by 180 degrees OddEvenRowsColumnsPosition - every second row
+            and column has the boards rotated by 180 degrees
+
+        netRenamePattern - the pattern according to which the net names are
+        transformed
+            The default pattern is "Board_{n}-{orig}" which gives each board its
+            own instance of its nets, i.e. GND becomes Board_0-GND for the first
+            board , and Board_1-GND for the second board etc
+
+        refRenamePattern - the pattern according to which the reference
+        designators are transformed
+            The default pattern is "Board_{n}-{orig}" which gives each board its
+            own instance of its reference designators, so R1 becomes Board_0-R1
+            for the first board, Board_1-R1 for the second board etc. To keep
+            references the same as in the original, set this to "{orig}"
+
+        tolerance - if no sourceArea is specified, the distance by which the
+        selection
+            area for the board should extend outside the board edge. If you have
+            any objects that are on or outside the board edge, make sure this is
+            big enough to include them. Such objects often include zone outlines
+            and connectors.
+
+        Returns a list of the placed substrates. You can use these to generate
+        tabs, frames, backbones, etc.
         """
-        boardSize = wxRect(0, 0, 0, 0)
+        substrateCount = len(self.substrates)
+        netRenamer = lambda x, y: netRenamePattern.format(n=x, orig=y)
+        refRenamer = lambda x, y: refRenamePattern.format(n=x, orig=y)
+
+        boardSize = None
         topLeftSize = None
-        placement = placementClass(destination, boardSize, horSpace, verSpace)
         for i, j in product(range(rows), range(cols)):
-            placement.boardSize = boardSize
-            dest = placement.position(i, j)
-            boardRotation = rotation + placement.rotation(i, j)
+            dest = destination + placer.position(i, j, topLeftSize)
+            boardRotation = rotation + placer.rotation(i, j)
             boardSize = self.appendBoard(
                 boardfile, dest, sourceArea=sourceArea,
                 tolerance=tolerance, origin=Origin.Center,
@@ -861,68 +934,7 @@ class Panel:
                 refRenamer=refRenamer)
             if not topLeftSize:
                 topLeftSize = boardSize
-        return topLeftSize
 
-    def makeGrid(self, boardfile, sourceArea, rows, cols, destination,
-                    verSpace, horSpace, rotation,
-                    placementClass=BasicGridPosition,
-                    netRenamePattern="Board_{n}-{orig}",
-                    refRenamePattern="Board_{n}-{orig}", tolerance=0):
-        """
-        Place the given board in a regular grid pattern with given spacing
-        (verSpace, horSpace). The board position can be fine-tuned via
-        placementClass. The nets and references are renamed according to the
-        patterns.
-
-        Parameters:
-
-        boardfile - the path to the filename of the board to be added
-
-        sourceArea - the region within the file specified to be selected (see also tolerance, below)
-            set to None to automatically calculate the board area from the board file with the given tolerance
-
-        rows - the number of boards to place in the vertical direction
-
-        cols - the number of boards to place in the horizontal direction
-
-        destination - the center coordinates of the first board in the grid (for example, wxPointMM(100,50))
-
-        verSpace - the vertical spacing (distance, not pitch) between boards
-
-        horSpace - the horizontal spacing (distance, not pitch) between boards
-
-        rotation - the rotation angle to be applied to the source board before placing it
-
-        placementClass - the placement rules for boards. The builtin classes are:
-            BasicGridPosition - places each board in its original orientation
-            OddEvenColumnPosition - every second column has the boards rotated by 180 degrees
-            OddEvenRowPosition - every second row has the boards rotated by 180 degrees
-            OddEvenRowsColumnsPosition - every second row and column has the boards rotated by 180 degrees
-
-        netRenamePattern - the pattern according to which the net names are transformed
-            The default pattern is "Board_{n}-{orig}" which gives each board its own instance of its nets,
-            i.e. GND becomes Board_0-GND for the first board , and Board_1-GND for the second board etc
-
-        refRenamePattern - the pattern according to which the reference designators are transformed
-            The default pattern is "Board_{n}-{orig}" which gives each board its own instance of its reference designators,
-            so R1 becomes Board_0-R1 for the first board, Board_1-R1 for the recond board etc. To keep references the
-            same as in the original, set this to "{orig}"
-
-        tolerance - if no sourceArea is specified, the distance by which the selection
-            area for the board should extend outside the board edge.
-            If you have any objects that are on or outside the board edge, make sure this is big enough to include them.
-            Such objects often include zone outlines and connectors.
-
-        Returns a list of the placed substrates. You can use these to generate
-        tabs, frames, backbones, etc.
-        """
-
-        substrateCount = len(self.substrates)
-        netRenamer = lambda x, y: netRenamePattern.format(n=x, orig=y)
-        refRenamer = lambda x, y: refRenamePattern.format(n=x, orig=y)
-        self._placeBoardsInGrid(boardfile, rows, cols, destination,
-                                sourceArea, tolerance, verSpace, horSpace,
-                                rotation, netRenamer, refRenamer, placementClass)
         return self.substrates[substrateCount:]
 
     def makeFrame(self, width, hspace, vspace):
