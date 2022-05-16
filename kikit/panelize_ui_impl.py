@@ -233,7 +233,13 @@ def buildLayout(layout, panel, sourceBoard, sourceArea, framing):
         type = layout["type"]
         if type == "grid":
             placementClass = getPlacementClass(layout["alternation"])
-            placer = placementClass(verSpace=layout["vspace"], horSpace=layout["hspace"])
+            placer = placementClass(
+                verSpace=layout["vspace"],
+                horSpace=layout["hspace"],
+                hbonewidth=layout["hbackbone"],
+                vbonewidth=layout["vbackbone"],
+                hboneskip=layout["hboneskip"],
+                vboneskip=layout["vboneskip"])
             substrates = panel.makeGrid(
                 boardfile=sourceBoard, sourceArea=sourceArea,
                 rows=layout["rows"], cols=layout["cols"], destination=wxPointMM(0, 0),
@@ -297,7 +303,8 @@ def buildBackBone(layout, panel, substrates, frameSpace):
     """
     try:
         return panel.renderBackbone(layout["vbackbone"], layout["hbackbone"],
-                                    layout["vbonecut"], layout["hbonecut"])
+                                    layout["vbonecut"], layout["hbonecut"],
+                                    layout["vboneskip"], layout["hboneskip"])
     except KeyError as e:
         raise PresetError(f"Missing parameter '{e}' in section 'layout'")
 

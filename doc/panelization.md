@@ -435,55 +435,59 @@ Generate vertical cuts for the frame corners and return them
 
 #### `makeGrid`
 ```
-makeGrid(self, boardfile, sourceArea, rows, cols, destination, verSpace, 
-         horSpace, rotation, 
-         placementClass=<class 'kikit.panelize.BasicGridPosition'>, 
-         netRenamePattern=Board_{n}-{orig}, refRenamePattern=Board_{n}-{orig}, 
-         tolerance=0)
+makeGrid(self, boardfile, sourceArea, rows, cols, destination, placer, 
+         rotation=0, netRenamePattern=Board_{n}-{orig}, 
+         refRenamePattern=Board_{n}-{orig}, tolerance=0)
 ```
-Place the given board in a regular grid pattern with given spacing
-(verSpace, horSpace). The board position can be fine-tuned via
-placementClass. The nets and references are renamed according to the
-patterns.
+Place the given board in a grid pattern with given spacing. The board
+position of the gride is guided via placer. The nets and references are
+renamed according to the patterns.
 
 Parameters:
 
 boardfile - the path to the filename of the board to be added
 
-sourceArea - the region within the file specified to be selected (see also tolerance, below)
-    set to None to automatically calculate the board area from the board file with the given tolerance
+sourceArea - the region within the file specified to be selected (see
+also tolerance, below)
+    set to None to automatically calculate the board area from the board
+    file with the given tolerance
 
 rows - the number of boards to place in the vertical direction
 
 cols - the number of boards to place in the horizontal direction
 
-destination - the center coordinates of the first board in the grid (for example, wxPointMM(100,50))
+destination - the center coordinates of the first board in the grid (for
+example, wxPointMM(100,50))
 
-verSpace - the vertical spacing (distance, not pitch) between boards
+rotation - the rotation angle to be applied to the source board before
+placing it
 
-horSpace - the horizontal spacing (distance, not pitch) between boards
-
-rotation - the rotation angle to be applied to the source board before placing it
-
-placementClass - the placement rules for boards. The builtin classes are:
+placer - the placement rules for boards. The builtin classes are:
     BasicGridPosition - places each board in its original orientation
-    OddEvenColumnPosition - every second column has the boards rotated by 180 degrees
-    OddEvenRowPosition - every second row has the boards rotated by 180 degrees
-    OddEvenRowsColumnsPosition - every second row and column has the boards rotated by 180 degrees
+    OddEvenColumnPosition - every second column has the boards rotated
+    by 180 degrees OddEvenRowPosition - every second row has the boards
+    rotated by 180 degrees OddEvenRowsColumnsPosition - every second row
+    and column has the boards rotated by 180 degrees
 
-netRenamePattern - the pattern according to which the net names are transformed
-    The default pattern is "Board_{n}-{orig}" which gives each board its own instance of its nets,
-    i.e. GND becomes Board_0-GND for the first board , and Board_1-GND for the second board etc
+netRenamePattern - the pattern according to which the net names are
+transformed
+    The default pattern is "Board_{n}-{orig}" which gives each board its
+    own instance of its nets, i.e. GND becomes Board_0-GND for the first
+    board , and Board_1-GND for the second board etc
 
-refRenamePattern - the pattern according to which the reference designators are transformed
-    The default pattern is "Board_{n}-{orig}" which gives each board its own instance of its reference designators,
-    so R1 becomes Board_0-R1 for the first board, Board_1-R1 for the recond board etc. To keep references the
-    same as in the original, set this to "{orig}"
+refRenamePattern - the pattern according to which the reference
+designators are transformed
+    The default pattern is "Board_{n}-{orig}" which gives each board its
+    own instance of its reference designators, so R1 becomes Board_0-R1
+    for the first board, Board_1-R1 for the second board etc. To keep
+    references the same as in the original, set this to "{orig}"
 
-tolerance - if no sourceArea is specified, the distance by which the selection
-    area for the board should extend outside the board edge.
-    If you have any objects that are on or outside the board edge, make sure this is big enough to include them.
-    Such objects often include zone outlines and connectors.
+tolerance - if no sourceArea is specified, the distance by which the
+selection
+    area for the board should extend outside the board edge. If you have
+    any objects that are on or outside the board edge, make sure this is
+    big enough to include them. Such objects often include zone outlines
+    and connectors.
 
 Returns a list of the placed substrates. You can use these to generate
 tabs, frames, backbones, etc.
@@ -533,7 +537,7 @@ vspace - vertical space between board outline and substrate
 
 #### `makeVCuts`
 ```
-makeVCuts(self, cuts, boundCurves=False)
+makeVCuts(self, cuts, boundCurves=False, offset=0)
 ```
 Take a list of lines to cut and performs V-CUTS. When boundCurves is
 set, approximate curved cuts by a line from the first and last point.
@@ -562,12 +566,16 @@ corners of the panel. You can specify offsets.
 
 #### `renderBackbone`
 ```
-renderBackbone(self, vthickness, hthickness, vcut, hcut)
+renderBackbone(self, vthickness, hthickness, vcut, hcut, vskip=0, hskip=0)
 ```
 Render horizontal and vertical backbone lines. If zero thickness is
 specified, no backbone is rendered.
 
 vcut, hcut specifies if vertical or horizontal backbones should be cut.
+
+vskip and hskip specify how many backbones should be skipped before
+rendering one (i.e., skip 1 meand that every other backbone will be
+rendered)
 
 Return a list of cuts
 

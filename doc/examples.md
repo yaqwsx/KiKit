@@ -493,15 +493,14 @@ kikit panelize ^
 Another solution might be to not put tabs on, e.g., vertical edges of the PCB.
 However, in that case your panel might be weak for further assembly. You can
 make it more stiff by including backbones – a full piece of substrate between
-the panels. Note that adding a backbone does not extend space between boards -
-that's up to you. You can add either vertical, horizontal or both backbones.
+the panels. You can add either vertical, horizontal or both backbones.
 Also, similarly with frames, you can put cuts on your backbone to make
 depanelization of your boards easier. Enough theory, let's see an example
 
 ```
 # Linux
 kikit panelize \
-    --layout 'grid; rows: 2; cols: 2; hspace: 2mm; vspace: 9mm; hbackbone: 5mm; hbonecut: true' \
+    --layout 'grid; rows: 2; cols: 2; space: 2mm; hbackbone: 5mm; hbonecut: true' \
     --tabs 'fixed; width: 3mm; vcount: 2; hcount: 0' \
     --cuts 'mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm' \
     --framing 'railstb; width: 5mm; space: 3mm;' \
@@ -510,7 +509,7 @@ kikit panelize \
 
 # Windows
 kikit panelize ^
-    --layout "grid; rows: 2; cols: 2; hspace: 2mm; vspace: 9mm; hbackbone: 5mm; hbonecut: true" ^
+    --layout "grid; rows: 2; cols: 2; space: 2mm; hbackbone: 5mm; hbonecut: true" ^
     --tabs "fixed; width: 3mm; vcount: 2; hcount: 0" ^
     --cuts "mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm" ^
     --framing "railstb; width: 5mm; space: 3mm;" ^
@@ -519,6 +518,32 @@ kikit panelize ^
 ```
 
 ![examplePanel17](resources/examplePanel17.png)
+
+Often, not all backbones are needed. Especially for larger panels. Therefore, if
+you want, you can skip some of them. Consider the following 4×4 panel with only
+ever other backbone:
+
+```
+# Linux
+kikit panelize \
+    --layout 'grid; rows: 4; cols: 4; space: 2mm; hbackbone: 5mm; vbackbone: 5mm; hboneskip: 1; vboneskip: 1' \
+    --tabs 'fixed; width: 3mm; vcount: 2; hcount: 0' \
+    --cuts 'mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm' \
+    --framing 'railstb; width: 5mm; space: 3mm;' \
+    --post 'millradius: 1mm' \
+    doc/resources/conn.kicad_pcb panel.kicad_pcb
+
+# Windows
+kikit panelize ^
+    --layout "grid; rows: 4; cols: 4; space: 2mm; hbackbone: 5mm; vbackbone: 5mm; hboneskip: 1; vboneskip: 1" ^
+    --tabs "fixed; width: 3mm; vcount: 2; hcount: 0" ^
+    --cuts "mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm" ^
+    --framing "railstb; width: 5mm; space: 3mm;" ^
+    --post "millradius: 1mm" ^
+    doc/resources/conn.kicad_pcb panel.kicad_pcb
+```
+
+![examplePanel18](resources/examplePanel18.png)
 
 The most powerful feature of KiKit regarding tab placement are tabs via
 annotation. Remember our test board? When you open it in Pcbnew, you can see
@@ -553,7 +578,7 @@ kikit panelize ^
     doc/resources/conn.kicad_pcb panel.kicad_pcb
 ```
 
-![examplePanel18](resources/examplePanel18.png)
+![examplePanel19](resources/examplePanel19.png)
 
 Well, the panel looks strange – right? That's because KiKit always constructs a
 half-bridges. When you specify the tabs location, you have to either ensure they
@@ -564,7 +589,7 @@ section [Understanding tabs](understandingTabs.md). Let's fix it:
 ```
 # Linux
 kikit panelize \
-    --layout 'grid; rows: 2; cols: 2; space: 8mm; hbackbone: 3mm; vbackbone: 3mm' \
+    --layout 'grid; rows: 2; cols: 2; space: 2mm; hbackbone: 3mm; vbackbone: 3mm' \
     --tabs annotation \
     --source 'tolerance: 15mm' \
     --cuts 'mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm' \
@@ -574,7 +599,7 @@ kikit panelize \
 
 # Windows
 kikit panelize ^
-    --layout "grid; rows: 2; cols: 2; space: 8mm; hbackbone: 3mm; vbackbone: 3mm" ^
+    --layout "grid; rows: 2; cols: 2; space: 2mm; hbackbone: 3mm; vbackbone: 3mm" ^
     --tabs annotation ^
     --source "tolerance: 15mm" ^
     --cuts "mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm" ^
@@ -583,7 +608,7 @@ kikit panelize ^
     doc/resources/conn.kicad_pcb panel.kicad_pcb
 ```
 
-![examplePanel19](resources/examplePanel19.png)
+![examplePanel20](resources/examplePanel20.png)
 
 Note that the annotation can have an arbitrary orientation. The arrow just must
 be outside board edge and points towards it. KiKit will also place only those
@@ -614,7 +639,7 @@ kikit panelize ^
     doc/resources/conn.kicad_pcb panel.kicad_pcb
 ```
 
-![examplePanel20](resources/examplePanel20.png)
+![examplePanel21](resources/examplePanel21.png)
 
 When you use V-cuts with `copperfill` you (or your fab house) might want to
 include a clearance around the V-cuts:
@@ -639,7 +664,7 @@ kikit panelize ^
     doc/resources/conn.kicad_pcb panel.kicad_pcb
 ```
 
-![examplePanel21](resources/examplePanel21.png)
+![examplePanel22](resources/examplePanel22.png)
 
 Note one last facts about V-cuts. V-cuts can only be straight and
 horizontal/vertical. But you can use them with circular boards if you want by
@@ -688,7 +713,7 @@ kikit panelize ^
     doc/resources/conn.kicad_pcb panel.kicad_pcb
 ```
 
-![examplePanel22](resources/examplePanel22.png)
+![examplePanel23](resources/examplePanel23.png)
 
 You can learn more about available functions from the comment in the source code
 or in [documentation](panelization.md).

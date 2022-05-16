@@ -1,3 +1,4 @@
+import itertools
 from pcbnewTransition import pcbnew, isV6
 from kikit import sexpr
 from kikit.common import normalize
@@ -55,16 +56,28 @@ class BasicGridPosition(GridPlacerBase):
     """
     Specify board position in the grid.
     """
-    def __init__(self, horSpace: int, verSpace: int) -> None:
+    def __init__(self, horSpace: int, verSpace: int,
+                 hbonewidth: int=0, vbonewidth: int=0,
+                 hboneskip: int=0, vboneskip: int=0) -> None:
         self.horSpace = horSpace
         self.verSpace = verSpace
+        self.hbonewidth = hbonewidth
+        self.vbonewidth = vbonewidth
+        self.hboneskip = hboneskip
+        self.vboneskip = vboneskip
 
     def position(self, i: int, j: int, boardSize: Optional[wxRect]) -> wxPoint:
         if boardSize is None:
             assert i == 0 and j == 0
             return wxPoint(0, 0)
-        return wxPoint(j * (boardSize.GetWidth() + self.horSpace),
-                       i * (boardSize.GetHeight() + self.verSpace))
+        hbonecount = 0 if self.hbonewidth == 0 \
+                       else i // (self.hboneskip + 1)
+        vbonecount = 0 if self.vbonewidth == 0 \
+                       else j // (self.vboneskip + 1)
+        return wxPoint(j * (boardSize.GetWidth() + self.horSpace) + \
+                            vbonecount * (self.vbonewidth + self.horSpace),
+                       i * (boardSize.GetHeight() + self.verSpace) + \
+                            hbonecount * (self.hbonewidth + self.verSpace))
 
     def rotation(self, i: int, j: int) -> int:
         return 0
@@ -196,7 +209,7 @@ def roundPoint(point, precision=-4):
         return Point(round(point.x, precision), round(point.y, precision))
     return Point(round(point[0], precision), round(point[1], precision))
 
-def doTransformation(point: KiKitPoint, rotation: int, origin: KiKitPoint, translation: KiKitPoint) -> wxPoint:
+def doTransformation(point: KiKitPoint, rotation: KiAngle, origin: KiKitPoint, translation: KiKitPoint) -> wxPoint:
     """
     Abuses KiCAD to perform a tranformation of a point
     """
@@ -357,6 +370,17 @@ def maxTabCount(edgeLen, width, minDistance):
         return 0
     c = 1 + (edgeLen - minDistance) // (minDistance + width)
     return max(0, int(c))
+
+def skipBackbones(backbones: List[LineString], skip: int,
+                  key: Callable[[LineString], int]) -> List[LineString]:
+    """
+    Given a list of backbones, get only every (skip + 1) other one. Treats
+    all backbones on a given coordinate as one.
+    """
+    candidates = list(set(map(key, backbones)))
+    candidates.sort()
+    active = set(itertools.islice(candidates, skip, None, skip + 1))
+    return [x for x in backbones if key(x) in active]
 
 class Panel:
     """
@@ -861,8 +885,8 @@ class Panel:
 
     def makeGrid(self, boardfile: str, sourceArea: wxRect, rows: int, cols: int,
                  destination: wxPoint, placer: GridPlacerBase,
-                 rotation: int=0, netRenamePattern: str="Board_{n}-{orig}",
-                 refRenamePattern: str="Board_{n}-{orig}", tolerance: int=0) \
+                 rotation: KiAngle=0, netRenamePattern: str="Board_{n}-{orig}",
+                 refRenamePattern: str="Board_{n}-{orig}", tolerance: KiLenght=0) \
                      -> List[Substrate]:
         """
         Place the given board in a grid pattern with given spacing. The board
@@ -1557,68 +1581,88 @@ class Panel:
         lines = [box(*s.bounds()).exterior for s in self.substrates]
         self._renderLines(lines, Layer.Cmts_User, fromMm(0.5))
 
-    def renderBackbone(self, vthickness, hthickness, vcut, hcut):
+    def renderBackbone(self, vthickness: KiLenght, hthickness: KiLenght,
+            vcut: bool, hcut: bool, vskip: int=0, hskip: int=0):
         """
         Render horizontal and vertical backbone lines. If zero thickness is
         specified, no backbone is rendered.
 
         vcut, hcut specifies if vertical or horizontal backbones should be cut.
 
+        vskip and hskip specify how many backbones should be skipped before
+        rendering one (i.e., skip 1 meand that every other backbone will be
+        rendered)
+
         Return a list of cuts
         """
+        hbones = [] if hthickness == 0 \
+                    else list(filter(lambda l: isHorizontal(l.coords[0], l.coords[1]), self.backboneLines))
+        activeHbones = skipBackbones(hbones, hskip, lambda x: x.coords[0][1])
+
+        vbones = [] if vthickness == 0 \
+                    else list(filter(lambda l: isVertical(l.coords[0], l.coords[1]), self.backboneLines))
+        activeVbones = skipBackbones(vbones, vskip, lambda x: x.coords[0][0])
+
+
         cutpoints = commonPoints(self.backboneLines)
         pieces, cuts = [], []
-        for l in self.backboneLines:
+
+        for l in activeHbones:
             start = l.coords[0]
             end = l.coords[1]
-            if isHorizontal(start, end) and hthickness > 0:
-                minX = min(start[0], end[0])
-                maxX = max(start[0], end[0])
-                bb = box(minX, start[1] - hthickness // 2,
-                         maxX, start[1] + hthickness // 2)
-                pieces.append(bb)
-                if not hcut:
-                    continue
 
-                candidates = []
+            minX = min(start[0], end[0])
+            maxX = max(start[0], end[0])
+            bb = box(minX, start[1] - hthickness // 2,
+                        maxX, start[1] + hthickness // 2)
+            pieces.append(bb)
+            if not hcut:
+                continue
 
-                if cutpoints[start] > 2:
-                    candidates.append(((start[0] + vthickness // 2, start[1]), -1))
+            candidates = []
 
-                if cutpoints[end] == 2:
-                    candidates.append((end, 1))
-                elif cutpoints[end] > 2:
-                    candidates.append(((end[0] - vthickness // 2, end[1]), 1))
+            if cutpoints[start] > 2:
+                candidates.append(((start[0] + vthickness // 2, start[1]), -1))
 
-                for x, c in candidates:
-                    cut = LineString([
-                        (x[0], x[1] - c * hthickness // 2),
-                        (x[0], x[1] + c * hthickness // 2)])
-                    cuts.append(cut)
-            if isVertical(start, end) and vthickness > 0:
-                minY = min(start[1], end[1])
-                maxY = max(start[1], end[1])
-                bb = box(start[0] - vthickness // 2, minY,
-                         start[0] + vthickness // 2, maxY)
-                pieces.append(bb)
-                if not vcut:
-                    continue
+            if cutpoints[end] == 2:
+                candidates.append((end, 1))
+            elif cutpoints[end] > 2:
+                candidates.append(((end[0] - vthickness // 2, end[1]), 1))
 
-                candidates = []
+            for x, c in candidates:
+                cut = LineString([
+                    (x[0], x[1] - c * hthickness // 2),
+                    (x[0], x[1] + c * hthickness // 2)])
+                cuts.append(cut)
 
-                if cutpoints[start] > 2:
-                    candidates.append(((start[0], start[1] + hthickness // 2), 1))
+        for l in activeVbones:
+            start = l.coords[0]
+            end = l.coords[1]
 
-                if cutpoints[end] == 2:
-                    candidates.append((end, -1))
-                elif cutpoints[end] > 2:
-                    candidates.append(((end[0], end[1] - hthickness // 2), -1))
+            minY = min(start[1], end[1])
+            maxY = max(start[1], end[1])
+            bb = box(start[0] - vthickness // 2, minY,
+                        start[0] + vthickness // 2, maxY)
+            pieces.append(bb)
+            if not vcut:
+                continue
 
-                for x, c in candidates:
-                    cut = LineString([
-                        (x[0] - c * vthickness // 2, x[1]),
-                        (x[0] + c * vthickness // 2, x[1])])
-                    cuts.append(cut)
+            candidates = []
+
+            if cutpoints[start] > 2:
+                candidates.append(((start[0], start[1] + hthickness // 2), 1))
+
+            if cutpoints[end] == 2:
+                candidates.append((end, -1))
+            elif cutpoints[end] > 2:
+                candidates.append(((end[0], end[1] - hthickness // 2), -1))
+
+            for x, c in candidates:
+                cut = LineString([
+                    (x[0] - c * vthickness // 2, x[1]),
+                    (x[0] + c * vthickness // 2, x[1])])
+                cuts.append(cut)
+
         self.appendSubstrate(pieces)
         return cuts
 

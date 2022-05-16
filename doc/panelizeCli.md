@@ -181,6 +181,8 @@ options.
     - `rowsCols`: Rotate boards by 180° based on a chessboard pattern
 - `vbackbone`, `hbackbone`: The width of vertical and horizontal backbone (0
   means no backbone). The backbone does not increase the spacing of the boards.
+- `vboneskip`, `hboneskip`: Skip every n backbones. I.e., 1 means place only
+  every other backbone.
 - `vbonecut`, `hbonecut`: true/false. If there are both backbones specified,
   specifies if there should be a vertical or horizontal cut (or both) where the
   backbones cross.

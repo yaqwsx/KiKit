@@ -11,6 +11,8 @@
         "renameref": "{orig}",
         "hbackbone": "0mm",
         "vbackbone": "0mm",
+        "hboneskip": 0,
+        "vboneskip": 0,
         "vbonecut": true,
         "hbonecut": true,
         "code": "none",

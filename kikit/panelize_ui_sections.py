@@ -222,10 +222,16 @@ LAYOUT_SECTION = {
         "Specify the gap between the boards in both direction"),
     "hbackbone": SLength(
         typeIn(["grid"]),
-        "The width of vertical and horizontal backbone (0 means no backbone)"),
+        "The width of horizontal backbone (0 means no backbone)"),
     "vbackbone": SLength(
         typeIn(["grid"]),
-        "The width of vertical and horizontal backbone (0 means no backbone)"),
+        "The width of vertical backbone (0 means no backbone)"),
+    "hboneskip": SNum(
+        typeIn(["grid"]),
+        "Skip every given number of horizontal backbones"),
+    "vboneskip": SNum(
+        typeIn(["grid"]),
+        "Skip every given number of vertical backbones"),
     "rotation": SAngle(
         always(),
         "Rotate the boards before placing them in the panel"),
