@@ -172,6 +172,19 @@ class SList(SectionBase):
     def validate(self, x: str) -> Any:
         return [v.strip() for v in x.split(",")]
 
+class SLayerList(SList):
+    def validate(self, x: str) -> Any:
+        return [self.readLayer(x) for x in super().validate(x)]
+
+    def readLayer(self, s: str) -> Layer:
+        if isinstance(s, int):
+            if s in tuple(item.value for item in Layer):
+                return Layer(s)
+            raise PresetError(f"{s} is not a valid layer number")
+        if isinstance(s, str):
+            return Layer[s.replace(".", "_")]
+        raise PresetError(f"Got {s}, expected layer name or number")
+
 class SFootprintList(SList):
     def validate(self, x: str) -> Any:
         result: List[FootprintId] = []
@@ -532,6 +545,32 @@ TEXT_SECTION = {
 def ppText(section):
     section = validateSection("text", TEXT_SECTION, section)
 
+COPPERFILL_SECTION = {
+    "type": SChoice(
+        ["none", "solid", "hatched"],
+        always(),
+        "Fill non board areas with copper"),
+    "clearance": SLength(
+        typeIn(["solid", "hatched"]),
+        "Clearance between the fill and boards"),
+    "layers": SLayerList(
+        typeIn(["solid", "hatched"]),
+        "Specify which layer to fill with copper"),
+    "width": SLength(
+        typeIn(["hatched"]),
+        "Width of hatch strokes"),
+    "spacing": SLength(
+        typeIn(["hatched"]),
+        "Spacing of hatch strokes"),
+    "orientation": SAngle(
+        typeIn(["hatched"]),
+        "Orientation of the strokes"
+    )
+}
+
+def ppCopper(section):
+    section = validateSection("copperfill", COPPERFILL_SECTION, section)
+
 POST_SECTION = {
     "type": SChoice(
         ["auto"],
@@ -539,7 +578,7 @@ POST_SECTION = {
         "Postprocessing type"),
     "copperfill": SBool(
         always(),
-        "Fill unused areas of the panel with copper"),
+        "DEPRECATED, use section copperfill instead. Fill unused areas of the panel with copper"),
     "millradius": SLength(
         always(),
         "Simulate milling operation"),
@@ -621,6 +660,7 @@ availableSections = {
     "Tooling": TOOLING_SECTION,
     "Fiducials": FIDUCIALS_SECTION,
     "Text": TEXT_SECTION,
+    "Copperfill": COPPERFILL_SECTION,
     "Page": PAGE_SECTION,
     "Post": POST_SECTION,
     "Debug": DEBUG_SECTION,

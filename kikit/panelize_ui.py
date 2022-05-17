@@ -172,6 +172,9 @@ def completeSection(section):
 @click.option("--text", "-t", type=Section(),
     help="Override text settings.",
     **addCompatibleShellCompletion(completeSection(TEXT_SECTION)))
+@click.option("--copperfill", "-u", type=Section(),
+    help="Override copper fill settings.",
+    **addCompatibleShellCompletion(completeSection(COPPERFILL_SECTION)))
 @click.option("--page", "-P", type=Section(),
     help="Override page settings.",
     **addCompatibleShellCompletion(completeSection(POST_SECTION)))
@@ -184,7 +187,7 @@ def completeSection(section):
 @click.option("--dump", "-d", type=click.Path(file_okay=True, dir_okay=False),
     help="Dump constructured preset into a JSON file.")
 def panelize(input, output, preset, plugin, layout, source, tabs, cuts, framing,
-             tooling, fiducials, text, page, post, debug, dump):
+             tooling, fiducials, text, copperfill, page, post, debug, dump):
     """
     Panelize boards
     """
@@ -197,8 +200,8 @@ def panelize(input, output, preset, plugin, layout, source, tabs, cuts, framing,
 
         preset = ki.obtainPreset(preset,
             layout=layout, source=source, tabs=tabs, cuts=cuts, framing=framing,
-            tooling=tooling, fiducials=fiducials, text=text, page=page, post=post,
-            debug=debug)
+            tooling=tooling, fiducials=fiducials, text=text, copperfill=copperfill,
+            page=page, post=post, debug=debug)
 
         doPanelization(input, output, preset, plugin)
 
@@ -221,7 +224,7 @@ def doPanelization(input, output, preset, plugins=[]):
     from kikit import panelize_ui_impl as ki
     from kikit.panelize import Panel
     from pcbnewTransition.transition import isV6, pcbnew
-    from pcbnew import LoadBoard, FromMM
+    from pcbnew import LoadBoard
     from itertools import chain
 
     if preset["debug"]["deterministic"] and isV6():
@@ -268,6 +271,8 @@ def doPanelization(input, output, preset, plugins=[]):
     ki.makeOtherCuts(preset["cuts"], panel, chain(backboneCuts, frameCuts))
 
     useHookPlugins(lambda x: x.afterCuts(panel))
+
+    ki.buildCopperfill(preset["copperfill"], panel)
 
     ki.setStackup(preset["source"], panel)
     ki.positionPanel(preset["page"], panel)

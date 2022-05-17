@@ -15,7 +15,7 @@ KIKIT_LIB = os.path.join(PKG_BASE, "resources/kikit.pretty")
 SHP_EPSILON = pcbnew.FromMM(0.001) # Common factor of enlarging substrates to
                                    # cover up numerical imprecisions of Shapely
 
-KiLenght = int
+KiLength = int
 KiAngle = int
 KiKitPoint = Union[pcbnew.wxPoint, Tuple[int, int]]
 

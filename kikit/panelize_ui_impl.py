@@ -90,6 +90,7 @@ def postProcessPreset(preset):
         "tooling": ppTooling,
         "fiducials": ppFiducials,
         "text": ppText,
+        "copperfill": ppCopper,
         "post": ppPost,
         "page": ppPage,
         "debug": ppDebug
@@ -145,7 +146,7 @@ def validateSections(preset):
     validate all required keys are present. Ignores excessive keys.
     """
     VALID_SECTIONS = ["layout", "source", "tabs", "cuts", "framing", "tooling",
-        "fiducials", "text", "page", "post", "debug"]
+        "fiducials", "text", "page", "copperfill", "post", "debug"]
     extraSections = set(preset.keys()).difference(VALID_SECTIONS)
     if len(extraSections) != 0:
         raise PresetError(f"Extra sections {', '.join(extraSections)} in preset")
@@ -540,6 +541,32 @@ def buildText(preset, panel):
         raise PresetError(f"Unknown type '{type}' of text specification.")
     except KeyError as e:
         raise PresetError(f"Missing parameter '{e}' in section 'text'")
+
+def buildCopperfill(preset, panel):
+    """
+    Perform copperfill operation
+    """
+    try:
+        type = preset["type"]
+        if type == "none":
+            return
+        if type == "solid":
+            panel.copperFillNonBoardAreas(
+                clearance=preset["clearance"],
+                layers=preset["layers"],
+                hatched=False
+            )
+        if type == "hatched":
+            panel.copperFillNonBoardAreas(
+                    clearance=preset["clearance"],
+                    layers=preset["layers"],
+                    hatched=True,
+                    strokeWidth=preset["width"],
+                    strokeSpacing=preset["spacing"],
+                    orientation=preset["orientation"]
+            )
+    except KeyError as e:
+        raise PresetError(f"Missing parameter '{e}' in section 'postprocessing'")
 
 def buildPostprocessing(preset, panel):
     """

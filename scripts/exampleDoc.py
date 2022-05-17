@@ -343,20 +343,35 @@ print("""
 Another solution might be to not put tabs on, e.g., vertical edges of the PCB.
 However, in that case your panel might be weak for further assembly. You can
 make it more stiff by including backbones – a full piece of substrate between
-the panels. Note that adding a backbone does not extend space between boards -
-that's up to you. You can add either vertical, horizontal or both backbones.
+the panels. You can add either vertical, horizontal or both backbones.
 Also, similarly with frames, you can put cuts on your backbone to make
 depanelization of your boards easier. Enough theory, let's see an example
 """)
 
 runBoardExample(autoName(),
     [["panelize"],
-        ["--layout", "grid; rows: 2; cols: 2; hspace: 2mm; vspace: 9mm; hbackbone: 5mm; hbonecut: true"],
+        ["--layout", "grid; rows: 2; cols: 2; space: 2mm; hbackbone: 5mm; hbonecut: true"],
         ["--tabs", "fixed; width: 3mm; vcount: 2; hcount: 0"],
         ["--cuts", "mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm"],
         ["--framing", "railstb; width: 5mm; space: 3mm;"],
         ["--post", "millradius: 1mm"],
         [SRC]])
+
+print("""
+Often, not all backbones are needed. Especially for larger panels. Therefore, if
+you want, you can skip some of them. Consider the following 4×4 panel with only
+ever other backbone:
+""")
+
+runBoardExample(autoName(),
+    [["panelize"],
+        ["--layout", "grid; rows: 4; cols: 4; space: 2mm; hbackbone: 5mm; vbackbone: 5mm; hboneskip: 1; vboneskip: 1"],
+        ["--tabs", "fixed; width: 3mm; vcount: 2; hcount: 0"],
+        ["--cuts", "mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm"],
+        ["--framing", "railstb; width: 5mm; space: 3mm;"],
+        ["--post", "millradius: 1mm"],
+        [SRC]])
+
 
 print("""
 The most powerful feature of KiKit regarding tab placement are tabs via
@@ -391,7 +406,7 @@ section [Understanding tabs](understandingTabs.md). Let's fix it:
 
 runBoardExample(autoName(),
     [["panelize"],
-        ["--layout", "grid; rows: 2; cols: 2; space: 8mm; hbackbone: 3mm; vbackbone: 3mm"],
+        ["--layout", "grid; rows: 2; cols: 2; space: 2mm; hbackbone: 3mm; vbackbone: 3mm"],
         ["--tabs", "annotation"],
         ["--source", "tolerance: 15mm"],
         ["--cuts", "mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm"],
@@ -407,7 +422,7 @@ tabs, that have a neighboring substrate. For precise algorithm, see section
 
 When you make flex PCBs or you want to save etchant, it make sense to pour
 copper on all non-functional parts of the panel. It will make the PCB rigid. You
-can do so via `copperfill` post-processing operation:
+can do so via `copperfill` section:
 """)
 
 runBoardExample(autoName(),
@@ -416,7 +431,8 @@ runBoardExample(autoName(),
         ["--tabs", "fixed; width: 3mm;"],
         ["--cuts", "mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm"],
         ["--framing", "railstb; width: 5mm; space: 3mm;"],
-        ["--post", "millradius: 1mm; copperfill: true"],
+        ["--copperfill", "solid"],
+        ["--post", "millradius: 1mm;"],
         [SRC]])
 
 print("""
@@ -430,8 +446,26 @@ runBoardExample(autoName(),
         ["--tabs", "fixed; hwidth: 10mm; vwidth: 15mm"],
         ["--cuts", "vcuts; clearance: 1.5mm"],
         ["--framing", "railstb; width: 5mm; space: 3mm;"],
-        ["--post", "millradius: 1mm; copperfill: true"],
+        ["--copperfill", "solid"],
+        ["--post", "millradius: 1mm;"],
         [SRC]])
+
+print("""
+If you, for example do not wish to cover the tabs with copper, you can also
+specify clearance. Also, some manufacturers don't like when you have large solid
+copper areas. In that case, you can use a hatch pattern to fill the area:
+""")
+
+runBoardExample(autoName(),
+    [["panelize"],
+        ["--layout", "grid; rows: 2; cols: 2; space: 2mm"],
+        ["--tabs", "fixed; width: 3mm;"],
+        ["--cuts", "mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm"],
+        ["--framing", "railstb; width: 5mm; space: 3mm;"],
+        ["--copperfill", "hatched; clearance: 2mm; spacing: 0.5mm; width: 0.5mm"],
+        ["--post", "millradius: 1mm;"],
+        [SRC]])
+
 
 print("""
 Note one last facts about V-cuts. V-cuts can only be straight and

@@ -296,12 +296,16 @@ Remove all existing tab annotations from the panel.
 
 #### `copperFillNonBoardAreas`
 ```
-copperFillNonBoardAreas(self, layers=[<Layer.F_Cu: 0>, <Layer.B_Cu: 31>])
+copperFillNonBoardAreas(self, clearance=1000000, 
+                        layers=[<Layer.F_Cu: 0>, <Layer.B_Cu: 31>], 
+                        hatched=False, strokeWidth=1000000, 
+                        strokeSpacing=1000000, orientation=450)
 ```
 Fill given layers with copper on unused areas of the panel
-(frame, rails and tabs)
+(frame, rails and tabs). You can specify the clearance, if it should be
+hatched (default is solid) or shape the strokes of hatched pattern.
 
-takes a list of layer ids (Default [kikit.defs.Layer.F_Cu, kikit.defs.Layer.B_Cu])
+By default, fills top and bottom layer.
 
 #### `debugRenderBackboneLines`
 ```

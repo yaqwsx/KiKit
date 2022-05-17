@@ -886,7 +886,7 @@ class Panel:
     def makeGrid(self, boardfile: str, sourceArea: wxRect, rows: int, cols: int,
                  destination: wxPoint, placer: GridPlacerBase,
                  rotation: KiAngle=0, netRenamePattern: str="Board_{n}-{orig}",
-                 refRenamePattern: str="Board_{n}-{orig}", tolerance: KiLenght=0) \
+                 refRenamePattern: str="Board_{n}-{orig}", tolerance: KiLength=0) \
                      -> List[Substrate]:
         """
         Place the given board in a grid pattern with given spacing. The board
@@ -1376,12 +1376,16 @@ class Panel:
         self.copperLayerCount = count
         self.board.SetCopperLayerCount(self.copperLayerCount)
 
-    def copperFillNonBoardAreas(self, layers=[Layer.F_Cu,Layer.B_Cu]):
+    def copperFillNonBoardAreas(self, clearance: KiLength=fromMm(1),
+            layers: List[Layer]=[Layer.F_Cu,Layer.B_Cu], hatched: bool=False,
+            strokeWidth: KiLength=fromMm(1), strokeSpacing: KiLength=fromMm(1),
+            orientation: KiAngle=fromDegrees(45)) -> None:
         """
         Fill given layers with copper on unused areas of the panel
-        (frame, rails and tabs)
+        (frame, rails and tabs). You can specify the clearance, if it should be
+        hatched (default is solid) or shape the strokes of hatched pattern.
 
-        takes a list of layer ids (Default [kikit.defs.Layer.F_Cu, kikit.defs.Layer.B_Cu])
+        By default, fills top and bottom layer.
         """
         if not self.boardSubstrate.isSinglePiece():
             raise RuntimeError("The substrate has to be a single piece to fill unused areas")
@@ -1390,11 +1394,23 @@ class Panel:
         increaseZonePriorities(self.board)
 
         zoneContainer = pcbnew.ZONE(self.board)
-        boundary = self.boardSubstrate.exterior().boundary
-        zoneContainer.Outline().AddOutline(linestringToKicad(boundary))
+        if hatched:
+            zoneContainer.SetFillMode(pcbnew.ZONE_FILL_MODE_HATCH_PATTERN)
+            zoneContainer.SetHatchOrientation(orientation // 10)
+            zoneContainer.SetHatchGap(strokeSpacing)
+            zoneContainer.SetHatchThickness(strokeWidth)
+
+        zoneArea = self.boardSubstrate.exterior()
         for substrate in self.substrates:
-            boundary = substrate.exterior().boundary
-            zoneContainer.Outline().AddHole(linestringToKicad(boundary))
+            zoneArea = zoneArea.difference(substrate.exterior().buffer(clearance))
+
+        geoms = [zoneArea] if isinstance(zoneArea, Polygon) else zoneArea.geoms
+
+        for g in geoms:
+            zoneContainer.Outline().AddOutline(linestringToKicad(g.exterior))
+        for g in geoms:
+            for hole in g.interiors:
+                zoneContainer.Outline().AddHole(linestringToKicad(hole))
         zoneContainer.SetPriority(0)
 
         zoneContainer.SetLayer(layers[0])
@@ -1581,7 +1597,7 @@ class Panel:
         lines = [box(*s.bounds()).exterior for s in self.substrates]
         self._renderLines(lines, Layer.Cmts_User, fromMm(0.5))
 
-    def renderBackbone(self, vthickness: KiLenght, hthickness: KiLenght,
+    def renderBackbone(self, vthickness: KiLength, hthickness: KiLength,
             vcut: bool, hcut: bool, vskip: int=0, hskip: int=0):
         """
         Render horizontal and vertical backbone lines. If zero thickness is

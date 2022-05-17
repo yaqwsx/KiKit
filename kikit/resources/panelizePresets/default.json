@@ -99,6 +99,14 @@
         "layer": "F.SilkS",
         "plugin": "none"
     },
+    "copperfill": {
+        "type": "none",
+        "clearance": "0.5mm",
+        "layers": "F.Cu,B.Cu",
+        "width": "1mm",
+        "spacing": "1mm",
+        "orientation": "45deg"
+    },
     "post": {
         "type": "auto",
         "copperfill": false,

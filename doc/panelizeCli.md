@@ -498,6 +498,30 @@ size from the source board.
 Instead of the pre-defined paper size you can also specify a custom paper size
 via `width` and `height`.
 
+## Copperfill
+
+Fill non-board areas of the panel with copper.
+
+**Types**: none, solid, hatched
+
+**Common options**:
+
+- `clearance` - optional extra clearance from the board perimeters. Suitable
+  for, e.g., not filling the tabs with copper.
+- `layers` - comma-separated list of layer to fill. Default top and bottom.
+
+### Solid
+
+Fill with solid copper.
+
+### Hatched
+
+Use hatch pattern for the fill.
+
+- `width` - the width of the strokes
+- `spacing` - the space between the strokes
+- `orientation` - the orientation of the strokes
+
 
 ## Post
 

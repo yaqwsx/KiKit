@@ -617,7 +617,7 @@ tabs, that have a neighboring substrate. For precise algorithm, see section
 
 When you make flex PCBs or you want to save etchant, it make sense to pour
 copper on all non-functional parts of the panel. It will make the PCB rigid. You
-can do so via `copperfill` post-processing operation:
+can do so via `copperfill` section:
 
 ```
 # Linux
@@ -626,7 +626,8 @@ kikit panelize \
     --tabs 'fixed; width: 3mm;' \
     --cuts 'mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm' \
     --framing 'railstb; width: 5mm; space: 3mm;' \
-    --post 'millradius: 1mm; copperfill: true' \
+    --copperfill solid \
+    --post 'millradius: 1mm;' \
     doc/resources/conn.kicad_pcb panel.kicad_pcb
 
 # Windows
@@ -635,7 +636,8 @@ kikit panelize ^
     --tabs "fixed; width: 3mm;" ^
     --cuts "mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm" ^
     --framing "railstb; width: 5mm; space: 3mm;" ^
-    --post "millradius: 1mm; copperfill: true" ^
+    --copperfill solid ^
+    --post "millradius: 1mm;" ^
     doc/resources/conn.kicad_pcb panel.kicad_pcb
 ```
 
@@ -651,7 +653,8 @@ kikit panelize \
     --tabs 'fixed; hwidth: 10mm; vwidth: 15mm' \
     --cuts 'vcuts; clearance: 1.5mm' \
     --framing 'railstb; width: 5mm; space: 3mm;' \
-    --post 'millradius: 1mm; copperfill: true' \
+    --copperfill solid \
+    --post 'millradius: 1mm;' \
     doc/resources/conn.kicad_pcb panel.kicad_pcb
 
 # Windows
@@ -660,11 +663,40 @@ kikit panelize ^
     --tabs "fixed; hwidth: 10mm; vwidth: 15mm" ^
     --cuts "vcuts; clearance: 1.5mm" ^
     --framing "railstb; width: 5mm; space: 3mm;" ^
-    --post "millradius: 1mm; copperfill: true" ^
+    --copperfill solid ^
+    --post "millradius: 1mm;" ^
     doc/resources/conn.kicad_pcb panel.kicad_pcb
 ```
 
 ![examplePanel22](resources/examplePanel22.png)
+
+If you, for example do not wish to cover the tabs with copper, you can also
+specify clearance. Also, some manufacturers don't like when you have large solid
+copper areas. In that case, you can use a hatch pattern to fill the area:
+
+```
+# Linux
+kikit panelize \
+    --layout 'grid; rows: 2; cols: 2; space: 2mm' \
+    --tabs 'fixed; width: 3mm;' \
+    --cuts 'mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm' \
+    --framing 'railstb; width: 5mm; space: 3mm;' \
+    --copperfill 'hatched; clearance: 2mm; spacing: 0.5mm; width: 0.5mm' \
+    --post 'millradius: 1mm;' \
+    doc/resources/conn.kicad_pcb panel.kicad_pcb
+
+# Windows
+kikit panelize ^
+    --layout "grid; rows: 2; cols: 2; space: 2mm" ^
+    --tabs "fixed; width: 3mm;" ^
+    --cuts "mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm" ^
+    --framing "railstb; width: 5mm; space: 3mm;" ^
+    --copperfill "hatched; clearance: 2mm; spacing: 0.5mm; width: 0.5mm" ^
+    --post "millradius: 1mm;" ^
+    doc/resources/conn.kicad_pcb panel.kicad_pcb
+```
+
+![examplePanel23](resources/examplePanel23.png)
 
 Note one last facts about V-cuts. V-cuts can only be straight and
 horizontal/vertical. But you can use them with circular boards if you want by
@@ -713,7 +745,7 @@ kikit panelize ^
     doc/resources/conn.kicad_pcb panel.kicad_pcb
 ```
 
-![examplePanel23](resources/examplePanel23.png)
+![examplePanel24](resources/examplePanel24.png)
 
 You can learn more about available functions from the comment in the source code
 or in [documentation](panelization.md).
