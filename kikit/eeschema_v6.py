@@ -110,8 +110,6 @@ def collectSymbols(filename, path=""):
     symbol instances
     """
     with open(filename) as f:
-        import time
-        start_time = time.time()
         sheetSExpr = parseSexprF(f)
     symbols, instances = [], []
     for item in sheetSExpr.items:
