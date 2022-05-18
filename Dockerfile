@@ -7,8 +7,6 @@ ARG ADDITIONAL_PYTHON_PACKAGES
 LABEL maintainer="Jan \"yaqwsx\" Mrázek" \
       description="Container for running KiKit applications"
 
-ENV DISPLAY=unix:0.0
-
 RUN apt-get update && \
     apt-get install -y software-properties-common $ADDITIONAL_PACKAGES && \
     rm -rf /var/lib/apt/lists/*
