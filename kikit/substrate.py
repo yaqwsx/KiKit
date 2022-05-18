@@ -450,6 +450,10 @@ def closestIntersectionPoint(origin, direction, outline, maxDistance):
     origin = Point(origin[0], origin[1])
     if isinstance(inter, Point):
         geoms = [inter]
+    elif isinstance(inter, LineString):
+        # When a linestring is an intersection, we know that the starting or
+        # ending points are the nearest one
+        geoms = [Point(inter.coords[0]), Point(inter.coords[-1])]
     else:
         geoms = inter.geoms
     return min([(g, origin.distance(g)) for g in geoms], key=lambda t: t[1])[0]
