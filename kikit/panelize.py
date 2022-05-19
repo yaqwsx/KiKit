@@ -431,9 +431,21 @@ class Panel:
             self.board.Add(cut)
             if clearanceArea is not None:
                 keepouts.append(self.addKeepout(clearanceArea))
+
+        # KiCAD segfaults on zone filling due to a missing project file.
+        # Therefore, save the board and wait for a project file to appear:
+        self.board.Save(self.filename)
+        if isV6():
+            proFile = self.getProFilepath()
+            if not os.path.exists(proFile):
+                raise RuntimeError("Unable to create project file on save")
+
+
+
         fillerTool = pcbnew.ZONE_FILLER(self.board)
         fillerTool.Fill(self.zonesToRefill)
         self.board.Save(self.filename)
+
         # Remove cuts
         for cut, _ in vcuts:
             self.board.Remove(cut)
