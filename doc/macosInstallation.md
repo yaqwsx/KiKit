@@ -30,7 +30,7 @@ here](../scripts/installMacOS.bash). You can download and run it. Open a
 terminal and enter:
 
 ```.bash
-$ curl https://raw.githubusercontent.com/yaqwsx/KiKit/master/scripts/installMacOS.bash
+$ curl -O https://raw.githubusercontent.com/yaqwsx/KiKit/master/scripts/installMacOS.bash
 $ sudo bash installMacOS.bash
 ```
 
