@@ -9,8 +9,9 @@ The installation steps differ slightly based on the operating system you use, bu
 consists of three steps:
 
 - perform the basic installation:
-  - [Linux/MacOS](#installation-on-linux-and-macos)
+  - [Linux](#installation-on-linux-and-macos)
   - [Windows](#installation-on-windows)
+  - [MacOS](macosInstallation.md) (**Extra steps are required, please, read the guide**)
   - Or you can run KiKit inside [Docker](#running-kikit-via-docker) - which
     might be useful e.g., for continuous integration.
   - If you would like to install special version of KiKit (e.g., nightly or a
@@ -32,7 +33,7 @@ If you want to upgrade KiKit, you have to perform two steps:
 - then you can upgrade the PCM packages within KiCAD. Note that this step is
   often not needed. If it will be needed, the release notes will say so.
 
-## Installation on Linux and MacOS
+## Installation on Linux
 
 Simply invoke in terminal:
 

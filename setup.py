@@ -44,6 +44,7 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     install_requires=[
+        "numpy", # Required for MacOS
         "pcbnewTransition==0.2.0",
         "shapely>=1.7",
         "click>=7.1",
