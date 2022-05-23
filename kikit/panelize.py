@@ -449,7 +449,7 @@ class Panel:
 
         if isV6():
             self.makeLayersVisible() # as they are not in KiCAD 6
-            self.mergeDrcRules()
+            self.mergeDrcRulesAndVariables()
         self._adjustPageSize()
 
     def refillZonesAndSave(self):
@@ -520,7 +520,7 @@ class Panel:
             # The PRL file is not always created, ignore it
             pass
 
-    def mergeDrcRules(self):
+    def mergeDrcRulesAndVariables(self):
         """
         Examine DRC rules of the source boards, merge them into a single set of
         rules and store them in *.kicad_pro file. Also stores board DRC
@@ -547,6 +547,7 @@ class Panel:
             currentPro["board"]["design_settings"] = sourcePro["board"]["design_settings"]
             currentPro["board"]["design_settings"]["drc_exclusions"] = [
                 serializeExclusion(e) for e in self.drcExclusions]
+            currentPro["text_variables"] = sourcePro.get("text_variables", {})
             with open(self.getProFilepath(), "w") as f:
                 json.dump(currentPro, f, indent=2)
         except (KeyError, FileNotFoundError):
