@@ -12,6 +12,8 @@ from kikit.substrate import Substrate
 from pcbnewTransition import pcbnew
 from shapely.geometry import LineString
 
+Preset = Dict[str, Dict[str, Any]]
+
 
 class HookPlugin:
     """
@@ -89,8 +91,9 @@ class LayoutPlugin:
     """
     This type of plugin can create user specified board layouts
     """
-    def __init__(self, userArg: str, netPattern: str, refPattern: str,
-                 vspace: int, hspace: int, rotation: int) -> None:
+    def __init__(self, preset: Preset, userArg: str, netPattern: str,
+                 refPattern: str, vspace: int, hspace: int, rotation: int) -> None:
+        self.preset = preset
         self.userArg = userArg
         self.netPattern = netPattern
         self.refPattern = refPattern
@@ -126,7 +129,8 @@ class FramingPlugin:
     """
     This type of plugin can build custom framing
     """
-    def __init__(self, userArg: str) -> None:
+    def __init__(self, preset: Preset, userArg: str) -> None:
+        self.preset = preset
         self.userArg = userArg
 
     def buildFraming(self, panel: Panel) -> Iterable[LineString]:
@@ -149,7 +153,8 @@ class TabsPlugin:
     This plugin can make custom tabs. It provides two functions, however, you
     should override only one of them.
     """
-    def __init__(self, userArg: str) -> None:
+    def __init__(self, preset: Preset, userArg: str) -> None:
+        self.preset = preset
         self.userArg = userArg
 
     def buildTabAnnotations(self, panel: Panel) -> None:
@@ -173,7 +178,8 @@ class CutsPlugin:
     This plugin renders tabs (LineStrings) into board features. The cuts are
     divided into two types so you can, e.g., inset you tab cuts.
     """
-    def __init__(self, userArg: str) -> None:
+    def __init__(self, preset: Preset, userArg: str) -> None:
+        self.preset = preset
         self.userArg = userArg
 
     def renderTabCuts(self, panel: Panel, cuts: Iterable[LineString]) -> None:
@@ -193,7 +199,8 @@ class ToolingPlugin:
     """
     This plugin places tooling holes on the board frame.
     """
-    def __init__(self, userArg: str) -> None:
+    def __init__(self, preset: Preset, userArg: str) -> None:
+        self.preset = preset
         self.userArg = userArg
 
     def buildTooling(self, panel: Panel) -> None:
@@ -206,7 +213,8 @@ class FiducialsPlugin:
     """
     This plugin places fiducials holes on the board frame.
     """
-    def __init__(self, userArg: str) -> None:
+    def __init__(self, preset: Preset, userArg: str) -> None:
+        self.preset = preset
         self.userArg = userArg
 
     def buildFiducials(self, panel: Panel) -> None:

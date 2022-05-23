@@ -249,26 +249,26 @@ def doPanelization(input, output, preset, plugins=[]):
 
     sourceArea = ki.readSourceArea(preset["source"], board)
     substrates, framingSubstrates, backboneCuts = \
-        ki.buildLayout(preset["layout"], panel, input, sourceArea, preset["framing"])
+        ki.buildLayout(preset, panel, input, sourceArea)
 
     useHookPlugins(lambda x: x.afterLayout(panel, substrates))
 
-    tabCuts = ki.buildTabs(preset["tabs"], panel, substrates,
+    tabCuts = ki.buildTabs(preset, panel, substrates,
         framingSubstrates, ki.frameOffset(preset["framing"]))
 
     useHookPlugins(lambda x: x.afterTabs(panel, tabCuts, backboneCuts))
 
-    frameCuts = ki.buildFraming(preset["framing"], panel)
+    frameCuts = ki.buildFraming(preset, panel)
 
     useHookPlugins(lambda x: x.afterFraming(panel, frameCuts))
 
-    ki.buildTooling(preset["tooling"], panel)
-    ki.buildFiducials(preset["fiducials"], panel)
+    ki.buildTooling(preset, panel)
+    ki.buildFiducials(preset, panel)
     ki.buildText(preset["text"], panel)
     ki.buildPostprocessing(preset["post"], panel)
 
-    ki.makeTabCuts(preset["cuts"], panel, tabCuts)
-    ki.makeOtherCuts(preset["cuts"], panel, chain(backboneCuts, frameCuts))
+    ki.makeTabCuts(preset, panel, tabCuts)
+    ki.makeOtherCuts(preset, panel, chain(backboneCuts, frameCuts))
 
     useHookPlugins(lambda x: x.afterCuts(panel))
 

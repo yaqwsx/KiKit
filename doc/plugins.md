@@ -16,7 +16,7 @@ The plugins can be implemented and published as Python packages.
 
 ## Writing custom plugins
 
-The plugins should are implemented by overriding one of the plugin types
+The plugins should be implemented by overriding one of the plugin types
 specified in `../kikit/plugin.py`. Currently, the following plugin types are
 supported:
 - `HookPlugin` - this is a plugin that features a number of callback that are
@@ -31,3 +31,6 @@ supported:
   decoration.
 - `TextVariablePlugin` - this plugins provides new variables for the text
   placement.
+
+All plugins except `TextVariablePlugin` have attributes `self.preset` containing
+the whole preset and `self.userArg` containing the string provided by the user.
