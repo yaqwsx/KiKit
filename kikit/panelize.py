@@ -453,6 +453,11 @@ class Panel:
         self._adjustPageSize()
 
     def refillZonesAndSave(self):
+        if not isV6():
+            fillerTool = pcbnew.ZONE_FILLER(self.board)
+            fillerTool.Fill(self.zonesToRefill)
+            self.board.Save(self.filename)
+            return
         # KiCAD segfaults on zone filling when the board is constructed via
         # script in memory. Let's mark zones that need refill, save and fill
         # after save.
