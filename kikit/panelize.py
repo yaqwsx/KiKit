@@ -564,7 +564,7 @@ class Panel:
         if self.pageSize is None:
             return
         with open(self.filename, "r") as f:
-            tree = parseSexprF(f)
+            tree = parseSexprF(f, limit=10) # Introduce limit to speed up parsing
         # Find paper property
         paperExpr = None
         for subExpr in tree:

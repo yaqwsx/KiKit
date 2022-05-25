@@ -1,10 +1,11 @@
 from io import StringIO
+from typing import Callable, Dict, Iterable, Optional, Union
 
 # Simple white-space aware S-Expression parser (parsing and dumping yields the
 # same result). Might not support all features of S-expression, but should be
 # enough to properly parser KiCAD's S-Expressions
 
-def ParseError(RuntimeError):
+class ParseError(RuntimeError):
     pass
 
 # Python 3 does not support peeking on text files, so let's implement a stream
@@ -54,20 +55,22 @@ class Atom:
         return self.value == o.value and self.leadingWhitespace == o.leadingWhitespace
 
 class SExpr:
-    def __init__(self, items=None, leadingWhitespace="", trailingWhitespace=""):
+    def __init__(self, items=None, leadingWhitespace="", trailingWhitespace="", complete=True):
         if items is None:
             self.items = []
         else:
             self.items = items
         self.leadingWhitespace = leadingWhitespace
         self.trailingWhitespace = trailingWhitespace
+        self.complete = complete
 
     def __str__(self):
         # TBA: we should validate that two atoms do not get squished together
         # as they have wrongly specified whitespace
         return (self.leadingWhitespace + "("
             + "".join([str(x) for x in self.items])
-            + self.trailingWhitespace + ")")
+            + self.trailingWhitespace
+            + ")" if self.complete else "")
 
     def __repr__(self):
         val = [x.__repr__() for x in self.items]
@@ -76,7 +79,8 @@ class SExpr:
     def __eq__(self, o):
         return (self.items == o.items and
                 self.leadingWhitespace == o.leadingWhitespace and
-                self.trailingWhitespace == o.trailingWhitespace)
+                self.trailingWhitespace == o.trailingWhitespace and
+                self.complete == o.complete)
 
     def __iter__(self):
         return self.items.__iter__()
@@ -132,36 +136,91 @@ def readWhitespace(stream):
         c = stream.peek()
     return "".join(w)
 
-def readSexpr(stream):
+def readSexpr(stream, limit=None):
+    """
+    Reads SExpression from the stream. You can optionally try to parse only the
+    first n nodes by specifying limit;
+    """
     stream.shift("(")
 
     expr = SExpr()
     c = stream.peek()
     whitespace = ""
-    while c != ")":
+    while c != ")" and (limit is None or limit > 0):
         if c.isspace():
             whitespace = readWhitespace(stream)
         elif c == "(":
             s = readSexpr(stream)
             s.leadingWhitespace = whitespace
             expr.items.append(s)
+            if limit is not None:
+                limit -= 1
             whitespace = ""
         else:
             a = readAtom(stream)
             a.leadingWhitespace = whitespace
             expr.items.append(a)
+            if limit is not None:
+                limit -= 1
             whitespace = ""
         c = stream.peek()
-    stream.shift(")")
+    if limit != 0:
+        stream.shift(")")
     expr.trailingWhitespace = whitespace
+    expr.complete = limit != 0
     return expr
 
-def parseSexprF(sourceStream):
+def parseSexprF(sourceStream, limit=None):
     stream = Stream(sourceStream)
     lw = readWhitespace(stream)
-    s = readSexpr(stream)
+    s = readSexpr(stream, limit=limit)
     s.leadingWhitespace = lw
     return s
 
-def parseSexprS(s):
-    return parseSexprF(StringIO(s))
+def parseSexprS(s, limit=None):
+    return parseSexprF(StringIO(s), limit=limit)
+
+
+AstNode = Union[SExpr, Atom]
+
+def isElement(name: str) -> Callable[[AstNode], bool]:
+    def f(node: AstNode) -> bool:
+        if isinstance(node, Atom) or len(node) == 0:
+            return False
+        item = node[0]
+        return isinstance(item, Atom) and item.value == name
+    return f
+
+def readDict(nodes: Iterable[AstNode]) -> Dict[str, AstNode]:
+    d = {}
+    for node in nodes:
+        if not isinstance(node, SExpr) or len(node.items) != 2:
+            raise RuntimeError("Invalid node passed")
+        key = node.items[0]
+        value = node.items[1]
+        if not isinstance(key, Atom):
+            raise RuntimeError("Invalid node passed")
+        d[key.value] = value
+    return d
+
+def readStrDict(nodes: Iterable[AstNode]) -> Dict[str, str]:
+    d = {}
+    for key, value in readDict(nodes).items():
+        if not isinstance(value, Atom):
+            raise RuntimeError("Dictionary is not a string dictionary")
+        d[key] = value.value
+    return d
+
+def findNode(nodes: Iterable[AstNode], name: str) -> Optional[SExpr]:
+    """
+    Finds a node with given name in a list of nodes
+    """
+    for node in nodes:
+        if isinstance(node, Atom):
+            continue
+        if len(node.items) == 0:
+            continue
+        nameNode = node.items[0]
+        if isinstance(nameNode, Atom) and nameNode.value == name:
+            return node
+    return None
