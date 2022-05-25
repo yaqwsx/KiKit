@@ -89,6 +89,7 @@ def gerberImpl(boardfile, outputdir, plot_plan=fullGerberPlotPlan, drilling=True
     popt.SetScale(1)
     popt.SetUseAuxOrigin(settings["UseAuxOrigin"])
     popt.SetUseGerberX2format(False)
+    popt.SetDrillMarksType(0) # NO_DRILL_SHAPE
 
     # This by gerbers only
     popt.SetSubtractMaskFromSilk(False)
