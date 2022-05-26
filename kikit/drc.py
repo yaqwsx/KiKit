@@ -15,7 +15,9 @@ from kikit.drc_ui import ReportLevel
 ItemFingerprint = Tuple[int, int, str]
 
 def roundCoord(x: int) -> int:
-    return round(x, -3)
+    # KiCAD doesn't round the values, it just cuts the decimal places. So let's
+    # emulate that
+    return round(x - 50, -3)
 
 def getItemFingerprint(item: pcbnew.BOARD_ITEM):
     return (roundCoord(item.GetPosition()[0]), # Round down, since the output does the same
@@ -127,7 +129,8 @@ def readBoardItem(text: str,
     try:
         return fingerprints[fPrint]
     except KeyError:
-        raise RuntimeError(f"Cannot find board item from '{text}', fingerprint: '{fPrint}'") from None
+        x = '\n'.join([f"{x}: {y}" for x, y in fingerprints.items() if "Board_11" in x[2]])
+        raise RuntimeError(f"Cannot find board item from '{text}', fingerprint: '{fPrint}'\n\n{x}") from None
 
 def readViolations(reportFile: TextIO,
                    fingerprints: Dict[ItemFingerprint, pcbnew.BOARD_ITEM]) \
