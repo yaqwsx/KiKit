@@ -20,6 +20,7 @@ $KICAD_PYTHON/bin/python3 -m pip install kikit
 echo "KiCAD will be resigned" 1>&2
 codesign -fs "kikit" "$KICAD_PYTHON/Resources/Python.app"
 codesign -fs "kikit" "/Applications/KiCad/KiCad.app"
+codesign -fs "kikit" "/Applications/KiCad/KiCad.app/Contents/Applications/pcbnew.app"
 
 cat << EOF | > /usr/local/bin/kikit
 #!/bin/bash
