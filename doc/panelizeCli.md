@@ -478,7 +478,7 @@ the `plugin` field.
 
 Sets page size on the resulting panel and position the panel in the page. The
 type of style dictates paper size. The default `inherit` option inherits paper
-size from the source board.
+size from the source board. This feature is not supported on KiCAD 5
 
 **Types**: `inherit`, `custom`, `A0`, `A1`, `A2`, `A3`, `A4`, `A5`, `A`, `B`,
 `C`, `D`, `E`, `USLetter`, `USLegal`, `USLedger`, `A0-portrait`, `A1-portrait`,

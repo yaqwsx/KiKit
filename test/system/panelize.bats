@@ -216,6 +216,10 @@ load common
 }
 
 @test "Set page" {
+    if [ $(kikit-info drcapi) -lt 1 ]; then
+        skip "KiCAD $(kikit-info kicadversion) doesn't support page size."
+    fi
+
     kikit panelize \
         --page 'A3;' \
         --debug 'trace: true; deterministic: true' \
