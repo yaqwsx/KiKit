@@ -215,6 +215,14 @@ load common
         $RES/conn.kicad_pcb panel.kicad_pcb
 }
 
+@test "Set page" {
+    kikit panelize \
+        --page 'A3;' \
+        --debug 'trace: true; deterministic: true' \
+        $RES/conn.kicad_pcb panel.kicad_pcb
+}
+
+
 @test "Use layout plugin" {
     kikit panelize --dump preset.json \
         --layout "plugin; code: $RES/testplugin.py.MyLayout" \

@@ -18,3 +18,26 @@ def test_sexpr():
         (lib (name 74xGxx)(type Legacy)(uri ${KICAD_SYMBOL_DIR}/74xGxx.lib)(options "")(descr "74xGxx symbols"))
     )"""
     assert str(parseSexprS(source)) == source
+
+def test_readQuotedString():
+    SOURCE = r'"ABC\nvDEF\n\"GHI\""'
+
+    stream = Stream(StringIO(SOURCE))
+    string = readQuotedString(stream)
+    a = Atom(string, quoted=True)
+    res = str(a)
+    assert res == SOURCE
+
+
+def test_identiy():
+    SOURCE = "../resources/conn.kicad_pcb"
+    with open(SOURCE) as f:
+        truth = f.read()
+
+    with open(SOURCE) as f:
+        ast1 = parseSexprF(f)
+    assert str(ast1) == truth
+
+    with open(SOURCE) as f:
+        ast2 = parseSexprF(f, limit=3)
+    assert str(ast2) == truth

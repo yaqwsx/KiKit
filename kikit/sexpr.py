@@ -33,6 +33,11 @@ class Stream:
             raise ParseError(f"Expected '{expected}', got {repr(c)}")
         return c
 
+    def readAll(self):
+        x = self.pending
+        self.pending = None
+        return x + self.stream.read()
+
 
 class Atom:
     def __init__(self, value, leadingWhitespace="", quoted=False):
@@ -42,8 +47,7 @@ class Atom:
 
     def __str__(self):
         if self.quoted:
-            value = self.value.replace('"', '\\"')
-            return self.leadingWhitespace + '"' + value + '"'
+            return self.leadingWhitespace + '"' + self.value + '"'
         return self.leadingWhitespace + self.value
 
     def __repr__(self):
@@ -63,6 +67,7 @@ class SExpr:
         self.leadingWhitespace = leadingWhitespace
         self.trailingWhitespace = trailingWhitespace
         self.complete = complete
+        self.trailingOuterWhitespace = ""
 
     def __str__(self):
         # TBA: we should validate that two atoms do not get squished together
@@ -70,7 +75,8 @@ class SExpr:
         return (self.leadingWhitespace + "("
             + "".join([str(x) for x in self.items])
             + self.trailingWhitespace
-            + ")" if self.complete else "")
+            + (")" if self.complete else "")
+            + self.trailingOuterWhitespace)
 
     def __repr__(self):
         val = [x.__repr__() for x in self.items]
@@ -101,12 +107,11 @@ def readQuotedString(stream):
     escaped = False
     c = stream.peek()
     while c != '"' or escaped:
-        if c == "\\":
+        if c == "\\" and not escaped:
             escaped = True
-            stream.read()
         else:
             escaped = False
-            s.append(stream.read())
+        s.append(stream.read())
         c = stream.peek()
     stream.shift('"')
     return "".join(s)
@@ -166,8 +171,11 @@ def readSexpr(stream, limit=None):
         c = stream.peek()
     if limit != 0:
         stream.shift(")")
-    expr.trailingWhitespace = whitespace
-    expr.complete = limit != 0
+        expr.trailingWhitespace = whitespace
+        expr.complete = True
+    else:
+        expr.trailingWhitespace = whitespace + stream.readAll()
+        expr.complete = False
     return expr
 
 def parseSexprF(sourceStream, limit=None):
@@ -175,6 +183,7 @@ def parseSexprF(sourceStream, limit=None):
     lw = readWhitespace(stream)
     s = readSexpr(stream, limit=limit)
     s.leadingWhitespace = lw
+    s.trailingOuterWhitespace = readWhitespace(stream)
     return s
 
 def parseSexprS(s, limit=None):
