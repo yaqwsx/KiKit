@@ -453,21 +453,10 @@ class Panel:
         self._adjustPageSize()
 
     def refillZonesAndSave(self):
-        if not isV6():
-            fillerTool = pcbnew.ZONE_FILLER(self.board)
-            fillerTool.Fill(self.zonesToRefill)
-            self.board.Save(self.filename)
-            return
         # KiCAD segfaults on zone filling when the board is constructed via
-        # script in memory. Let's mark zones that need refill, save and fill
-        # after save.
+        # script in memory. Let's save and fill after save.
         #
         # See https://gitlab.com/kicad/code/kicad/-/issues/11666
-        originalNames = {}
-        for i, zone in enumerate(self.zonesToRefill):
-            newName = f"KIKIT_refill_{i}"
-            originalNames[newName] = zone.GetZoneName()
-            zone.SetZoneName(newName)
         self.board.Save(self.filename)
         if isV6():
             proFile = self.getProFilepath()
@@ -476,13 +465,7 @@ class Panel:
 
         fillBoard = pcbnew.LoadBoard(self.filename)
         fillerTool = pcbnew.ZONE_FILLER(fillBoard)
-        zonesToRefill = pcbnew.ZONES()
-        for zone in fillBoard.Zones():
-            zName = zone.GetZoneName()
-            if zName.startswith("KIKIT_refill_"):
-                zonesToRefill.append(zone)
-                zone.SetZoneName(originalNames[zName])
-        fillerTool.Fill(zonesToRefill)
+        fillerTool.Fill(fillBoard.Zones())
         fillBoard.Save(self.filename)
 
     def _uniquePrefix(self):
