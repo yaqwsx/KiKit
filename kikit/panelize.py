@@ -417,7 +417,7 @@ class Panel:
         self.annotationReader: AnnotationReader = AnnotationReader.getDefault()
         self.drcExclusions: List[DrcExclusion] = []
 
-    def save(self, reconstructArcs=False):
+    def save(self, reconstructArcs=False, refillAllZones=False):
         """
         Saves the panel to a file and makes the requested changes to the prl and
         pro files.
@@ -435,7 +435,7 @@ class Panel:
         # The two operations are merged into a single one as there is bug in
         # KiCAD that leads to a segfault. The function implements a workaround
         # that has to perform both operations.
-        self.refillZonesAndSave()
+        self.refillZonesAndSave(refillAllZones)
 
         # Remove cuts
         for cut, _ in vcuts:
@@ -452,7 +452,7 @@ class Panel:
             self.mergeDrcRulesAndVariables()
         self._adjustPageSize()
 
-    def refillZonesAndSave(self):
+    def refillZonesAndSave(self, refillAllZones=False):
         if not isV6():
             fillerTool = pcbnew.ZONE_FILLER(self.board)
             fillerTool.Fill(self.zonesToRefill)
@@ -476,12 +476,15 @@ class Panel:
 
         fillBoard = pcbnew.LoadBoard(self.filename)
         fillerTool = pcbnew.ZONE_FILLER(fillBoard)
-        zonesToRefill = pcbnew.ZONES()
-        for zone in fillBoard.Zones():
-            zName = zone.GetZoneName()
-            if zName.startswith("KIKIT_refill_"):
-                zonesToRefill.append(zone)
-                zone.SetZoneName(originalNames[zName])
+        if refillAllZones:
+          zonesToRefill = fillBoard.Zones()
+        else:
+          zonesToRefill = pcbnew.ZONES()
+          for zone in fillBoard.Zones():
+              zName = zone.GetZoneName()
+              if zName.startswith("KIKIT_refill_"):
+                  zonesToRefill.append(zone)
+                  zone.SetZoneName(originalNames[zName])
         fillerTool.Fill(zonesToRefill)
         fillBoard.Save(self.filename)
 

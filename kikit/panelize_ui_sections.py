@@ -594,7 +594,10 @@ POST_SECTION = {
     "origin": SChoice(
         ANCHORS + [""],
         always(),
-        "Place auxiliary origin")
+        "Place auxiliary origin"),
+    "refill": SBool(
+        always(),
+        "Refill all zones")
 }
 
 def ppPost(section):
