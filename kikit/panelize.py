@@ -1735,9 +1735,9 @@ class Panel:
             self.boardSubstrate.cut(cutShape)
 
     def addCornerChamfers(self, size):
-        corners = self.panelCorners()
-        verticalStops = self.panelCorners(0, size)
-        horizontalStops = self.panelCorners(size, 0)
+        corners = self.panelCorners(-SHP_EPSILON, -SHP_EPSILON)
+        verticalStops = self.panelCorners(-SHP_EPSILON, size)
+        horizontalStops = self.panelCorners(size, -SHP_EPSILON)
         for t, v, h in zip(corners, verticalStops, horizontalStops):
             cutPoly = Polygon([t, v, h, t])
             self.boardSubstrate.cut(cutPoly)
