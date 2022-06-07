@@ -2,6 +2,7 @@ name: test-kikit
 on:
   push:
   pull_request:
+  workflow_dispatch:
   schedule:
     - cron: '0 3 * * *'
 jobs:
@@ -54,7 +55,7 @@ jobs:
     name: "Build and deploy Docker container"
     runs-on: ubuntu-20.04
     needs: test
-    if: github.ref == 'refs/heads/master' && github.event_name == 'schedule'
+    if: github.ref == 'refs/heads/master' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
     strategy:
       matrix:
         build-config:
