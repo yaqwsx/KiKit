@@ -1,3 +1,5 @@
+import shutil
+
 from pcbnewTransition import pcbnew
 from pcbnew import wxPoint
 import numpy as np
@@ -7,7 +9,7 @@ from pcbnewTransition.transition import isV6
 from kikit.common import *
 from kikit.defs import *
 from kikit.substrate import Substrate, extractRings, toShapely, linestringToKicad
-from kikit.export import gerberImpl, pasteDxfExport
+from kikit.export import gerberImpl, pasteDxfExport, LayerToPlot
 from kikit.export import exportSettingsJlcpcb
 import solid
 import solid.utils
@@ -370,22 +372,16 @@ def create(inputboard, outputdir, jigsize, jigthickness, pcbthickness,
     stencilFile = os.path.join(outputdir, "stencil.kicad_pcb")
     board.Save(stencilFile)
 
-    setStencilLayerVisibility(stencilFile)
+    setStencilLayerVisibility(inputboard)
+    plot_plan = [LayerToPlot.PasteTop, LayerToPlot.PasteBottom]
 
-    plotPlan = [
-        # name, id, comment
-        ("PasteBottom", pcbnew.B_Paste, "Paste Bottom"),
-        ("PasteTop", pcbnew.F_Paste, "Paste top"),
-    ]
     # get a copy of exportSettingsJlcpcb dictionary and
     # exclude the Edge.Cuts layer for creation of stencil gerber files
     exportSettings = exportSettingsJlcpcb.copy()
     exportSettings["ExcludeEdgeLayer"] = True
     gerberDir = os.path.join(outputdir, "gerber")
-    gerberImpl(stencilFile, gerberDir, plotPlan, False, exportSettings)
-    gerbers = [os.path.join(gerberDir, x) for x in os.listdir(gerberDir)]
-    subprocess.check_call(["zip", "-j",
-        os.path.join(outputdir, "gerbers.zip")] + gerbers)
+    gerberImpl(stencilFile, gerberDir, plot_plan, False, exportSettings)
+    shutil.make_archive(os.path.join(outputdir, "gerbers"), "zip", gerberDir)
 
     jigthickness = fromMm(jigthickness)
     pcbthickness = fromMm(pcbthickness)

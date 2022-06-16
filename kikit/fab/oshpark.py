@@ -2,10 +2,10 @@ from pcbnewTransition import pcbnew
 import os
 import shutil
 from pathlib import Path
-from kikit.export import gerberImpl, exportSettingsOSHPark, fullGerberPlotPlan
+from kikit.export import gerberImpl, exportSettingsOSHPark, fullGerberPlotPlan, LayerToPlot
 from kikit.fab.common import ensurePassingDrc
 
-plotPlanNoVCuts = [(name, id, comment) for name, id, comment in fullGerberPlotPlan if name != "CmtUser"]
+plotPlanNoVCuts = [layer_to_plot for layer_to_plot in fullGerberPlotPlan if layer_to_plot is not LayerToPlot.CmtUser]
 
 def exportOSHPark(board, outputdir, nametemplate, drc):
     """
