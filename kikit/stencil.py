@@ -25,12 +25,22 @@ MOUNTING_HOLES_COUNT = 3
 MOUNTING_HOLE_R = fromMm(1)
 HOLE_SPACING = fromMm(20)
 
-def addBottomCounterpart(board, item):
+
+class StencilType(Enum):
+    SolderPaste = (LayerToPlot.PasteTop, LayerToPlot.PasteBottom)
+    Adhesive = (LayerToPlot.AdhesiveTop, LayerToPlot.AdhesiveBottom)
+
+    def __init__(self, top_layer: LayerToPlot, bottom_layer: LayerToPlot):
+        self.top_layer = top_layer
+        self.bottom_layer = bottom_layer
+
+
+def addBottomCounterpart(board, item, stencil_type: StencilType):
     item = item.Duplicate()
-    item.SetLayer(Layer.B_Paste)
+    item.SetLayer(stencil_type.bottom_layer.id)
     board.Add(item)
 
-def addRoundedCorner(board, center, start, end, thickness):
+def addRoundedCorner(board, center, start, end, thickness, stencil_type: StencilType):
     corner = pcbnew.PCB_SHAPE()
     corner.SetShape(STROKE_T.S_ARC)
     corner.SetCenter(wxPoint(center[0], center[1]))
@@ -50,21 +60,21 @@ def addRoundedCorner(board, center, start, end, thickness):
         else:
             corner.SetAngle(fromDegrees(-90))
     corner.SetWidth(thickness)
-    corner.SetLayer(Layer.F_Paste)
+    corner.SetLayer(stencil_type.top_layer.id)
     board.Add(corner)
-    addBottomCounterpart(board, corner)
+    addBottomCounterpart(board, corner, stencil_type)
 
-def addLine(board, start, end, thickness):
+def addLine(board, start, end, thickness, stencil_type: StencilType):
     line = pcbnew.PCB_SHAPE()
     line.SetShape(STROKE_T.S_SEGMENT)
     line.SetStart(wxPoint(start[0], start[1]))
     line.SetEnd(wxPoint(end[0], end[1]))
     line.SetWidth(thickness)
-    line.SetLayer(Layer.F_Paste)
+    line.SetLayer(stencil_type.top_layer.id)
     board.Add(line)
-    addBottomCounterpart(board, line)
+    addBottomCounterpart(board, line, stencil_type)
 
-def addBite(board, origin, direction, normal, thickness):
+def addBite(board, origin, direction, normal, thickness, stencil_type: StencilType):
     """
     Adds a bite to the stencil, direction points to the bridge, normal points
     inside the stencil
@@ -75,7 +85,7 @@ def addBite(board, origin, direction, normal, thickness):
     start = origin
     end = center + wxPoint(direction[0], direction[1])
     # addLine(board, end, end + normal / 2, thickness)
-    addRoundedCorner(board, center, start, end, thickness)
+    addRoundedCorner(board, center, start, end, thickness, stencil_type)
 
 def numberOfCuts(length, bridgeWidth, bridgeSpacing):
     """
@@ -85,7 +95,8 @@ def numberOfCuts(length, bridgeWidth, bridgeSpacing):
     cutLength = (length - (count - 1) * bridgeWidth) / count
     return count, cutLength
 
-def addFrame(board, rect, bridgeWidth, bridgeSpacing, clearance):
+
+def addFrame(board, rect, bridgeWidth, bridgeSpacing, clearance, stencil_type: StencilType):
     """
     Add rectangular frame to the board
     """
@@ -98,7 +109,7 @@ def addFrame(board, rect, bridgeWidth, bridgeSpacing, clearance):
         (bl(rect), wxPoint(0, -R), wxPoint(R, 0)) # BL
     ]
     for c, sOffset, eOffset in corners:
-        addRoundedCorner(board, c + sOffset + eOffset, c + sOffset, c + eOffset, clearance)
+        addRoundedCorner(board, c + sOffset + eOffset, c + sOffset, c + eOffset, clearance, stencil_type)
 
     count, cutLength = numberOfCuts(rect.GetWidth() - 2 * R, bridgeWidth, bridgeSpacing)
     for i in range(count):
@@ -106,16 +117,16 @@ def addFrame(board, rect, bridgeWidth, bridgeSpacing, clearance):
         end = start + cutLength
 
         y1, y2 = rect.GetY(), rect.GetY() + rect.GetHeight()
-        addLine(board, wxPoint(start, y1), wxPoint(end, y1), clearance)
+        addLine(board, wxPoint(start, y1), wxPoint(end, y1), clearance, stencil_type)
         if i != 0:
-            addBite(board, wxPoint(start, y1), wxPoint(-1, 0), wxPoint(0, 1), clearance)
+            addBite(board, wxPoint(start, y1), wxPoint(-1, 0), wxPoint(0, 1), clearance, stencil_type)
         if i != count - 1:
-            addBite(board, wxPoint(end, y1), wxPoint(1, 0), wxPoint(0, 1), clearance)
-        addLine(board, wxPoint(start, y2), wxPoint(end, y2), clearance)
+            addBite(board, wxPoint(end, y1), wxPoint(1, 0), wxPoint(0, 1), clearance, stencil_type)
+        addLine(board, wxPoint(start, y2), wxPoint(end, y2), clearance, stencil_type)
         if i != 0:
-            addBite(board, wxPoint(start, y2), wxPoint(-1, 0), wxPoint(0, -1), clearance)
+            addBite(board, wxPoint(start, y2), wxPoint(-1, 0), wxPoint(0, -1), clearance, stencil_type)
         if i != count - 1:
-            addBite(board, wxPoint(end, y2), wxPoint(1, 0), wxPoint(0, -1), clearance)
+            addBite(board, wxPoint(end, y2), wxPoint(1, 0), wxPoint(0, -1), clearance, stencil_type)
 
     count, cutLength = numberOfCuts(rect.GetHeight() - 2 * R, bridgeWidth, bridgeSpacing)
     for i in range(count):
@@ -123,18 +134,19 @@ def addFrame(board, rect, bridgeWidth, bridgeSpacing, clearance):
         end = start + cutLength
 
         x1, x2 = rect.GetX(), rect.GetX() + rect.GetWidth()
-        addLine(board, wxPoint(x1, start), wxPoint(x1, end), clearance)
+        addLine(board, wxPoint(x1, start), wxPoint(x1, end), clearance, stencil_type)
         if i != 0:
-            addBite(board, wxPoint(x1, start), wxPoint(0, -1), wxPoint(1, 0), clearance)
+            addBite(board, wxPoint(x1, start), wxPoint(0, -1), wxPoint(1, 0), clearance, stencil_type)
         if i != count - 1:
-            addBite(board, wxPoint(x1, end), wxPoint(0, 1), wxPoint(1, 0), clearance)
-        addLine(board, wxPoint(x2, start), wxPoint(x2, end), clearance)
+            addBite(board, wxPoint(x1, end), wxPoint(0, 1), wxPoint(1, 0), clearance, stencil_type)
+        addLine(board, wxPoint(x2, start), wxPoint(x2, end), clearance, stencil_type)
         if i != 0:
-            addBite(board, wxPoint(x2, start), wxPoint(0, -1), wxPoint(-1, 0), clearance)
+            addBite(board, wxPoint(x2, start), wxPoint(0, -1), wxPoint(-1, 0), clearance, stencil_type)
         if i != count - 1:
-            addBite(board, wxPoint(x2, end), wxPoint(0, 1), wxPoint(-1, 0), clearance)
+            addBite(board, wxPoint(x2, end), wxPoint(0, 1), wxPoint(-1, 0), clearance, stencil_type)
 
-def addHole(board, position, radius):
+
+def addHole(board, position, radius, stencil_type: StencilType):
     circle = pcbnew.PCB_SHAPE()
     circle.SetShape(STROKE_T.S_CIRCLE)
     circle.SetCenter(wxPoint(position[0], position[1]))
@@ -144,12 +156,12 @@ def addHole(board, position, radius):
     else:
         circle.SetArcStart(wxPoint(position[0], position[1]) + wxPoint(radius/2, 0))
     circle.SetWidth(radius)
-    circle.SetLayer(Layer.F_Paste)
+    circle.SetLayer(stencil_type.top_layer.id)
     board.Add(circle)
-    addBottomCounterpart(board, circle)
+    addBottomCounterpart(board, circle, stencil_type)
 
 def addJigFrame(board, jigFrameSize, bridgeWidth=fromMm(2),
-                bridgeSpacing=fromMm(10), clearance=fromMm(0.5)):
+                bridgeSpacing=fromMm(10), clearance=fromMm(0.5), stencil_type: StencilType = StencilType.SolderPaste):
     """
     Given a Pcbnew board finds the board outline and creates a stencil for
     KiKit's stencil jig.
@@ -165,22 +177,22 @@ def addJigFrame(board, jigFrameSize, bridgeWidth=fromMm(2),
     cutSize = rectByCenter(rectCenter(bBox),
         jigFrameSize[0] + 2 * (OUTER_BORDER + INNER_BORDER) - fromMm(1),
         jigFrameSize[1] + 2 * (OUTER_BORDER + INNER_BORDER) - fromMm(1))
-    addFrame(board, cutSize, bridgeWidth, bridgeSpacing, clearance)
+    addFrame(board, cutSize, bridgeWidth, bridgeSpacing, clearance, stencil_type)
 
     for i in range(MOUNTING_HOLES_COUNT):
         x = frameSize.GetX() + OUTER_BORDER / 2 + (i + 1) * (frameSize.GetWidth() - OUTER_BORDER) / (MOUNTING_HOLES_COUNT + 1)
-        addHole(board, wxPoint(x, OUTER_BORDER / 2 + frameSize.GetY()), MOUNTING_HOLE_R)
-        addHole(board, wxPoint(x, - OUTER_BORDER / 2 +frameSize.GetY() + frameSize.GetHeight()), MOUNTING_HOLE_R)
+        addHole(board, wxPoint(x, OUTER_BORDER / 2 + frameSize.GetY()), MOUNTING_HOLE_R, stencil_type)
+        addHole(board, wxPoint(x, - OUTER_BORDER / 2 +frameSize.GetY() + frameSize.GetHeight()), MOUNTING_HOLE_R, stencil_type)
     for i in range(MOUNTING_HOLES_COUNT):
         y = frameSize.GetY() + OUTER_BORDER / 2 + (i + 1) * (frameSize.GetHeight() - OUTER_BORDER) / (MOUNTING_HOLES_COUNT + 1)
-        addHole(board, wxPoint(OUTER_BORDER / 2 + frameSize.GetX(), y), MOUNTING_HOLE_R)
-        addHole(board, wxPoint(- OUTER_BORDER / 2 +frameSize.GetX() + frameSize.GetWidth(), y), MOUNTING_HOLE_R)
+        addHole(board, wxPoint(OUTER_BORDER / 2 + frameSize.GetX(), y), MOUNTING_HOLE_R, stencil_type)
+        addHole(board, wxPoint(- OUTER_BORDER / 2 +frameSize.GetX() + frameSize.GetWidth(), y), MOUNTING_HOLE_R, stencil_type)
 
     PIN_TOLERANCE = fromMm(0.05)
-    addHole(board, tl(frameSize) + wxPoint(OUTER_BORDER / 2, OUTER_BORDER / 2), MOUNTING_HOLE_R + PIN_TOLERANCE)
-    addHole(board, tr(frameSize) + wxPoint(-OUTER_BORDER / 2, OUTER_BORDER / 2), MOUNTING_HOLE_R + PIN_TOLERANCE)
-    addHole(board, br(frameSize) + wxPoint(-OUTER_BORDER / 2, -OUTER_BORDER / 2), MOUNTING_HOLE_R + PIN_TOLERANCE)
-    addHole(board, bl(frameSize) + wxPoint(OUTER_BORDER / 2, -OUTER_BORDER / 2), MOUNTING_HOLE_R + PIN_TOLERANCE)
+    addHole(board, tl(frameSize) + wxPoint(OUTER_BORDER / 2, OUTER_BORDER / 2), MOUNTING_HOLE_R + PIN_TOLERANCE, stencil_type)
+    addHole(board, tr(frameSize) + wxPoint(-OUTER_BORDER / 2, OUTER_BORDER / 2), MOUNTING_HOLE_R + PIN_TOLERANCE, stencil_type)
+    addHole(board, br(frameSize) + wxPoint(-OUTER_BORDER / 2, -OUTER_BORDER / 2), MOUNTING_HOLE_R + PIN_TOLERANCE, stencil_type)
+    addHole(board, bl(frameSize) + wxPoint(OUTER_BORDER / 2, -OUTER_BORDER / 2), MOUNTING_HOLE_R + PIN_TOLERANCE, stencil_type)
 
 def jigMountingHoles(jigFrameSize, origin=wxPoint(0, 0)):
     """ Get list of all mounting holes in a jig of given size """
@@ -299,20 +311,20 @@ def shapelyToSHAPE_POLY_SET(polygon):
     p.AddOutline(linestringToKicad(polygon.exterior))
     return p
 
-def cutoutComponents(board, components):
-    topCutout = extractComponentPolygons(components, "F.CrtYd")
+def cutoutComponents(board, components, stencil_type: StencilType):
+    topCutout = extractComponentPolygons(components, Layer.F_CrtYd)
     for polygon in topCutout:
         zone = pcbnew.PCB_SHAPE()
         zone.SetShape(STROKE_T.S_POLYGON)
         zone.SetPolyShape(shapelyToSHAPE_POLY_SET(polygon))
-        zone.SetLayer(Layer.F_Paste)
+        zone.SetLayer(stencil_type.top_layer.id)
         board.Add(zone)
-    bottomCutout = extractComponentPolygons(components, "B.CrtYd")
+    bottomCutout = extractComponentPolygons(components, Layer.B_CrtYd)
     for polygon in bottomCutout:
         zone = pcbnew.PCB_SHAPE()
         zone.SetShape(STROKE_T.S_POLYGON)
         zone.SetPolyShape(shapelyToSHAPE_POLY_SET(polygon))
-        zone.SetLayer(Layer.B_Paste)
+        zone.SetLayer(stencil_type.bottom_layer.id)
         board.Add(zone)
 
 def setStencilLayerVisibility(boardName):
@@ -358,22 +370,21 @@ from pathlib import Path
 import os
 
 def create(inputboard, outputdir, jigsize, jigthickness, pcbthickness,
-           registerborder, tolerance, ignore, cutout):
+           registerborder, tolerance, ignore, cutout, type: StencilType = StencilType.SolderPaste):
     board = pcbnew.LoadBoard(inputboard)
-    refs = parseReferences(ignore)
-    removeComponents(board, refs)
+    removeComponents(board, parseReferences(ignore))
+    cutoutComponents(board, getComponents(board, parseReferences(cutout)), type)
 
     Path(outputdir).mkdir(parents=True, exist_ok=True)
 
     jigsize = (fromMm(jigsize[0]), fromMm(jigsize[1]))
-    addJigFrame(board, jigsize)
-    cutoutComponents(board, getComponents(board, parseReferences(cutout)))
+    addJigFrame(board, jigsize, stencil_type=type)
 
     stencilFile = os.path.join(outputdir, "stencil.kicad_pcb")
     board.Save(stencilFile)
 
     setStencilLayerVisibility(inputboard)
-    plot_plan = [LayerToPlot.PasteTop, LayerToPlot.PasteBottom]
+    plot_plan = [type.top_layer, type.bottom_layer]
 
     # get a copy of exportSettingsJlcpcb dictionary and
     # exclude the Edge.Cuts layer for creation of stencil gerber files
@@ -387,10 +398,8 @@ def create(inputboard, outputdir, jigsize, jigthickness, pcbthickness,
     pcbthickness = fromMm(pcbthickness)
     outerBorder, innerBorder = fromMm(registerborder[0]), fromMm(registerborder[1])
     tolerance = fromMm(tolerance)
-    topRegister = makeTopRegister(board, jigsize,jigthickness, pcbthickness,
-        outerBorder, innerBorder, tolerance)
-    bottomRegister = makeBottomRegister(board, jigsize,jigthickness, pcbthickness,
-        outerBorder, innerBorder, tolerance)
+    topRegister = makeTopRegister(board, jigsize,jigthickness, pcbthickness, outerBorder, innerBorder, tolerance)
+    bottomRegister = makeBottomRegister(board, jigsize,jigthickness, pcbthickness, outerBorder, innerBorder, tolerance)
 
     topRegisterFile = os.path.join(outputdir, "topRegister.scad")
     solid.scad_render_to_file(topRegister, topRegisterFile)
@@ -416,13 +425,13 @@ def getComponents(board, references):
     """
     return [f for f in board.GetFootprints() if f.GetReference() in references]
 
-def collectFootprintEdges(footprint, layerName):
+def collectFootprintEdges(footprint, layer: Layer):
     """
     Return all edges on given layer in given footprint
     """
-    return [e for e in footprint.GraphicalItems() if e.GetLayerName() == layerName]
+    return [e for e in footprint.GraphicalItems() if e.GetLayer() == layer]
 
-def extractComponentPolygons(footprints, srcLayer):
+def extractComponentPolygons(footprints, layer: Layer):
     """
     Return a list of shapely polygons with holes for already placed components.
     The source layer defines the geometry on which the cutout is computed.
@@ -430,7 +439,7 @@ def extractComponentPolygons(footprints, srcLayer):
     """
     polygons = []
     for f in footprints:
-       edges = collectFootprintEdges(f, srcLayer)
+       edges = collectFootprintEdges(f, layer)
        for ring in extractRings(edges):
            polygons.append(toShapely(ring, edges))
     return polygons
@@ -474,8 +483,8 @@ def createPrinted(inputboard, outputdir, pcbthickness, thickness, framewidth,
         topPaste = topPaste.replace("\\", "/")
         outline = outline.replace("\\", "/")
 
-    topCutout = extractComponentPolygons(cutoutComponents, "F.CrtYd")
-    bottomCutout = extractComponentPolygons(cutoutComponents, "B.CrtYd")
+    topCutout = extractComponentPolygons(cutoutComponents, Layer.F_CrtYd)
+    bottomCutout = extractComponentPolygons(cutoutComponents, Layer.B_CrtYd)
     topStencil = printedStencil(outline, topPaste, topCutout, thickness, height,
         framewidth, frameclearance, enlargeholes, True)
     bottomStencil = printedStencil(outline, bottomPaste, bottomCutout, thickness,
