@@ -85,7 +85,10 @@ def gerberImpl(boardfile, outputdir, plot_plan=fullGerberPlotPlan, drilling=True
     popt.SetIncludeGerberNetlistInfo(True)
     popt.SetCreateGerberJobFile(True)
     popt.SetUseGerberProtelExtensions(settings["UseGerberProtelExtensions"])
-    popt.SetExcludeEdgeLayer(settings["ExcludeEdgeLayer"])
+    try: # kicad < 6.99
+        popt.SetExcludeEdgeLayer(settings["ExcludeEdgeLayer"])
+    except AttributeError:
+        pass
     popt.SetScale(1)
     popt.SetUseAuxOrigin(settings["UseAuxOrigin"])
     popt.SetUseGerberX2format(False)
@@ -139,7 +142,9 @@ def gerberImpl(boardfile, outputdir, plot_plan=fullGerberPlotPlan, drilling=True
         if settings["UseAuxOrigin"]:
             offset = board.GetDesignSettings().GetAuxOrigin()
         else:
-            offset = wxPoint(0,0)
+            # wxPoint in < 6.99, VECTOR2I in >=6.99 
+            OffsetType = type(board.GetDesignSettings().GetAuxOrigin())
+            offset = OffsetType(0,0)
 
         # False to generate 2 separate drill files (one for plated holes, one for non plated holes)
         # True to generate only one drill file
@@ -170,7 +175,10 @@ def pasteDxfExport(board, plotDir):
     popt.SetAutoScale(False)
     popt.SetScale(1)
     popt.SetMirror(False)
-    popt.SetExcludeEdgeLayer(True)
+    try: # kicad < 6.99
+        popt.SetExcludeEdgeLayer(True)  
+    except AttributeError:             
+        pass
     popt.SetScale(1)
     popt.SetDXFPlotUnits(DXF_UNITS_MILLIMETERS)
     popt.SetDXFPlotPolygonMode(False)
