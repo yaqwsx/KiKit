@@ -69,9 +69,7 @@ To give and example, consider the two following configurations:
         "width": "3mm"
     },
     "framing": {
-        "type": "frame",
-        "frameWidth": "100mm",
-        "frameHeight": "100mm"
+        "type": "frame"
     }
 }
 
@@ -94,9 +92,7 @@ When we merge `B` into `A`, we get:
     },
     "framing": {
         "type": "rails"
-        "width": "5mm",
-        "frameWidth": "100mm",
-        "frameHeight": "100mm"
+        "width": "5mm"
     }
 }
 ```
