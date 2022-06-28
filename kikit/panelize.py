@@ -1,9 +1,10 @@
+from copy import deepcopy
 import itertools
 from pcbnewTransition import pcbnew, isV6
 from kikit import sexpr
 from kikit.common import normalize
 
-from typing import Any, Callable, Dict, List, Tuple, Union
+from typing import Any, Callable, Dict, List, Set, Tuple, Union
 
 from pcbnew import (GetBoard, LoadBoard,
                     FromMM, ToMM, wxPoint, wxRect, wxRectMM, wxPointMM)
@@ -116,6 +117,32 @@ class Origin(Enum):
     TopRight = 2
     BottomLeft = 3
     BottomRight = 4
+
+
+class NetClass():
+    """
+    Internal representation of a netclass. Work-around for KiCAD 6.0.6 missing
+    support for netclasses in API
+    """
+    def __init__(self, settings: Any) -> None:
+        self.data = settings
+        self.nets: Set[str] = set()
+
+    @property
+    def name(self) -> str:
+        return self.data["name"]
+
+    @property
+    def originalNets(self) -> List[str]:
+        return self.data.get("nets", [])
+
+    def addNet(self, netname: str) -> None:
+        self.nets.add(netname)
+
+    def serialize(self) -> Any:
+        data = deepcopy(self.data)
+        data["nets"] = list(self.nets)
+        return data
 
 def getOriginCoord(origin, bBox):
     """Returns real coordinates (wxPoint) of the origin for given bounding box"""
@@ -416,6 +443,9 @@ class Panel:
 
         self.annotationReader: AnnotationReader = AnnotationReader.getDefault()
         self.drcExclusions: List[DrcExclusion] = []
+        # At the moment (KiCAD 6.0.6) has broken support for net classes.
+        # Therefore we have to handle them separately
+        self.newNetClasses: Dict[str, Any] = {}
 
     def save(self, reconstructArcs=False):
         """
@@ -449,7 +479,7 @@ class Panel:
 
         if isV6():
             self.makeLayersVisible() # as they are not in KiCAD 6
-            self.mergeDrcRulesAndVariables()
+            self.transferProjectSettings()
         self._adjustPageSize()
 
     def refillZonesAndSave(self):
@@ -520,11 +550,14 @@ class Panel:
             # The PRL file is not always created, ignore it
             pass
 
-    def mergeDrcRulesAndVariables(self):
+    def transferProjectSettings(self):
         """
         Examine DRC rules of the source boards, merge them into a single set of
         rules and store them in *.kicad_pro file. Also stores board DRC
         exclusions.
+
+        Also, transfers the list of net classes from the internal representation
+        into the project file.
         """
         assert isV6()
 
@@ -548,12 +581,43 @@ class Panel:
             currentPro["board"]["design_settings"]["drc_exclusions"] = [
                 serializeExclusion(e) for e in self.drcExclusions]
             currentPro["text_variables"] = sourcePro.get("text_variables", {})
+
+            currentPro["net_settings"]["classes"] = sourcePro["net_settings"]["classes"]
+            currentPro["net_settings"]["classes"] += [x.serialize() for x in self.newNetClasses.values()]
             with open(self.getProFilepath(), "w") as f:
                 json.dump(currentPro, f, indent=2)
         except (KeyError, FileNotFoundError):
             # This means the source board has no DRC setting. Probably a board
             # without attached project
             pass
+
+    def _inheritNetClasses(self, board, netRenamer):
+        """
+        KiCAD 6.0.6 has broken API for net classes. Therefore, we have to load
+        and save the net classes manually in the project file
+        """
+        proFilename = os.path.splitext(board.GetFileName())[0]+'.kicad_pro'
+        try:
+            with open(proFilename) as f:
+                project = json.load(f)
+        except FileNotFoundError:
+            # If the source board doesn't contain project, there's nothing to
+            # inherit.
+            return
+        seenNets = set()
+        for c in project["net_settings"]["classes"]:
+            c["name"] = netRenamer(c["name"])
+            nc = NetClass(c)
+            for net in nc.originalNets:
+                seenNets.add(net)
+                nc.addNet(netRenamer(net))
+            self.newNetClasses[nc.name] = nc
+        defaultNetClass = self.newNetClasses[netRenamer("Default")]
+        for name in collectNetNames(board):
+            if name in seenNets:
+                continue
+            defaultNetClass.addNet(netRenamer(name))
+
 
     def _adjustPageSize(self) -> None:
         """
@@ -715,7 +779,13 @@ class Panel:
 
         if netRenamer is None:
             netRenamer = lambda x, y: self._uniquePrefix() + y
-        renameNets(board, lambda x: netRenamer(len(self.substrates), x))
+        bId = len(self.substrates)
+        netRenamerFn = lambda x: netRenamer(bId, x)
+
+        if isV6():
+            self._inheritNetClasses(board, netRenamerFn)
+
+        renameNets(board, netRenamerFn)
         if refRenamer is not None:
             renameRefs(board, lambda x: refRenamer(len(self.substrates), x))
 
