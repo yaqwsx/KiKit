@@ -272,7 +272,7 @@ def removeCutsFromFootprint(footprint):
     """
     edges = []
     for edge in footprint.GraphicalItems():
-        if edge.GetLayerName() != "Edge.Cuts":
+        if edge.GetLayer() != Layer.Edge_Cuts:
             continue
         edges.append(edge)
     for e in edges:
@@ -1859,7 +1859,7 @@ def extractSourceAreaByAnnotation(board, reference):
     """
     annotation = getFootprintByReference(board, reference)
     tip = annotation.GetPosition()
-    edges = collectEdges(board, "Edge.Cuts")
+    edges = collectEdges(board, Layer.Edge_Cuts)
     # KiCAD 6 will need an adjustment - method Collide was introduced with
     # different parameters. But v6 API is not available yet, so we leave this
     # to future ourselves.

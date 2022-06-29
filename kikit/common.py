@@ -1,5 +1,6 @@
 from __future__ import annotations
 from typing import Optional, Tuple, Union
+from kikit.defs import Layer
 from kikit.typing import Box
 from pcbnewTransition import pcbnew, isV6
 from kikit.intervals import Interval, AxialLine
@@ -61,11 +62,11 @@ def combineBoundingBoxes(a, b):
     # return wxRect(topLeft, bottomRight)
     return wxRect(x1, y1, x2 - x1, y2 - y1)
 
-def collectEdges(board, layerName, sourceArea=None):
+def collectEdges(board, layerId, sourceArea=None):
     """ Collect edges in sourceArea on given layer including footprints """
     edges = []
     for edge in chain(board.GetDrawings(), *[m.GraphicalItems() for m in board.GetFootprints()]):
-        if edge.GetLayerName() != layerName:
+        if edge.GetLayer() != layerId:
             continue
         if isV6() and isinstance(edge, pcbnew.PCB_DIMENSION_BASE):
             continue
@@ -116,7 +117,7 @@ def findBoardBoundingBox(board, sourceArea=None):
     Returns a bounding box (wxRect) of all Edge.Cuts items either in
     specified source area (wxRect) or in the whole board
     """
-    edges = collectEdges(board, "Edge.Cuts", sourceArea)
+    edges = collectEdges(board, Layer.Edge_Cuts, sourceArea)
     return findBoundingBox(edges)
 
 def rectCenter(rect):

@@ -196,7 +196,7 @@ def createOuterPolygon(board, jigFrameSize, outerBorder):
     centerpoint = rectCenter(bBox)
     holes = jigMountingHoles(jigFrameSize, centerpoint)
 
-    outerSubstrate = Substrate(collectEdges(board, "Edge.Cuts"))
+    outerSubstrate = Substrate(collectEdges(board, Layer.Edge_Cuts))
     outerSubstrate.substrates = outerSubstrate.substrates.buffer(outerBorder)
     tabs = []
     for hole in holes:
@@ -208,7 +208,7 @@ def createOuterPolygon(board, jigFrameSize, outerBorder):
     return outerSubstrate.exterior(), holes
 
 def createOffsetPolygon(board, offset):
-    outerSubstrate = Substrate(collectEdges(board, "Edge.Cuts"))
+    outerSubstrate = Substrate(collectEdges(board, Layer.Edge_Cuts))
     outerSubstrate.substrates = outerSubstrate.substrates.buffer(offset)
     return outerSubstrate.exterior()
 
