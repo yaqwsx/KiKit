@@ -484,11 +484,12 @@ class Panel:
             fillerTool.Fill(self.zonesToRefill)
             self.board.Save(self.filename)
             return
-        # KiCAD segfaults on zone filling when the board is constructed via
-        # script in memory. Let's mark zones that need refill, save and fill
-        # after save.
-        #
-        # See https://gitlab.com/kicad/code/kicad/-/issues/11666
+        # KiCAD used to segfault on zone filling when the board is constructed
+        # via script in memory. Let's mark zones that need refill, save and fill
+        # after save. This is no longer the case, but since we have to handle
+        # zone refilling via project settings and there is no other way of
+        # loading the settings other then reloading the board, we have to save &
+        # reload.
         originalNames = {}
         for i, zone in enumerate(self.zonesToRefill):
             newName = f"KIKIT_zone_{i}"
