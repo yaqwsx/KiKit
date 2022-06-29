@@ -476,10 +476,6 @@ class Panel:
         # Remove edges
         for edge in newEdges:
             self.board.Remove(edge)
-
-        if isV6():
-            self.makeLayersVisible() # as they are not in KiCAD 6
-            self.transferProjectSettings()
         self._adjustPageSize()
 
     def refillZonesAndSave(self):
@@ -495,21 +491,23 @@ class Panel:
         # See https://gitlab.com/kicad/code/kicad/-/issues/11666
         originalNames = {}
         for i, zone in enumerate(self.zonesToRefill):
-            newName = f"KIKIT_refill_{i}"
+            newName = f"KIKIT_zone_{i}"
             originalNames[newName] = zone.GetZoneName()
             zone.SetZoneName(newName)
         self.board.Save(self.filename)
-        if isV6():
-            proFile = self.getProFilepath()
-            if not os.path.exists(proFile):
-                raise RuntimeError("Unable to create project file on save")
+        proFile = self.getProFilepath()
+        if not os.path.exists(proFile):
+            raise RuntimeError("Unable to create project file on save")
+
+        self.makeLayersVisible() # as they are not in KiCAD 6
+        self.transferProjectSettings()
 
         fillBoard = pcbnew.LoadBoard(self.filename)
         fillerTool = pcbnew.ZONE_FILLER(fillBoard)
         zonesToRefill = pcbnew.ZONES()
         for zone in fillBoard.Zones():
             zName = zone.GetZoneName()
-            if zName.startswith("KIKIT_refill_"):
+            if zName.startswith("KIKIT_zone_"):
                 zonesToRefill.append(zone)
                 zone.SetZoneName(originalNames[zName])
         fillerTool.Fill(zonesToRefill)
