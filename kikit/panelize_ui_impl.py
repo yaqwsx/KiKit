@@ -438,15 +438,17 @@ def buildFraming(preset, panel):
         if type == "none":
             return []
         if type == "railstb":
-            panel.makeRailsTb(framingPreset["width"])
+            panel.makeRailsTb(framingPreset["width"], framingPreset["mintotalheight"])
             addFilletAndChamfer(framingPreset, panel)
             return []
         if type == "railslr":
-            panel.makeRailsLr(framingPreset["width"])
+            panel.makeRailsLr(framingPreset["width"], framingPreset["mintotalwidth"])
             addFilletAndChamfer(framingPreset, panel)
             return []
         if type == "frame":
-            cuts = panel.makeFrame(framingPreset["width"], framingPreset["hspace"], framingPreset["vspace"])
+            cuts = panel.makeFrame(framingPreset["width"],
+                framingPreset["hspace"], framingPreset["vspace"],
+                framingPreset["mintotalwidth"], framingPreset["mintotalheight"])
             addFilletAndChamfer(framingPreset, panel)
             if framingPreset["cuts"] == "both":
                 return chain(*cuts)
@@ -457,7 +459,8 @@ def buildFraming(preset, panel):
             return []
         if type == "tightframe":
             panel.makeTightFrame(framingPreset["width"], framingPreset["slotwidth"],
-                framingPreset["hspace"], framingPreset["vspace"])
+                framingPreset["hspace"], framingPreset["vspace"],
+                framingPreset["mintotalwidth"], framingPreset["mintotalheight"])
             panel.boardSubstrate.removeIslands()
             addFilletAndChamfer(framingPreset, panel)
             return []

@@ -360,6 +360,9 @@ left/right rails.
 - `width` - specify with of the rails or frame
 - `fillet`, `chamfer` - fillet/chamfer frame corners. Specify radius or chamfer
   size.
+- `mintotalheight`, `mintotalwidth` – if needed, add extra material to the rail
+  or frame to meet the minimal requested size. Useful for services that require
+  minimal panel size.
 
 #### Railstb/Railslr
 

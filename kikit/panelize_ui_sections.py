@@ -411,6 +411,14 @@ FRAMING_SECTION = {
     "width": SLength(
         typeIn(["frame", "railstb", "railslr", "tightframe"]),
         "Width of the framing"),
+    "mintotalheight": SLength(
+        typeIn(["frame", "railstb", "tightframe"]),
+        "Minimal height of the panel"
+    ),
+    "mintotalwidth": SLength(
+        typeIn(["frame", "raillr", "tightframe"]),
+        "Minimal width of the panel"
+    ),
     "slotwidth": SLength(
         typeIn(["tightframe"]),
         "Width of the milled slot"),

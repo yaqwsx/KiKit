@@ -4,7 +4,7 @@ from pcbnewTransition import pcbnew, isV6
 from kikit import sexpr
 from kikit.common import normalize
 
-from typing import Any, Callable, Dict, List, Set, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, List, Set, Tuple, Union
 
 from pcbnew import (GetBoard, LoadBoard,
                     FromMM, ToMM, wxPoint, wxRect, wxRectMM, wxPointMM)
@@ -211,7 +211,7 @@ def rectString(rect):
                 ToMM(rect.GetX()), ToMM(rect.GetY()),
                 ToMM(rect.GetWidth()), ToMM(rect.GetHeight()))
 
-def expandRect(rect, offsetX, offsetY=None):
+def expandRect(rect: wxRect, offsetX: KiLength, offsetY: Optional[KiLength]=None):
     """
     Given a wxRect returns a new rectangle, which is larger in all directions
     by offset. If only offsetX is passed, it used for both X and Y offset
@@ -1067,7 +1067,9 @@ class Panel:
 
         return self.substrates[substrateCount:]
 
-    def makeFrame(self, width, hspace, vspace):
+    def makeFrame(self, width: KiLength, hspace: KiLength, vspace: KiLength,
+                  minWidth: KiLength=0, minHeight: KiLength=0) \
+                     -> Tuple[Iterable[LineString], Iterable[LineString]]:
         """
         Build a frame around the boards. Specify width and spacing between the
         boards substrates and the frame. Return a tuple of vertical and
@@ -1083,9 +1085,21 @@ class Panel:
 
         vspace - vertical space between board outline and substrate
 
+        minWidth - if the panel doesn't meet this width, it is extended
+
+        minHeight - if the panel doesn't meet this height, it is extended
+
         """
         frameInnerRect = expandRect(shpBoxToRect(self.boardsBBox()), hspace, vspace)
         frameOuterRect = expandRect(frameInnerRect, width)
+        if frameOuterRect.GetWidth() < minWidth:
+            diff = minWidth - frameOuterRect.GetWidth()
+            frameOuterRect.SetX(frameOuterRect.GetX() - diff // 2)
+            frameOuterRect.SetWidth(frameOuterRect.GetWidth() + diff)
+        if frameOuterRect.GetHeight() < minHeight:
+            diff = minHeight - frameOuterRect.GetHeight()
+            frameOuterRect.SetY(frameOuterRect.GetY() - diff // 2)
+            frameOuterRect.SetHeight(frameOuterRect.GetHeight() + diff)
         outerRing = rectToRing(frameOuterRect)
         innerRing = rectToRing(frameInnerRect)
         polygon = Polygon(outerRing, [innerRing])
@@ -1098,7 +1112,9 @@ class Panel:
         frameCutsH = self.makeFrameCutsH(innerArea, frameInnerRect, frameOuterRect)
         return frameCutsV, frameCutsH
 
-    def makeTightFrame(self, width, slotwidth, hspace, vspace):
+    def makeTightFrame(self, width: KiLength, slotwidth: KiLength,
+                      hspace: KiLength, vspace: KiLength,  minWidth: KiLength=0,
+                      minHeight: KiLength=0) -> None:
         """
         Build a full frame with board perimeter milled out.
         Add your boards to the panel first using appendBoard or makeGrid.
@@ -1113,8 +1129,12 @@ class Panel:
 
         vspace - vertical space between board outline and substrate
 
+        minWidth - if the panel doesn't meet this width, it is extended
+
+        minHeight - if the panel doesn't meet this height, it is extended
+
         """
-        self.makeFrame(width, hspace, vspace)
+        self.makeFrame(width, hspace, vspace, minWidth, minHeight)
         boardSlot = GeometryCollection()
         for s in self.substrates:
             boardSlot = boardSlot.union(s.exterior())
@@ -1122,21 +1142,27 @@ class Panel:
         frameBody = box(*self.boardSubstrate.bounds()).difference(boardSlot)
         self.appendSubstrate(frameBody)
 
-    def makeRailsTb(self, thickness):
+    def makeRailsTb(self, thickness: KiLength, minHeight: KiLength=0):
         """
-        Adds a rail to top and bottom.
+        Adds a rail to top and bottom. You can specify minimal height the panel
+        has to feature.
         """
         minx, miny, maxx, maxy = self.panelBBox()
+        if maxy - miny + 2 * thickness < minHeight:
+            thickness = (minHeight - maxy + miny) // 2
         topRail = box(minx, maxy, maxx, maxy + thickness)
         bottomRail = box(minx, miny, maxx, miny - thickness)
         self.appendSubstrate(topRail)
         self.appendSubstrate(bottomRail)
 
-    def makeRailsLr(self, thickness):
+    def makeRailsLr(self, thickness: KiLength, minWidth: KiLength=0):
         """
-        Adds a rail to left and right.
+        Adds a rail to left and right. You can specify minimal width the panel
+        has to feature.
         """
         minx, miny, maxx, maxy = self.panelBBox()
+        if maxx - minx + 2 * thickness < minWidth:
+            thickness = (minWidth - maxx + minx) // 2
         leftRail = box(minx - thickness, miny, minx, maxy)
         rightRail = box(maxx, miny, maxx + thickness, maxy)
         self.appendSubstrate(leftRail)

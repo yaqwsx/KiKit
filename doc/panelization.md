@@ -409,7 +409,7 @@ of where is the problem.
 
 #### `makeFrame`
 ```
-makeFrame(self, width, hspace, vspace)
+makeFrame(self, width, hspace, vspace, minWidth=0, minHeight=0)
 ```
 Build a frame around the boards. Specify width and spacing between the
 boards substrates and the frame. Return a tuple of vertical and
@@ -424,6 +424,10 @@ slotwidth - width of milled-out perimeter around board outline
 hspace - horizontal space between board outline and substrate
 
 vspace - vertical space between board outline and substrate
+
+minWidth - if the panel doesn't meet this width, it is extended
+
+minHeight - if the panel doesn't meet this height, it is extended
 
 #### `makeFrameCutsH`
 ```
@@ -512,19 +516,21 @@ to
 
 #### `makeRailsLr`
 ```
-makeRailsLr(self, thickness)
+makeRailsLr(self, thickness, minWidth=0)
 ```
-Adds a rail to left and right.
+Adds a rail to left and right. You can specify minimal width the panel
+has to feature.
 
 #### `makeRailsTb`
 ```
-makeRailsTb(self, thickness)
+makeRailsTb(self, thickness, minHeight=0)
 ```
-Adds a rail to top and bottom.
+Adds a rail to top and bottom. You can specify minimal height the panel
+has to feature.
 
 #### `makeTightFrame`
 ```
-makeTightFrame(self, width, slotwidth, hspace, vspace)
+makeTightFrame(self, width, slotwidth, hspace, vspace, minWidth=0, minHeight=0)
 ```
 Build a full frame with board perimeter milled out.
 Add your boards to the panel first using appendBoard or makeGrid.
@@ -539,6 +545,10 @@ hspace - horizontal space between board outline and substrate
 
 vspace - vertical space between board outline and substrate
 
+minWidth - if the panel doesn't meet this width, it is extended
+
+minHeight - if the panel doesn't meet this height, it is extended
+
 #### `makeVCuts`
 ```
 makeVCuts(self, cuts, boundCurves=False, offset=0)
@@ -546,14 +556,6 @@ makeVCuts(self, cuts, boundCurves=False, offset=0)
 Take a list of lines to cut and performs V-CUTS. When boundCurves is
 set, approximate curved cuts by a line from the first and last point.
 Otherwise, raise an exception.
-
-#### `mergeDrcRules`
-```
-mergeDrcRules(self)
-```
-Examine DRC rules of the source boards, merge them into a single set of
-rules and store them in *.kicad_pro file. Also stores board DRC
-exclusions.
 
 #### `panelBBox`
 ```
@@ -567,6 +569,12 @@ panelCorners(self, horizontalOffset=0, verticalOffset=0)
 ```
 Return the list of top-left, top-right, bottom-left and bottom-right
 corners of the panel. You can specify offsets.
+
+#### `refillZonesAndSave`
+```
+refillZonesAndSave(self)
+```
+None
 
 #### `renderBackbone`
 ```
@@ -643,6 +651,17 @@ Set V-cut clearance
 setVCutLayer(self, layer)
 ```
 Set layer on which the V-Cuts will be rendered
+
+#### `transferProjectSettings`
+```
+transferProjectSettings(self)
+```
+Examine DRC rules of the source boards, merge them into a single set of
+rules and store them in *.kicad_pro file. Also stores board DRC
+exclusions.
+
+Also, transfers the list of net classes from the internal representation
+into the project file.
 
 #### `translate`
 ```

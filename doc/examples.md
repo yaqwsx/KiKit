@@ -429,6 +429,38 @@ kikit panelize ^
 
 ![examplePanel14](resources/examplePanel14.png)
 
+Some services, e.g., JLC PCB require a minimal panel size. If you want to ensure
+that your panel meets the criteria, you can specify minimal total width/height
+of the panel. Let's see an example:
+
+```
+# Linux
+kikit panelize \
+    --layout 'grid; rows: 2; cols: 2; space: 2mm' \
+    --tabs 'fixed; width: 3mm; vcount: 2' \
+    --cuts 'mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm' \
+    --framing 'frame; width: 5mm; space: 3mm; mintotalheight: 100mm; mintotalwidth: 100mm' \
+    --tooling '3hole; hoffset: 2.5mm; voffset: 2.5mm; size: 1.5mm' \
+    --fiducials '3fid; hoffset: 5mm; voffset: 2.5mm; coppersize: 2mm; opening: 1mm;' \
+    --text 'simple; text: yaqwsx's panel with minimal dimensions; anchor: mt; voffset: 2.5mm; hjustify: center; vjustify: center;' \
+    --post 'millradius: 1mm' \
+    doc/resources/conn.kicad_pcb panel.kicad_pcb
+
+# Windows
+kikit panelize ^
+    --layout "grid; rows: 2; cols: 2; space: 2mm" ^
+    --tabs "fixed; width: 3mm; vcount: 2" ^
+    --cuts "mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm" ^
+    --framing "frame; width: 5mm; space: 3mm; mintotalheight: 100mm; mintotalwidth: 100mm" ^
+    --tooling "3hole; hoffset: 2.5mm; voffset: 2.5mm; size: 1.5mm" ^
+    --fiducials "3fid; hoffset: 5mm; voffset: 2.5mm; coppersize: 2mm; opening: 1mm;" ^
+    --text "simple; text: yaqwsx's panel with minimal dimensions; anchor: mt; voffset: 2.5mm; hjustify: center; vjustify: center;" ^
+    --post "millradius: 1mm" ^
+    doc/resources/conn.kicad_pcb panel.kicad_pcb
+```
+
+![examplePanel15](resources/examplePanel15.png)
+
 # Advanced features & layouts
 
 It is possible that you have some critical features you want to avoid with tabs.
@@ -459,7 +491,7 @@ kikit panelize ^
     doc/resources/conn.kicad_pcb panel.kicad_pcb
 ```
 
-![examplePanel15](resources/examplePanel15.png)
+![examplePanel16](resources/examplePanel16.png)
 
 When your board has a connector sticking one one side of the board, it makes
 sense to rotate the boards every other column, row or combination of both. KiKit
@@ -488,7 +520,7 @@ kikit panelize ^
     doc/resources/conn.kicad_pcb panel.kicad_pcb
 ```
 
-![examplePanel16](resources/examplePanel16.png)
+![examplePanel17](resources/examplePanel17.png)
 
 Another solution might be to not put tabs on, e.g., vertical edges of the PCB.
 However, in that case your panel might be weak for further assembly. You can
@@ -517,7 +549,7 @@ kikit panelize ^
     doc/resources/conn.kicad_pcb panel.kicad_pcb
 ```
 
-![examplePanel17](resources/examplePanel17.png)
+![examplePanel18](resources/examplePanel18.png)
 
 Often, not all backbones are needed. Especially for larger panels. Therefore, if
 you want, you can skip some of them. Consider the following 4×4 panel with only
@@ -543,7 +575,7 @@ kikit panelize ^
     doc/resources/conn.kicad_pcb panel.kicad_pcb
 ```
 
-![examplePanel18](resources/examplePanel18.png)
+![examplePanel19](resources/examplePanel19.png)
 
 The most powerful feature of KiKit regarding tab placement are tabs via
 annotation. Remember our test board? When you open it in Pcbnew, you can see
@@ -578,7 +610,7 @@ kikit panelize ^
     doc/resources/conn.kicad_pcb panel.kicad_pcb
 ```
 
-![examplePanel19](resources/examplePanel19.png)
+![examplePanel20](resources/examplePanel20.png)
 
 Well, the panel looks strange – right? That's because KiKit always constructs a
 half-bridges. When you specify the tabs location, you have to either ensure they
@@ -608,7 +640,7 @@ kikit panelize ^
     doc/resources/conn.kicad_pcb panel.kicad_pcb
 ```
 
-![examplePanel20](resources/examplePanel20.png)
+![examplePanel21](resources/examplePanel21.png)
 
 Note that the annotation can have an arbitrary orientation. The arrow just must
 be outside board edge and points towards it. KiKit will also place only those
@@ -641,7 +673,7 @@ kikit panelize ^
     doc/resources/conn.kicad_pcb panel.kicad_pcb
 ```
 
-![examplePanel21](resources/examplePanel21.png)
+![examplePanel22](resources/examplePanel22.png)
 
 When you use V-cuts with `copperfill` you (or your fab house) might want to
 include a clearance around the V-cuts:
@@ -668,7 +700,7 @@ kikit panelize ^
     doc/resources/conn.kicad_pcb panel.kicad_pcb
 ```
 
-![examplePanel22](resources/examplePanel22.png)
+![examplePanel23](resources/examplePanel23.png)
 
 If you, for example do not wish to cover the tabs with copper, you can also
 specify clearance. Also, some manufacturers don't like when you have large solid
@@ -696,7 +728,7 @@ kikit panelize ^
     doc/resources/conn.kicad_pcb panel.kicad_pcb
 ```
 
-![examplePanel23](resources/examplePanel23.png)
+![examplePanel24](resources/examplePanel24.png)
 
 Note one last facts about V-cuts. V-cuts can only be straight and
 horizontal/vertical. But you can use them with circular boards if you want by
@@ -745,7 +777,7 @@ kikit panelize ^
     doc/resources/conn.kicad_pcb panel.kicad_pcb
 ```
 
-![examplePanel24](resources/examplePanel24.png)
+![examplePanel25](resources/examplePanel25.png)
 
 You can learn more about available functions from the comment in the source code
 or in [documentation](panelization.md).
