@@ -283,7 +283,8 @@ def doPanelization(input, output, preset, plugins=[]):
 
     ki.buildDebugAnnotation(preset["debug"], panel)
 
-    panel.save(reconstructArcs=preset["post"]["reconstructarcs"])
+    panel.save(reconstructArcs=preset["post"]["reconstructarcs"],
+               refillAllZones=preset["post"]["refillzones"])
 
 
 @click.command()

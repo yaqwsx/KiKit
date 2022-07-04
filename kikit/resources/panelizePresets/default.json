@@ -117,7 +117,8 @@
         "millradius": "0mm",
         "script": "",
         "scriptarg": "",
-        "origin": "tl"
+        "origin": "tl",
+        "refillzones": false
     },
     "page": {
         "type": "inherit",

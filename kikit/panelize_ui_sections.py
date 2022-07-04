@@ -593,6 +593,9 @@ POST_SECTION = {
     "reconstructarcs": SBool(
         always(),
         "Try to reconstruct arcs"),
+    "refillzones": SBool(
+        always(),
+        "Refill all zones in the panel"),
     "script": SStr(
         always(),
         "Specify path to a custom postprocessing script"),

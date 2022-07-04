@@ -447,14 +447,14 @@ class Panel:
         # Therefore we have to handle them separately
         self.newNetClasses: Dict[str, Any] = {}
 
-    def save(self, reconstructArcs=False):
+    def save(self, reconstructArcs: bool=False, refillAllZones: bool=False):
         """
         Saves the panel to a file and makes the requested changes to the prl and
         pro files.
         """
-        newEdges = self.boardSubstrate.serialize(reconstructArcs)
-        for edge in newEdges:
-            self.board.Add(edge)
+        panelEdges = self.boardSubstrate.serialize(reconstructArcs)
+        boardsEdges = list(chain(*[sub.serialize(reconstructArcs) for sub in self.substrates]))
+
         vcuts = self._renderVCutH() + self._renderVCutV()
         keepouts = []
         for cut, clearanceArea in vcuts:
@@ -462,10 +462,25 @@ class Panel:
             if clearanceArea is not None:
                 keepouts.append(self.addKeepout(clearanceArea))
 
-        # The two operations are merged into a single one as there is bug in
-        # KiCAD that leads to a segfault. The function implements a workaround
-        # that has to perform both operations.
-        self.refillZonesAndSave()
+        # Rendering happens in two phases:
+        # - first, we render original board edges and save the board (to
+        #   propagate all the design rules from project files)
+        # - then we load the board, fill polygons and render panel edges.
+
+        for edge in boardsEdges:
+            self.board.Add(edge)
+
+        # We mark zone to refill via name prefix - this is the only way we can
+        # remember it between saves
+        originalZoneNames = {}
+        for i, zone in enumerate(self.zonesToRefill):
+            newName = f"KIKIT_zone_{i}"
+            originalZoneNames[newName] = zone.GetZoneName()
+            zone.SetZoneName(newName)
+        self.board.Save(self.filename)
+        if isV6():
+            self.makeLayersVisible() # as they are not in KiCAD 6
+            self.transferProjectSettings()
 
         # Remove cuts
         for cut, _ in vcuts:
@@ -474,45 +489,30 @@ class Panel:
         for keepout in keepouts:
             self.board.Remove(keepout)
         # Remove edges
-        for edge in newEdges:
+        for edge in panelEdges:
             self.board.Remove(edge)
-        self._adjustPageSize()
 
-    def refillZonesAndSave(self):
-        if not isV6():
-            fillerTool = pcbnew.ZONE_FILLER(self.board)
-            fillerTool.Fill(self.zonesToRefill)
-            self.board.Save(self.filename)
-            return
-        # KiCAD used to segfault on zone filling when the board is constructed
-        # via script in memory. Let's mark zones that need refill, save and fill
-        # after save. This is no longer the case, but since we have to handle
-        # zone refilling via project settings and there is no other way of
-        # loading the settings other then reloading the board, we have to save &
-        # reload.
-        originalNames = {}
-        for i, zone in enumerate(self.zonesToRefill):
-            newName = f"KIKIT_zone_{i}"
-            originalNames[newName] = zone.GetZoneName()
-            zone.SetZoneName(newName)
-        self.board.Save(self.filename)
-        proFile = self.getProFilepath()
-        if not os.path.exists(proFile):
-            raise RuntimeError("Unable to create project file on save")
-
-        self.makeLayersVisible() # as they are not in KiCAD 6
-        self.transferProjectSettings()
-
+        # Handle zone refilling in a separate board
         fillBoard = pcbnew.LoadBoard(self.filename)
         fillerTool = pcbnew.ZONE_FILLER(fillBoard)
+        if refillAllZones:
+            fillerTool.Fill(fillBoard.Zones())
+
+        for edge in collectEdges(fillBoard, Layer.Edge_Cuts):
+            fillBoard.Remove(edge)
+        for edge in panelEdges:
+            fillBoard.Add(edge)
+
         zonesToRefill = pcbnew.ZONES()
         for zone in fillBoard.Zones():
             zName = zone.GetZoneName()
             if zName.startswith("KIKIT_zone_"):
                 zonesToRefill.append(zone)
-                zone.SetZoneName(originalNames[zName])
+                zone.SetZoneName(originalZoneNames[zName])
         fillerTool.Fill(zonesToRefill)
+
         fillBoard.Save(self.filename)
+        self._adjustPageSize()
 
     def _uniquePrefix(self):
         return "Board_{}-".format(len(self.substrates))

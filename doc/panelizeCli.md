@@ -538,6 +538,8 @@ Finishing touches to the panel.
 - `reconstructarcs` - the panelization process works on top of a polygonal
   representation of the board. This options allows to reconstruct the arcs in
   the design before saving the panel.
+- `refillzones` – refill the user zones after the panel is build. This is only
+  necessary when you want your zones to avoid cuts in panel.
 - `script` - a path to custom Python file. The file should contain a function
   `kikitPostprocess(panel, args)` that receives the prepared panel as the
   `kikit.panelize.Panel` object and the user-supplied arguments as a string -
