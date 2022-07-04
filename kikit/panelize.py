@@ -453,7 +453,7 @@ class Panel:
         pro files.
         """
         panelEdges = self.boardSubstrate.serialize(reconstructArcs)
-        boardsEdges = list(chain(*[sub.serialize(reconstructArcs) for sub in self.substrates]))
+        boardsEdges = self._getRefillEdges(reconstructArcs)
 
         vcuts = self._renderVCutH() + self._renderVCutV()
         keepouts = []
@@ -513,6 +513,21 @@ class Panel:
 
         fillBoard.Save(self.filename)
         self._adjustPageSize()
+
+    def _getRefillEdges(self, reconstructArcs: bool):
+        """
+        Builds a list of edges that represent boards outlines and panel
+        surrounding as independent pieces of substrate
+        """
+        boardsEdges = list(chain(*[sub.serialize(reconstructArcs) for sub in self.substrates]))
+
+        surrounding = self.boardSubstrate.substrates.difference(
+            shapely.ops.unary_union(list(
+                sub.substrates.buffer(fromMm(0.2)) for sub in self.substrates)))
+        surroundingSubstrate = Substrate([])
+        surroundingSubstrate.union(surrounding)
+        boardsEdges += surroundingSubstrate.serialize()
+        return boardsEdges
 
     def _uniquePrefix(self):
         return "Board_{}-".format(len(self.substrates))
