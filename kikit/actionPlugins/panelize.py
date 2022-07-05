@@ -319,13 +319,19 @@ class PanelizeDialog(wx.Dialog):
 
         self.importButton = wx.Button(self, wx.ID_ANY, u"Import JSON configuration",
             wx.DefaultPosition, wx.DefaultSize, 0)
-        self.importButton.SetBitmap(wx.BitmapBundle(wx.ArtProvider.GetBitmap(wx.ART_FILE_OPEN)))
+        try:
+            self.importButton.SetBitmap(wx.BitmapBundle(wx.ArtProvider.GetBitmap(wx.ART_FILE_OPEN)))
+        except:
+            self.importButton.SetBitmap(wx.ArtProvider.GetBitmap(wx.ART_FILE_OPEN))
         ieButtonsSizer.Add(self.importButton, 0, wx.ALL, 5)
         self.importButton.Bind(wx.EVT_BUTTON, self.onImport)
 
         self.exportButton = wx.Button(self, wx.ID_ANY, u"Export JSON configuration",
             wx.DefaultPosition, wx.DefaultSize, 0)
-        self.exportButton.SetBitmap(wx.BitmapBundle(wx.ArtProvider.GetBitmap(wx.ART_FILE_SAVE)))
+        try:
+            self.exportButton.SetBitmap(wx.BitmapBundle(wx.ArtProvider.GetBitmap(wx.ART_FILE_SAVE)))
+        except:
+            self.exportButton.SetBitmap(wx.ArtProvider.GetBitmap(wx.ART_FILE_SAVE))
         ieButtonsSizer.Add(self.exportButton, 0, wx.ALL, 5)
         self.exportButton.Bind(wx.EVT_BUTTON, self.onExport)
 
