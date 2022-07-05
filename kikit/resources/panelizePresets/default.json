@@ -134,6 +134,7 @@
         "drawBackboneLines": false,
         "drawboxes": false,
         "trace": false,
-        "deterministic": false
+        "deterministic": false,
+        "drawtabfail": false
     }
 }

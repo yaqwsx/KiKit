@@ -654,6 +654,10 @@ DEBUG_SECTION = {
     "trace": SBool(
         always(),
         "Print stacktrace"),
+    "drawtabfail": SBool(
+        always(),
+        "Visualize tab building failures"
+    ),
     "deterministic": SBool(
         always(),
         "Make KiCAD IDs deterministic")

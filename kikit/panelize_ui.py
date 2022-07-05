@@ -229,6 +229,9 @@ def doPanelization(input, output, preset, plugins=[]):
 
     if preset["debug"]["deterministic"] and isV6():
         pcbnew.KIID.SeedGenerator(42)
+    if preset["debug"]["drawtabfail"]:
+        import kikit.substrate
+        kikit.substrate.TABFAIL_VISUAL = True
 
     board = LoadBoard(input)
     panel = Panel(output)
