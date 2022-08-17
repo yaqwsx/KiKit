@@ -21,6 +21,8 @@ def collectBom(components, lscsFields, ignore):
             continue
         if getField(c, "JLCPCB_IGNORE") is not None and getField(c, "JLCPCB_IGNORE") != "":
             continue
+        if hasattr(c, "in_bom") and not c.in_bom:
+            continue
         orderCode = None
         for fieldName in lscsFields:
             orderCode = getField(c, fieldName)

@@ -43,6 +43,8 @@ def collectBom(components, manufacturerFields, partNumberFields,
         reference = getReference(c)
         if reference.startswith("#PWR") or reference.startswith("#FL") or reference in ignore:
             continue
+        if hasattr(c, "in_bom") and not c.in_bom:
+            continue
         manufacturer = None
         for manufacturerName in manufacturerFields:
             manufacturer = getField(c, manufacturerName)
