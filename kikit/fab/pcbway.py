@@ -122,6 +122,7 @@ def exportPcbway(board, outputdir, assembly, schematic, ignore,
     """
     Prepare fabrication files for PCBWay including their assembly service
     """
+    ensureValidBoard(board)
     loadedBoard = pcbnew.LoadBoard(board)
 
     if drc:
@@ -141,6 +142,10 @@ def exportPcbway(board, outputdir, assembly, schematic, ignore,
         return
     if schematic is None:
         raise RuntimeError("When outputing assembly data, schematic is required")
+
+    ensureValidSch(schematic)
+
+
     components = extractComponents(schematic)
     correctionFields    = [x.strip() for x in corrections.split(",")]
     manufacturerFields  = [x.strip() for x in manufacturer.split(",")]

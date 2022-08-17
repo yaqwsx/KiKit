@@ -50,6 +50,7 @@ def exportJlcpcb(board, outputdir, assembly, schematic, ignore, field,
     """
     Prepare fabrication files for JLCPCB including their assembly service
     """
+    ensureValidBoard(board)
     loadedBoard = pcbnew.LoadBoard(board)
 
     if drc:
@@ -69,6 +70,9 @@ def exportJlcpcb(board, outputdir, assembly, schematic, ignore, field,
         return
     if schematic is None:
         raise RuntimeError("When outputing assembly data, schematic is required")
+
+    ensureValidSch(schematic)
+
     correctionFields = [x.strip() for x in corrections.split(",")]
     components = extractComponents(schematic)
     ordercodeFields = [x.strip() for x in field.split(",")]
