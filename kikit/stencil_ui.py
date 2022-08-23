@@ -55,10 +55,10 @@ def create(**kwargs):
     from kikit.common import fakeKiCADGui
     app = fakeKiCADGui()
 
-    try:
-        return stencil.create(**kwargs)
-    except Exception as e:
-            sys.stderr.write(f"{e}\n")
+    # try:
+    return stencil.create(**kwargs)
+    # except Exception as e:
+    #         sys.stderr.write(f"{e}\n")
 
 
 @click.group()

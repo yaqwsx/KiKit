@@ -298,14 +298,14 @@ def shapelyToSHAPE_POLY_SET(polygon):
     return p
 
 def cutoutComponents(board, components):
-    topCutout = extractComponentPolygons(components, "F.CrtYd")
+    topCutout = extractComponentPolygons(components, pcbnew.F_CrtYd)
     for polygon in topCutout:
         zone = pcbnew.PCB_SHAPE()
         zone.SetShape(STROKE_T.S_POLYGON)
         zone.SetPolyShape(shapelyToSHAPE_POLY_SET(polygon))
         zone.SetLayer(Layer.F_Paste)
         board.Add(zone)
-    bottomCutout = extractComponentPolygons(components, "B.CrtYd")
+    bottomCutout = extractComponentPolygons(components, pcbnew.B_CrtYd)
     for polygon in bottomCutout:
         zone = pcbnew.PCB_SHAPE()
         zone.SetShape(STROKE_T.S_POLYGON)
@@ -317,10 +317,16 @@ def setStencilLayerVisibility(boardName):
     if not isV6():
         return
     prlPath = os.path.splitext(boardName)[0] + ".kicad_prl"
-    with open(prlPath) as f:
-        # We use ordered dict, so we preserve the ordering of the keys and
-        # thus, formatting
-        prl = json.load(f, object_pairs_hook=OrderedDict)
+    try:
+        with open(prlPath) as f:
+            # We use ordered dict, so we preserve the ordering of the keys and
+            # thus, formatting
+            prl = json.load(f, object_pairs_hook=OrderedDict)
+    except FileNotFoundError:
+        # KiCAD didn't generate project local settings, let's create an empty one
+        prl = {
+            "board": {}
+        }
     prl["board"]["visible_layers"] = "ffc000c_7ffffffe"
     prl["board"]["visible_items"] = [
         1,
@@ -331,9 +337,6 @@ def setStencilLayerVisibility(boardName):
         10,
         12,
         13,
-        15,
-        16,
-        19,
         21,
         22,
         24,
@@ -343,8 +346,6 @@ def setStencilLayerVisibility(boardName):
         28,
         29,
         30,
-        32,
-        33,
         34,
         35
     ]
@@ -420,11 +421,11 @@ def getComponents(board, references):
     """
     return [f for f in board.GetFootprints() if f.GetReference() in references]
 
-def collectFootprintEdges(footprint, layerName):
+def collectFootprintEdges(footprint, layer):
     """
     Return all edges on given layer in given footprint
     """
-    return [e for e in footprint.GraphicalItems() if e.GetLayerName() == layerName]
+    return [e for e in footprint.GraphicalItems() if e.GetLayer() == layer]
 
 def extractComponentPolygons(footprints, srcLayer):
     """
@@ -478,8 +479,8 @@ def createPrinted(inputboard, outputdir, pcbthickness, thickness, framewidth,
         topPaste = topPaste.replace("\\", "/")
         outline = outline.replace("\\", "/")
 
-    topCutout = extractComponentPolygons(cutoutComponents, "F.CrtYd")
-    bottomCutout = extractComponentPolygons(cutoutComponents, "B.CrtYd")
+    topCutout = extractComponentPolygons(cutoutComponents, pcbnew.F_CrtYd)
+    bottomCutout = extractComponentPolygons(cutoutComponents, pcbnew.B_CrtYd)
     topStencil = printedStencil(outline, topPaste, topCutout, thickness, height,
         framewidth, frameclearance, enlargeholes, True)
     bottomStencil = printedStencil(outline, bottomPaste, bottomCutout, thickness,

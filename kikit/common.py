@@ -124,7 +124,7 @@ def rectCenter(rect):
     """
     Given a wxRect return its center
     """
-    return wxPoint(rect[0] + rect.GetWidth() // 2, rect[1] + rect.GetHeight() // 2)
+    return wxPoint(rect.GetX() + rect.GetWidth() // 2, rect.GetY() + rect.GetHeight() // 2)
 
 def rectByCenter(center, width, height):
     """
