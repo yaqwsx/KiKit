@@ -41,8 +41,14 @@ def bomToCsv(bomData, filename):
         writer = csv.writer(csvfile)
         writer.writerow(["Comment", "Designator", "Footprint", "LCSC"])
         for cType, references in bomData.items():
-            value, footprint, lcsc = cType
-            writer.writerow([value, ",".join(references), footprint, lcsc])
+            # JLCPCB allows at most 200 components per line so we have to split
+            # the BOM into multiple lines. Let's make the chunks by 100 just to
+            # be sure.
+            CHUNK_SIZE = 100
+            for i in range(0, len(references), CHUNK_SIZE):
+                refChunk = references[i:i+CHUNK_SIZE]
+                value, footprint, lcsc = cType
+                writer.writerow([value, ",".join(refChunk), footprint, lcsc])
 
 def noFilter(footprint):
     return True
