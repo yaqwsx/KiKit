@@ -271,6 +271,26 @@ runBoardExample(autoName(),
         [SRC]])
 
 print("""
+If you want to add text to both rails, you can use section `--text2` to add a
+second text. You can also use variables enclosed in curly brackets (`{}`). The
+list of supported variables is listed in the documentation. Also, plugins can
+introduce new variables.
+""")
+
+runBoardExample(autoName(),
+    [["panelize"],
+        ["--layout", "grid; rows: 2; cols: 2; space: 2mm"],
+        ["--tabs", "fixed; width: 3mm; vcount: 2"],
+        ["--cuts", "mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm"],
+        ["--framing", "railstb; width: 5mm; space: 3mm;"],
+        ["--tooling", "3hole; hoffset: 2.5mm; voffset: 2.5mm; size: 1.5mm"],
+        ["--fiducials", "3fid; hoffset: 5mm; voffset: 2.5mm; coppersize: 2mm; opening: 1mm;"],
+        ["--text", "simple; text: yaqwsx's panel; anchor: mt; voffset: 2.5mm; hjustify: center; vjustify: center;"],
+        ["--text2", "simple; text: Created on {date}; anchor: mb; voffset: -2.5mm; hjustify: center; vjustify: center;"],
+        ["--post", "millradius: 1mm"],
+        [SRC]])
+
+print("""
 There are many options for text and fiducials. Be sure to read the [full
 documentation](panelizeCli.md).
 

@@ -435,9 +435,13 @@ Fiducials based on a plugin.
 
 Add text to the panel. Allows you to put a single block of text on panel. You
 can use variables enclosed in `{}`. E.g. `{boardTitle} | {boardDate}`. The list
-of all available variables in listed bellow.  If you
-need more text or more sophisticated placing options, see `script` option from
-`postprocess`.
+of all available variables in listed bellow. In the case you need more
+independent texts on the panel, you can use sections names `text2`, `text3` and
+`text3` to add at most 4 text. All these sections behave the same and accept the
+same options.
+
+If you need more texts or more sophisticated placing options, see `script`
+option from `postprocess`.
 
 **Types**: none, simple
 

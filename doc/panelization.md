@@ -570,12 +570,6 @@ panelCorners(self, horizontalOffset=0, verticalOffset=0)
 Return the list of top-left, top-right, bottom-left and bottom-right
 corners of the panel. You can specify offsets.
 
-#### `refillZonesAndSave`
-```
-refillZonesAndSave(self)
-```
-None
-
 #### `renderBackbone`
 ```
 renderBackbone(self, vthickness, hthickness, vcut, hcut, vskip=0, hskip=0)
@@ -593,7 +587,7 @@ Return a list of cuts
 
 #### `save`
 ```
-save(self, reconstructArcs=False)
+save(self, reconstructArcs=False, refillAllZones=False)
 ```
 Saves the panel to a file and makes the requested changes to the prl and
 pro files.

@@ -90,6 +90,9 @@ def postProcessPreset(preset):
         "tooling": ppTooling,
         "fiducials": ppFiducials,
         "text": ppText,
+        "text2": ppText,
+        "text3": ppText,
+        "text4": ppText,
         "copperfill": ppCopper,
         "post": ppPost,
         "page": ppPage,
@@ -146,7 +149,8 @@ def validateSections(preset):
     validate all required keys are present. Ignores excessive keys.
     """
     VALID_SECTIONS = ["layout", "source", "tabs", "cuts", "framing", "tooling",
-        "fiducials", "text", "page", "copperfill", "post", "debug"]
+        "fiducials", "text", "text2", "text3", "text4", "page", "copperfill",
+        "post", "debug"]
     extraSections = set(preset.keys()).difference(VALID_SECTIONS)
     if len(extraSections) != 0:
         raise PresetError(f"Extra sections {', '.join(extraSections)} in preset")
