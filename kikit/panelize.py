@@ -193,7 +193,8 @@ def remapNets(collection, mapping):
     for item in collection:
         item.SetNetCode(mapping[item.GetNetname()].GetNetCode())
 
-def toPolygon(entity):
+ToPolygonGeometry = Union[Polygon, wxRect, Substrate]
+def toPolygon(entity: Union[List[ToPolygonGeometry], ToPolygonGeometry]) -> Polygon:
     if isinstance(entity, list):
         return list([toPolygon(e) for e in entity])
     if isinstance(entity, Polygon) or isinstance(entity, MultiPolygon):
@@ -204,6 +205,8 @@ def toPolygon(entity):
             (entity.GetX() + entity.GetWidth(), entity.GetY()),
             (entity.GetX() + entity.GetWidth(), entity.GetY() + entity.GetHeight()),
             (entity.GetX(), entity.GetY() + entity.GetHeight())])
+    if isinstance(entity, Substrate):
+        return Substrate.substrates
     raise NotImplementedError("Cannot convert {} to Polygon".format(type(entity)))
 
 def rectString(rect):
@@ -887,7 +890,7 @@ class Panel:
                 pass # Ignore boards without a project
         return findBoundingBox(edges)
 
-    def appendSubstrate(self, substrate):
+    def appendSubstrate(self, substrate: ToPolygonGeometry) -> None:
         """
         Append a piece of substrate or a list of pieces to the panel. Substrate
         can be either wxRect or Shapely polygon. Newly appended corners can be
