@@ -1543,13 +1543,6 @@ class Panel:
             raise RuntimeError("No layers to add copper to")
         increaseZonePriorities(self.board)
 
-        zoneContainer = pcbnew.ZONE(self.board)
-        if hatched:
-            zoneContainer.SetFillMode(pcbnew.ZONE_FILL_MODE_HATCH_PATTERN)
-            zoneContainer.SetHatchOrientation(orientation // 10)
-            zoneContainer.SetHatchGap(strokeSpacing)
-            zoneContainer.SetHatchThickness(strokeWidth)
-
         zoneArea = self.boardSubstrate.exterior()
         for substrate in self.substrates:
             zoneArea = zoneArea.difference(substrate.exterior().buffer(clearance))
@@ -1557,20 +1550,25 @@ class Panel:
         geoms = [zoneArea] if isinstance(zoneArea, Polygon) else zoneArea.geoms
 
         for g in geoms:
+            zoneContainer = pcbnew.ZONE(self.board)
+            if hatched:
+                zoneContainer.SetFillMode(pcbnew.ZONE_FILL_MODE_HATCH_PATTERN)
+                zoneContainer.SetHatchOrientation(orientation // 10)
+                zoneContainer.SetHatchGap(strokeSpacing)
+                zoneContainer.SetHatchThickness(strokeWidth)
             zoneContainer.Outline().AddOutline(linestringToKicad(g.exterior))
-        for g in geoms:
             for hole in g.interiors:
                 zoneContainer.Outline().AddHole(linestringToKicad(hole))
-        zoneContainer.SetPriority(0)
+            zoneContainer.SetPriority(0)
 
-        zoneContainer.SetLayer(layers[0])
-        self.board.Add(zoneContainer)
-        self.zonesToRefill.append(zoneContainer)
-        for l in layers[1:]:
-            zoneContainer = zoneContainer.Duplicate()
-            zoneContainer.SetLayer(l)
+            zoneContainer.SetLayer(layers[0])
             self.board.Add(zoneContainer)
             self.zonesToRefill.append(zoneContainer)
+            for l in layers[1:]:
+                zoneContainer = zoneContainer.Duplicate()
+                zoneContainer.SetLayer(l)
+                self.board.Add(zoneContainer)
+                self.zonesToRefill.append(zoneContainer)
 
     def locateBoard(inputFilename, expandDist=None):
         """
