@@ -511,7 +511,8 @@ Fill non-board areas of the panel with copper.
 
 - `clearance` - optional extra clearance from the board perimeters. Suitable
   for, e.g., not filling the tabs with copper.
-- `layers` - comma-separated list of layer to fill. Default top and bottom.
+- `layers` - comma-separated list of layer to fill. Default top and bottom. You
+  can specify a shortcut `all` to fill all layers.
 
 ### Solid
 

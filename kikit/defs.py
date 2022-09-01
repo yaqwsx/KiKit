@@ -24,6 +24,10 @@ class Layer(IntEnum):
     B_Fab = 48
     F_Fab = 49
 
+    @staticmethod
+    def allCu():
+        return list(range(Layer.F_Cu, Layer.B_Cu))
+
 class STROKE_T(IntEnum):
     S_SEGMENT = 0
     S_RECT = 1

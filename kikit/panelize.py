@@ -1531,11 +1531,12 @@ class Panel:
             strokeWidth: KiLength=fromMm(1), strokeSpacing: KiLength=fromMm(1),
             orientation: KiAngle=fromDegrees(45)) -> None:
         """
-        Fill given layers with copper on unused areas of the panel
-        (frame, rails and tabs). You can specify the clearance, if it should be
-        hatched (default is solid) or shape the strokes of hatched pattern.
+        Fill given layers with copper on unused areas of the panel (frame, rails
+        and tabs). You can specify the clearance, if it should be hatched
+        (default is solid) or shape the strokes of hatched pattern.
 
-        By default, fills top and bottom layer.
+        By default, fills top and bottom layer, but you can specify any other
+        copper layer that is enabled.
         """
         if not self.boardSubstrate.isSinglePiece():
             raise RuntimeError("The substrate has to be a single piece to fill unused areas")
@@ -1561,10 +1562,9 @@ class Panel:
                 zoneContainer.Outline().AddHole(linestringToKicad(hole))
             zoneContainer.SetPriority(0)
 
-            zoneContainer.SetLayer(layers[0])
-            self.board.Add(zoneContainer)
-            self.zonesToRefill.append(zoneContainer)
-            for l in layers[1:]:
+            for l in layers:
+                if not self.board.GetEnabledLayers().Contains(l):
+                    continue
                 zoneContainer = zoneContainer.Duplicate()
                 zoneContainer.SetLayer(l)
                 self.board.Add(zoneContainer)

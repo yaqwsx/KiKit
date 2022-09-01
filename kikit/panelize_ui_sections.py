@@ -173,7 +173,13 @@ class SList(SectionBase):
         return [v.strip() for v in x.split(",")]
 
 class SLayerList(SList):
+    def __init__(self, isGuiRelevant, description, shortcuts={}):
+        super().__init__(isGuiRelevant, description)
+        self._shortcuts = shortcuts
+
     def validate(self, x: str) -> Any:
+        if x in self._shortcuts:
+            return self._shortcuts[x]
         return [self.readLayer(x) for x in super().validate(x)]
 
     def readLayer(self, s: str) -> Layer:
@@ -563,7 +569,10 @@ COPPERFILL_SECTION = {
         "Clearance between the fill and boards"),
     "layers": SLayerList(
         typeIn(["solid", "hatched"]),
-        "Specify which layer to fill with copper"),
+        "Specify which layer to fill with copper",
+        {
+            "all": Layer.allCu()
+        }),
     "width": SLength(
         typeIn(["hatched"]),
         "Width of hatch strokes"),
