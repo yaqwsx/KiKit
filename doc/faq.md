@@ -27,7 +27,7 @@ copies of the notes around the board).
 How to include the components?
 - specify the source area explicitly to include all your components
 - specify `tolerance: 20mm` for `source` (i.e., `--source 'tolerance: 20mm'`) to
-  enlarge the board outline bounding box. The default value is 5 mm.
+  enlarge the board outline bounding box. The default value is 1 mm.
 
 ## My milled slots are gone! How can I preserve them?
 

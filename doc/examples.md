@@ -77,7 +77,7 @@ copies of the notes around the board).
 How to include the missing components?
 - specify the source area explicitly to include all your components
 - specify `--source 'tolerance: 10mm'` to enlarge the board outline bounding box
-  by e.g. 10 mm. The default value is 5 mm.
+  by e.g. 10 mm. The default value is 1 mm.
 
 I told you that the panel above is not suitable for manufacturing. Let's see
 why:
