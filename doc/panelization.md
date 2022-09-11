@@ -234,11 +234,11 @@ individual pieces of substrate) as a shapely box.
 
 #### `buildFullTabs`
 ```
-buildFullTabs(self, framingOffsets)
+buildFullTabs(self, cutoutDepth)
 ```
 Make full tabs. This strategy basically cuts the bounding boxes of the
-PCBs. Not suitable for mousebites. Expects there is a valid partition
-line.
+PCBs. Not suitable for mousebites or PCB that doesn't have a rectangular
+outline. Expects there is a valid partition line.
 
 Return a list of cuts.
 
@@ -711,11 +711,23 @@ exterior(self)
 ```
 Return a geometry representing the substrate with no holes
 
+#### `exteriorRing`
+```
+exteriorRing(self)
+```
+None
+
 #### `isSinglePiece`
 ```
 isSinglePiece(self)
 ```
 Decide whether the substrate consists of a single piece
+
+#### `midpoint`
+```
+midpoint(self)
+```
+Return a mid point of the bounding box
 
 #### `millFillets`
 ```
