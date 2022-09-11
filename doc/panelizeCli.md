@@ -270,6 +270,10 @@ V-Cuts. This mode does not make much sense for mousebites in practice. Note that
 in this mode the cuts do not faithfully copy the PCB outline and, instead, they
 cut the bounding box of the PCB. There are no other options.
 
+- `cutout`: When your design features open pockets on the side, this parameter
+  specifies extra cutout depth in order to ensure that a sharp corner of the
+  pocket can be milled. The default is 1 mm.
+
 #### Corner
 
 Create tabs in the corners of the PCB.

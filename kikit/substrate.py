@@ -517,6 +517,13 @@ class Substrate:
         """
         return self.substrates.bounds
 
+    def midpoint(self) -> Tuple[int, int]:
+        """
+        Return a mid point of the bounding box
+        """
+        minx, miny, maxx, maxy = self.substrates.bounds
+        return ((minx + maxx) // 2, (miny + maxy) // 2)
+
     def union(self, other):
         """
         Appends a substrate, polygon or list of polygons. If there is a common
@@ -621,6 +628,9 @@ class Substrate:
             raise RuntimeError("Uknown type '{}' of substrate geometry".format(type(self.substrates)))
         polygons = [Polygon(p.exterior) for p in geoms]
         return unary_union(polygons)
+
+    def exteriorRing(self):
+        return self.substrates.exterior
 
     def boundary(self):
         """

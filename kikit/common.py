@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Optional, Tuple, Union
+from typing import List, Optional, Tuple, Union
 from kikit.defs import Layer
 from kikit.typing import Box
 from pcbnewTransition import pcbnew, isV6

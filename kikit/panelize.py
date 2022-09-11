@@ -1468,44 +1468,86 @@ class Panel:
                 a = TabAnnotation(None, (x, y), dir, width)
                 self.substrates[i].annotations.append(a)
 
+    def _buildSingleFullTab(self, s: Substrate, a: KiKitPoint, b: KiKitPoint,
+                            cutoutDepth: KiLength) \
+            -> Tuple[List[LineString], List[Polygon]]:
+        partitionFace = LineString([a, b])
 
-    def buildFullTabs(self, framingOffsets):
+        npa, npb = np.array(a), np.array(b)
+
+        spanDirection = np.around(normalize(npb - npa))
+        spanDirection = np.array([spanDirection[1], -spanDirection[0]])
+
+        # We have to ensure that the direction always points towards the substrate
+        midpoint = np.array(s.midpoint())
+        if np.dot(midpoint - npa, spanDirection) < 0:
+            spanDirection = -spanDirection
+
+        spanDistance = max(partitionFace.distance(Point(*x)) for x in s.exteriorRing().coords)
+
+        sideEdge = spanDirection * spanDistance
+        candidateBox = Polygon([npa - spanDirection, npb - spanDirection, npb + sideEdge, npa + sideEdge])
+        faceCandidate = s.exterior().intersection(candidateBox)
+
+        expectedDirection = np.around(normalize(npb - npa))
+        faceSegments = [LineString(x) for x in linestringToSegments(faceCandidate.exterior)
+            if np.array_equal(
+                np.around(normalize(np.array(x[0]) - np.array(x[1]))),
+                expectedDirection) or
+               np.array_equal(
+                np.around(normalize(np.array(x[1]) - np.array(x[0]))),
+                expectedDirection)]
+        faceDistances = [(x, np.around(partitionFace.distance(x))) for x in faceSegments]
+        minFaceDistance = min(faceDistances, key=lambda x: x[1])[1]
+
+        cutFaces = [x for x, d in faceDistances if d == minFaceDistance]
+        tabs, cuts = [], []
+        for cutLine in listGeometries(shapely.ops.unary_union(cutFaces)):
+            polygon = Polygon(list(cutLine.coords) +
+                [np.array(cutLine.coords[-1]) - minFaceDistance * spanDirection,
+                 np.array(cutLine.coords[0]) - minFaceDistance * spanDirection])
+            tabs.append(polygon)
+            cuts.append(LineString(list(cutLine.coords)[::-1]))
+
+        solidThickness = max(0, minFaceDistance - cutoutDepth)
+        if solidThickness != 0:
+            tabs.append(Polygon([npa, npb,
+                                 npb + spanDirection * solidThickness,
+                                 npa + spanDirection * solidThickness]))
+
+        # Generate corner patches - we don't want cutouts on the board corners,
+        # so we create a triangle that will patch it.
+        for point in [npa, npb]:
+            corner = min(s.exteriorRing().coords, key=lambda x: Point(*x).distance(Point(*point)))
+            patch = Polygon([point, corner, corner - minFaceDistance * spanDirection])
+            tabs.append(patch)
+        return cuts, tabs
+
+
+    def buildFullTabs(self, cutoutDepth: KiLength) -> List[shapely.geometry.LineString]:
         """
         Make full tabs. This strategy basically cuts the bounding boxes of the
-        PCBs. Not suitable for mousebites. Expects there is a valid partition
-        line.
+        PCBs. Not suitable for mousebites or PCB that doesn't have a rectangular
+        outline. Expects there is a valid partition line.
 
         Return a list of cuts.
         """
-        # Compute the bounding box gap polygon. Note that we cannot just merge a
-        # rectangle as that would remove internal holes
-        bBoxes = box(*self.substrates[0].bounds())
-        for s in islice(self.substrates, 1, None):
-            bBoxes = bBoxes.union(box(*s.bounds()))
-        outerBounds = self.substrates[0].partitionLine.bounds
-        for s in islice(self.substrates, 1, None):
-            outerBounds = shpBBoxMerge(outerBounds, s.partitionLine.bounds)
-        fill = box(*outerBounds).difference(bBoxes)
-        self.appendSubstrate(fill)
+        # The general idea is to take each partition line, extrude it towards
+        # the PCB and find the intersection. From the intersection we extract
+        # all lines that are parallel to the partition line and only choose the
+        # closest one. Those line should be the facing edges of the PCB and
+        # thus, the cust we want to perfom. To make the tabs stiffer, we fill up
+        # the cutouts.
+        cuts = []
+        for s in self.substrates:
+            for fragment in listGeometries(s.partitionLine):
+                for a, b in linestringToSegments(fragment):
+                    c, t = self._buildSingleFullTab(s, a, b, cutoutDepth)
+                    self.appendSubstrate(t)
+                    cuts += c
 
-        # Make the cuts from the bounding boxes of the PCB
-        substrateBoundaries = [linestringToSegments(rectToShpBox(s.boundingBox()).exterior)
-            for s in self.substrates]
-        substrateCuts = [LineString(x) for x in chain(*substrateBoundaries)]
+        return cuts
 
-        # Remove outer edges (if any)
-        vspace, hspace = framingOffsets
-        xvalues = list(chain(*[map(lambda x: x[0], line.coords) for line in substrateCuts]))
-        yvalues = list(chain(*[map(lambda x: x[1], line.coords) for line in substrateCuts]))
-        minx, maxx = min(xvalues), max(xvalues)
-        miny, maxy = min(yvalues), max(yvalues)
-
-        substrateCuts = [x for x in substrateCuts if not (
-            (hspace is None and x.coords[0][0] == x.coords[1][0] and x.coords[0][0] in [minx, maxx]) or
-            (vspace is None and x.coords[0][1] == x.coords[1][1] and x.coords[0][1] in [miny, maxy])
-        )]
-
-        return substrateCuts
 
     def inheritCopperLayers(self, board):
         """

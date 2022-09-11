@@ -270,7 +270,7 @@ def buildLayout(preset, panel, sourceBoard, sourceArea):
     except KeyError as e:
         raise PresetError(f"Missing parameter '{e}' in section 'layout'")
 
-def buildTabs(preset, panel, substrates, boundarySubstrates, frameOffsets):
+def buildTabs(preset, panel, substrates, boundarySubstrates):
     """
     Build tabs for the substrates in between the boards. Return a list of cuts.
     """
@@ -295,7 +295,7 @@ def buildTabs(preset, panel, substrates, boundarySubstrates, frameOffsets):
             panel.buildTabAnnotationsCorners(properties["width"])
             return panel.buildTabsFromAnnotations()
         if type == "full":
-            return panel.buildFullTabs(frameOffsets)
+            return panel.buildFullTabs(properties["cutout"])
         if type == "annotation":
             return panel.buildTabsFromAnnotations()
         if type == "plugin":

@@ -38,7 +38,8 @@
         "spacing": "10mm",
         "tabfootprints": "kikit:Tab",
         "code": "none",
-        "arg": ""
+        "arg": "",
+        "cutout": "1mm"
     },
     "cuts": {
         "type": "none",

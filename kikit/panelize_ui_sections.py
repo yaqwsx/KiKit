@@ -345,6 +345,9 @@ TABS_SECTION = {
     "hcount": SNum(
         typeIn(["fixed"]),
         "Number of tabs in a given direction."),
+    "cutout": SLength(
+        typeIn(["fixed"]),
+        "Depth of cutouts into the frame"),
     "tabfootprints": SFootprintList(
         typeIn(["annotation"]),
         "Specify custom footprints that will be used for tab annotations."),

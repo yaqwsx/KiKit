@@ -267,8 +267,7 @@ def doPanelization(input, output, preset, plugins=[]):
 
     useHookPlugins(lambda x: x.afterLayout(panel, substrates))
 
-    tabCuts = ki.buildTabs(preset, panel, substrates,
-        framingSubstrates, ki.frameOffset(preset["framing"]))
+    tabCuts = ki.buildTabs(preset, panel, substrates, framingSubstrates)
 
     useHookPlugins(lambda x: x.afterTabs(panel, tabCuts, backboneCuts))
 
