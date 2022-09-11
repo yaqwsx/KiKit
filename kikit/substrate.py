@@ -508,6 +508,7 @@ class Substrate:
         """
         if self.oriented:
             return
+        self.substrates = self.substrates.simplify(SHP_EPSILON)
         self.substrates = shapely.ops.orient(self.substrates)
         self.oriented = True
 
