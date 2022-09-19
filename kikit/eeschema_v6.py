@@ -109,7 +109,7 @@ def collectSymbols(filename, path=""):
     Crawl given sheet and return two lists - one with symbols, one with
     symbol instances
     """
-    with open(filename) as f:
+    with open(filename, encoding="utf-8") as f:
         sheetSExpr = parseSexprF(f)
     symbols, instances = [], []
     for item in sheetSExpr.items:
