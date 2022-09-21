@@ -505,6 +505,10 @@ class Panel:
             fillBoard.Remove(edge)
         for edge in panelEdges:
             fillBoard.Add(edge)
+        if self.vCutLayer == Layer.Edge_Cuts:
+            vcuts = self._renderVCutH() + self._renderVCutV()
+            for cut, _ in vcuts:
+                fillBoard.Add(cut)
 
         zonesToRefill = pcbnew.ZONES()
         for zone in fillBoard.Zones():
