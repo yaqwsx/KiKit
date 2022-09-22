@@ -80,7 +80,7 @@ include components sticking out of the board outline, you can specify tolerance
 appendBoard(self, filename, destination, sourceArea=None, origin=Origin.Center, 
             rotationAngle=0, shrink=False, tolerance=0, bufferOutline=1000, 
             netRenamer=None, refRenamer=None, inheritDrc=True, 
-            interpretAnnotations=True)
+            interpretAnnotations=True, bakeText=False)
 ```
 
 ## Panel class
@@ -191,7 +191,7 @@ Adds a horizontal V-CUT at pos (integer in KiCAD units).
 appendBoard(self, filename, destination, sourceArea=None, origin=Origin.Center, 
             rotationAngle=0, shrink=False, tolerance=0, bufferOutline=1000, 
             netRenamer=None, refRenamer=None, inheritDrc=True, 
-            interpretAnnotations=True)
+            interpretAnnotations=True, bakeText=False)
 ```
 Appends a board to the panel.
 
@@ -213,6 +213,8 @@ The renamers are given board seq number and original name.
 
 You can also decide whether you would like to inherit design rules from
 this boards or not.
+
+Similarly, you can substitute variables in the text via bakeText.
 
 Returns bounding box (wxRect) of the extracted area placed at the
 destination and the extracted substrate of the board.
@@ -446,7 +448,7 @@ Generate vertical cuts for the frame corners and return them
 ```
 makeGrid(self, boardfile, sourceArea, rows, cols, destination, placer, 
          rotation=0, netRenamePattern=Board_{n}-{orig}, 
-         refRenamePattern=Board_{n}-{orig}, tolerance=0)
+         refRenamePattern=Board_{n}-{orig}, tolerance=0, bakeText=False)
 ```
 Place the given board in a grid pattern with given spacing. The board
 position of the gride is guided via placer. The nets and references are
@@ -497,6 +499,8 @@ selection
     any objects that are on or outside the board edge, make sure this is
     big enough to include them. Such objects often include zone outlines
     and connectors.
+
+bakeText - substitute variables in text elements
 
 Returns a list of the placed substrates. You can use these to generate
 tabs, frames, backbones, etc.

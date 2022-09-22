@@ -272,6 +272,10 @@ LAYOUT_SECTION = {
     "renameref": SStr(
         always(),
         "Reference renaming pattern"),
+    "baketext": SBool(
+        always(),
+        "Substitute variables in text elements"
+    ),
     "code": SPlugin(
         plugin.LayoutPlugin,
         typeIn(["plugin"]),

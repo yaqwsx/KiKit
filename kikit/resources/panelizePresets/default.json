@@ -15,6 +15,7 @@
         "vboneskip": 0,
         "vbonecut": true,
         "hbonecut": true,
+        "baketext": true,
         "code": "none",
         "arg": ""
     },

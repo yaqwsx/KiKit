@@ -251,7 +251,8 @@ def buildLayout(preset, panel, sourceBoard, sourceArea):
                 boardfile=sourceBoard, sourceArea=sourceArea,
                 rows=layout["rows"], cols=layout["cols"], destination=wxPointMM(0, 0),
                 rotation=layout["rotation"], placer=placer,
-                netRenamePattern=layout["renamenet"], refRenamePattern=layout["renameref"])
+                netRenamePattern=layout["renamenet"], refRenamePattern=layout["renameref"],
+                bakeText=layout["baketext"])
             framingSubstrates = dummyFramingSubstrate(substrates, preset)
             panel.buildPartitionLineFromBB(framingSubstrates)
             backboneCuts = buildBackBone(layout, panel, substrates, framing)
@@ -532,7 +533,8 @@ def buildText(preset, panel):
         type = preset["type"]
         if type == "none":
             return
-        variables = kikitTextVars(panel.board)
+        # Since all boards are the same, we can use variables from the first project
+        variables = kikitTextVars(panel.board, panel.projectVars[0])
         if preset["plugin"] is not None:
             variables.update(preset["plugin"](panel.board).variables())
         try:

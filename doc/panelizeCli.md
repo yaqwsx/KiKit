@@ -163,6 +163,8 @@ the CLI by specifying it first and omitting the `type` word; e.g., `--cuts
   references. You can use `{n}` and `{orig}` to get the board number and
   original name. Default values are `Board_{n}-{orig}` for nets and `{orig}` for
   references.
+- `baketext`: A flag that indicates if text variables should be substituted or
+  not.
 
 #### Grid
 

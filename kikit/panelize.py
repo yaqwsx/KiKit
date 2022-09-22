@@ -412,6 +412,15 @@ def skipBackbones(backbones: List[LineString], skip: int,
     active = set(itertools.islice(candidates, skip, None, skip + 1))
     return [x for x in backbones if key(x) in active]
 
+def bakeTextVars(board: pcbnew.BOARD) -> None:
+    """
+    Given a board, expand text variables in all text items on the board.
+    """
+    for drawing in board.GetDrawings():
+        if not isinstance(drawing, pcbnew.PCB_TEXT):
+            continue
+        drawing.SetText(drawing.GetShownText())
+
 class Panel:
     """
     Basic interface for panel building. Instance of this class represents a
@@ -449,6 +458,10 @@ class Panel:
         # At the moment (KiCAD 6.0.6) has broken support for net classes.
         # Therefore we have to handle them separately
         self.newNetClasses: Dict[str, Any] = {}
+
+        # KiCAD allows to keep text variables for project. We keep a set of
+        # dictionary of variables for each appended board.
+        self.projectVars: List[Dict[str, str]] = []
 
     def save(self, reconstructArcs: bool=False, refillAllZones: bool=False):
         """
@@ -748,7 +761,8 @@ class Panel:
     def appendBoard(self, filename, destination, sourceArea=None,
                     origin=Origin.Center, rotationAngle=0, shrink=False,
                     tolerance=0, bufferOutline=fromMm(0.001), netRenamer=None,
-                    refRenamer=None, inheritDrc=True, interpretAnnotations=True):
+                    refRenamer=None, inheritDrc=True, interpretAnnotations=True,
+                    bakeText=False):
         """
         Appends a board to the panel.
 
@@ -771,12 +785,16 @@ class Panel:
         You can also decide whether you would like to inherit design rules from
         this boards or not.
 
+        Similarly, you can substitute variables in the text via bakeText.
+
         Returns bounding box (wxRect) of the extracted area placed at the
         destination and the extracted substrate of the board.
         """
         board = LoadBoard(filename)
         if inheritDrc:
             self.sourcePaths.add(filename)
+        if bakeText:
+            bakeTextVars(board)
 
         thickness = board.GetDesignSettings().GetBoardThickness()
         if len(self.substrates) == 0:
@@ -892,7 +910,20 @@ class Panel:
                         continue # We cannot handle DRC exclusions with board edges
             except FileNotFoundError:
                 pass # Ignore boards without a project
+
+        self.projectVars.append(self._readProjectVariables(board))
+
         return findBoundingBox(edges)
+
+    def _readProjectVariables(self, board: pcbnew.BOARD) -> Dict[str, str]:
+        projectPath = self.getProFilepath(board.GetFileName())
+        try:
+            with open(projectPath, "r", encoding="utf-8") as f:
+                project = json.load(f)
+                return project.get("text_variables", {})
+        except Exception:
+            # We silently ignore missing project (e.g, the source is a v5 board)
+            return {}
 
     def appendSubstrate(self, substrate: ToPolygonGeometry) -> None:
         """
@@ -1014,7 +1045,8 @@ class Panel:
     def makeGrid(self, boardfile: str, sourceArea: wxRect, rows: int, cols: int,
                  destination: wxPoint, placer: GridPlacerBase,
                  rotation: KiAngle=0, netRenamePattern: str="Board_{n}-{orig}",
-                 refRenamePattern: str="Board_{n}-{orig}", tolerance: KiLength=0) \
+                 refRenamePattern: str="Board_{n}-{orig}", tolerance: KiLength=0,
+                 bakeText: bool=False) \
                      -> List[Substrate]:
         """
         Place the given board in a grid pattern with given spacing. The board
@@ -1067,6 +1099,8 @@ class Panel:
             big enough to include them. Such objects often include zone outlines
             and connectors.
 
+        bakeText - substitute variables in text elements
+
         Returns a list of the placed substrates. You can use these to generate
         tabs, frames, backbones, etc.
         """
@@ -1083,7 +1117,7 @@ class Panel:
                 boardfile, dest, sourceArea=sourceArea,
                 tolerance=tolerance, origin=Origin.Center,
                 rotationAngle=boardRotation, netRenamer=netRenamer,
-                refRenamer=refRenamer)
+                refRenamer=refRenamer, bakeText=bakeText)
             if not topLeftSize:
                 topLeftSize = boardSize
 
