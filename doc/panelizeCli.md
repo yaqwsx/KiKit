@@ -233,7 +233,7 @@ Specify the source rectangle explicitly.
 KiKit offers you to place an annotation footprint `kikit:Board` into your design
 file to name the board. The area is determined by a bounding box of the lines in
 the `Edge.Cuts` layer that the arrows point to. Note that the tip of the arrow
-must lie inside the
+must lie on the PCB edge or slightly outside of it.
 
 - `ref`: specify the annotation symbol reference
 - `tolerance`: see above
