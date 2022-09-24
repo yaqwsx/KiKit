@@ -13,16 +13,18 @@ class LayerToPlot:
     description: str
 
 
-CuTop = LayerToPlot("CuTop", F_Cu, "Top layer")
-CuBottom = LayerToPlot("CuBottom", B_Cu, "Bottom layer")
-PasteBottom = LayerToPlot("PasteBottom", B_Paste, "Paste Bottom")
-PasteTop = LayerToPlot("PasteTop", F_Paste, "Paste top")
-SilkTop = LayerToPlot("SilkTop", F_SilkS, "Silk top")
-SilkBottom = LayerToPlot("SilkBottom", B_SilkS, "Silk top")
-MaskBottom = LayerToPlot("MaskBottom", B_Mask, "Mask bottom")
-MaskTop = LayerToPlot("MaskTop", F_Mask, "Mask top")
-EdgeCuts = LayerToPlot("EdgeCuts", Edge_Cuts, "Edges")
-CmtUser = LayerToPlot("CmtUser", Cmts_User, "V-CUT")
+CuTop = LayerToPlot("CuTop", pcbnew.F_Cu, "Top layer")
+CuBottom = LayerToPlot("CuBottom", pcbnew.B_Cu, "Bottom layer")
+PasteBottom = LayerToPlot("PasteBottom", pcbnew.B_Paste, "Paste Bottom")
+PasteTop = LayerToPlot("PasteTop", pcbnew.F_Paste, "Paste top")
+SilkTop = LayerToPlot("SilkTop", pcbnew.F_SilkS, "Silk top")
+SilkBottom = LayerToPlot("SilkBottom", pcbnew.B_SilkS, "Silk top")
+MaskBottom = LayerToPlot("MaskBottom", pcbnew.B_Mask, "Mask bottom")
+MaskTop = LayerToPlot("MaskTop", pcbnew.F_Mask, "Mask top")
+EdgeCuts = LayerToPlot("EdgeCuts", pcbnew.Edge_Cuts, "Edges")
+CmtUser = LayerToPlot("CmtUser", pcbnew.Cmts_User, "V-CUT")
+AdhesiveTop = LayerToPlot("AdhesiveTop", pcbnew.F_Adhes, "Adhesive top")
+AdhesiveBottom = LayerToPlot("AdhesiveBottom", pcbnew.B_Adhes, "Adhesive bottom")
 
 fullGerberPlotPlan = [
     CuTop,
@@ -76,7 +78,7 @@ def hasCopper(plotPlan: list[LayerToPlot]):
     return False
 
 
-def gerberImpl(boardfile, outputdir, plot_plan: list[LayerToPlot]=fullGerberPlotPlan, drilling=True, settings=exportSettingsJlcpcb):
+def gerberImpl(boardfile: str, outputdir: str, plot_plan: list[LayerToPlot]=fullGerberPlotPlan, drilling=True, settings=exportSettingsJlcpcb):
     """
     Export board to gerbers.
 

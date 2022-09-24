@@ -1,7 +1,7 @@
 import shutil
 
 from pcbnewTransition import pcbnew
-from pcbnew import wxPoint
+from pcbnew import wxPoint, PCB_SHAPE, BOARD
 import numpy as np
 import json
 from collections import OrderedDict
@@ -9,7 +9,7 @@ from pcbnewTransition.transition import isV6
 from kikit.common import *
 from kikit.defs import *
 from kikit.substrate import Substrate, extractRings, toShapely, linestringToKicad
-from kikit.export import gerberImpl, pasteDxfExport, LayerToPlot
+from kikit.export import gerberImpl, pasteDxfExport, LayerToPlot, PasteTop, PasteBottom, AdhesiveTop, AdhesiveBottom
 from kikit.export import exportSettingsJlcpcb
 import solid
 import solid.utils
@@ -27,20 +27,20 @@ HOLE_SPACING = fromMm(20)
 
 
 class StencilType(Enum):
-    SolderPaste = (LayerToPlot.PasteTop, LayerToPlot.PasteBottom)
-    Adhesive = (LayerToPlot.AdhesiveTop, LayerToPlot.AdhesiveBottom)
+    SolderPaste = (PasteTop, PasteBottom)
+    Adhesive = (AdhesiveTop, AdhesiveBottom)
 
     def __init__(self, top_layer: LayerToPlot, bottom_layer: LayerToPlot):
         self.top_layer = top_layer
         self.bottom_layer = bottom_layer
 
 
-def addBottomCounterpart(board, item, stencil_type: StencilType):
+def addBottomCounterpart(board: BOARD, item: PCB_SHAPE, stencil_type: StencilType = StencilType.SolderPaste):
     item = item.Duplicate()
     item.SetLayer(stencil_type.bottom_layer.id)
     board.Add(item)
 
-def addRoundedCorner(board, center, start, end, thickness, stencil_type: StencilType):
+def addRoundedCorner(board: BOARD, center: wxPoint, start: wxPoint, end: wxPoint, thickness, stencil_type: StencilType = StencilType.SolderPaste):
     corner = pcbnew.PCB_SHAPE()
     corner.SetShape(STROKE_T.S_ARC)
     corner.SetCenter(wxPoint(center[0], center[1]))
@@ -64,7 +64,7 @@ def addRoundedCorner(board, center, start, end, thickness, stencil_type: Stencil
     board.Add(corner)
     addBottomCounterpart(board, corner, stencil_type)
 
-def addLine(board, start, end, thickness, stencil_type: StencilType):
+def addLine(board: BOARD, start: wxPoint, end: wxPoint, thickness: int, stencil_type: StencilType = StencilType.SolderPaste):
     line = pcbnew.PCB_SHAPE()
     line.SetShape(STROKE_T.S_SEGMENT)
     line.SetStart(wxPoint(start[0], start[1]))
@@ -74,7 +74,7 @@ def addLine(board, start, end, thickness, stencil_type: StencilType):
     board.Add(line)
     addBottomCounterpart(board, line, stencil_type)
 
-def addBite(board, origin, direction, normal, thickness, stencil_type: StencilType):
+def addBite(board: BOARD, origin: wxPoint, direction: wxPoint, normal: wxPoint, thickness: int, stencil_type: StencilType = StencilType.SolderPaste):
     """
     Adds a bite to the stencil, direction points to the bridge, normal points
     inside the stencil
@@ -96,7 +96,7 @@ def numberOfCuts(length, bridgeWidth, bridgeSpacing):
     return count, cutLength
 
 
-def addFrame(board, rect, bridgeWidth, bridgeSpacing, clearance, stencil_type: StencilType):
+def addFrame(board: BOARD, rect: wxRect, bridgeWidth: int, bridgeSpacing: int, clearance: int, stencil_type: StencilType = StencilType.SolderPaste):
     """
     Add rectangular frame to the board
     """
@@ -146,7 +146,7 @@ def addFrame(board, rect, bridgeWidth, bridgeSpacing, clearance, stencil_type: S
             addBite(board, wxPoint(x2, end), wxPoint(0, 1), wxPoint(-1, 0), clearance, stencil_type)
 
 
-def addHole(board, position, radius, stencil_type: StencilType):
+def addHole(board: BOARD, position: wxPoint, radius: int, stencil_type: StencilType = StencilType.SolderPaste):
     circle = pcbnew.PCB_SHAPE()
     circle.SetShape(STROKE_T.S_CIRCLE)
     circle.SetCenter(wxPoint(position[0], position[1]))
@@ -160,8 +160,8 @@ def addHole(board, position, radius, stencil_type: StencilType):
     board.Add(circle)
     addBottomCounterpart(board, circle, stencil_type)
 
-def addJigFrame(board, jigFrameSize, bridgeWidth=fromMm(2),
-                bridgeSpacing=fromMm(10), clearance=fromMm(0.5), stencil_type: StencilType = StencilType.SolderPaste):
+def addJigFrame(board: BOARD, jigFrameSize: (int, int), bridgeWidth: int=fromMm(2),
+                bridgeSpacing: int=fromMm(10), clearance: int=fromMm(0.5), stencil_type: StencilType = StencilType.SolderPaste):
     """
     Given a Pcbnew board finds the board outline and creates a stencil for
     KiKit's stencil jig.
@@ -311,7 +311,7 @@ def shapelyToSHAPE_POLY_SET(polygon):
     p.AddOutline(linestringToKicad(polygon.exterior))
     return p
 
-def cutoutComponents(board, components, stencil_type: StencilType):
+def cutoutComponents(board: BOARD, components: list[str], stencil_type: StencilType = StencilType.SolderPaste):
     topCutout = extractComponentPolygons(components, pcbnew.F_CrtYd)
     for polygon in topCutout:
         zone = pcbnew.PCB_SHAPE()
@@ -370,8 +370,8 @@ def setStencilLayerVisibility(boardName):
 from pathlib import Path
 import os
 
-def create(inputboard, outputdir, jigsize, jigthickness, pcbthickness,
-           registerborder, tolerance, ignore, cutout, type: StencilType = StencilType.SolderPaste):
+def create(inputboard: str, outputdir: str, jigsize: (int, int), jigthickness: float, pcbthickness: float,
+           registerborder: (float, float), tolerance: float, ignore: str, cutout: str, type: StencilType = StencilType.SolderPaste):
     board = pcbnew.LoadBoard(inputboard)
     removeComponents(board, parseReferences(ignore))
     cutoutComponents(board, getComponents(board, parseReferences(cutout)), type)
@@ -399,8 +399,10 @@ def create(inputboard, outputdir, jigsize, jigthickness, pcbthickness,
     pcbthickness = fromMm(pcbthickness)
     outerBorder, innerBorder = fromMm(registerborder[0]), fromMm(registerborder[1])
     tolerance = fromMm(tolerance)
-    topRegister = makeTopRegister(board, jigsize,jigthickness, pcbthickness, outerBorder, innerBorder, tolerance)
-    bottomRegister = makeBottomRegister(board, jigsize,jigthickness, pcbthickness, outerBorder, innerBorder, tolerance)
+    topRegister = makeTopRegister(board, jigsize,jigthickness, pcbthickness,
+        outerBorder, innerBorder, tolerance)
+    bottomRegister = makeBottomRegister(board, jigsize,jigthickness, pcbthickness,
+        outerBorder, innerBorder, tolerance)
 
     topRegisterFile = os.path.join(outputdir, "topRegister.scad")
     solid.scad_render_to_file(topRegister, topRegisterFile)
@@ -432,7 +434,7 @@ def collectFootprintEdges(footprint, layer):
     """
     return [e for e in footprint.GraphicalItems() if e.GetLayer() == layer]
 
-def extractComponentPolygons(footprints, layer: Layer):
+def extractComponentPolygons(footprints, srcLayer):
     """
     Return a list of shapely polygons with holes for already placed components.
     The source layer defines the geometry on which the cutout is computed.
@@ -440,7 +442,7 @@ def extractComponentPolygons(footprints, layer: Layer):
     """
     polygons = []
     for f in footprints:
-       edges = collectFootprintEdges(f, layer)
+       edges = collectFootprintEdges(f, srcLayer)
        for ring in extractRings(edges):
            polygons.append(toShapely(ring, edges))
     return polygons
