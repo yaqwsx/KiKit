@@ -51,6 +51,7 @@ class HideReferencesDialog(wx.Dialog):
             size=wx.Size(350, 80),
             style=wx.ALIGN_LEFT | wx.ST_ELLIPSIZE_END)
         self.matchingText.Wrap(350)
+        self.matchingText.SetMaxSize(wx.Size(350, 80))
         item_grid.Add(self.matchingText, 1, wx.EXPAND)
 
         button_box = wx.BoxSizer(wx.HORIZONTAL)

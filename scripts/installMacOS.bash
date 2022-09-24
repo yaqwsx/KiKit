@@ -22,7 +22,7 @@ codesign -fs "kikit" "$KICAD_PYTHON/Resources/Python.app"
 codesign -fs "kikit" "/Applications/KiCad/KiCad.app"
 codesign -fs "kikit" "/Applications/KiCad/KiCad.app/Contents/Applications/pcbnew.app"
 
-cat << EOF | > /usr/local/bin/kikit
+cat << EOF  > /usr/local/bin/kikit
 #!/bin/bash
 $KICAD_PYTHON/bin/python3 -m kikit.ui "\$@"
 EOF

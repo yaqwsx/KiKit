@@ -145,7 +145,7 @@ def readCorrectionPatterns(filename):
 
 def applyCorrectionPattern(correctionPatterns, footprint):
     # FIXME: part ID is currently ignored
-    # GetUniStringLibId returns the full footprint name including the 
+    # GetUniStringLibId returns the full footprint name including the
     # library in the form of "Resistor_SMD:R_0402_1005Metric"
     footprintName = str(footprint.GetFPID().GetUniStringLibId())
     for corpat in correctionPatterns:
@@ -209,3 +209,17 @@ def posDataToFile(posData, filename):
         writer.writerow(["Designator", "Mid X", "Mid Y", "Layer", "Rotation"])
         for line in sorted(posData, key=lambda x: x[0]):
             writer.writerow(line)
+
+def isValidSchPath(filename):
+    return os.path.splitext(filename)[1] in [".sch", ".kicad_sch"]
+
+def isValidBoardPath(filename):
+    return os.path.splitext(filename)[1] in [".kicad_pcb"]
+
+def ensureValidSch(filename):
+    if not isValidSchPath(filename):
+        raise RuntimeError(f"The path {filename} is not a valid KiCAD schema file")
+
+def ensureValidBoard(filename):
+    if not isValidBoardPath(filename):
+        raise RuntimeError(f"The path {filename} is not a valid KiCAD PCB file")

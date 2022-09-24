@@ -80,7 +80,7 @@ include components sticking out of the board outline, you can specify tolerance
 appendBoard(self, filename, destination, sourceArea=None, origin=Origin.Center, 
             rotationAngle=0, shrink=False, tolerance=0, bufferOutline=1000, 
             netRenamer=None, refRenamer=None, inheritDrc=True, 
-            interpretAnnotations=True)
+            interpretAnnotations=True, bakeText=False)
 ```
 
 ## Panel class
@@ -191,7 +191,7 @@ Adds a horizontal V-CUT at pos (integer in KiCAD units).
 appendBoard(self, filename, destination, sourceArea=None, origin=Origin.Center, 
             rotationAngle=0, shrink=False, tolerance=0, bufferOutline=1000, 
             netRenamer=None, refRenamer=None, inheritDrc=True, 
-            interpretAnnotations=True)
+            interpretAnnotations=True, bakeText=False)
 ```
 Appends a board to the panel.
 
@@ -214,6 +214,8 @@ The renamers are given board seq number and original name.
 You can also decide whether you would like to inherit design rules from
 this boards or not.
 
+Similarly, you can substitute variables in the text via bakeText.
+
 Returns bounding box (wxRect) of the extracted area placed at the
 destination and the extracted substrate of the board.
 
@@ -234,11 +236,11 @@ individual pieces of substrate) as a shapely box.
 
 #### `buildFullTabs`
 ```
-buildFullTabs(self, framingOffsets)
+buildFullTabs(self, cutoutDepth)
 ```
 Make full tabs. This strategy basically cuts the bounding boxes of the
-PCBs. Not suitable for mousebites. Expects there is a valid partition
-line.
+PCBs. Not suitable for mousebites or PCB that doesn't have a rectangular
+outline. Expects there is a valid partition line.
 
 Return a list of cuts.
 
@@ -301,11 +303,12 @@ copperFillNonBoardAreas(self, clearance=1000000,
                         hatched=False, strokeWidth=1000000, 
                         strokeSpacing=1000000, orientation=450)
 ```
-Fill given layers with copper on unused areas of the panel
-(frame, rails and tabs). You can specify the clearance, if it should be
-hatched (default is solid) or shape the strokes of hatched pattern.
+Fill given layers with copper on unused areas of the panel (frame, rails
+and tabs). You can specify the clearance, if it should be hatched
+(default is solid) or shape the strokes of hatched pattern.
 
-By default, fills top and bottom layer.
+By default, fills top and bottom layer, but you can specify any other
+copper layer that is enabled.
 
 #### `debugRenderBackboneLines`
 ```
@@ -409,7 +412,7 @@ of where is the problem.
 
 #### `makeFrame`
 ```
-makeFrame(self, width, hspace, vspace)
+makeFrame(self, width, hspace, vspace, minWidth=0, minHeight=0)
 ```
 Build a frame around the boards. Specify width and spacing between the
 boards substrates and the frame. Return a tuple of vertical and
@@ -424,6 +427,10 @@ slotwidth - width of milled-out perimeter around board outline
 hspace - horizontal space between board outline and substrate
 
 vspace - vertical space between board outline and substrate
+
+minWidth - if the panel doesn't meet this width, it is extended
+
+minHeight - if the panel doesn't meet this height, it is extended
 
 #### `makeFrameCutsH`
 ```
@@ -441,7 +448,7 @@ Generate vertical cuts for the frame corners and return them
 ```
 makeGrid(self, boardfile, sourceArea, rows, cols, destination, placer, 
          rotation=0, netRenamePattern=Board_{n}-{orig}, 
-         refRenamePattern=Board_{n}-{orig}, tolerance=0)
+         refRenamePattern=Board_{n}-{orig}, tolerance=0, bakeText=False)
 ```
 Place the given board in a grid pattern with given spacing. The board
 position of the gride is guided via placer. The nets and references are
@@ -493,6 +500,8 @@ selection
     big enough to include them. Such objects often include zone outlines
     and connectors.
 
+bakeText - substitute variables in text elements
+
 Returns a list of the placed substrates. You can use these to generate
 tabs, frames, backbones, etc.
 
@@ -512,19 +521,21 @@ to
 
 #### `makeRailsLr`
 ```
-makeRailsLr(self, thickness)
+makeRailsLr(self, thickness, minWidth=0)
 ```
-Adds a rail to left and right.
+Adds a rail to left and right. You can specify minimal width the panel
+has to feature.
 
 #### `makeRailsTb`
 ```
-makeRailsTb(self, thickness)
+makeRailsTb(self, thickness, minHeight=0)
 ```
-Adds a rail to top and bottom.
+Adds a rail to top and bottom. You can specify minimal height the panel
+has to feature.
 
 #### `makeTightFrame`
 ```
-makeTightFrame(self, width, slotwidth, hspace, vspace)
+makeTightFrame(self, width, slotwidth, hspace, vspace, minWidth=0, minHeight=0)
 ```
 Build a full frame with board perimeter milled out.
 Add your boards to the panel first using appendBoard or makeGrid.
@@ -539,6 +550,10 @@ hspace - horizontal space between board outline and substrate
 
 vspace - vertical space between board outline and substrate
 
+minWidth - if the panel doesn't meet this width, it is extended
+
+minHeight - if the panel doesn't meet this height, it is extended
+
 #### `makeVCuts`
 ```
 makeVCuts(self, cuts, boundCurves=False, offset=0)
@@ -546,14 +561,6 @@ makeVCuts(self, cuts, boundCurves=False, offset=0)
 Take a list of lines to cut and performs V-CUTS. When boundCurves is
 set, approximate curved cuts by a line from the first and last point.
 Otherwise, raise an exception.
-
-#### `mergeDrcRules`
-```
-mergeDrcRules(self)
-```
-Examine DRC rules of the source boards, merge them into a single set of
-rules and store them in *.kicad_pro file. Also stores board DRC
-exclusions.
 
 #### `panelBBox`
 ```
@@ -585,7 +592,7 @@ Return a list of cuts
 
 #### `save`
 ```
-save(self, reconstructArcs=False)
+save(self, reconstructArcs=False, refillAllZones=False)
 ```
 Saves the panel to a file and makes the requested changes to the prl and
 pro files.
@@ -644,6 +651,17 @@ setVCutLayer(self, layer)
 ```
 Set layer on which the V-Cuts will be rendered
 
+#### `transferProjectSettings`
+```
+transferProjectSettings(self)
+```
+Examine DRC rules of the source boards, merge them into a single set of
+rules and store them in *.kicad_pro file. Also stores board DRC
+exclusions.
+
+Also, transfers the list of net classes from the internal representation
+into the project file.
+
 #### `translate`
 ```
 translate(self, vec)
@@ -697,11 +715,23 @@ exterior(self)
 ```
 Return a geometry representing the substrate with no holes
 
+#### `exteriorRing`
+```
+exteriorRing(self)
+```
+None
+
 #### `isSinglePiece`
 ```
 isSinglePiece(self)
 ```
 Decide whether the substrate consists of a single piece
+
+#### `midpoint`
+```
+midpoint(self)
+```
+Return a mid point of the bounding box
 
 #### `millFillets`
 ```

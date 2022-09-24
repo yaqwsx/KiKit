@@ -16,6 +16,8 @@ from kikit.common import *
 
 from kikit.defs import STROKE_T, Layer
 
+TABFAIL_VISUAL = False
+
 class PositionError(RuntimeError):
     def __init__(self, message, point):
         super().__init__(message.format(toMm(point[0]), toMm(point[1])))
@@ -40,11 +42,11 @@ def getStartPoint(geom):
             point = geom.GetStart()
         else:
             point = geom.GetStart()
-        return roundPoint(point)
+        return point
 
     if geom.GetShape() in [STROKE_T.S_ARC, STROKE_T.S_CIRCLE]:
-        return roundPoint(geom.GetArcStart())
-    return roundPoint(geom.GetStart())
+        return geom.GetArcStart()
+    return geom.GetStart()
 
 def getEndPoint(geom):
     if isV6():
@@ -56,13 +58,13 @@ def getEndPoint(geom):
             point = geom.GetStart()
         else:
             point = geom.GetEnd()
-        return roundPoint(point)
+        return point
 
     if geom.GetShape() == STROKE_T.S_ARC:
-        return roundPoint(geom.GetArcEnd())
+        return geom.GetArcEnd()
     if geom.GetShape() == STROKE_T.S_CIRCLE:
-        return roundPoint(geom.GetArcStart())
-    return roundPoint(geom.GetEnd())
+        return geom.GetArcStart()
+    return geom.GetEnd()
 
 class CoincidenceList(list):
     def getNeighbor(self, myIdx):
@@ -79,16 +81,16 @@ def findRing(startIdx, geometryList, coincidencePoints, unused):
     """
     unused[startIdx] = False
     ring = [startIdx]
-    if getStartPoint(geometryList[startIdx]) == getEndPoint(geometryList[startIdx]):
+    if roundPoint(getStartPoint(geometryList[startIdx])) == roundPoint(getEndPoint(geometryList[startIdx])):
         return ring
-    currentPoint = getEndPoint(geometryList[startIdx])
+    currentPoint = roundPoint(getEndPoint(geometryList[startIdx]))
     while True:
         nextIdx = coincidencePoints[currentPoint].getNeighbor(ring[-1])
         assert(unused[nextIdx] or nextIdx == startIdx)
-        if currentPoint == getStartPoint(geometryList[nextIdx]):
-            currentPoint = getEndPoint(geometryList[nextIdx])
+        if currentPoint == roundPoint(getStartPoint(geometryList[nextIdx])):
+            currentPoint = roundPoint(getEndPoint(geometryList[nextIdx]))
         else:
-            currentPoint = getStartPoint(geometryList[nextIdx])
+            currentPoint = roundPoint(getStartPoint(geometryList[nextIdx]))
         unused[nextIdx] = False
         if nextIdx == startIdx:
             return ring
@@ -144,7 +146,7 @@ def commonEndPoint(a, b):
     """
     aStart, aEnd = getStartPoint(a), getEndPoint(a)
     bStart, bEnd = getStartPoint(b), getEndPoint(b)
-    if aStart == bStart or aStart == bEnd:
+    if roundPoint(aStart) == roundPoint(bStart) or roundPoint(aStart) == roundPoint(bEnd):
         return aStart
     return aEnd
 
@@ -172,7 +174,7 @@ def approximateArc(arc, endWith):
     last = np.array([outline[-1][0], outline[-1][1]])
     if (np.linalg.norm(end - first) < np.linalg.norm(end - last)):
         outline.reverse()
-    return outline
+    return outline[1:-1]
 
 def approximateBezier(bezier, endWith):
     """
@@ -446,6 +448,15 @@ def closestIntersectionPoint(origin, direction, outline, maxDistance):
     testLine = LineString([origin, origin + direction * maxDistance])
     inter = testLine.intersection(outline)
     if inter.is_empty:
+        if TABFAIL_VISUAL:
+            import matplotlib.pyplot as plt
+
+            plt.axis('equal')
+            x, y = outline.coords.xy
+            plt.plot(list(map(toMm, x)), list(map(toMm, y)))
+            x, y = testLine.coords.xy
+            plt.plot(list(map(toMm, x)), list(map(toMm, y)))
+            plt.show()
         raise NoIntersectionError(f"No intersection found within given distance", origin)
     origin = Point(origin[0], origin[1])
     if isinstance(inter, Point):
@@ -476,7 +487,6 @@ class Substrate:
     def __init__(self, geometryList, bufferDistance=0, revertTransformation=None):
         polygons = [toShapely(ring, geometryList) for ring in extractRings(geometryList)]
         self.substrates = unary_union(substratesFrom(polygons))
-        self.substrates = self.substrates.buffer(bufferDistance)
         if not self.substrates.is_empty:
             self.substrates = shapely.ops.orient(self.substrates)
         self.partitionLine = shapely.geometry.GeometryCollection()
@@ -498,6 +508,7 @@ class Substrate:
         """
         if self.oriented:
             return
+        self.substrates = self.substrates.simplify(SHP_EPSILON)
         self.substrates = shapely.ops.orient(self.substrates)
         self.oriented = True
 
@@ -506,6 +517,13 @@ class Substrate:
         Return shapely bounds of substrates
         """
         return self.substrates.bounds
+
+    def midpoint(self) -> Tuple[int, int]:
+        """
+        Return a mid point of the bounding box
+        """
+        minx, miny, maxx, maxy = self.substrates.bounds
+        return ((minx + maxx) // 2, (miny + maxy) // 2)
 
     def union(self, other):
         """
@@ -612,6 +630,9 @@ class Substrate:
         polygons = [Polygon(p.exterior) for p in geoms]
         return unary_union(polygons)
 
+    def exteriorRing(self):
+        return self.substrates.exterior
+
     def boundary(self):
         """
         Return shapely geometry representing the outer ring
@@ -638,7 +659,7 @@ class Substrate:
 
         origin = np.array(origin)
         try:
-            direction = normalize(direction)
+            direction = np.around(normalize(direction))
             sideOriginA = origin + makePerpendicular(direction) * width / 2
             sideOriginB = origin - makePerpendicular(direction) * width / 2
             boundary = self.substrates.exterior
@@ -651,7 +672,7 @@ class Substrate:
                 # There is nothing else to do, return the tab
                 tab = Polygon(list(tabFace.coords) + [sideOriginA, sideOriginB])
                 return tab, tabFace
-            # Span the tab towwards the partition line
+            # Span the tab towards the partition line
             # There might be multiple geometries in the partition line, so try them
             # individually.
             direction = -direction
@@ -660,7 +681,7 @@ class Substrate:
                     partitionSplitPointA = closestIntersectionPoint(splitPointA.coords[0],
                             direction, p, maxHeight)
                     partitionSplitPointB = closestIntersectionPoint(splitPointB.coords[0],
-                        direction, p, maxHeight)
+                            direction, p, maxHeight)
                 except NoIntersectionError: # We cannot span towards the partition line
                     continue
                 if isLinestringCyclic(p):

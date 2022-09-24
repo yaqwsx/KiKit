@@ -192,7 +192,7 @@ class CutsPlugin:
         """
         Render any other type of cuts (frame, backbone, etc.)
         """
-        raise NotImplementedError("Cuts plugin has to provide renderTabCuts")
+        raise NotImplementedError("Cuts plugin has to provide renderOtherCuts")
 
 
 class ToolingPlugin:

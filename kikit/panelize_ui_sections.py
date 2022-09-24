@@ -173,7 +173,13 @@ class SList(SectionBase):
         return [v.strip() for v in x.split(",")]
 
 class SLayerList(SList):
+    def __init__(self, isGuiRelevant, description, shortcuts={}):
+        super().__init__(isGuiRelevant, description)
+        self._shortcuts = shortcuts
+
     def validate(self, x: str) -> Any:
+        if x in self._shortcuts:
+            return self._shortcuts[x]
         return [self.readLayer(x) for x in super().validate(x)]
 
     def readLayer(self, s: str) -> Layer:
@@ -266,6 +272,10 @@ LAYOUT_SECTION = {
     "renameref": SStr(
         always(),
         "Reference renaming pattern"),
+    "baketext": SBool(
+        always(),
+        "Substitute variables in text elements"
+    ),
     "code": SPlugin(
         plugin.LayoutPlugin,
         typeIn(["plugin"]),
@@ -339,6 +349,9 @@ TABS_SECTION = {
     "hcount": SNum(
         typeIn(["fixed"]),
         "Number of tabs in a given direction."),
+    "cutout": SLength(
+        typeIn(["fixed"]),
+        "Depth of cutouts into the frame"),
     "tabfootprints": SFootprintList(
         typeIn(["annotation"]),
         "Specify custom footprints that will be used for tab annotations."),
@@ -411,6 +424,14 @@ FRAMING_SECTION = {
     "width": SLength(
         typeIn(["frame", "railstb", "railslr", "tightframe"]),
         "Width of the framing"),
+    "mintotalheight": SLength(
+        typeIn(["frame", "railstb", "tightframe"]),
+        "Minimal height of the panel"
+    ),
+    "mintotalwidth": SLength(
+        typeIn(["frame", "raillr", "tightframe"]),
+        "Minimal width of the panel"
+    ),
     "slotwidth": SLength(
         typeIn(["tightframe"]),
         "Width of the milled slot"),
@@ -555,7 +576,10 @@ COPPERFILL_SECTION = {
         "Clearance between the fill and boards"),
     "layers": SLayerList(
         typeIn(["solid", "hatched"]),
-        "Specify which layer to fill with copper"),
+        "Specify which layer to fill with copper",
+        {
+            "all": Layer.allCu()
+        }),
     "width": SLength(
         typeIn(["hatched"]),
         "Width of hatch strokes"),
@@ -585,6 +609,9 @@ POST_SECTION = {
     "reconstructarcs": SBool(
         always(),
         "Try to reconstruct arcs"),
+    "refillzones": SBool(
+        always(),
+        "Refill all zones in the panel"),
     "script": SStr(
         always(),
         "Specify path to a custom postprocessing script"),
@@ -643,6 +670,10 @@ DEBUG_SECTION = {
     "trace": SBool(
         always(),
         "Print stacktrace"),
+    "drawtabfail": SBool(
+        always(),
+        "Visualize tab building failures"
+    ),
     "deterministic": SBool(
         always(),
         "Make KiCAD IDs deterministic")
@@ -660,6 +691,9 @@ availableSections = {
     "Tooling": TOOLING_SECTION,
     "Fiducials": FIDUCIALS_SECTION,
     "Text": TEXT_SECTION,
+    "Text2": TEXT_SECTION,
+    "Text3": TEXT_SECTION,
+    "Text4": TEXT_SECTION,
     "Copperfill": COPPERFILL_SECTION,
     "Page": PAGE_SECTION,
     "Post": POST_SECTION,

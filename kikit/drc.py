@@ -6,6 +6,7 @@ import re
 import tempfile
 from dataclasses import dataclass, field
 from typing import Any, Dict, Iterable, List, TextIO, Tuple, Union
+from pathlib import Path
 
 from pcbnewTransition import isV6, pcbnew
 
@@ -17,7 +18,7 @@ ItemFingerprint = Tuple[int, int, str]
 def roundCoord(x: int) -> int:
     # KiCAD doesn't round the values, it just cuts the decimal places. So let's
     # emulate that
-    return round(x - 50, -3)
+    return round(x - 50, -4)
 
 def getItemFingerprint(item: pcbnew.BOARD_ITEM):
     return (roundCoord(item.GetPosition()[0]), # Round down, since the output does the same
@@ -129,8 +130,7 @@ def readBoardItem(text: str,
     try:
         return fingerprints[fPrint]
     except KeyError:
-        x = '\n'.join([f"{x}: {y}" for x, y in fingerprints.items() if "Board_11" in x[2]])
-        raise RuntimeError(f"Cannot find board item from '{text}', fingerprint: '{fPrint}'\n\n{x}") from None
+        raise RuntimeError(f"Cannot find board item from '{text}', fingerprint: '{fPrint}'") # from None
 
 def readViolations(reportFile: TextIO,
                    fingerprints: Dict[ItemFingerprint, pcbnew.BOARD_ITEM]) \
@@ -179,6 +179,8 @@ def readReport(reportFile: TextIO, board: pcbnew.BOARD) -> DrcReport:
     return DrcReport(drcV, unconnectedV, footprintV)
 
 def runBoardDrc(board: pcbnew.BOARD, strict: bool) -> DrcReport:
+    projectPath = Path(board.GetFileName()).with_suffix(".kicad_pro")
+    pcbnew.GetSettingsManager().LoadProject(str(projectPath))
     with tempfile.NamedTemporaryFile(mode="w+", delete=False) as tmpFile:
         try:
             tmpFile.close()

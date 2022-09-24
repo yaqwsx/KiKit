@@ -90,6 +90,9 @@ def postProcessPreset(preset):
         "tooling": ppTooling,
         "fiducials": ppFiducials,
         "text": ppText,
+        "text2": ppText,
+        "text3": ppText,
+        "text4": ppText,
         "copperfill": ppCopper,
         "post": ppPost,
         "page": ppPage,
@@ -146,7 +149,8 @@ def validateSections(preset):
     validate all required keys are present. Ignores excessive keys.
     """
     VALID_SECTIONS = ["layout", "source", "tabs", "cuts", "framing", "tooling",
-        "fiducials", "text", "page", "copperfill", "post", "debug"]
+        "fiducials", "text", "text2", "text3", "text4", "page", "copperfill",
+        "post", "debug"]
     extraSections = set(preset.keys()).difference(VALID_SECTIONS)
     if len(extraSections) != 0:
         raise PresetError(f"Extra sections {', '.join(extraSections)} in preset")
@@ -247,7 +251,8 @@ def buildLayout(preset, panel, sourceBoard, sourceArea):
                 boardfile=sourceBoard, sourceArea=sourceArea,
                 rows=layout["rows"], cols=layout["cols"], destination=wxPointMM(0, 0),
                 rotation=layout["rotation"], placer=placer,
-                netRenamePattern=layout["renamenet"], refRenamePattern=layout["renameref"])
+                netRenamePattern=layout["renamenet"], refRenamePattern=layout["renameref"],
+                bakeText=layout["baketext"])
             framingSubstrates = dummyFramingSubstrate(substrates, preset)
             panel.buildPartitionLineFromBB(framingSubstrates)
             backboneCuts = buildBackBone(layout, panel, substrates, framing)
@@ -266,7 +271,7 @@ def buildLayout(preset, panel, sourceBoard, sourceArea):
     except KeyError as e:
         raise PresetError(f"Missing parameter '{e}' in section 'layout'")
 
-def buildTabs(preset, panel, substrates, boundarySubstrates, frameOffsets):
+def buildTabs(preset, panel, substrates, boundarySubstrates):
     """
     Build tabs for the substrates in between the boards. Return a list of cuts.
     """
@@ -291,7 +296,7 @@ def buildTabs(preset, panel, substrates, boundarySubstrates, frameOffsets):
             panel.buildTabAnnotationsCorners(properties["width"])
             return panel.buildTabsFromAnnotations()
         if type == "full":
-            return panel.buildFullTabs(frameOffsets)
+            return panel.buildFullTabs(properties["cutout"])
         if type == "annotation":
             return panel.buildTabsFromAnnotations()
         if type == "plugin":
@@ -438,15 +443,17 @@ def buildFraming(preset, panel):
         if type == "none":
             return []
         if type == "railstb":
-            panel.makeRailsTb(framingPreset["width"])
+            panel.makeRailsTb(framingPreset["width"], framingPreset["mintotalheight"])
             addFilletAndChamfer(framingPreset, panel)
             return []
         if type == "railslr":
-            panel.makeRailsLr(framingPreset["width"])
+            panel.makeRailsLr(framingPreset["width"], framingPreset["mintotalwidth"])
             addFilletAndChamfer(framingPreset, panel)
             return []
         if type == "frame":
-            cuts = panel.makeFrame(framingPreset["width"], framingPreset["hspace"], framingPreset["vspace"])
+            cuts = panel.makeFrame(framingPreset["width"],
+                framingPreset["hspace"], framingPreset["vspace"],
+                framingPreset["mintotalwidth"], framingPreset["mintotalheight"])
             addFilletAndChamfer(framingPreset, panel)
             if framingPreset["cuts"] == "both":
                 return chain(*cuts)
@@ -457,7 +464,8 @@ def buildFraming(preset, panel):
             return []
         if type == "tightframe":
             panel.makeTightFrame(framingPreset["width"], framingPreset["slotwidth"],
-                framingPreset["hspace"], framingPreset["vspace"])
+                framingPreset["hspace"], framingPreset["vspace"],
+                framingPreset["mintotalwidth"], framingPreset["mintotalheight"])
             panel.boardSubstrate.removeIslands()
             addFilletAndChamfer(framingPreset, panel)
             return []
@@ -525,7 +533,8 @@ def buildText(preset, panel):
         type = preset["type"]
         if type == "none":
             return
-        variables = kikitTextVars(panel.board)
+        # Since all boards are the same, we can use variables from the first project
+        variables = kikitTextVars(panel.board, panel.projectVars[0])
         if preset["plugin"] is not None:
             variables.update(preset["plugin"](panel.board).variables())
         try:

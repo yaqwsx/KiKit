@@ -40,7 +40,7 @@ fullGerberPlotPlan = [
 
 exportSettingsJlcpcb = {
     "UseGerberProtelExtensions": True,
-    "UseAuxOrigin": False,
+    "UseAuxOrigin": True,
     "ExcludeEdgeLayer": True,
     "MinimalHeader": False,
     "NoSuffix": False,

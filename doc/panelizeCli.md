@@ -69,9 +69,7 @@ To give and example, consider the two following configurations:
         "width": "3mm"
     },
     "framing": {
-        "type": "frame",
-        "frameWidth": "100mm",
-        "frameHeight": "100mm"
+        "type": "frame"
     }
 }
 
@@ -94,9 +92,7 @@ When we merge `B` into `A`, we get:
     },
     "framing": {
         "type": "rails"
-        "width": "5mm",
-        "frameWidth": "100mm",
-        "frameHeight": "100mm"
+        "width": "5mm"
     }
 }
 ```
@@ -167,6 +163,8 @@ the CLI by specifying it first and omitting the `type` word; e.g., `--cuts
   references. You can use `{n}` and `{orig}` to get the board number and
   original name. Default values are `Board_{n}-{orig}` for nets and `{orig}` for
   references.
+- `baketext`: A flag that indicates if text variables should be substituted or
+  not.
 
 #### Grid
 
@@ -235,7 +233,7 @@ Specify the source rectangle explicitly.
 KiKit offers you to place an annotation footprint `kikit:Board` into your design
 file to name the board. The area is determined by a bounding box of the lines in
 the `Edge.Cuts` layer that the arrows point to. Note that the tip of the arrow
-must lie inside the
+must lie on the PCB edge or slightly outside of it.
 
 - `ref`: specify the annotation symbol reference
 - `tolerance`: see above
@@ -273,6 +271,10 @@ Create tabs that are full width of the PCB. Suitable for PCBs separated by
 V-Cuts. This mode does not make much sense for mousebites in practice. Note that
 in this mode the cuts do not faithfully copy the PCB outline and, instead, they
 cut the bounding box of the PCB. There are no other options.
+
+- `cutout`: When your design features open pockets on the side, this parameter
+  specifies extra cutout depth in order to ensure that a sharp corner of the
+  pocket can be milled. The default is 1 mm.
 
 #### Corner
 
@@ -364,6 +366,9 @@ left/right rails.
 - `width` - specify with of the rails or frame
 - `fillet`, `chamfer` - fillet/chamfer frame corners. Specify radius or chamfer
   size.
+- `mintotalheight`, `mintotalwidth` – if needed, add extra material to the rail
+  or frame to meet the minimal requested size. Useful for services that require
+  minimal panel size.
 
 #### Railstb/Railslr
 
@@ -436,9 +441,13 @@ Fiducials based on a plugin.
 
 Add text to the panel. Allows you to put a single block of text on panel. You
 can use variables enclosed in `{}`. E.g. `{boardTitle} | {boardDate}`. The list
-of all available variables in listed bellow.  If you
-need more text or more sophisticated placing options, see `script` option from
-`postprocess`.
+of all available variables in listed bellow. In the case you need more
+independent texts on the panel, you can use sections names `text2`, `text3` and
+`text3` to add at most 4 text. All these sections behave the same and accept the
+same options.
+
+If you need more texts or more sophisticated placing options, see `script`
+option from `postprocess`.
 
 **Types**: none, simple
 
@@ -508,7 +517,8 @@ Fill non-board areas of the panel with copper.
 
 - `clearance` - optional extra clearance from the board perimeters. Suitable
   for, e.g., not filling the tabs with copper.
-- `layers` - comma-separated list of layer to fill. Default top and bottom.
+- `layers` - comma-separated list of layer to fill. Default top and bottom. You
+  can specify a shortcut `all` to fill all layers.
 
 ### Solid
 
@@ -539,6 +549,8 @@ Finishing touches to the panel.
 - `reconstructarcs` - the panelization process works on top of a polygonal
   representation of the board. This options allows to reconstruct the arcs in
   the design before saving the panel.
+- `refillzones` – refill the user zones after the panel is build. This is only
+  necessary when you want your zones to avoid cuts in panel.
 - `script` - a path to custom Python file. The file should contain a function
   `kikitPostprocess(panel, args)` that receives the prepared panel as the
   `kikit.panelize.Panel` object and the user-supplied arguments as a string -

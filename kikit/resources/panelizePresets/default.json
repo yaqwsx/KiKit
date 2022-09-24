@@ -15,6 +15,7 @@
         "vboneskip": 0,
         "vbonecut": true,
         "hbonecut": true,
+        "baketext": true,
         "code": "none",
         "arg": ""
     },
@@ -38,7 +39,8 @@
         "spacing": "10mm",
         "tabfootprints": "kikit:Tab",
         "code": "none",
-        "arg": ""
+        "arg": "",
+        "cutout": "1mm"
     },
     "cuts": {
         "type": "none",
@@ -58,9 +60,12 @@
         "millRadius": "0mm",
         "cuts": "both",
         "copperFill": false,
+        "width": "5mm",
         "slotwidth": "2mm",
         "hspace": "2mm",
         "vspace": "2mm",
+        "mintotalheight": "0mm",
+        "mintotalwidth": "0mm",
         "chamfer": "0mm",
         "fillet": "0mm",
         "code": "none",
@@ -99,6 +104,51 @@
         "layer": "F.SilkS",
         "plugin": "none"
     },
+    "text2": {
+        "type": "none",
+        "text": "",
+        "anchor": "mt",
+        "hoffset": "0mm",
+        "voffset": "0mm",
+        "orientation": "0deg",
+        "width": "1.5mm",
+        "height": "1.5mm",
+        "hjustify": "center",
+        "vjustify": "center",
+        "thickness": "0.3mm",
+        "layer": "F.SilkS",
+        "plugin": "none"
+    },
+    "text3": {
+        "type": "none",
+        "text": "",
+        "anchor": "mt",
+        "hoffset": "0mm",
+        "voffset": "0mm",
+        "orientation": "0deg",
+        "width": "1.5mm",
+        "height": "1.5mm",
+        "hjustify": "center",
+        "vjustify": "center",
+        "thickness": "0.3mm",
+        "layer": "F.SilkS",
+        "plugin": "none"
+    },
+    "text4": {
+        "type": "none",
+        "text": "",
+        "anchor": "mt",
+        "hoffset": "0mm",
+        "voffset": "0mm",
+        "orientation": "0deg",
+        "width": "1.5mm",
+        "height": "1.5mm",
+        "hjustify": "center",
+        "vjustify": "center",
+        "thickness": "0.3mm",
+        "layer": "F.SilkS",
+        "plugin": "none"
+    },
     "copperfill": {
         "type": "none",
         "clearance": "0.5mm",
@@ -114,7 +164,8 @@
         "millradius": "0mm",
         "script": "",
         "scriptarg": "",
-        "origin": "tl"
+        "origin": "tl",
+        "refillzones": false
     },
     "page": {
         "type": "inherit",
@@ -130,6 +181,7 @@
         "drawBackboneLines": false,
         "drawboxes": false,
         "trace": false,
-        "deterministic": false
+        "deterministic": false,
+        "drawtabfail": false
     }
 }

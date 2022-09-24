@@ -1,10 +1,11 @@
 # How are tabs in KiKit created?
 
 When you place multiple PCB into the panel, KiKit expects you to generate a
-so-called partition line for each substrate. Partition line is an oriented
+so-called partition line for each individual PCB. Partition line is an oriented
 (poly)line that partitions the free space between the PCBs. It gives you the
-information "this part of the free space belongs to this substrate and this
-substrate is responsible for placing tabs in that space". So for a regular input the partition line can look like this:
+information "this part of the free space belongs to this PCB substrate and this
+PCB is responsible for placing tabs in that space". So for a regular input
+the partition line can look like this:
 
 ![partition1](resources/partition1.svg)
 
