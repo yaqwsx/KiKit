@@ -24,7 +24,7 @@ RUN export DEBIAN_FRONTEND="noninteractive" && apt-get -qq update && \
 # for repetitive builds
 
 RUN pip3 install \
-    "Pcbdraw ~= 0.9" \
+    "Pcbdraw ~= 1.0" \
     "numpy ~= 1.21.5" \
     "shapely ~= 1.7" \
     "click ~= 7.1" \
