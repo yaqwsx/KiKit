@@ -179,7 +179,7 @@ def readReport(reportFile: TextIO, board: pcbnew.BOARD) -> DrcReport:
     return DrcReport(drcV, unconnectedV, footprintV)
 
 def runBoardDrc(board: pcbnew.BOARD, strict: bool) -> DrcReport:
-    projectPath = Path(board.GetFileName()).with_suffix(".kicad_pro")
+    projectPath = Path(board.GetFileName()).resolve().with_suffix(".kicad_pro")
     pcbnew.GetSettingsManager().LoadProject(str(projectPath))
     with tempfile.NamedTemporaryFile(mode="w+", delete=False) as tmpFile:
         try:
