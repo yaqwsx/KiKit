@@ -256,16 +256,16 @@ LAYOUT_SECTION = {
         "Rotate the boards before placing them in the panel"),
     "rows": SNum(
         typeIn(["grid"]),
-        "Specify the number of boards in the grid pattern"),
+        "Specify the number of rows in the grid pattern"),
     "cols": SNum(
         typeIn(["grid"]),
-        "Specify the number of boards in the grid pattern"),
+        "Specify the number of columns in the grid pattern"),
     "vbonecut": SBool(
         typeIn(["grid"]),
-        "Cut backone in vertical direction"),
+        "Add cuts in vertical backbones for easier depanelization"),
     "hbonecut": SBool(
         typeIn(["grid"]),
-        "Cut backone in horizontal direction"),
+        "Add cuts in horizontal backbones for easier depanelization"),
     "renamenet": SStr(
         always(),
         "Net renaming pattern"),
