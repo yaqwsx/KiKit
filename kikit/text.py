@@ -27,7 +27,7 @@ class Formatter:
 def kikitTextVars(board: pcbnew.BOARD, vars: Dict[str, str]={}) -> Dict[str, Any]:
     availableVars: Dict[str, Formatter] = {
         "date": Formatter(lambda: dt.datetime.today().strftime("%Y-%m-%d"), vars),
-        "time24": Formatter(lambda: dt.datetime.today().strftime("%-H:%M"), vars),
+        "time24": Formatter(lambda: dt.datetime.today().strftime("%H:%M"), vars),
         "boardTitle": Formatter(lambda: board.GetTitleBlock().GetTitle(), vars),
         "boardDate": Formatter(lambda: board.GetTitleBlock().GetDate(), vars),
         "boardRevision": Formatter(lambda: board.GetTitleBlock().GetRevision(), vars),
