@@ -96,5 +96,5 @@ guide](installation.md).
 ## How do I run KiKit with KiCAD nightly?
 
 See section "Choosing KiCAD version" in [the installation
-guide](installation.md). However, at the moment KiCAD is incompatible with KiCAD
+guide](installation.md). However, at the moment KiKit is incompatible with KiCAD
 6.99.
