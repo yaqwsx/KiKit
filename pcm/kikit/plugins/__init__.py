@@ -11,7 +11,7 @@ class MissingKiKitDialog(wx.Dialog):
         bSizer1 = wx.BoxSizer(wx.VERTICAL)
 
         self.staticText = wx.StaticText(
-            self, wx.ID_ANY, u"No KiKit backend found! You probably installed KiKit only via PCM.\n\nPlease follow the installation guite at the link below. Until you finish the installation no KiKit funcitons will be available. After finishing the intallation, please restart KiCAD.", wx.DefaultPosition, wx.DefaultSize, 0)
+            self, wx.ID_ANY, u"No KiKit backend found! You probably installed KiKit only via PCM.\n\nPlease follow the installation guide at the link below. Until you finish the installation no KiKit functions will be available. After finishing the installation, please restart KiCAD.", wx.DefaultPosition, wx.DefaultSize, 0)
         self.staticText.Wrap(-1)
 
         bSizer1.Add(self.staticText, 1, wx.ALL | wx.EXPAND, 5)
