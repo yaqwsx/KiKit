@@ -9,7 +9,7 @@ The installation steps differ slightly based on the operating system you use, bu
 consists of three steps:
 
 - perform the basic installation:
-  - [Linux](#installation-on-linux-and-macos)
+  - [Linux](#installation-on-linux)
   - [Windows](#installation-on-windows)
   - [MacOS](macosInstallation.md) (**Extra steps are required, please, read the guide**)
   - Or you can run KiKit inside [Docker](#running-kikit-via-docker) - which
