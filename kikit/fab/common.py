@@ -208,6 +208,7 @@ def posDataToFile(posData, filename):
         writer = csv.writer(csvfile)
         writer.writerow(["Designator", "Mid X", "Mid Y", "Layer", "Rotation"])
         for line in sorted(posData, key=lambda x: x[0]):
+            line = list(line)
             line[-1] = f"{line[-1]:.2f}" # Most Fab houses expect only 2 decimal digits
             writer.writerow(line)
 
