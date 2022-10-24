@@ -313,7 +313,9 @@ def doPanelization(input, output, preset, plugins=[]):
     help="Include debug traces or drawings in the panel.")
 @click.option("--keepAnnotations/--stripAnnotations", default=True,
     help="Do not strip annotations" )
-def separate(input, output, source, page, debug, keepannotations):
+@click.option("--preserveArcs/--looseArcs", default=True,
+    help="Preserve arcs in the files" )
+def separate(input, output, source, page, debug, keepannotations, preservearcs):
     """
     Separate a single board out of a multi-board design. The separated board is
     placed in the middle of the sheet.
@@ -349,7 +351,7 @@ def separate(input, output, source, page, debug, keepannotations):
         ki.positionPanel(preset["page"], panel)
         ki.setPageSize(preset["page"], panel, board)
 
-        panel.save(reconstructArcs=True)
+        panel.save(reconstructArcs=preservearcs)
     except Exception as e:
         import sys
         sys.stderr.write("An error occurred: " + str(e) + "\n")
