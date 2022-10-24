@@ -174,7 +174,7 @@ def approximateArc(arc, endWith):
     last = np.array([outline[-1][0], outline[-1][1]])
     if (np.linalg.norm(end - first) < np.linalg.norm(end - last)):
         outline.reverse()
-    return outline[1:-1]
+    return outline
 
 def approximateBezier(bezier, endWith):
     """
@@ -487,11 +487,11 @@ class Substrate:
     def __init__(self, geometryList, bufferDistance=0, revertTransformation=None):
         polygons = [toShapely(ring, geometryList) for ring in extractRings(geometryList)]
         self.substrates = unary_union(substratesFrom(polygons))
+        self.oriented = False
         if not self.substrates.is_empty:
-            self.substrates = shapely.ops.orient(self.substrates)
+            self.orient()
         self.partitionLine = shapely.geometry.GeometryCollection()
         self.annotations = []
-        self.oriented = True
         self.revertTransformation = revertTransformation
 
     def backToSource(self, point):
@@ -577,7 +577,7 @@ class Substrate:
                     if cc1 is None or cc2 is None or cc1 != cc2:
                         break
             if j - i > 10:
-                j += 2
+                j += 1
                 # Yield a circle
                 a = coords[i]
                 b = coords[(i + j) // 2]
