@@ -209,7 +209,8 @@ def posDataToFile(posData, filename):
         writer.writerow(["Designator", "Mid X", "Mid Y", "Layer", "Rotation"])
         for line in sorted(posData, key=lambda x: x[0]):
             line = list(line)
-            line[-1] = f"{line[-1]:.2f}" # Most Fab houses expect only 2 decimal digits
+            for i in [1, 2, 4]:
+                line[i] = f"{line[i]:.2f}" # Most Fab houses expect only 2 decimal digits
             writer.writerow(line)
 
 def isValidSchPath(filename):
