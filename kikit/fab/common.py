@@ -63,7 +63,7 @@ class FormatError(Exception):
 @dataclass
 class CorrectionPattern:
     """Single correction pattern to match a component against."""
-    footprint: re.Pattern
+    pattern: re.Pattern
     x_correction: float
     y_correction: float
     rotation: float
@@ -142,12 +142,15 @@ def readCorrectionPatterns(filename):
     return correctionPatterns
 
 def applyCorrectionPattern(correctionPatterns, footprint):
-    # FIXME: part ID is currently ignored
-    # GetUniStringLibId returns the full footprint name including the
+    footprintReference = footprint.GetReference()
+    footprintValue = footprint.GetValue()
+    # GetFPIDAsString returns the full footprint name including the
     # library in the form of "Resistor_SMD:R_0402_1005Metric"
-    footprintName = str(footprint.GetFPID().GetUniStringLibId())
+    footprintName = footprint.GetFPIDAsString()
+    cps = lambda x: corpat.pattern.search(x)
     for corpat in correctionPatterns:
-        if corpat.footprint.match(footprintName):
+        # try to match reference, value or footprint
+        if cps(footprintReference) or cps(footprintValue) or cps(footprintName):
             return (corpat.x_correction, corpat.y_correction, corpat.rotation)
     return (0, 0, 0)
 
