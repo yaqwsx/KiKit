@@ -12,6 +12,7 @@ from kikit.export import exportSettingsJlcpcb
 import solid
 import solid.utils
 import subprocess
+import shutil
 from kikit.common import removeComponents, parseReferences
 
 from shapely.geometry import Point
@@ -384,9 +385,8 @@ def create(inputboard, outputdir, jigsize, jigthickness, pcbthickness,
     exportSettings["ExcludeEdgeLayer"] = True
     gerberDir = os.path.join(outputdir, "gerber")
     gerberImpl(stencilFile, gerberDir, plotPlan, False, exportSettings)
-    gerbers = [os.path.join(gerberDir, x) for x in os.listdir(gerberDir)]
-    subprocess.check_call(["zip", "-j",
-        os.path.join(outputdir, "gerbers.zip")] + gerbers)
+
+    shutil.make_archive(os.path.join(outputdir, "gerbers"), "zip", gerberDir)
 
     jigthickness = fromMm(jigthickness)
     pcbthickness = fromMm(pcbthickness)
