@@ -114,9 +114,9 @@ class Template:
             boardDesc["gerbers"] = os.path.join(dirPrefix, boardName + "-gerbers.zip")
             boardDesc["file"] = os.path.join(dirPrefix, boardName + ".kicad_pcb")
 
-            subprocess.check_call([pcbdraw, "--vcuts", "--silent", boardDesc["source"],
+            subprocess.check_call([pcbdraw, "plot", "--vcuts=Cmts.User", "--silent", "--side=front", boardDesc["source"],
                 os.path.join(outputDirectory, boardDesc["front"])])
-            subprocess.check_call([pcbdraw, "--vcuts", "--silent", "--back", boardDesc["source"],
+            subprocess.check_call([pcbdraw, "plot", "--vcuts=Cmts.User", "--silent", "--side=back", boardDesc["source"],
                 os.path.join(outputDirectory, boardDesc["back"])])
 
             tmp = tempfile.mkdtemp()
