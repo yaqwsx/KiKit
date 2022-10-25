@@ -121,9 +121,7 @@ class Template:
 
             tmp = tempfile.mkdtemp()
             export.gerberImpl(boardDesc["source"], tmp)
-            gerbers = [os.path.join(tmp, x) for x in os.listdir(tmp)]
-            subprocess.check_call(["zip", "-j",
-                os.path.join(outputDirectory, boardDesc["gerbers"])] + gerbers)
+            shutil.make_archive(os.path.join(outputDirectory, boardDesc["gerbers"])[:-4], "zip", tmp)
             shutil.rmtree(tmp)
 
             shutil.copy(boardDesc["source"], os.path.join(outputDirectory, boardDesc["file"]))
