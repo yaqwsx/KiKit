@@ -64,10 +64,12 @@ class FormatError(Exception):
 class CorrectionPattern:
     """Single correction pattern to match a component against."""
     footprint: re.Pattern
-    part_id: re.Pattern
     x_correction: float
     y_correction: float
     rotation: float
+
+class CorrectionPatternError(Exception):
+    pass
 
 def layerToSide(layer):
     if layer == pcbnew.F_Cu:
@@ -112,7 +114,7 @@ def readCorrectionPatterns(filename):
     - Regexp to match to the part id (ignored at the moment)
     - X correction
     - Y correction
-    - Rotation
+    - Rotation (positive is counterclockwise)
     """
     corrections = OrderedDict()
     correctionPatterns = []
@@ -124,16 +126,17 @@ def readCorrectionPatterns(filename):
         reader = csv.reader(csvfile, dialect)
         first = True
         for row in reader:
+            if len(row) != 4:
+                raise CorrectionPatternError(f"Invalid number of fields in {row}")
             if has_header and first:
                 first = False
                 continue
             correctionPatterns.append(
                 CorrectionPattern(
                     re.compile(row[0]),
-                    re.compile(row[1]),
+                    float(row[1]),
                     float(row[2]),
                     float(row[3]),
-                    float(row[4]),
                 )
             )
     return correctionPatterns
