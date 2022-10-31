@@ -12,7 +12,23 @@ def fabCommand(f):
         help="Run DRC check before building the output.")(f)
     f = click.option("--nametemplate", default="{}",
         help="Template for naming the output files.")(f)
+    f = click.option("--debug", is_flag=True, default=False,
+        help="Print extra debugging information")(f)
     return f
+
+def execute(fab, kwargs):
+    debug = kwargs["debug"]
+    del kwargs["debug"]
+
+    try:
+        return fab(**kwargs)
+    except Exception as e:
+        import sys
+        sys.stderr.write(f"An error occurred: {e}\n")
+        sys.stderr.write("No output files produced\n")
+        if debug:
+            raise e from None
+        sys.exit(1)
 
 @click.command()
 @fabCommand
@@ -32,15 +48,7 @@ def jlcpcb(**kwargs):
     from kikit.fab import jlcpcb
     from kikit.common import fakeKiCADGui
     app = fakeKiCADGui()
-
-    try:
-        return jlcpcb.exportJlcpcb(**kwargs)
-    except Exception as e:
-        import sys
-        sys.stderr.write("An error occurred: " + str(e) + "\n")
-        sys.stderr.write("No output files produced\n")
-        sys.exit(1)
-
+    return execute(jlcpcb.exportJlcpcb, kwargs)
 
 @click.command()
 @fabCommand
@@ -72,14 +80,7 @@ def pcbway(**kwargs):
     from kikit.fab import pcbway
     from kikit.common import fakeKiCADGui
     app = fakeKiCADGui()
-
-    try:
-        return pcbway.exportPcbway(**kwargs)
-    except Exception as e:
-        import sys
-        sys.stderr.write("An error occurred: " + str(e) + "\n")
-        sys.stderr.write("No output files produced\n")
-        sys.exit(1)
+    return execute(pcbway.exportPcbway, kwargs)
 
 
 @click.command()
@@ -91,15 +92,7 @@ def oshpark(**kwargs):
     from kikit.fab import oshpark
     from kikit.common import fakeKiCADGui
     app = fakeKiCADGui()
-
-    try:
-        return oshpark.exportOSHPark(**kwargs)
-    except Exception as e:
-        import sys
-        sys.stderr.write("An error occurred: " + str(e) + "\n")
-        sys.stderr.write("No output files produced\n")
-        sys.exit(1)
-
+    return execute(oshpark.exportOSHPark, kwargs)
 
 @click.group()
 def fab():
