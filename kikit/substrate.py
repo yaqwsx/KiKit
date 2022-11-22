@@ -106,8 +106,8 @@ def isValidPcbShape(g):
 
 def extractRings(geometryList):
     """
-    Walks a list of PCB_SHAPE entities and produces a lists of continuous
-    rings returned as list of list of indices from the geometryList.
+    Walks a list of PCB_SHAPE entities and produces a list of continuous rings
+    returned as list of list of indices from the geometryList.
     """
     coincidencePoints = {}
     invalidGeometry = []
@@ -180,8 +180,8 @@ def approximateBezier(bezier, endWith):
     """
     Take DRAWINGITEM bezier and approximate it using lines.
 
-    This is more-less inspired by the KiCAD code as KiCAD does not export the
-    relevant functions
+    This is more or less inspired by the KiCAD code as KiCAD does not export
+    the relevant functions
     """
     assert bezier.GetShape() == STROKE_T.S_CURVE
 
@@ -252,9 +252,9 @@ def shapePolyToShapely(p: pcbnew.SHAPE_POLY_SET) \
 
 def toShapely(ring, geometryList):
     """
-    Take a list indices representing a ring from PCB_SHAPE entities and
+    Take a list of indices representing a ring from PCB_SHAPE entities and
     convert them into a shapely polygon. The segments are expected to be
-    continuous. Arcs & other are broken down into lines.
+    continuous. Arcs & others are broken down into lines.
     """
     outline = []
     for idxA, idxB in zip(ring, ring[1:] + ring[:1]):
@@ -445,6 +445,7 @@ def biteBoundary(boundary, pointA, pointB, tolerance=fromMm(0.01)):
 
 
 def closestIntersectionPoint(origin, direction, outline, maxDistance):
+    """Find the closest intersection between an outline from a point within a maximum distance under a given direction"""
     testLine = LineString([origin, origin + direction * maxDistance])
     inter = testLine.intersection(outline)
     if inter.is_empty:
@@ -647,10 +648,10 @@ class Substrate:
         vector). The tab is constructed with given width. If the substrate is
         not penetrated within maxHeight, exception is raised.
 
-        When partitionLine is specified, tha tab is extended to the opposite
+        When partitionLine is specified, the tab is extended to the opposite
         side - limited by the partition line. Note that if tab cannot span
-        towards the partition line, then the the tab is not created - it returns
-        a tuple (None, None).
+        towards the partition line, then the tab is not created - it returns a
+        tuple (None, None).
 
         Returns a pair tab and cut outline. Add the tab it via union - batch
         adding of geometry is more efficient.
@@ -723,7 +724,7 @@ class Substrate:
 
     def millFillets(self, millRadius):
         """
-        Add fillets to inner conernes which will be produced a by mill with
+        Add fillets to inner corners which will be produced by a mill with
         given radius.
         """
         EPS = fromMm(0.01)
@@ -738,8 +739,8 @@ class Substrate:
 
     def removeIslands(self):
         """
-        Removes all islads - pieces of substrate fully contained within outline
-        of another board
+        Removes all islands - pieces of substrate fully contained within the
+        outline of another board
         """
         if isinstance(self.substrates, Polygon):
             return
