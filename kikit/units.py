@@ -1,6 +1,7 @@
 import re
 import math
 from pcbnewTransition import pcbnew
+from copy import deepcopy
 
 class UnitError(RuntimeError):
     pass
@@ -22,6 +23,16 @@ class BaseValue(int):
     """
     Value in base units that remembers its original string representation.
     """
+    def __deepcopy__(self, memo):
+        cls = self.__class__
+        value = self
+        strRepr = self.str
+        result = cls.__new__(cls, value, strRepr)
+        memo[id(self)] = result
+        for k, v in self.__dict__.items():
+            setattr(result, k, deepcopy(v, memo))
+        return result
+
     def __new__(cls, value, strRepr):
         x = super().__new__(cls, value)
         x.str = strRepr
