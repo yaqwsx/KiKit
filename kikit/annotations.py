@@ -90,7 +90,7 @@ class AnnotationReader:
     def convertToAnnotation(self, footprint: pcbnew.FOOTPRINT) -> List[KiKitAnnotation]:
         """
         Given a footprint, convert it into an annotation. One footprint might
-        represent a zero or multiple annotations, so this function returns a list.
+        represent zero or multiple annotations, so this function returns a list.
         """
         info = footprint.GetFPID()
         lib = str(info.GetLibNickname())
