@@ -4,7 +4,11 @@ from kikit.defs import Layer
 from kikit.typing import Box
 from pcbnewTransition import pcbnew, isV6
 from kikit.intervals import Interval, AxialLine
-from pcbnew import wxPoint, wxRect, EDA_RECT
+from pcbnew import wxPoint, wxRect
+try:
+    from pcbnew import EDA_RECT
+except ImportError:
+    from pcbnew import BOX2I as EDA_RECT
 import os
 from itertools import product, chain, islice
 import numpy as np
