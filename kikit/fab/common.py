@@ -204,10 +204,18 @@ def collectPosData(board, correctionFields, posFilter=lambda x : True,
              footprintOrientation(footprint, getCompensation(footprint))) for footprint in footprints]
 
 def posDataToFile(posData, filename):
+    def getComponentOrd(s):
+        val = 0
+        for i in re.search(r'^[^\d]+(?=\d)', s).group():
+                val += ord(i)
+        return val
+    def getComponentNum(s):
+        return int(re.search(r'\d+', s).group())
     with open(filename, "w", newline="") as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(["Designator", "Mid X", "Mid Y", "Layer", "Rotation"])
-        for line in sorted(posData, key=lambda x: x[0]):
+        posData.sort(key=lambda x: getComponentNum(x[0]))
+        for line in sorted(posData, key=lambda x: getComponentOrd(x[0])):
             line = list(line)
             for i in [1, 2, 4]:
                 line[i] = f"{line[i]:.2f}" # Most Fab houses expect only 2 decimal digits
