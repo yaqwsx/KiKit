@@ -203,19 +203,22 @@ def collectPosData(board, correctionFields, posFilter=lambda x : True,
              layerToSide(footprint.GetLayer()),
              footprintOrientation(footprint, getCompensation(footprint))) for footprint in footprints]
 
+class NaturalSorter:
+    #https://stackoverflow.com/questions/4836710/is-there-a-built-in-function-for-string-natural-sort
+    def __init__(self, selector=lambda x: x):
+        self.convert = lambda text: int(text) if text.isdigit() else text.lower()
+        self.selector = selector
+        self.key = lambda k: [self.convert(c) for c in re.split('([0-9]+)', self.selector(k))]
+
+    def sort(self, l):
+        return sorted(l, key=self.key)
+
 def posDataToFile(posData, filename):
-    def getComponentOrd(s):
-        val = 0
-        for i in re.search(r'^[^\d]+(?=\d)', s).group():
-                val += ord(i)
-        return val
-    def getComponentNum(s):
-        return int(re.search(r'\d+', s).group())
     with open(filename, "w", newline="") as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(["Designator", "Mid X", "Mid Y", "Layer", "Rotation"])
-        posData.sort(key=lambda x: getComponentNum(x[0]))
-        for line in sorted(posData, key=lambda x: getComponentOrd(x[0])):
+        sorter = NaturalSorter(selector=lambda x: x[0])
+        for line in sorter.sort(posData):
             line = list(line)
             for i in [1, 2, 4]:
                 line[i] = f"{line[i]:.2f}" # Most Fab houses expect only 2 decimal digits
