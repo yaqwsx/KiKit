@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, Iterable, List, TextIO, Tuple, Union
 from pathlib import Path
 
-from pcbnewTransition import isV6, pcbnew
+from pcbnewTransition import isV7, pcbnew
 
 from kikit.common import fromMm, toMm
 from kikit.drc_ui import ReportLevel
@@ -20,10 +20,17 @@ def roundCoord(x: int) -> int:
     # emulate that
     return round(x - 50, -4)
 
+def getItemDescription(item: pcbnew.BOARD_ITEM, units: pcbnew.EDA_UNITS = pcbnew.EDA_UNITS_MILLIMETRES):
+    if isV7():
+        uProvider = pcbnew.UNITS_PROVIDER(pcbnew.pcbIUScale, units)
+        return item.GetSelectMenuText(uProvider)
+    else:
+        return item.GetSelectMenuText(units)
+
 def getItemFingerprint(item: pcbnew.BOARD_ITEM):
     return (roundCoord(item.GetPosition()[0]), # Round down, since the output does the same
             roundCoord(item.GetPosition()[1]), # Round down, since the output does the same
-            item.GetSelectMenuText(pcbnew.EDA_UNITS_MILLIMETRES))
+            getItemDescription(item))
 
 def collectFingerprints(board: pcbnew.BOARD) -> Dict[ItemFingerprint, pcbnew.BOARD_ITEM]:
     """
@@ -50,7 +57,7 @@ def collectFingerprints(board: pcbnew.BOARD) -> Dict[ItemFingerprint, pcbnew.BOA
 @dataclass
 class DrcExclusion:
     type: str
-    position: pcbnew.wxPoint
+    position: pcbnew.VECTOR2I
     objects: List[pcbnew.BOARD_ITEM] = field(default_factory=list)
 
     def eqRepr(self) -> Tuple[str, Union[Tuple[str, str], str]]:
@@ -80,7 +87,7 @@ class Violation:
             pos = f"{toMm(p[0]):.4f} mm, {toMm(p[1]):.4f} mm"
         if units == pcbnew.EDA_UNITS_INCHES:
             pos = f"{pcbnew.ToMils(p[0]):.1f} mil, {pcbnew.ToMils(p[1]):.1f} mil"
-        return f"@({pos}): {obj.GetSelectMenuText(units)}"
+        return f"@({pos}): {getItemDescription(obj, units)}"
 
     def eqRepr(self) -> Tuple[str, Union[Tuple[str, str], str]]:
         if len(self.objects) == 1:
@@ -200,7 +207,7 @@ def deserializeExclusion(exclusionText: str, board: pcbnew.BOARD) -> DrcExclusio
     objects = [board.GetItem(pcbnew.KIID(x)) for x in items[3:]]
     objects = [x for x in objects if x is not None]
     return DrcExclusion(items[0],
-                        pcbnew.wxPoint(int(items[1]), int(items[2])),
+                        pcbnew.VECTOR2I(int(items[1]), int(items[2])),
                         objects)
 
 def serializeExclusion(exclusion: DrcExclusion) -> str:
@@ -227,6 +234,10 @@ def readBoardDrcExclusions(board: pcbnew.BOARD) -> List[DrcExclusion]:
     return [deserializeExclusion(e, board) for e in exclusions]
 
 def runImpl(board, useMm, ignoreExcluded, strict, level, yieldViolation):
+    import faulthandler
+    import sys
+    faulthandler.enable(sys.stderr)
+
     units = pcbnew.EDA_UNITS_MILLIMETRES if useMm else EDA_UNITS_INCHES
     report = runBoardDrc(board, strict)
     if ignoreExcluded:

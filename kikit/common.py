@@ -2,9 +2,9 @@ from __future__ import annotations
 from typing import List, Optional, Tuple, Union
 from kikit.defs import Layer
 from kikit.typing import Box
-from pcbnewTransition import pcbnew, isV6
-from kikit.intervals import Interval, AxialLine
-from pcbnew import wxPoint, wxRect, EDA_RECT
+from pcbnewTransition import pcbnew, isV6, isV7
+from kikit.intervals import AxialLine
+from pcbnew import BOX2I, VECTOR2I, EDA_ANGLE
 import os
 from itertools import product, chain, islice
 import numpy as np
@@ -17,30 +17,36 @@ SHP_EPSILON = pcbnew.FromMM(0.001) # Common factor of enlarging substrates to
                                    # cover up numerical imprecisions of Shapely
 
 KiLength = int
-KiAngle = int
-KiKitPoint = Union[pcbnew.wxPoint, Tuple[int, int]]
+KiAngle = EDA_ANGLE
+KiPoint = VECTOR2I
 
-def fromDegrees(angle):
-    return angle * 10
+def fromDegrees(angle: Union[float,int]) -> KiAngle:
+    """Convert angle in degrees to Kicad angle representation"""
+    return EDA_ANGLE(angle, pcbnew.DEGREES_T)
 
-def fromKicadAngle(angle):
-    return angle / 10
-
-def fromMm(mm):
+def fromMm(mm: float) -> KiLength:
     """Convert millimeters to KiCAD internal units"""
     return pcbnew.FromMM(mm)
 
-def toMm(kiUnits):
+def toMm(kiUnits: KiLength) -> float:
     """Convert KiCAD internal units to millimeters"""
     return pcbnew.ToMM(int(kiUnits))
 
-def fitsIn(what: Union[wxRect, wxPoint, EDA_RECT], where: wxRect) -> bool:
+def toKiCADPoint(p) -> KiPoint:
+    """Convert tuple or array like objects to KiCAD point (VECTOR2I)"""
+    assert len(p) == 2
+    return VECTOR2I(*[int(x) for x in p])
+
+def fitsIn(what: Union[BOX2I, VECTOR2I], where: BOX2I) -> bool:
     """
-    Return true iff 'what' (wxRect or wxPoint) is fully contained in 'where'
-    (wxRect)
+    Return true iff 'what' (BOX2I or VECTOR2I) is fully contained in 'where'
+    (BOX2I)
     """
-    assert isinstance(what, (wxRect, EDA_RECT, wxPoint))
-    if isinstance(what, wxPoint):
+    if isV7():
+        assert isinstance(what, (BOX2I, VECTOR2I, pcbnew.wxPoint))
+    else:
+        assert isinstance(what, (BOX2I, VECTOR2I, pcbnew.wxPoint, pcbnew.EDA_RECT))
+    if isinstance(what, VECTOR2I) or isinstance(what, (VECTOR2I, pcbnew.wxPoint)):
         return (what[0] >= where.GetX() and
                 what[0] <= where.GetX() + where.GetWidth() and
                 what[1] >= where.GetY() and
@@ -52,15 +58,12 @@ def fitsIn(what: Union[wxRect, wxPoint, EDA_RECT], where: wxRect) -> bool:
                 what.GetY() + what.GetHeight() <= where.GetY() + where.GetHeight())
 
 def combineBoundingBoxes(a, b):
-    """ Retrun wxRect as a combination of source bounding boxes """
+    """ Retrun BOX2I as a combination of source bounding boxes """
     x1 = min(a.GetX(), b.GetX())
     y1 = min(a.GetY(), b.GetY())
     x2 = max(a.GetX() + a.GetWidth(), b.GetX() + b.GetWidth())
     y2 = max(a.GetY() + a.GetHeight(), b.GetY() + b.GetHeight())
-    # Beware that we cannot use the following code! It will add 1 to width and
-    # height. See https://github.com/wxWidgets/wxWidgets/blob/e43895e5317a1e82e295788264553d9839190337/src/common/gdicmn.cpp#L94-L114
-    # return wxRect(topLeft, bottomRight)
-    return wxRect(x1, y1, x2 - x1, y2 - y1)
+    return BOX2I(VECTOR2I(x1, y1), VECTOR2I(x2 - x1, y2 - y1))
 
 def collectEdges(board, layerId, sourceArea=None):
     """ Collect edges in sourceArea on given layer including footprints """
@@ -114,23 +117,25 @@ def findBoundingBox(edges):
 
 def findBoardBoundingBox(board, sourceArea=None):
     """
-    Returns a bounding box (wxRect) of all Edge.Cuts items either in
-    specified source area (wxRect) or in the whole board
+    Returns a bounding box (BOX2I) of all Edge.Cuts items either in
+    specified source area (BOX2I) or in the whole board
     """
     edges = collectEdges(board, Layer.Edge_Cuts, sourceArea)
     return findBoundingBox(edges)
 
 def rectCenter(rect):
     """
-    Given a wxRect return its center
+    Given a BOX2I return its center
     """
-    return wxPoint(rect.GetX() + rect.GetWidth() // 2, rect.GetY() + rect.GetHeight() // 2)
+    return VECTOR2I(rect.GetX() + rect.GetWidth() // 2, rect.GetY() + rect.GetHeight() // 2)
 
 def rectByCenter(center, width, height):
     """
-    Given a center point and size, return wxRect
+    Given a center point and size, return BOX2I
     """
-    return wxRect(center[0] - width // 2, center[1] - height // 2, width, height)
+    return BOX2I(
+        VECTOR2I(center[0] - width // 2, center[1] - height // 2),
+        VECTOR2I(width, height))
 
 def normalize(vector):
     """ Return a vector with unit length """
@@ -152,19 +157,19 @@ def linestringToSegments(linestring):
 
 def tl(rect):
     """ Return top left corner of rect """
-    return wxPoint(rect.GetX(), rect.GetY())
+    return VECTOR2I(rect.GetX(), rect.GetY())
 
 def tr(rect):
     """ Return top right corner of rect """
-    return wxPoint(rect.GetX() + rect.GetWidth(), rect.GetY())
+    return VECTOR2I(rect.GetX() + rect.GetWidth(), rect.GetY())
 
 def br(rect):
     """ Return bottom right corner of rect """
-    return wxPoint(rect.GetX() + rect.GetWidth(), rect.GetY() + rect.GetHeight())
+    return VECTOR2I(rect.GetX() + rect.GetWidth(), rect.GetY() + rect.GetHeight())
 
 def bl(rect):
     """ Return bottom left corner of rect """
-    return wxPoint(rect.GetX(), rect.GetY() + rect.GetHeight())
+    return VECTOR2I(rect.GetX(), rect.GetY() + rect.GetHeight())
 
 def removeComponents(board, references):
     """
@@ -229,7 +234,8 @@ def shpBBoxExpand(box: Box, x: float, y: Optional[float]=None) -> Box:
 
 def shpBoxToRect(box):
     box = list([int(x) for x in box])
-    return wxRect(box[0], box[1], box[2] - box[0], box[3] - box[1])
+    return BOX2I(toKiCADPoint((box[0], box[1])),
+                 toKiCADPoint((box[2] - box[0], box[3] - box[1])))
 
 def rectToShpBox(rect):
     return shapely.geometry.box(rect.GetX(), rect.GetY(),
@@ -276,19 +282,19 @@ def isVertical(start, end):
 
 def resolveAnchor(anchor):
     """
-    Given a string anchor name, return a function that transforms wxRect into
-    a wxPoint
+    Given a string anchor name, return a function that transforms BOX2I into
+    a VECTOR2I
     """
     choices = {
         "tl": lambda x: x.GetPosition(),
-        "tr": lambda x: x.GetPosition() + wxPoint(x.GetWidth(), 0),
-        "bl": lambda x: x.GetPosition() + wxPoint(0, x.GetHeight()),
-        "br": lambda x: x.GetPosition() + wxPoint(x.GetWidth(), x.GetHeight()),
-        "mt": lambda x: x.GetPosition() + wxPoint(x.GetWidth() / 2, 0),
-        "mb": lambda x: x.GetPosition() + wxPoint(x.GetWidth() / 2, x.GetHeight()),
-        "ml": lambda x: x.GetPosition() + wxPoint(0, x.GetHeight() / 2),
-        "mr": lambda x: x.GetPosition() + wxPoint(x.GetWidth(), x.GetHeight() / 2),
-        "c":  lambda x: x.GetPosition() + wxPoint(x.GetWidth() / 2, x.GetHeight() / 2)
+        "tr": lambda x: x.GetPosition() + toKiCADPoint((x.GetWidth(), 0)),
+        "bl": lambda x: x.GetPosition() + toKiCADPoint((0, x.GetHeight())),
+        "br": lambda x: x.GetPosition() + toKiCADPoint((x.GetWidth(), x.GetHeight())),
+        "mt": lambda x: x.GetPosition() + toKiCADPoint((x.GetWidth() / 2, 0)),
+        "mb": lambda x: x.GetPosition() + toKiCADPoint((x.GetWidth() / 2, x.GetHeight())),
+        "ml": lambda x: x.GetPosition() + toKiCADPoint((0, x.GetHeight() / 2)),
+        "mr": lambda x: x.GetPosition() + toKiCADPoint((x.GetWidth(), x.GetHeight() / 2)),
+        "c":  lambda x: x.GetPosition() + toKiCADPoint((x.GetWidth() / 2, x.GetHeight() / 2))
     }
     return choices[anchor]
 

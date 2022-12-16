@@ -43,8 +43,7 @@ a = 1 * rad   # 1 radian
 You can also use functions `{header(panelize.fromMm)}` and
 `{header(panelize.toMm)}` to convert to/from them if you like them more. You are
 also encouraged to use the functions and objects the native KiCAD Python API
-offers, e.g.: {'`, `'.join([header(pcbnew.wxPoint), header(pcbnew.wxPointMM),
-              header(pcbnew.wxRect), header(pcbnew.wxRectMM)])}.
+offers, e.g.: {'`, `'.join([header(pcbnew.VECTOR2I),header(pcbnew.BOX2I)])}.
 """)
 
 print(
@@ -64,7 +63,7 @@ use tab generator.
 
 To generate a piece of a substrate, create a shapely.Polygon. Then add the piece
 of substrate via `panelize.Panel.appendSubstrate`. This method also accepts a
-`wxRect` for convenience.
+`BOX2I` for convenience.
 
 The tab generator is available via `panelize.Panel.boardSubstrate.tab`. This
 method takes an origin point, direction, and tab width. It tries to build a tab

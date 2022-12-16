@@ -1,5 +1,5 @@
 from pcbnewTransition import pcbnew
-from pcbnew import wxPoint
+from pcbnew import VECTOR2I
 import numpy as np
 import json
 from collections import OrderedDict
@@ -32,11 +32,11 @@ def addBottomCounterpart(board, item):
 def addRoundedCorner(board, center, start, end, thickness):
     corner = pcbnew.PCB_SHAPE()
     corner.SetShape(STROKE_T.S_ARC)
-    corner.SetCenter(wxPoint(center[0], center[1]))
+    corner.SetCenter(VECTOR2I(center[0], center[1]))
     if isV6():
-        corner.SetStart(wxPoint(start[0], start[1]))
+        corner.SetStart(VECTOR2I(start[0], start[1]))
     else:
-        corner.SetArcStart(wxPoint(start[0], start[1]))
+        corner.SetArcStart(VECTOR2I(start[0], start[1]))
 
     if np.cross(start - center, end - center) > 0:
         if isV6():
@@ -56,8 +56,8 @@ def addRoundedCorner(board, center, start, end, thickness):
 def addLine(board, start, end, thickness):
     line = pcbnew.PCB_SHAPE()
     line.SetShape(STROKE_T.S_SEGMENT)
-    line.SetStart(wxPoint(start[0], start[1]))
-    line.SetEnd(wxPoint(end[0], end[1]))
+    line.SetStart(VECTOR2I(start[0], start[1]))
+    line.SetEnd(VECTOR2I(end[0], end[1]))
     line.SetWidth(thickness)
     line.SetLayer(Layer.F_Paste)
     board.Add(line)
@@ -70,9 +70,9 @@ def addBite(board, origin, direction, normal, thickness):
     """
     direction = normalize(direction) * thickness
     normal = normalize(normal) * thickness
-    center = wxPoint(origin[0], origin[1]) + wxPoint(normal[0], normal[1])
+    center = VECTOR2I(origin[0], origin[1]) + VECTOR2I(normal[0], normal[1])
     start = origin
-    end = center + wxPoint(direction[0], direction[1])
+    end = center + VECTOR2I(direction[0], direction[1])
     # addLine(board, end, end + normal / 2, thickness)
     addRoundedCorner(board, center, start, end, thickness)
 
@@ -91,10 +91,10 @@ def addFrame(board, rect, bridgeWidth, bridgeSpacing, clearance):
     R=fromMm(1)
 
     corners = [
-        (tl(rect), wxPoint(R, 0), wxPoint(0, R)), # TL
-        (tr(rect), wxPoint(0, R), wxPoint(-R, 0)), # TR
-        (br(rect), wxPoint(-R, 0), wxPoint(0, -R)), # BR
-        (bl(rect), wxPoint(0, -R), wxPoint(R, 0)) # BL
+        (tl(rect), VECTOR2I(R, 0), VECTOR2I(0, R)), # TL
+        (tr(rect), VECTOR2I(0, R), VECTOR2I(-R, 0)), # TR
+        (br(rect), VECTOR2I(-R, 0), VECTOR2I(0, -R)), # BR
+        (bl(rect), VECTOR2I(0, -R), VECTOR2I(R, 0)) # BL
     ]
     for c, sOffset, eOffset in corners:
         addRoundedCorner(board, c + sOffset + eOffset, c + sOffset, c + eOffset, clearance)
@@ -105,16 +105,16 @@ def addFrame(board, rect, bridgeWidth, bridgeSpacing, clearance):
         end = start + cutLength
 
         y1, y2 = rect.GetY(), rect.GetY() + rect.GetHeight()
-        addLine(board, wxPoint(start, y1), wxPoint(end, y1), clearance)
+        addLine(board, VECTOR2I(start, y1), VECTOR2I(end, y1), clearance)
         if i != 0:
-            addBite(board, wxPoint(start, y1), wxPoint(-1, 0), wxPoint(0, 1), clearance)
+            addBite(board, VECTOR2I(start, y1), VECTOR2I(-1, 0), VECTOR2I(0, 1), clearance)
         if i != count - 1:
-            addBite(board, wxPoint(end, y1), wxPoint(1, 0), wxPoint(0, 1), clearance)
-        addLine(board, wxPoint(start, y2), wxPoint(end, y2), clearance)
+            addBite(board, VECTOR2I(end, y1), VECTOR2I(1, 0), VECTOR2I(0, 1), clearance)
+        addLine(board, VECTOR2I(start, y2), VECTOR2I(end, y2), clearance)
         if i != 0:
-            addBite(board, wxPoint(start, y2), wxPoint(-1, 0), wxPoint(0, -1), clearance)
+            addBite(board, VECTOR2I(start, y2), VECTOR2I(-1, 0), VECTOR2I(0, -1), clearance)
         if i != count - 1:
-            addBite(board, wxPoint(end, y2), wxPoint(1, 0), wxPoint(0, -1), clearance)
+            addBite(board, VECTOR2I(end, y2), VECTOR2I(1, 0), VECTOR2I(0, -1), clearance)
 
     count, cutLength = numberOfCuts(rect.GetHeight() - 2 * R, bridgeWidth, bridgeSpacing)
     for i in range(count):
@@ -122,26 +122,26 @@ def addFrame(board, rect, bridgeWidth, bridgeSpacing, clearance):
         end = start + cutLength
 
         x1, x2 = rect.GetX(), rect.GetX() + rect.GetWidth()
-        addLine(board, wxPoint(x1, start), wxPoint(x1, end), clearance)
+        addLine(board, VECTOR2I(x1, start), VECTOR2I(x1, end), clearance)
         if i != 0:
-            addBite(board, wxPoint(x1, start), wxPoint(0, -1), wxPoint(1, 0), clearance)
+            addBite(board, VECTOR2I(x1, start), VECTOR2I(0, -1), VECTOR2I(1, 0), clearance)
         if i != count - 1:
-            addBite(board, wxPoint(x1, end), wxPoint(0, 1), wxPoint(1, 0), clearance)
-        addLine(board, wxPoint(x2, start), wxPoint(x2, end), clearance)
+            addBite(board, VECTOR2I(x1, end), VECTOR2I(0, 1), VECTOR2I(1, 0), clearance)
+        addLine(board, VECTOR2I(x2, start), VECTOR2I(x2, end), clearance)
         if i != 0:
-            addBite(board, wxPoint(x2, start), wxPoint(0, -1), wxPoint(-1, 0), clearance)
+            addBite(board, VECTOR2I(x2, start), VECTOR2I(0, -1), VECTOR2I(-1, 0), clearance)
         if i != count - 1:
-            addBite(board, wxPoint(x2, end), wxPoint(0, 1), wxPoint(-1, 0), clearance)
+            addBite(board, VECTOR2I(x2, end), VECTOR2I(0, 1), VECTOR2I(-1, 0), clearance)
 
 def addHole(board, position, radius):
     circle = pcbnew.PCB_SHAPE()
     circle.SetShape(STROKE_T.S_CIRCLE)
-    circle.SetCenter(wxPoint(position[0], position[1]))
+    circle.SetCenter(VECTOR2I(position[0], position[1]))
     if isV6():
         # Set 3'oclock point of the circle to set radius
-        circle.SetEnd(wxPoint(position[0], position[1]) + wxPoint(radius/2, 0))
+        circle.SetEnd(VECTOR2I(position[0], position[1]) + VECTOR2I(radius/2, 0))
     else:
-        circle.SetArcStart(wxPoint(position[0], position[1]) + wxPoint(radius/2, 0))
+        circle.SetArcStart(VECTOR2I(position[0], position[1]) + VECTOR2I(radius/2, 0))
     circle.SetWidth(radius)
     circle.SetLayer(Layer.F_Paste)
     board.Add(circle)
@@ -168,27 +168,27 @@ def addJigFrame(board, jigFrameSize, bridgeWidth=fromMm(2),
 
     for i in range(MOUNTING_HOLES_COUNT):
         x = frameSize.GetX() + OUTER_BORDER / 2 + (i + 1) * (frameSize.GetWidth() - OUTER_BORDER) / (MOUNTING_HOLES_COUNT + 1)
-        addHole(board, wxPoint(x, OUTER_BORDER / 2 + frameSize.GetY()), MOUNTING_HOLE_R)
-        addHole(board, wxPoint(x, - OUTER_BORDER / 2 +frameSize.GetY() + frameSize.GetHeight()), MOUNTING_HOLE_R)
+        addHole(board, VECTOR2I(x, OUTER_BORDER / 2 + frameSize.GetY()), MOUNTING_HOLE_R)
+        addHole(board, VECTOR2I(x, - OUTER_BORDER / 2 +frameSize.GetY() + frameSize.GetHeight()), MOUNTING_HOLE_R)
     for i in range(MOUNTING_HOLES_COUNT):
         y = frameSize.GetY() + OUTER_BORDER / 2 + (i + 1) * (frameSize.GetHeight() - OUTER_BORDER) / (MOUNTING_HOLES_COUNT + 1)
-        addHole(board, wxPoint(OUTER_BORDER / 2 + frameSize.GetX(), y), MOUNTING_HOLE_R)
-        addHole(board, wxPoint(- OUTER_BORDER / 2 +frameSize.GetX() + frameSize.GetWidth(), y), MOUNTING_HOLE_R)
+        addHole(board, VECTOR2I(OUTER_BORDER / 2 + frameSize.GetX(), y), MOUNTING_HOLE_R)
+        addHole(board, VECTOR2I(- OUTER_BORDER / 2 +frameSize.GetX() + frameSize.GetWidth(), y), MOUNTING_HOLE_R)
 
     PIN_TOLERANCE = fromMm(0.05)
-    addHole(board, tl(frameSize) + wxPoint(OUTER_BORDER / 2, OUTER_BORDER / 2), MOUNTING_HOLE_R + PIN_TOLERANCE)
-    addHole(board, tr(frameSize) + wxPoint(-OUTER_BORDER / 2, OUTER_BORDER / 2), MOUNTING_HOLE_R + PIN_TOLERANCE)
-    addHole(board, br(frameSize) + wxPoint(-OUTER_BORDER / 2, -OUTER_BORDER / 2), MOUNTING_HOLE_R + PIN_TOLERANCE)
-    addHole(board, bl(frameSize) + wxPoint(OUTER_BORDER / 2, -OUTER_BORDER / 2), MOUNTING_HOLE_R + PIN_TOLERANCE)
+    addHole(board, tl(frameSize) + VECTOR2I(OUTER_BORDER / 2, OUTER_BORDER / 2), MOUNTING_HOLE_R + PIN_TOLERANCE)
+    addHole(board, tr(frameSize) + VECTOR2I(-OUTER_BORDER / 2, OUTER_BORDER / 2), MOUNTING_HOLE_R + PIN_TOLERANCE)
+    addHole(board, br(frameSize) + VECTOR2I(-OUTER_BORDER / 2, -OUTER_BORDER / 2), MOUNTING_HOLE_R + PIN_TOLERANCE)
+    addHole(board, bl(frameSize) + VECTOR2I(OUTER_BORDER / 2, -OUTER_BORDER / 2), MOUNTING_HOLE_R + PIN_TOLERANCE)
 
-def jigMountingHoles(jigFrameSize, origin=wxPoint(0, 0)):
+def jigMountingHoles(jigFrameSize, origin=VECTOR2I(0, 0)):
     """ Get list of all mounting holes in a jig of given size """
     w, h = jigFrameSize
     holes = [
-        wxPoint(0, (w + INNER_BORDER) / 2),
-        wxPoint(0, -(w + INNER_BORDER) / 2),
-        wxPoint((h + INNER_BORDER) / 2, 0),
-        wxPoint(-(h + INNER_BORDER) / 2, 0),
+        VECTOR2I(0, (w + INNER_BORDER) / 2),
+        VECTOR2I(0, -(w + INNER_BORDER) / 2),
+        VECTOR2I((h + INNER_BORDER) / 2, 0),
+        VECTOR2I(-(h + INNER_BORDER) / 2, 0),
     ]
     return [x + origin for x in holes]
 

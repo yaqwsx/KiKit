@@ -4,6 +4,7 @@ load common
 
 @test "Extract board" {
     kikit separate --source 'rectangle; tlx: 89mm; tly: 89mm; brx: 111mm; bry: 111mm' \
+        --debug 'trace: true' \
         $RES/multiboard.kicad_pcb board_a.kicad_pcb
 
     kikit separate --source 'annotation; ref: B1' \

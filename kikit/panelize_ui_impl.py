@@ -5,7 +5,7 @@ from kikit.defs import Layer
 from shapely.geometry import box
 from kikit.plugin import HookPlugin
 from kikit.text import kikitTextVars
-from kikit.units import BaseValue, PercentageValue
+from kikit.units import BaseValue, BaseAngle, PercentageValue
 from kikit.panelize_ui_sections import *
 from kikit.substrate import SubstrateNeighbors
 from kikit.common import resolveAnchor
@@ -31,7 +31,7 @@ def encodePreset(value):
         return getattr(value, "__kikit_preset_repr")
     if value is None:
         return "none"
-    if isinstance(value, BaseValue):
+    if isinstance(value, BaseValue) or isinstance(value, BaseAngle):
         return str(value)
     if isinstance(value, PercentageValue):
         return str(value)
@@ -188,9 +188,9 @@ def readSourceArea(specification, board):
             ref = specification["ref"]
             return expandRect(extractSourceAreaByAnnotation(board, ref), tolerance)
         if type == "rectangle":
-            tl = wxPoint(specification["tlx"], specification["tly"])
-            br = wxPoint(specification["brx"], specification["bry"])
-            return expandRect(wxRect(tl, br), tolerance)
+            tl = VECTOR2I(specification["tlx"], specification["tly"])
+            br = VECTOR2I(specification["brx"], specification["bry"])
+            return expandRect(BOX2I(tl, (br - tl)), tolerance)
         raise PresetError(f"Unknown type '{type}' of source specification.")
     except KeyError as e:
         raise PresetError(f"Missing parameter '{e}' in section 'source'")
@@ -251,7 +251,7 @@ def buildLayout(preset, panel, sourceBoard, sourceArea):
                 vboneskip=layout["vboneskip"])
             substrates = panel.makeGrid(
                 boardfile=sourceBoard, sourceArea=sourceArea,
-                rows=layout["rows"], cols=layout["cols"], destination=wxPointMM(0, 0),
+                rows=layout["rows"], cols=layout["cols"], destination=VECTOR2I(0, 0),
                 rotation=layout["rotation"], placer=placer,
                 netRenamePattern=layout["renamenet"], refRenamePattern=layout["renameref"],
                 bakeText=layout["baketext"])
@@ -549,7 +549,7 @@ def buildText(preset, panel):
             raise RuntimeError(f"Unknown variable {e} in text:\n{preset['text']}") from None
         if type == "simple":
             origin = resolveAnchor(preset["anchor"])(panel.boardSubstrate.boundingBox())
-            origin += wxPoint(preset["hoffset"], preset["voffset"])
+            origin += VECTOR2I(preset["hoffset"], preset["voffset"])
 
             panel.addText(
                 text=text,
@@ -609,7 +609,8 @@ def buildPostprocessing(preset, panel):
         if preset["copperfill"]:
             panel.copperFillNonBoardAreas()
         if preset["origin"]:
-            origin = resolveAnchor(preset["origin"])(panel.boardSubstrate.boundingBox())
+            bBox = panel.boardSubstrate.boundingBox()
+            origin = resolveAnchor(preset["origin"])(bBox)
             panel.setAuxiliaryOrigin(origin)
             panel.setGridOrigin(origin)
         if preset["dimensions"]:
