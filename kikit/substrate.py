@@ -14,7 +14,7 @@ from itertools import product
 from typing import List, Tuple, Union
 
 from kikit.common import *
-
+from kikit.units import deg
 from kikit.defs import STROKE_T, Layer
 
 TABFAIL_VISUAL = False
@@ -35,13 +35,12 @@ class TabFilletError(RuntimeError):
 
 def roundPoint(point, precision=-4):
     return (round(point[0], precision), round(point[1], precision))
-    return pcbnew.wxPoint(round(point[0], precision), round(point[1], precision))
 
 def getStartPoint(geom):
     if isV6():
         if geom.GetShape() == STROKE_T.S_CIRCLE:
             # Circle start is circle center /o\
-            point = geom.GetStart() + pcbnew.wxPoint(geom.GetRadius(), 0)
+            point = geom.GetStart() + pcbnew.VECTOR2I(geom.GetRadius(), 0)
         elif geom.GetShape() == STROKE_T.S_RECT:
             point = geom.GetStart()
         else:
@@ -56,7 +55,7 @@ def getEndPoint(geom):
     if isV6():
         if geom.GetShape() == STROKE_T.S_CIRCLE:
             # Circle start is circle center /o\
-            point = geom.GetStart() + pcbnew.wxPoint(geom.GetRadius(), 0)
+            point = geom.GetStart() + pcbnew.VECTOR2I(geom.GetRadius(), 0)
         elif geom.GetShape() == STROKE_T.S_RECT:
             # Rectangle is closed, so it starts at the same point as it ends
             point = geom.GetStart()
@@ -159,16 +158,18 @@ def approximateArc(arc, endWith):
     Take DRAWINGITEM and approximate it using lines
     """
     SEGMENTS_PER_FULL= 4 * 32 # To Be consistent with default shapely settings
-    startAngle = arc.GetArcAngleStart() / 10
+
+    startAngle = EDA_ANGLE(0, pcbnew.DEGREES_T)
+    endAngle = EDA_ANGLE(0, pcbnew.DEGREES_T)
+    arc.CalcArcAngles(startAngle, endAngle)
     if arc.GetShape() == STROKE_T.S_CIRCLE:
-        endAngle = startAngle + 360
+        endAngle = startAngle + 360 * deg
         segments = SEGMENTS_PER_FULL
     else:
-        endAngle = startAngle + arc.GetArcAngle() / 10
-        segments = abs(int((endAngle - startAngle) * SEGMENTS_PER_FULL // 360))
+        segments = abs(int((endAngle.AsDegrees() - startAngle.AsDegrees()) * SEGMENTS_PER_FULL // 360))
     # Ensure a minimal number of segments for small angle section of arcs
     segments = max(segments, 12)
-    theta = np.radians(np.linspace(startAngle, endAngle, segments))
+    theta = np.linspace(startAngle.AsRadians(), endAngle.AsRadians(), segments)
     x = arc.GetCenter()[0] + arc.GetRadius() * np.cos(theta)
     y = arc.GetCenter()[1] + arc.GetRadius() * np.sin(theta)
     outline = list(np.column_stack([x, y]))
@@ -361,7 +362,7 @@ def commonCircleKiCAD(a, b, c):
     """
     arc = pcbnew.PCB_SHAPE()
     arc.SetShape(STROKE_T.S_ARC)
-    arc.SetArcGeometry(wxPoint(*a), wxPoint(*b), wxPoint(*c))
+    arc.SetArcGeometry(toKiCADPoint(a), toKiCADPoint(b), toKiCADPoint(c))
     center = [int(x) for x in arc.GetCenter()]
     mid = [(a[i] + b[i]) // 2 for i in range(2)]
     if center == mid:
@@ -607,8 +608,8 @@ class Substrate:
         segment = pcbnew.PCB_SHAPE()
         segment.SetShape(STROKE_T.S_SEGMENT)
         segment.SetLayer(Layer.Edge_Cuts)
-        segment.SetStart(wxPoint(*a))
-        segment.SetEnd(wxPoint(*b))
+        segment.SetStart(toKiCADPoint(a))
+        segment.SetEnd(toKiCADPoint(b))
         return segment
 
     def _constructArc(self, a, b, c):
@@ -618,15 +619,17 @@ class Substrate:
         arc = pcbnew.PCB_SHAPE()
         arc.SetShape(STROKE_T.S_ARC)
         arc.SetLayer(Layer.Edge_Cuts)
-        arc.SetArcGeometry(wxPoint(*a), wxPoint(*b), wxPoint(*c))
+        arc.SetArcGeometry(toKiCADPoint(a), toKiCADPoint(b), toKiCADPoint(c))
         return arc
 
     def boundingBox(self):
         """
-        Return bounding box as wxRect
+        Return bounding box as BOX2I
         """
         minx, miny, maxx, maxy = self.substrates.bounds
-        return pcbnew.wxRect(int(minx), int(miny), int(maxx - minx), int(maxy - miny))
+        return pcbnew.BOX2I(
+            pcbnew.VECTOR2I(int(minx), int(miny)),
+            pcbnew.VECTOR2I(int(maxx - minx), int(maxy - miny)))
 
     def exterior(self):
         """

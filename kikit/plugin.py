@@ -102,7 +102,7 @@ class LayoutPlugin:
         self.rotation = rotation
 
     def buildLayout(self, panel: Panel, inputFile: str,
-                    sourceArea: pcbnew.wxRect) -> Iterable[Substrate]:
+                    sourceArea: pcbnew.BOX2I) -> Iterable[Substrate]:
         """
         This function is supposed to build the layout (append the boards to the
         panel) and return an iterable of substrates of these boards.

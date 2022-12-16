@@ -1,5 +1,6 @@
 import re
 import math
+from pcbnewTransition import pcbnew
 
 class UnitError(RuntimeError):
     pass
@@ -12,8 +13,8 @@ m  = 1000 * mm
 mil = 25400
 inch = 1000 * mil
 
-deg = 10
-rad = 180 / math.pi * deg
+deg = pcbnew.EDA_ANGLE(1, pcbnew.DEGREES_T)
+rad = pcbnew.EDA_ANGLE(1, pcbnew.RADIANS_T)
 
 UNIT_SPLIT = re.compile(r"\s*(-?\s*\d+(\.\d*)?)\s*(\w+|\%)$")
 
@@ -31,6 +32,20 @@ class BaseValue(int):
 
     def __repr__(self):
         return f"<BaseValue: {int(self)}, {self.str} >"
+
+class BaseAngle(pcbnew.EDA_ANGLE):
+    """
+    Angle value that remembers its original string representation.
+    """
+    def __init__(self, value: pcbnew.EDA_ANGLE, strRepr: str) -> None:
+        super().__init__(value.AsDegrees(), pcbnew.DEGREES_T)
+        self.str = strRepr
+
+    def __str__(self):
+        return self.str
+
+    def __repr__(self):
+        return f"<BaseAngle: {int(self)}, {self.str} >"
 
 
 class PercentageValue(float):
@@ -77,17 +92,17 @@ def readLength(unitStr):
         raise RuntimeError(f"Got '{unitStr}', a length with units was expected")
     return BaseValue(readUnit(unitDir, unitStr), unitStr)
 
-def readAngle(unitStr):
+def readAngle(unitStr: str) -> BaseAngle:
     unitDir = {
         "deg": deg,
         "°": deg,
         "rad": rad
     }
     if isinstance(unitStr, int):
-        return BaseValue(unitStr, f"{unitStr / 10} deg")
+        return BaseAngle(pcbnew.EDA_ANGLE(unitStr, pcbnew.TENTHS_OF_A_DEGREE_T), f"{unitStr / 10} deg")
     if not isinstance(unitStr, str):
         raise RuntimeError(f"Got '{unitStr}', an angle with units was expected")
-    return BaseValue(readUnit(unitDir, unitStr), unitStr)
+    return BaseAngle(readUnit(unitDir, unitStr), unitStr)
 
 def readPercents(unitStr):
     unitDir = { "%": 0.01 }

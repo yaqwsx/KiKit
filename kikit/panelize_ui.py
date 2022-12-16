@@ -326,8 +326,9 @@ def separate(input, output, source, page, debug, keepannotations, preservearcs):
     try:
         from kikit import panelize_ui_impl as ki
         from kikit.panelize import Panel
+        from kikit.units import mm
         from pcbnewTransition.transition import isV6, pcbnew
-        from pcbnew import LoadBoard, wxPointMM
+        from pcbnew import LoadBoard, VECTOR2I
         from kikit.common import fakeKiCADGui
         app = fakeKiCADGui()
 
@@ -344,7 +345,7 @@ def separate(input, output, source, page, debug, keepannotations, preservearcs):
         panel.inheritProperties(board)
         panel.inheritTitleBlock(board)
 
-        destination = wxPointMM(150, 100)
+        destination = VECTOR2I(150 * mm, 100 * mm)
         panel.appendBoard(input, destination, sourceArea,
             interpretAnnotations=(not keepannotations))
         ki.setStackup(preset["source"], panel)
