@@ -8,10 +8,10 @@ on:
 jobs:
   test:
     name: "Run KiKit tests"
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
-        kicad-version: [v6]
+        kicad-version: [v6, nightly]
     steps:
       - uses: actions/checkout@v2
       - uses: ./.github/actions/setup-kicad
@@ -23,11 +23,11 @@ jobs:
             zip inkscape make git libmagickwand-dev \
             libgraphicsmagick1-dev libmagickcore-dev \
             openscad bats
-          sudo python -m pip install PcbDraw
-          sudo python -m pip install -e .\[dev\]
+          sudo env PYTHONPATH=$PYTHONPATH LD_LIBRARY_PATH=$LD_LIBRARY_PATH \
+            python -m pip install -e .\[dev\]
       - run: make test
       - run: make doc
-      - run: sudo make package
+      - run: sudo env PYTHONPATH=$PYTHONPATH LD_LIBRARY_PATH=$LD_LIBRARY_PATH make package
   build-pcm:
     name: Build PCM packages
     runs-on: ubuntu-20.04
