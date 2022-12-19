@@ -5,10 +5,10 @@ load common
 @test "Extract board" {
     kikit separate --source 'rectangle; tlx: 89mm; tly: 89mm; brx: 111mm; bry: 111mm' \
         --debug 'trace: true' \
-        $RES/multiboard.kicad_pcb board_a.kicad_pcb
+        $RES/multiboard.kicad_pcb board_a_by_area.kicad_pcb
 
     kikit separate --source 'annotation; ref: B1' \
-        $RES/multiboard.kicad_pcb board_a.kicad_pcb
+        $RES/multiboard.kicad_pcb board_a_by_ref.kicad_pcb
 }
 
 @test "Simple grid, no space, vcuts" {
@@ -17,7 +17,7 @@ load common
         --tabs full \
         --cuts vcuts \
         --debug 'trace: true; deterministic: true' \
-        $RES/conn.kicad_pcb panel.kicad_pcb
+        $RES/conn.kicad_pcb panel_t1.kicad_pcb
 }
 
 @test "Simple grid, spacing, vcuts" {
@@ -27,7 +27,7 @@ load common
         --cuts vcuts \
         --post 'millradius: 1mm' \
         --debug 'trace: true; deterministic: true' \
-        $RES/conn.kicad_pcb panel.kicad_pcb
+        $RES/conn.kicad_pcb panel_t2.kicad_pcb
 }
 
 @test "Simple grid, spacing, mousebites" {
@@ -36,7 +36,7 @@ load common
         --tabs 'fixed; width: 5mm' \
         --cuts 'mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm' \
         --debug 'trace: true; deterministic: true' \
-        $RES/conn.kicad_pcb panel.kicad_pcb
+        $RES/conn.kicad_pcb panel_t3.kicad_pcb
 }
 
 
@@ -47,7 +47,7 @@ load common
         --cuts 'mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm' \
         --post 'millradius: 1mm' \
         --debug 'trace: true; deterministic: true' \
-        $RES/conn.kicad_pcb panel.kicad_pcb
+        $RES/conn.kicad_pcb panel_t4.kicad_pcb
 }
 
 @test "Simple grid, change number of tabs" {
@@ -57,7 +57,7 @@ load common
         --cuts 'mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm' \
         --post 'millradius: 1mm' \
         --debug 'trace: true; deterministic: true' \
-        $RES/conn.kicad_pcb panel.kicad_pcb
+        $RES/conn.kicad_pcb panel_t5.kicad_pcb
 }
 
 @test "Simple grid, rails" {
@@ -68,7 +68,7 @@ load common
         --framing 'railstb; width: 5mm; space: 3mm;' \
         --post 'millradius: 1mm' \
         --debug 'trace: true; deterministic: true' \
-        $RES/conn.kicad_pcb panel.kicad_pcb
+        $RES/conn.kicad_pcb panel_t6.kicad_pcb
 
     kikit panelize \
         --layout 'grid; rows: 2; cols: 2; space: 2mm' \
@@ -77,7 +77,7 @@ load common
         --framing 'railslr; width: 5mm; space: 3mm;' \
         --post 'millradius: 1mm' \
         --debug 'trace: true; deterministic: true' \
-        $RES/conn.kicad_pcb panel.kicad_pcb
+        $RES/conn.kicad_pcb panel_t7.kicad_pcb
 }
 
 @test "Simple grid, frame, both cuts" {
@@ -88,7 +88,7 @@ load common
         --framing 'frame; width: 5mm; space: 3mm; cuts: both' \
         --post 'millradius: 1mm' \
         --debug 'trace: true; deterministic: true' \
-        $RES/conn.kicad_pcb panel.kicad_pcb
+        $RES/conn.kicad_pcb panel_t8.kicad_pcb
 }
 
 @test "Simple grid, frame, vertical cuts" {
@@ -99,7 +99,7 @@ load common
         --framing 'frame; width: 5mm; space: 3mm; cuts: v' \
         --post 'millradius: 1mm' \
         --debug 'trace: true; deterministic: true' \
-        $RES/conn.kicad_pcb panel.kicad_pcb
+        $RES/conn.kicad_pcb panel_t9.kicad_pcb
 }
 
 @test "Simple grid, frame, horizontal cuts" {
@@ -110,7 +110,7 @@ load common
         --framing 'frame; width: 5mm; space: 3mm; cuts: h' \
         --post 'millradius: 1mm' \
         --debug 'trace: true; deterministic: true' \
-        $RES/conn.kicad_pcb panel.kicad_pcb
+        $RES/conn.kicad_pcb panel_t10.kicad_pcb
 }
 
 @test "Simple grid, frame, no cuts" {
@@ -121,7 +121,7 @@ load common
         --framing 'frame; width: 5mm; space: 3mm; cuts: none' \
         --post 'millradius: 1mm' \
         --debug 'trace: true; deterministic: true' \
-        $RES/conn.kicad_pcb panel.kicad_pcb
+        $RES/conn.kicad_pcb panel_t11.kicad_pcb
 }
 
 @test "Simple grid, tightgrid" {
@@ -132,7 +132,7 @@ load common
         --framing 'tightframe; width: 5mm; space: 3mm; ' \
         --post 'millradius: 1mm' \
         --debug 'trace: true; deterministic: true' \
-        $RES/conn.kicad_pcb panel.kicad_pcb
+        $RES/conn.kicad_pcb panel_t12.kicad_pcb
 }
 
 @test "Simple grid, framing features" {
@@ -146,7 +146,7 @@ load common
         --text 'simple; text: yaqwsx panel; anchor: mt; voffset: 2.5mm; hjustify: center; vjustify: center;' \
         --post 'millradius: 1mm' \
         --debug 'trace: true; deterministic: true' \
-        $RES/conn.kicad_pcb panel.kicad_pcb
+        $RES/conn.kicad_pcb panel_t13.kicad_pcb
 }
 
 @test "Simple grid, framing features with variable" {
@@ -160,7 +160,7 @@ load common
         --text 'simple; text: yaqwsx panel {date}; anchor: mt; voffset: 2.5mm; hjustify: center; vjustify: center;' \
         --post 'millradius: 1mm' \
         --debug 'trace: true; deterministic: true' \
-        $RES/conn.kicad_pcb panel.kicad_pcb
+        $RES/conn.kicad_pcb panel_t14.kicad_pcb
 }
 
 
@@ -172,7 +172,7 @@ load common
         --framing 'frame; width: 5mm; space: 3mm; cuts: both' \
         --post 'millradius: 1mm' \
         --debug 'trace: true; deterministic: true' \
-        $RES/conn.kicad_pcb panel.kicad_pcb
+        $RES/conn.kicad_pcb panel_t15.kicad_pcb
 }
 
 @test "Grid with backbone" {
@@ -183,7 +183,7 @@ load common
         --framing 'railstb; width: 5mm; space: 3mm;' \
         --post 'millradius: 1mm' \
         --debug 'trace: true; deterministic: true' \
-        $RES/conn.kicad_pcb panel.kicad_pcb
+        $RES/conn.kicad_pcb panel_t16.kicad_pcb
 }
 
 @test "Tabs from annotation" {
@@ -195,7 +195,7 @@ load common
         --framing 'railstb; width: 5mm; space: 3mm;' \
         --post 'millradius: 1mm' \
         --debug 'trace: true; deterministic: true' \
-        $RES/conn.kicad_pcb panel.kicad_pcb
+        $RES/conn.kicad_pcb panel_t17.kicad_pcb
 }
 
 @test "Copperfill" {
@@ -206,14 +206,14 @@ load common
         --framing 'railstb; width: 5mm; space: 3mm;' \
         --post 'millradius: 1mm; copperfill: true' \
         --debug 'trace: true; deterministic: true' \
-        $RES/conn.kicad_pcb panel.kicad_pcb
+        $RES/conn.kicad_pcb panel_t18.kicad_pcb
 }
 
 @test "Set aux origin" {
     kikit panelize \
         --post 'origin: bl;' \
         --debug 'trace: true; deterministic: true' \
-        $RES/conn.kicad_pcb panel.kicad_pcb
+        $RES/conn.kicad_pcb panel_t19.kicad_pcb
 }
 
 @test "Set page" {
@@ -224,7 +224,7 @@ load common
     kikit panelize \
         --page 'A3;' \
         --debug 'trace: true; deterministic: true' \
-        $RES/conn.kicad_pcb panel.kicad_pcb
+        $RES/conn.kicad_pcb panel_t20.kicad_pcb
 }
 
 
@@ -234,7 +234,7 @@ load common
         --tabs 'fixed; hwidth: 10mm; vwidth: 15mm' \
         --cuts 'vcuts; clearance: 1.5mm' \
         --debug 'trace: true; deterministic: true' \
-        $RES/conn.kicad_pcb panel-original.kicad_pcb
+        $RES/conn.kicad_pcb panel-plugin-layout.kicad_pcb
 }
 
 @test "Use framing plugin" {
@@ -244,7 +244,7 @@ load common
         --framing "plugin; code: $RES/testplugin.py.MyFraming" \
         --cuts 'vcuts; clearance: 1.5mm' \
         --debug 'trace: true; deterministic: true' \
-        $RES/conn.kicad_pcb panel-original.kicad_pcb
+        $RES/conn.kicad_pcb panel-plugin-framing.kicad_pcb
 }
 
 @test "Use tabs plugin" {
@@ -253,7 +253,7 @@ load common
         --tabs "plugin; code: $RES/testplugin.py.MyTabs" \
         --cuts 'vcuts; clearance: 1.5mm' \
         --debug 'trace: true; deterministic: true' \
-        $RES/conn.kicad_pcb panel-original.kicad_pcb
+        $RES/conn.kicad_pcb panel-plugin-tabs.kicad_pcb
 }
 
 @test "Use cuts plugin" {
@@ -261,7 +261,7 @@ load common
         --layout "grid" \
         --cuts "plugin; code: $RES/testplugin.py.MyCuts" \
         --debug 'trace: true; deterministic: true' \
-        $RES/conn.kicad_pcb panel-original.kicad_pcb
+        $RES/conn.kicad_pcb panel-plugin-cuts.kicad_pcb
 }
 
 @test "Use fiducials and tooling plugin" {
@@ -270,7 +270,7 @@ load common
         --fiducials "plugin; code: $RES/testplugin.py.MyFiducials" \
         --tooling "plugin; code: $RES/testplugin.py.MyTooling" \
         --debug 'trace: true; deterministic: true' \
-        $RES/conn.kicad_pcb panel-original.kicad_pcb
+        $RES/conn.kicad_pcb panel-plugin-fiducials.kicad_pcb
 }
 
 @test "Dumping preset" {
@@ -282,25 +282,27 @@ load common
         $RES/conn.kicad_pcb panel-original.kicad_pcb
     kikit panelize -p preset.json $RES/conn.kicad_pcb panel-copy.kicad_pcb
 
-    # Remove timestamps
-    perl -pi -e 's/\((tedit|tstamp).*\)//g' panel-original.kicad_pcb
-    perl -pi -e 's/\((tedit|tstamp).*\)//g' panel-copy.kicad_pcb
+    # Remove timestamps - with determinization it is no longer needed
+    # perl -pi -e 's/\((tedit|tstamp).*\)//g' panel-original.kicad_pcb
+    # perl -pi -e 's/\((tedit|tstamp).*\)//g' panel-copy.kicad_pcb
 
-    cmp -s panel-original.kicad_pcb panel-copy.kicad_pcb
+    # Instead, we sort the files
+    cmp -s <(sort panel-original.kicad_pcb)  <(sort panel-copy.kicad_pcb)
 }
 
 @test "Dumping preset with plugin" {
-    kikit panelize --dump preset.json \
+    kikit panelize --dump preset-plugin.json \
         --layout "plugin; code: $RES/testplugin.py.MyLayout" \
         --tabs 'fixed; hwidth: 10mm; vwidth: 15mm' \
         --cuts 'vcuts; clearance: 1.5mm' \
         --debug 'trace: true; deterministic: true' \
-        $RES/conn.kicad_pcb panel-original.kicad_pcb
-    kikit panelize -p preset.json $RES/conn.kicad_pcb panel-copy.kicad_pcb
+        $RES/conn.kicad_pcb panel-original-plugin.kicad_pcb
+    kikit panelize -p preset-plugin.json $RES/conn.kicad_pcb panel-copy-plugin.kicad_pcb
 
-    # Remove timestamps
-    perl -pi -e 's/\((tedit|tstamp).*\)//g' panel-original.kicad_pcb
-    perl -pi -e 's/\((tedit|tstamp).*\)//g' panel-copy.kicad_pcb
+    # Remove timestamps - with determinization it is no longer needed
+    # perl -pi -e 's/\((tedit|tstamp).*\)//g' panel-original-plugin.kicad_pcb
+    # perl -pi -e 's/\((tedit|tstamp).*\)//g' panel-copy-plugin.kicad_pcb
 
-    cmp -s panel-original.kicad_pcb panel-copy.kicad_pcb
+    # Instead, we sort the files
+    cmp -s <(sort panel-original-plugin.kicad_pcb) <(sort panel-copy-plugin.kicad_pcb)
 }
