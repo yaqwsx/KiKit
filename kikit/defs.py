@@ -56,7 +56,7 @@ class Layer(IntEnum):
 
     @staticmethod
     def allCu():
-        return list(range(Layer.F_Cu, Layer.B_Cu))
+        return list(range(Layer.F_Cu, Layer.B_Cu + 1))
 
 class STROKE_T(IntEnum):
     S_SEGMENT = 0
