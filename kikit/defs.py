@@ -53,6 +53,10 @@ class Layer(IntEnum):
     F_CrtYd = 47
     B_Fab = 48
     F_Fab = 49
+    User_1 = 50
+    User_2 = 51
+    User_3 = 52
+    User_4 = 53
 
     @staticmethod
     def allCu():
