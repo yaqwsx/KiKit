@@ -234,11 +234,11 @@ def doPanelization(input, output, preset, plugins=[]):
     """
     from kikit import panelize_ui_impl as ki
     from kikit.panelize import Panel
-    from pcbnewTransition.transition import isV6, pcbnew
+    from pcbnewTransition.transition import pcbnew
     from pcbnew import LoadBoard
     from itertools import chain
 
-    if preset["debug"]["deterministic"] and isV6():
+    if preset["debug"]["deterministic"]:
         pcbnew.KIID.SeedGenerator(42)
     if preset["debug"]["drawtabfail"]:
         import kikit.substrate
@@ -327,14 +327,14 @@ def separate(input, output, source, page, debug, keepannotations, preservearcs):
         from kikit import panelize_ui_impl as ki
         from kikit.panelize import Panel
         from kikit.units import mm
-        from pcbnewTransition.transition import isV6, pcbnew
+        from pcbnewTransition.transition import pcbnew
         from pcbnew import LoadBoard, VECTOR2I
         from kikit.common import fakeKiCADGui
         app = fakeKiCADGui()
 
         preset = ki.obtainPreset([], validate=False, source=source, page=page, debug=debug)
 
-        if preset["debug"]["deterministic"] and isV6():
+        if preset["debug"]["deterministic"]:
             pcbnew.KIID.SeedGenerator(42)
 
         board = LoadBoard(input)

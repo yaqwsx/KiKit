@@ -179,7 +179,7 @@ def appendItem(board: pcbnew.BOARD, item: pcbnew.BOARD_ITEM,
     except TypeError: # Footprint has overridden the method, cannot be called directly
         newItem = pcbnew.Cast_to_BOARD_ITEM(item).Duplicate().Cast()
     board.Add(newItem)
-    if not isV6() or not yieldMapping:
+    if not yieldMapping:
         return
     if isinstance(item, pcbnew.FOOTPRINT):
         newFootprint = pcbnew.Cast_to_FOOTPRINT(newItem)
@@ -510,9 +510,9 @@ class Panel:
             originalZoneNames[newName] = zone.GetZoneName()
             zone.SetZoneName(newName)
         self.board.Save(self.filename)
-        if isV6():
-            self.makeLayersVisible() # as they are not in KiCAD 6
-            self.transferProjectSettings()
+
+        self.makeLayersVisible() # as they are not in KiCAD 6
+        self.transferProjectSettings()
 
         # Remove cuts
         for cut, _ in vcuts:
@@ -587,7 +587,6 @@ class Panel:
         Modify corresponding *.prl files so all the layers are visible by
         default
         """
-        assert isV6()
         try:
             with open(self.getPrlFilepath()) as f:
                 # We use ordered dict, so we preserve the ordering of the keys and
@@ -609,8 +608,6 @@ class Panel:
         Also, transfers the list of net classes from the internal representation
         into the project file.
         """
-        assert isV6()
-
         if len(self.sourcePaths) > 1:
             raise RuntimeError("Merging of DRC rules of multiple boards is currently unsupported")
         if len(self.sourcePaths) == 0:
@@ -723,11 +720,8 @@ class Panel:
         """
         Set design settings
         """
-        if isV6():
-            d = self.board.GetDesignSettings()
-            d.CloneFrom(designSettings)
-        else:
-            self.board.SetDesignSettings(designSettings)
+        d = self.board.GetDesignSettings()
+        d.CloneFrom(designSettings)
 
     def inheritProperties(self, board):
         """
@@ -874,8 +868,7 @@ class Panel:
         bId = len(self.substrates)
         netRenamerFn = lambda x: netRenamer(bId, x)
 
-        if isV6():
-            self._inheritNetClasses(board, netRenamerFn)
+        self._inheritNetClasses(board, netRenamerFn)
 
         renameNets(board, netRenamerFn)
         if refRenamer is not None:
@@ -946,23 +939,22 @@ class Panel:
         for drawing in otherDrawings:
             appendItem(self.board, drawing, yieldMapping)
 
-        if isV6():
-            try:
-                exclusions = readBoardDrcExclusions(board)
-                for drcE in exclusions:
-                    try:
-                        newObjects = [self.board.GetItem(pcbnew.KIID(itemMapping[x.m_Uuid.AsString()])) for x in drcE.objects]
-                        assert all(x is not None for x in newObjects)
-                        newPosition = doTransformation(drcE.position, rotationAngle, originPoint, translation)
-                        self.drcExclusions.append(DrcExclusion(
-                            drcE.type,
-                            newPosition,
-                            newObjects
-                        ))
-                    except KeyError as e:
-                        continue # We cannot handle DRC exclusions with board edges
-            except FileNotFoundError:
-                pass # Ignore boards without a project
+        try:
+            exclusions = readBoardDrcExclusions(board)
+            for drcE in exclusions:
+                try:
+                    newObjects = [self.board.GetItem(pcbnew.KIID(itemMapping[x.m_Uuid.AsString()])) for x in drcE.objects]
+                    assert all(x is not None for x in newObjects)
+                    newPosition = doTransformation(drcE.position, rotationAngle, originPoint, translation)
+                    self.drcExclusions.append(DrcExclusion(
+                        drcE.type,
+                        newPosition,
+                        newObjects
+                    ))
+                except KeyError as e:
+                    continue # We cannot handle DRC exclusions with board edges
+        except FileNotFoundError:
+            pass # Ignore boards without a project
 
         self.projectVars.append(self._readProjectVariables(board))
 
@@ -1423,11 +1415,8 @@ class Panel:
         # and KiCAD crashes.
         self.board.Add(footprint)
         footprint.SetPosition(position)
-        if(bottom):
-            if isV6():
-                footprint.Flip(position, False)
-            else:
-                footprint.Flip(position)
+        if bottom:
+            footprint.Flip(position, False)
         for pad in footprint.Pads():
             pad.SetSize(toKiCADPoint((copperDiameter, copperDiameter)))
             pad.SetLocalSolderMaskMargin(int((openingDiameter - copperDiameter) / 2))
@@ -1803,31 +1792,19 @@ class Panel:
         """
         Set the auxiliary origin used e.g., for drill files
         """
-        if isV6():
-            self.board.GetDesignSettings().SetAuxOrigin(point)
-        else:
-            self.board.SetAuxOrigin(point)
+        self.board.GetDesignSettings().SetAuxOrigin(point)
 
     def getAuxiliaryOrigin(self):
-        if isV6():
-            return self.board.GetDesignSettings().GetAuxOrigin()
-        else:
-            return self.board.GetAuxOrigin()
+        return self.board.GetDesignSettings().GetAuxOrigin()
 
     def setGridOrigin(self, point):
         """
         Set grid origin
         """
-        if isV6():
-            self.board.GetDesignSettings().SetGridOrigin(point)
-        else:
-            self.board.SetGridOrigin(point)
+        self.board.GetDesignSettings().SetGridOrigin(point)
 
     def getGridOrigin(self):
-        if isV6():
-            return self.board.GetDesignSettings().GetGridOrigin()
-        else:
-            return self.board.GetGridOrigin()
+        return self.board.GetDesignSettings().GetGridOrigin()
 
     def _buildPartitionLineFromBB(self, partition):
         for s in self.substrates:

@@ -2,7 +2,7 @@ import csv
 from dataclasses import dataclass
 import re
 from typing import OrderedDict
-from pcbnewTransition import pcbnew, isV6
+from pcbnewTransition import pcbnew, isV6, isV7
 from math import sin, cos, radians
 from kikit.common import *
 from kikit.defs import MODULE_ATTR_T
@@ -11,7 +11,7 @@ from kikit import drc
 from kikit import eeschema, eeschema_v6
 import sys
 
-if isV6():
+if isV6() or isV7():
     from kikit import eeschema_v6 # import getField, getUnit, getReference
 from kikit import eeschema #import getField, getUnit, getReference
 
@@ -41,8 +41,6 @@ def getReference(component):
 
 
 def ensurePassingDrc(board):
-    if not isV6():
-        return # v5 cannot check DRC
     failed = drc.runImpl(board,
         useMm=True,
         ignoreExcluded=True,
@@ -103,10 +101,7 @@ def defaultFootprintY(footprint, placeOffset, compensation):
     return -toMm(footprintPosition(footprint, placeOffset, compensation)[1])
 
 def excludeFromPos(footprint):
-    if isV6():
-        return footprint.GetAttributes() & pcbnew.FP_EXCLUDE_FROM_POS_FILES
-    else:
-        return footprint.GetAttributes() & MODULE_ATTR_T.MOD_VIRTUAL
+    return footprint.GetAttributes() & pcbnew.FP_EXCLUDE_FROM_POS_FILES
 
 def readCorrectionPatterns(filename):
     """

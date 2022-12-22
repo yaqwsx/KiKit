@@ -1,5 +1,5 @@
 import click
-from pcbnewTransition import pcbnew, isV6
+from pcbnewTransition import pcbnew
 import csv
 import os
 import sys

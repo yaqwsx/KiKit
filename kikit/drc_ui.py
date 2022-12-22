@@ -45,13 +45,11 @@ def run(boardfile, usemm, ignoreexcluded, strict, level):
     """
     from kikit.drc import runImpl
     import sys
-    from pcbnewTransition import pcbnew, isV6
+    from pcbnewTransition import pcbnew
     from kikit.common import fakeKiCADGui
     app = fakeKiCADGui()
 
     try:
-        if not isV6():
-            raise RuntimeError("This feature is available only with KiCAD 6.")
         board = pcbnew.LoadBoard(boardfile)
         failed = runImpl(board, usemm, ignoreexcluded, strict, level, lambda x: print(x))
         if not failed:
