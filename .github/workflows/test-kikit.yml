@@ -23,6 +23,7 @@ jobs:
             zip inkscape make git libmagickwand-dev \
             libgraphicsmagick1-dev libmagickcore-dev \
             openscad bats
+          sudo python -m pip install PcbDraw
           sudo env PYTHONPATH=$PYTHONPATH LD_LIBRARY_PATH=$LD_LIBRARY_PATH \
             python -m pip install -e .\[dev\]
       - run: make test
