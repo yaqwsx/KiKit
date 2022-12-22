@@ -47,7 +47,7 @@ setuptools.setup(
     ],
     install_requires=[
         "numpy", # Required for MacOS
-        "pcbnewTransition @ git+https://github.com/yaqwsx/pcbnewTransition.git@main",
+        "pcbnewTransition >= 0.3, <=0.4",
         "shapely>=1.7",
         "click>=7.1",
         "markdown2>=2.4",
