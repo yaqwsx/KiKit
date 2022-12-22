@@ -1668,7 +1668,7 @@ class Panel:
 
     def addKeepout(self, area, noTracks=True, noVias=True, noCopper=True):
         """
-        Add a keepout area from top and bottom layers. Area is a shapely
+        Add a keepout area to all copper layers. Area is a shapely
         polygon. Return the keepout area.
         """
         zone = polygonToZone(area, self.board)
@@ -1677,10 +1677,7 @@ class Panel:
         zone.SetDoNotAllowVias(noVias)
         zone.SetDoNotAllowCopperPour(noCopper)
 
-        zone.SetLayer(Layer.F_Cu)
-        layerSet = zone.GetLayerSet()
-        layerSet.AddLayer(Layer.B_Cu)
-        zone.SetLayerSet(layerSet)
+        zone.SetLayerSet(pcbnew.LSET.AllCuMask())
 
         self.board.Add(zone)
         return zone
