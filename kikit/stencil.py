@@ -3,7 +3,6 @@ from pcbnew import VECTOR2I
 import numpy as np
 import json
 from collections import OrderedDict
-from pcbnewTransition.transition import isV6
 from kikit.common import *
 from kikit.defs import *
 from kikit.substrate import Substrate, extractRings, toShapely, linestringToKicad
@@ -33,21 +32,12 @@ def addRoundedCorner(board, center, start, end, thickness):
     corner = pcbnew.PCB_SHAPE()
     corner.SetShape(STROKE_T.S_ARC)
     corner.SetCenter(VECTOR2I(center[0], center[1]))
-    if isV6():
-        corner.SetStart(VECTOR2I(start[0], start[1]))
-    else:
-        corner.SetArcStart(VECTOR2I(start[0], start[1]))
+    corner.SetStart(VECTOR2I(start[0], start[1]))
 
     if np.cross(start - center, end - center) > 0:
-        if isV6():
-            corner.SetArcAngleAndEnd(fromDegrees(90), True)
-        else:
-            corner.SetAngle(fromDegrees(90))
+        corner.SetArcAngleAndEnd(fromDegrees(90), True)
     else:
-        if isV6():
-            corner.SetArcAngleAndEnd(fromDegrees(-90), True)
-        else:
-            corner.SetAngle(fromDegrees(-90))
+        corner.SetArcAngleAndEnd(fromDegrees(-90), True)
     corner.SetWidth(thickness)
     corner.SetLayer(Layer.F_Paste)
     board.Add(corner)
@@ -137,11 +127,9 @@ def addHole(board, position, radius):
     circle = pcbnew.PCB_SHAPE()
     circle.SetShape(STROKE_T.S_CIRCLE)
     circle.SetCenter(VECTOR2I(position[0], position[1]))
-    if isV6():
-        # Set 3'oclock point of the circle to set radius
-        circle.SetEnd(VECTOR2I(position[0], position[1]) + VECTOR2I(radius/2, 0))
-    else:
-        circle.SetArcStart(VECTOR2I(position[0], position[1]) + VECTOR2I(radius/2, 0))
+    # Set 3'oclock point of the circle to set radius
+    circle.SetEnd(VECTOR2I(position[0], position[1]) + VECTOR2I(radius/2, 0))
+
     circle.SetWidth(radius)
     circle.SetLayer(Layer.F_Paste)
     board.Add(circle)
@@ -315,8 +303,6 @@ def cutoutComponents(board, components):
         board.Add(zone)
 
 def setStencilLayerVisibility(boardName):
-    if not isV6():
-        return
     prlPath = os.path.splitext(boardName)[0] + ".kicad_prl"
     try:
         with open(prlPath) as f:

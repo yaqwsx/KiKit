@@ -7,7 +7,7 @@ import shapely
 import json
 import numpy as np
 from kikit.intervals import Interval, BoxNeighbors, BoxPartitionLines
-from pcbnewTransition import pcbnew, isV6
+from pcbnewTransition import pcbnew
 from enum import IntEnum
 from itertools import product
 
@@ -37,37 +37,25 @@ def roundPoint(point, precision=-4):
     return (round(point[0], precision), round(point[1], precision))
 
 def getStartPoint(geom):
-    if isV6():
-        if geom.GetShape() == STROKE_T.S_CIRCLE:
-            # Circle start is circle center /o\
-            point = geom.GetStart() + pcbnew.VECTOR2I(geom.GetRadius(), 0)
-        elif geom.GetShape() == STROKE_T.S_RECT:
-            point = geom.GetStart()
-        else:
-            point = geom.GetStart()
-        return point
-
-    if geom.GetShape() in [STROKE_T.S_ARC, STROKE_T.S_CIRCLE]:
-        return geom.GetArcStart()
-    return geom.GetStart()
+    if geom.GetShape() == STROKE_T.S_CIRCLE:
+        # Circle start is circle center /o\
+        point = geom.GetStart() + pcbnew.VECTOR2I(geom.GetRadius(), 0)
+    elif geom.GetShape() == STROKE_T.S_RECT:
+        point = geom.GetStart()
+    else:
+        point = geom.GetStart()
+    return point
 
 def getEndPoint(geom):
-    if isV6():
-        if geom.GetShape() == STROKE_T.S_CIRCLE:
-            # Circle start is circle center /o\
-            point = geom.GetStart() + pcbnew.VECTOR2I(geom.GetRadius(), 0)
-        elif geom.GetShape() == STROKE_T.S_RECT:
-            # Rectangle is closed, so it starts at the same point as it ends
-            point = geom.GetStart()
-        else:
-            point = geom.GetEnd()
-        return point
-
-    if geom.GetShape() == STROKE_T.S_ARC:
-        return geom.GetArcEnd()
     if geom.GetShape() == STROKE_T.S_CIRCLE:
-        return geom.GetArcStart()
-    return geom.GetEnd()
+        # Circle start is circle center /o\
+        point = geom.GetStart() + pcbnew.VECTOR2I(geom.GetRadius(), 0)
+    elif geom.GetShape() == STROKE_T.S_RECT:
+        # Rectangle is closed, so it starts at the same point as it ends
+        point = geom.GetStart()
+    else:
+        point = geom.GetEnd()
+    return point
 
 class CoincidenceList(list):
     def getNeighbor(self, myIdx):
@@ -356,9 +344,10 @@ def substratesFrom(polygons):
         substrates.append(Polygon(polygon.exterior, holes))
     return substrates
 
-def commonCircleKiCAD(a, b, c):
+def commonCircle(a, b, c):
     """
-    Get a common circle using KiCAD APIs (a little abusive)
+    Given three 2D points return (x, y, r) of the circle they lie on or None if
+    they lie in a line
     """
     arc = pcbnew.PCB_SHAPE()
     arc.SetShape(STROKE_T.S_ARC)
@@ -368,36 +357,6 @@ def commonCircleKiCAD(a, b, c):
     if center == mid:
         return None
     return roundPoint(center, -8)
-
-def commonCirclePython(a, b, c):
-    """
-    Get a common circle using pure Python implementation
-    """
-    o_l = [(a[i] + b[i]) / 2 for i in range(2)]
-    o_r = [(b[i] + c[i]) / 2 for i in range(2)]
-    d_l = [(b[i] - a[i]) for i in range(2)]
-    d_r = [(c[i] - b[i]) for i in range(2)]
-    n_l = (d_l[1], -d_l[0])
-    n_r = (d_r[1], -d_r[0])
-
-    t_denom = n_l[0] * n_r[1] - n_l[1] * n_r[0]
-    if t_denom == 0:
-        return None # The normal vectors are parallel
-    t = (n_r[0] * (o_l[1] - o_r[1]) + n_r[1] * (o_r[1] - o_l[1])) / t_denom
-    intersection = [o_l[i] + n_l[i] * t for i in range(2)]
-    return roundPoint(intersection)
-
-
-def commonCircle(a, b, c):
-    """
-    Given three 2D points return (x, y, r) of the circle they lie on or None if
-    they lie in a line
-    """
-    # We use the KiCAD's API implementation as it seems faster, but v5 doesn't
-    # offer it
-    if isV6():
-        return commonCircleKiCAD(a, b, c)
-    return commonCirclePython(a, b, c)
 
 
 def liesOnSegment(start, end, point, tolerance=fromMm(0.01)):

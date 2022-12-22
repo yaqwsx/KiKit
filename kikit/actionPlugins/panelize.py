@@ -70,11 +70,9 @@ def transplateBoard(source, target):
     for n in [n for _, n in source.GetNetInfo().NetsByNetcode().items()]:
         targetNetinfo.AppendNet(n)
 
-    if isV6():
-        d = target.GetDesignSettings()
-        d.CloneFrom(source.GetDesignSettings())
-    else:
-        target.SetDesignSettings(source.GetDesignSettings())
+    d = target.GetDesignSettings()
+    d.CloneFrom(source.GetDesignSettings())
+
     target.SetProperties(source.GetProperties())
     target.SetPageSettings(source.GetPageSettings())
     target.SetTitleBlock(source.GetTitleBlock())

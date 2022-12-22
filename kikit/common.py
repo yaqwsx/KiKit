@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import List, Optional, Tuple, Union
 from kikit.defs import Layer
 from kikit.typing import Box
-from pcbnewTransition import pcbnew, isV6, isV7
+from pcbnewTransition import pcbnew, isV7
 from kikit.intervals import AxialLine
 from pcbnew import BOX2I, VECTOR2I, EDA_ANGLE
 import os
@@ -71,7 +71,7 @@ def collectEdges(board, layerId, sourceArea=None):
     for edge in chain(board.GetDrawings(), *[m.GraphicalItems() for m in board.GetFootprints()]):
         if edge.GetLayer() != layerId:
             continue
-        if isV6() and isinstance(edge, pcbnew.PCB_DIMENSION_BASE):
+        if isinstance(edge, pcbnew.PCB_DIMENSION_BASE):
             continue
         if not sourceArea or fitsIn(edge.GetBoundingBox(), sourceArea):
             edges.append(edge)
