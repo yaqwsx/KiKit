@@ -357,7 +357,10 @@ def polygonToZone(polygon, board):
         zone.Outline().AddHole(linestringToKicad(boundary))
     return zone
 
-def buildTabs(substrate, partitionLines, tabAnnotations):
+def buildTabs(substrate: Substrate,
+              partitionLines: Union[GeometryCollection, LineString],
+              tabAnnotations: Iterable[TabAnnotation], fillet: KiLength = 0) -> \
+                Tuple[List[Polygon], List[LineString]]:
     """
     Given substrate, partitionLines of the substrate and an iterable of tab
     annotations, build tabs. Note that if the tab does not hit the partition
@@ -368,7 +371,7 @@ def buildTabs(substrate, partitionLines, tabAnnotations):
     tabs, cuts = [], []
     for annotation in tabAnnotations:
         t, c = substrate.tab(annotation.origin, annotation.direction,
-            annotation.width, partitionLines, annotation.maxLength)
+            annotation.width, partitionLines, annotation.maxLength, fillet)
         if t is not None:
             tabs.append(t)
             cuts.append(c)
@@ -1404,7 +1407,7 @@ class Panel:
             s.annotations = list(
                 filter(lambda x: not isinstance(x, TabAnnotation), s.annotations))
 
-    def buildTabsFromAnnotations(self):
+    def buildTabsFromAnnotations(self, fillet: KiLength) -> List[LineString]:
         """
         Given annotations for the individual substrates, create tabs for them.
         Tabs are appended to the panel, cuts are returned.
@@ -1413,7 +1416,7 @@ class Panel:
         """
         tabs, cuts = [], []
         for s in self.substrates:
-            t, c = buildTabs(s, s.partitionLine, s.annotations)
+            t, c = buildTabs(s, s.partitionLine, s.annotations, fillet)
             tabs.extend(t)
             cuts.extend(c)
         self.boardSubstrate.union(tabs)

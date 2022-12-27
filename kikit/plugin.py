@@ -171,7 +171,7 @@ class TabsPlugin:
         """
         panel.clearTabsAnnotations()
         self.buildTabAnnotations(panel)
-        return panel.buildTabsFromAnnotations()
+        return panel.buildTabsFromAnnotations(self.preset["tabs"]["fillet"])
 
 class CutsPlugin:
     """

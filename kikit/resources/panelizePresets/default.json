@@ -38,6 +38,7 @@
         "mindistance": "0mm",
         "spacing": "10mm",
         "tabfootprints": "kikit:Tab",
+        "fillet": "0mm",
         "code": "none",
         "arg": "",
         "cutout": "1mm"

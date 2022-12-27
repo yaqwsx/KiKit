@@ -29,6 +29,9 @@ class NoIntersectionError(RuntimeError):
         super().__init__(message)
         self.point = point
 
+class TabFilletError(RuntimeError):
+    pass
+
 def roundPoint(point, precision=-4):
     return (round(point[0], precision), round(point[1], precision))
     return pcbnew.wxPoint(round(point[0], precision), round(point[1], precision))
@@ -641,7 +644,7 @@ class Substrate:
         return self.substrates.boundary
 
     def tab(self, origin, direction, width, partitionLine=None,
-               maxHeight=pcbnew.FromMM(50)):
+               maxHeight=pcbnew.FromMM(50), fillet=0):
         """
         Create a tab for the substrate. The tab starts at the specified origin
         (2D point) and tries to penetrate existing substrate in direction (a 2D
@@ -652,6 +655,9 @@ class Substrate:
         side - limited by the partition line. Note that if tab cannot span
         towards the partition line, then the tab is not created - it returns a
         tuple (None, None).
+
+        If a fillet is specified, it allows you to add fillet to the tab of
+        specified radius.
 
         Returns a pair tab and cut outline. Add the tab it via union - batch
         adding of geometry is more efficient.
@@ -672,7 +678,7 @@ class Substrate:
             if partitionLine is None:
                 # There is nothing else to do, return the tab
                 tab = Polygon(list(tabFace.coords) + [sideOriginA, sideOriginB])
-                return tab, tabFace
+                return self._makeTabFillet(tab, tabFace, fillet)
             # Span the tab towards the partition line
             # There might be multiple geometries in the partition line, so try them
             # individually.
@@ -703,7 +709,7 @@ class Substrate:
                     # artifacts on substrate union
                     offsetTabFace = [(p[0] - SHP_EPSILON * direction[0], p[1] - SHP_EPSILON * direction[1]) for p in tabFace.coords]
                     tab = Polygon(offsetTabFace + partitionFaceCoord)
-                    return tab, tabFace
+                    return self._makeTabFillet(tab, tabFace, fillet)
             return None, None
         except NoIntersectionError as e:
             message = "Cannot create tab:\n"
@@ -714,6 +720,35 @@ class Substrate:
             message += "- annotation is placed inside the board,\n"
             message += "- ray length is not sufficient,\n"
             raise RuntimeError(message)
+        except TabFilletError as e:
+            message = "Cannot create fillet for tab: {e}\n"
+            message += f"  Annotation position {self._strPosition(origin)}\n"
+            message += "This is a bug. Please open an issue and provide the board on which the fillet failed."
+            raise RuntimeError(message)
+
+    def _makeTabFillet(self, tab: Polygon, tabFace: LineString, fillet: KiLength) \
+            -> Tuple[Polygon, LineString]:
+        if fillet == 0:
+            return tab, tabFace
+        joined = self.substrates.union(tab)
+        rounded = joined.buffer(fillet).buffer(-fillet)
+        remainder = rounded.difference(self.substrates)
+
+        if isinstance(remainder, MultiPolygon) or isinstance(remainder, GeometryCollection):
+            geoms = remainder.geoms
+        elif isinstance(remainder, Polygon):
+            geoms = [remainder]
+        else:
+            raise RuntimeError("Uknown type '{}' of substrate geometry".format(type(remainder)))
+        candidates = [x for x in geoms if x.intersects(tab)]
+        if len(candidates) != 1:
+            raise TabFilletError(f"Unexpected number of fillet candidates: {len(candidates)}")
+        newFace = candidates[0].intersection(self.substrates)
+        if not isinstance(newFace, LineString):
+            raise TabFilletError(f"Unexpected result of filleted tab face: {type(newFace)}")
+        if Point(tabFace.coords[0]).distance(Point(newFace.coords[0])) > Point(tabFace.coords[0]).distance(Point(newFace.coords[-1])):
+            newFace = LineString(reversed(newFace.coords))
+        return candidates[0], newFace
 
     def _strPosition(self, point):
         msg = f"[{toMm(point[0])}, {toMm(point[1])}]"

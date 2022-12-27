@@ -285,20 +285,20 @@ def buildTabs(preset, panel, substrates, boundarySubstrates):
             panel.buildTabAnnotationsFixed(properties["hcount"],
                 properties["vcount"], properties["hwidth"], properties["vwidth"],
                 properties["mindistance"], boundarySubstrates)
-            return panel.buildTabsFromAnnotations()
+            return panel.buildTabsFromAnnotations(properties["fillet"])
         if type == "spacing":
             panel.clearTabsAnnotations()
             panel.buildTabAnnotationsSpacing(properties["spacing"],
                 properties["hwidth"], properties["vwidth"], boundarySubstrates)
-            return panel.buildTabsFromAnnotations()
+            return panel.buildTabsFromAnnotations(properties["fillet"])
         if type == "corner":
             panel.clearTabsAnnotations()
             panel.buildTabAnnotationsCorners(properties["width"])
-            return panel.buildTabsFromAnnotations()
+            return panel.buildTabsFromAnnotations(properties["fillet"])
         if type == "full":
             return panel.buildFullTabs(properties["cutout"])
         if type == "annotation":
-            return panel.buildTabsFromAnnotations()
+            return panel.buildTabsFromAnnotations(properties["fillet"])
         if type == "plugin":
             pluginInst = properties["code"](preset, properties["arg"])
             return pluginInst.buildTabs(panel)

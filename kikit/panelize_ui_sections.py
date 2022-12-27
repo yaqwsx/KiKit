@@ -355,6 +355,10 @@ TABS_SECTION = {
     "tabfootprints": SFootprintList(
         typeIn(["annotation"]),
         "Specify custom footprints that will be used for tab annotations."),
+    "fillet": SLength(
+        typeIn(["fixed", "spacing", "corner", "annotation", "plugin"]),
+        "Specify tab fillet radius (experimental)"
+    ),
     "code": SPlugin(
         plugin.TabsPlugin,
         typeIn(["plugin"]),
