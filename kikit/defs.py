@@ -1,4 +1,5 @@
 from enum import Enum, IntEnum
+from .units import mm, inch
 
 # These classes miss in the exported interface
 
@@ -88,3 +89,20 @@ class MODULE_ATTR_T(IntEnum):
 PAPER_SIZES = [f"A{size}" for size in range(6)] + ["A", "B", "C", "D", "E"] + \
               ["USLetter", "USLegal", "USLedger"]
 PAPER_SIZES = PAPER_SIZES + [f"{paper}-portrait" for paper in PAPER_SIZES]
+
+PAPER_DIMENSIONS = {
+    "A5": (210 * mm, 148 * mm),
+    "A4": (297 * mm, 210 * mm),
+    "A3": (420 * mm, 297 * mm),
+    "A2": (594 * mm, 420 * mm),
+    "A1": (841 * mm, 594 * mm),
+    "A0": (1198 * mm, 841 * mm),
+    "A": (11 * inch, 8.5 * inch),
+    "B": (17 * inch, 11 * inch),
+    "C": (22 * inch, 17 * inch),
+    "D": (34 * inch, 22 * inch),
+    "E": (44 * inch, 34 * inch),
+    "USLetter": (11 * inch, 8.5 * inch),
+    "USLegal": (14 * inch, 8.5 * inch),
+    "USLedger": (17 * inch, 11 * inch)
+}

@@ -15,11 +15,29 @@ inch = 1000 * mil
 deg = 10
 rad = 180 / math.pi * deg
 
-UNIT_SPLIT = re.compile(r"\s*(-?\s*\d+(\.\d*)?)\s*(\w+)$")
+UNIT_SPLIT = re.compile(r"\s*(-?\s*\d+(\.\d*)?)\s*(\w+|\%)$")
 
 class BaseValue(int):
     """
     Value in base units that remembers its original string representation.
+    """
+    def __new__(cls, value, strRepr):
+        x = super().__new__(cls, value)
+        x.str = strRepr
+        return x
+
+    def __str__(self):
+        return self.str
+
+    def __repr__(self):
+        return f"<BaseValue: {int(self)}, {self.str} >"
+
+
+class PercentageValue(float):
+    """
+    Value in percents that remembers its original string representation.
+
+    Value is stored as floating point number where 1 corresponds to 100 %.
     """
     def __new__(cls, value, strRepr):
         x = super().__new__(cls, value)
@@ -70,3 +88,7 @@ def readAngle(unitStr):
     if not isinstance(unitStr, str):
         raise RuntimeError(f"Got '{unitStr}', an angle with units was expected")
     return BaseValue(readUnit(unitDir, unitStr), unitStr)
+
+def readPercents(unitStr):
+    unitDir = { "%": 0.01 }
+    return PercentageValue(readUnit(unitDir, unitStr), unitStr)

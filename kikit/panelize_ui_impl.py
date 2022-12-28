@@ -5,7 +5,7 @@ from kikit.defs import Layer
 from shapely.geometry import box
 from kikit.plugin import HookPlugin
 from kikit.text import kikitTextVars
-from kikit.units import BaseValue
+from kikit.units import BaseValue, PercentageValue
 from kikit.panelize_ui_sections import *
 from kikit.substrate import SubstrateNeighbors
 from kikit.common import resolveAnchor
@@ -32,6 +32,8 @@ def encodePreset(value):
     if value is None:
         return "none"
     if isinstance(value, BaseValue):
+        return str(value)
+    if isinstance(value, PercentageValue):
         return str(value)
     if isinstance(value, EDA_TEXT_HJUSTIFY_T) or isinstance(value, EDA_TEXT_VJUSTIFY_T):
         return writeJustify(value)
@@ -644,8 +646,12 @@ def positionPanel(preset, panel):
     Position the panel on the paper
     """
     try:
-        origin = resolveAnchor(preset["anchor"])(panel.boardSubstrate.boundingBox())
-        translateVec = (-origin[0] + preset["posx"], -origin[1] + preset["posy"])
+        bBox = panel.boardSubstrate.boundingBox()
+        pageSize = panel.getPageDimensions()
+        posx = preset["posx"] * pageSize[0] if isinstance(preset["posx"], PercentageValue) else preset["posx"]
+        posy = preset["posy"] * pageSize[1] if isinstance(preset["posy"], PercentageValue) else preset["posy"]
+        origin = resolveAnchor(preset["anchor"])(bBox)
+        translateVec = (-origin[0] + posx, -origin[1] + posy)
         panel.translate(translateVec)
     except KeyError as e:
         raise PresetError(f"Missing parameter '{e}' in section 'page'")

@@ -22,10 +22,11 @@ from collections import OrderedDict
 
 from kikit import substrate
 from kikit import units
+from kikit.kicadUtil import getPageDimensionsFromAst
 from kikit.substrate import Substrate, linestringToKicad, extractRings
-from kikit.defs import STROKE_T, Layer, EDA_TEXT_HJUSTIFY_T, EDA_TEXT_VJUSTIFY_T, PAPER_SIZES
+from kikit.defs import PAPER_DIMENSIONS, STROKE_T, Layer, EDA_TEXT_HJUSTIFY_T, EDA_TEXT_VJUSTIFY_T, PAPER_SIZES
 from kikit.common import *
-from kikit.sexpr import parseSexprF, SExpr, Atom
+from kikit.sexpr import parseSexprF, SExpr, Atom, findNode
 from kikit.annotations import AnnotationReader, TabAnnotation
 from kikit.drc import DrcExclusion, readBoardDrcExclusions, serializeExclusion
 
@@ -734,6 +735,14 @@ class Panel:
         if not isinstance(board, pcbnew.BOARD):
             board = pcbnew.LoadBoard(board)
         self.board.SetPageSettings(board.GetPageSettings())
+        self.pageSize = None
+
+        # What follows is a hack as KiCAD has no API for page access. Therefore,
+        # we have to read out the page size from the source board and save it so
+        # we can recover it.
+        with open(board.GetFileName(), "r") as f:
+            tree = parseSexprF(f, limit=10) # Introduce limit to speed up parsing
+        self._inheritedPageDimensions = getPageDimensionsFromAst(tree)
 
     def setPageSize(self, size: Union[str, Tuple[int, int]] ) -> None:
         """
@@ -743,6 +752,23 @@ class Panel:
             if size not in PAPER_SIZES:
                 raise RuntimeError(f"Unknown paper size: {size}")
         self.pageSize = size
+
+    def getPageDimensions(self) -> Tuple[KiLength, KiLength]:
+        """
+        Get page size in KiCAD units for the current panel
+        """
+        if self.pageSize is None:
+            return self._inheritedPageDimensions
+        if isinstance(self.pageSize, tuple):
+            return self.pageSize
+        if isinstance(self.pageSize, str):
+            if self.pageSize.endswith("-portrait"):
+                # Portrait
+                pageSize = PAPER_DIMENSIONS[self.pageSize.split("-")[0]]
+                return pageSize[1], pageSize[0]
+            else:
+                return PAPER_DIMENSIONS[self.pageSize]
+        raise RuntimeError("Unknown page dimension - this is probably a bug and you should report it.")
 
     def setProperties(self, properties):
         """

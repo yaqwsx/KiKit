@@ -289,8 +289,8 @@ def doPanelization(input, output, preset, plugins=[]):
     ki.buildCopperfill(preset["copperfill"], panel)
 
     ki.setStackup(preset["source"], panel)
-    ki.positionPanel(preset["page"], panel)
     ki.setPageSize(preset["page"], panel, board)
+    ki.positionPanel(preset["page"], panel)
 
     ki.runUserScript(preset["post"], panel)
     useHookPlugins(lambda x: x.finish(panel))
@@ -348,8 +348,8 @@ def separate(input, output, source, page, debug, keepannotations, preservearcs):
         panel.appendBoard(input, destination, sourceArea,
             interpretAnnotations=(not keepannotations))
         ki.setStackup(preset["source"], panel)
-        ki.positionPanel(preset["page"], panel)
         ki.setPageSize(preset["page"], panel, board)
+        ki.positionPanel(preset["page"], panel)
 
         panel.save(reconstructArcs=preservearcs)
     except Exception as e:

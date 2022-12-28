@@ -2,7 +2,7 @@ from dataclasses import dataclass
 import os
 from typing import Any, List
 from kikit import plugin
-from kikit.units import readLength, readAngle
+from kikit.units import readLength, readAngle, readPercents
 from kikit.defs import Layer, EDA_TEXT_HJUSTIFY_T, EDA_TEXT_VJUSTIFY_T, PAPER_SIZES
 
 class PresetError(RuntimeError):
@@ -29,6 +29,16 @@ class SLength(SectionBase):
         super().__init__(*args, **kwargs)
 
     def validate(self, x):
+        return readLength(x)
+
+class SLengthOrPercent(SectionBase):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def validate(self, x):
+        x = x.strip()
+        if x.endswith("%"):
+            return readPercents(x)
         return readLength(x)
 
 class SAngle(SectionBase):
@@ -648,12 +658,12 @@ PAGE_SECTION = {
         ANCHORS,
         always(),
         "Anchor for positioning the panel on the page"),
-    "posx": SLength(
+    "posx": SLengthOrPercent(
         always(),
-        "X position of the panel"),
-    "posy": SLength(
+        "X position of the panel. Length or percents of page width."),
+    "posy": SLengthOrPercent(
         always(),
-        "Y position of the panel"),
+        "Y position of the panel. Length or percents of page height."),
     "width": SLength(
         typeIn(["user"]),
         "Width of custom paper"),

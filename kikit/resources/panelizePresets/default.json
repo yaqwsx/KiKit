@@ -172,9 +172,9 @@
     },
     "page": {
         "type": "inherit",
-        "anchor": "tl",
-        "posx": "15mm",
-        "posy": "15mm",
+        "anchor": "mt",
+        "posx": "50%",
+        "posy": "20mm",
         "width": "1000mm",
         "height": "1000mm"
     },

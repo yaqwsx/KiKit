@@ -499,8 +499,9 @@ size from the source board. This feature is not supported on KiCAD 5
 
 - `anchor` - Point of the panel to be placed at given position. Can be one of
   `tl`, `tr`, `bl`, `br` (corners), `mt`, `mb`, `ml`, `mr` (middle of sides),
-  `c` (center). The anchors refer to the panel outline. Default `tl`
-- `posx`, `posy` - the position of the panel on the page. Default `15mm`
+  `c` (center). The anchors refer to the panel outline. Default `mt`
+- `posx`, `posy` - the position of the panel on the page. Default `50%` for
+  `posx` and `20mm` for `posy`.
 
 ### Custom
 
