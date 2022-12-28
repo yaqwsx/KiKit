@@ -67,6 +67,8 @@
         "vspace": "2mm",
         "mintotalheight": "0mm",
         "mintotalwidth": "0mm",
+        "maxtotalheight": "10m",
+        "maxtotalwidth": "10m",
         "chamfer": "0mm",
         "fillet": "0mm",
         "code": "none",

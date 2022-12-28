@@ -32,6 +32,9 @@ from kikit.drc import DrcExclusion, readBoardDrcExclusions, serializeExclusion
 class PanelError(RuntimeError):
     pass
 
+class TooLargeError(PanelError):
+    pass
+
 def identity(x):
     return x
 
@@ -1127,7 +1130,8 @@ class Panel:
         return self.substrates[substrateCount:]
 
     def makeFrame(self, width: KiLength, hspace: KiLength, vspace: KiLength,
-                  minWidth: KiLength=0, minHeight: KiLength=0) \
+                  minWidth: KiLength = 0, minHeight: KiLength = 0,
+                  maxWidth: Optional[KiLength] = None, maxHeight: Optional[KiLength] = None) \
                      -> Tuple[Iterable[LineString], Iterable[LineString]]:
         """
         Build a frame around the boards. Specify width and spacing between the
@@ -1148,9 +1152,21 @@ class Panel:
 
         minHeight - if the panel doesn't meet this height, it is extended
 
+        maxWidth - if the panel doesn't meet this width, TooLargeError is raised
+
+        maxHeight - if the panel doesn't meet this height, TooLargeHeight is raised
         """
         frameInnerRect = expandRect(shpBoxToRect(self.boardsBBox()), hspace, vspace)
         frameOuterRect = expandRect(frameInnerRect, width)
+
+        sizeErrors = []
+        if maxWidth is not None and frameOuterRect.GetWidth() > maxWidth:
+            sizeErrors.append(f"Panel width {frameOuterRect.GetWidth() / units.mm} mm exceeds the limit {maxWidth / units.mm} mm")
+        if maxHeight is not None and frameOuterRect.GetHeight() > maxHeight:
+            sizeErrors.append(f"Panel height {frameOuterRect.GetHeight() / units.mm} mm exceeds the limit {maxHeight / units.mm} mm")
+        if len(sizeErrors) > 0:
+            raise TooLargeError(f"Panel doesn't meet size constraints:\n" + "\n".join(f"- {x}" for x in sizeErrors))
+
         if frameOuterRect.GetWidth() < minWidth:
             diff = minWidth - frameOuterRect.GetWidth()
             frameOuterRect.SetX(frameOuterRect.GetX() - diff // 2)
@@ -1173,7 +1189,8 @@ class Panel:
 
     def makeTightFrame(self, width: KiLength, slotwidth: KiLength,
                       hspace: KiLength, vspace: KiLength,  minWidth: KiLength=0,
-                      minHeight: KiLength=0) -> None:
+                      minHeight: KiLength=0, maxWidth: Optional[KiLength] = None,
+                      maxHeight: Optional[KiLength] = None) -> None:
         """
         Build a full frame with board perimeter milled out.
         Add your boards to the panel first using appendBoard or makeGrid.
@@ -1192,8 +1209,11 @@ class Panel:
 
         minHeight - if the panel doesn't meet this height, it is extended
 
+        maxWidth - if the panel doesn't meet this width, TooLargeError is raised
+
+        maxHeight - if the panel doesn't meet this height, TooLargeHeight is raised
         """
-        self.makeFrame(width, hspace, vspace, minWidth, minHeight)
+        self.makeFrame(width, hspace, vspace, minWidth, minHeight, maxWidth, maxHeight)
         boardSlot = GeometryCollection()
         for s in self.substrates:
             boardSlot = boardSlot.union(s.exterior())
@@ -1201,26 +1221,35 @@ class Panel:
         frameBody = box(*self.boardSubstrate.bounds()).difference(boardSlot)
         self.appendSubstrate(frameBody)
 
-    def makeRailsTb(self, thickness: KiLength, minHeight: KiLength=0):
+    def makeRailsTb(self, thickness: KiLength, minHeight: KiLength = 0,
+                    maxHeight: Optional[KiLength] = None) -> None:
         """
         Adds a rail to top and bottom. You can specify minimal height the panel
-        has to feature.
+        has to feature. You can also specify maximal height of the panel. If the
+        height would be exceeded, TooLargeError is raised.
         """
         minx, miny, maxx, maxy = self.panelBBox()
-        if maxy - miny + 2 * thickness < minHeight:
+        height = maxy - miny + 2 * thickness
+        if maxHeight is not None and height > maxHeight:
+            raise TooLargeError(f"Panel height {height / units.mm} mm exceeds the limit {maxHeight / units.mm} mm")
+        if height < minHeight:
             thickness = (minHeight - maxy + miny) // 2
         topRail = box(minx, maxy, maxx, maxy + thickness)
         bottomRail = box(minx, miny, maxx, miny - thickness)
         self.appendSubstrate(topRail)
         self.appendSubstrate(bottomRail)
 
-    def makeRailsLr(self, thickness: KiLength, minWidth: KiLength=0):
+    def makeRailsLr(self, thickness: KiLength, minWidth: KiLength = 0,
+                    maxWidth: Optional[KiLength] = None) -> None:
         """
         Adds a rail to left and right. You can specify minimal width the panel
         has to feature.
         """
         minx, miny, maxx, maxy = self.panelBBox()
-        if maxx - minx + 2 * thickness < minWidth:
+        width = maxx - minx + 2 * thickness
+        if maxWidth is not None and width > maxWidth:
+            raise TooLargeError(f"Panel width {width / units.mm} mm exceeds the limit {maxWidth / units.mm} mm")
+        if width < minWidth:
             thickness = (minWidth - maxx + minx) // 2
         leftRail = box(minx - thickness, miny, minx, maxy)
         rightRail = box(maxx, miny, maxx + thickness, maxy)
