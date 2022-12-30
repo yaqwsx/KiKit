@@ -4,6 +4,7 @@ from shapely.geometry import (Polygon, MultiPolygon, LineString,
 from shapely.geometry.collection import GeometryCollection
 from shapely.ops import orient, unary_union, split, nearest_points
 import shapely
+import json
 import numpy as np
 from kikit.intervals import Interval, BoxNeighbors, BoxPartitionLines
 from pcbnewTransition import pcbnew, isV6
@@ -719,20 +720,21 @@ class Substrate:
             message += "- too wide tab so it does not hit the board,\n"
             message += "- annotation is placed inside the board,\n"
             message += "- ray length is not sufficient,\n"
-            raise RuntimeError(message)
+            raise RuntimeError(message) from None
         except TabFilletError as e:
-            message = "Cannot create fillet for tab: {e}\n"
+            message = f"Cannot create fillet for tab: {e}\n"
             message += f"  Annotation position {self._strPosition(origin)}\n"
             message += "This is a bug. Please open an issue and provide the board on which the fillet failed."
-            raise RuntimeError(message)
+            raise RuntimeError(message) from None
 
     def _makeTabFillet(self, tab: Polygon, tabFace: LineString, fillet: KiLength) \
             -> Tuple[Polygon, LineString]:
         if fillet == 0:
             return tab, tabFace
         joined = self.substrates.union(tab)
-        rounded = joined.buffer(fillet).buffer(-fillet)
-        remainder = rounded.difference(self.substrates)
+        RESOLUTION = 64
+        rounded = joined.buffer(fillet, resolution=RESOLUTION).buffer(-fillet, resolution=RESOLUTION)
+        remainder = rounded.difference(self.substrates,)
 
         if isinstance(remainder, MultiPolygon) or isinstance(remainder, GeometryCollection):
             geoms = remainder.geoms
@@ -744,8 +746,12 @@ class Substrate:
         if len(candidates) != 1:
             raise TabFilletError(f"Unexpected number of fillet candidates: {len(candidates)}")
         newFace = candidates[0].intersection(self.substrates)
+        if isinstance(newFace, GeometryCollection):
+            newFace = MultiLineString([x for x in newFace.geoms if not isinstance(x, Polygon)])
+        if isinstance(newFace, MultiLineString):
+            newFace = shapely.ops.linemerge(newFace)
         if not isinstance(newFace, LineString):
-            raise TabFilletError(f"Unexpected result of filleted tab face: {type(newFace)}")
+            raise TabFilletError(f"Unexpected result of filleted tab face: {type(newFace)}, {json.dumps(shapely.geometry.mapping(newFace), indent=4)}")
         if Point(tabFace.coords[0]).distance(Point(newFace.coords[0])) > Point(tabFace.coords[0]).distance(Point(newFace.coords[-1])):
             newFace = LineString(reversed(newFace.coords))
         return candidates[0], newFace

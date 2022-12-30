@@ -548,9 +548,9 @@ class Panel:
         """
         boardsEdges = list(chain(*[sub.serialize(reconstructArcs) for sub in self.substrates]))
 
-        surrounding = self.boardSubstrate.substrates.difference(
+        surrounding = self.boardSubstrate.substrates.simplify(fromMm(0.01)).difference(
             shapely.ops.unary_union(list(
-                sub.substrates.buffer(fromMm(0.2)) for sub in self.substrates)))
+                sub.substrates.buffer(fromMm(0.2)) for sub in self.substrates)).simplify(fromMm(0.01)))
         surroundingSubstrate = Substrate([])
         surroundingSubstrate.union(surrounding)
         boardsEdges += surroundingSubstrate.serialize()
