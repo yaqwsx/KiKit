@@ -568,6 +568,7 @@ class PanelizeDialog(wx.Dialog):
                 with open(pathname, "r") as file:
                     preset = json.load(file)
                     self.populateInitialValue(preset)
+                    self.OnChange()
             except Exception as e:
                 wx.MessageBox(f"Cannot load configuration: {e}", "Error",
                     style=wx.OK | wx.ICON_ERROR, parent=self)

@@ -238,7 +238,7 @@ LAYOUT_SECTION = {
         "Layout type"),
     "alternation": SChoice(
         ["none", "rows", "cols", "rowsCols"],
-        typeIn(["grid"]),
+        typeIn(["grid", "plugin"]),
         "Specify alternations of board rotation"),
     "hspace": SLength(
         always(),
@@ -250,31 +250,31 @@ LAYOUT_SECTION = {
         never(),
         "Specify the gap between the boards in both direction"),
     "hbackbone": SLength(
-        typeIn(["grid"]),
+        typeIn(["grid", "plugin"]),
         "The width of horizontal backbone (0 means no backbone)"),
     "vbackbone": SLength(
-        typeIn(["grid"]),
+        typeIn(["grid", "plugin"]),
         "The width of vertical backbone (0 means no backbone)"),
     "hboneskip": SNum(
-        typeIn(["grid"]),
+        typeIn(["grid", "plugin"]),
         "Skip every given number of horizontal backbones"),
     "vboneskip": SNum(
-        typeIn(["grid"]),
+        typeIn(["grid", "plugin"]),
         "Skip every given number of vertical backbones"),
     "rotation": SAngle(
         always(),
         "Rotate the boards before placing them in the panel"),
     "rows": SNum(
-        typeIn(["grid"]),
+        typeIn(["grid", "plugin"]),
         "Specify the number of rows in the grid pattern"),
     "cols": SNum(
-        typeIn(["grid"]),
+        typeIn(["grid", "plugin"]),
         "Specify the number of columns in the grid pattern"),
     "vbonecut": SBool(
-        typeIn(["grid"]),
+        typeIn(["grid", "plugin"]),
         "Add cuts in vertical backbones for easier depanelization"),
     "hbonecut": SBool(
-        typeIn(["grid"]),
+        typeIn(["grid", "plugin"]),
         "Add cuts in horizontal backbones for easier depanelization"),
     "renamenet": SStr(
         always(),
@@ -339,31 +339,31 @@ TABS_SECTION = {
         always(),
         "Tab type"),
     "vwidth": SLength(
-        typeIn(["fixed", "spacing"]),
+        typeIn(["fixed", "spacing", "plugin"]),
         "Specify width of vertical tabs"),
     "hwidth": SLength(
-        typeIn(["fixed", "spacing"]),
+        typeIn(["fixed", "spacing", "plugin"]),
         "Specify width of vertical tabs"),
     "width": SLength(
-        typeIn(["corner"]),
+        typeIn(["corner", "plugin"]),
         "Specify tab width"),
     "mindistance": SLength(
-        typeIn(["fixed"]),
+        typeIn(["fixed", "plugin"]),
         "Minimal spacing between the tabs. If there are too many tabs, their count is reduced."),
     "spacing": SLength(
-        typeIn(["spacing"]),
+        typeIn(["spacing", "plugin"]),
         "The maximum spacing of the tabs."),
     "vcount": SNum(
-        typeIn(["fixed"]),
+        typeIn(["fixed", "plugin"]),
         "Number of tabs in a given direction."),
     "hcount": SNum(
-        typeIn(["fixed"]),
+        typeIn(["fixed", "plugin"]),
         "Number of tabs in a given direction."),
     "cutout": SLength(
-        typeIn(["fixed"]),
+        typeIn(["fixed", "plugin"]),
         "Depth of cutouts into the frame"),
     "tabfootprints": SFootprintList(
-        typeIn(["annotation"]),
+        typeIn(["annotation", "plugin"]),
         "Specify custom footprints that will be used for tab annotations."),
     "fillet": SLength(
         typeIn(["fixed", "spacing", "corner", "annotation", "plugin"]),
@@ -389,25 +389,25 @@ CUTS_SECTION = {
         always(),
         "Cut type"),
     "drill": SLength(
-        typeIn(["mousebites"]),
+        typeIn(["mousebites", "plugin"]),
         "Drill diameter"),
     "spacing": SLength(
-        typeIn(["mousebites"]),
+        typeIn(["mousebites", "plugin"]),
         "Hole spacing"),
     "offset": SLength(
-        typeIn(["mousebites", "vcuts"]),
+        typeIn(["mousebites", "vcuts", "plugin"]),
         "Offset cuts into the board"),
     "prolong": SLength(
-        typeIn(["mousebites", "layer"]),
+        typeIn(["mousebites", "layer", "plugin"]),
         "Tangentiall prolong cuts (to cut mill fillets)"),
     "clearance": SLength(
-        typeIn(["vcuts"]),
+        typeIn(["vcuts", "plugin"]),
         "Add copper clearance around V-cuts"),
     "cutcurves": SBool(
-        typeIn(["vcuts"]),
+        typeIn(["vcuts", "plugin"]),
         "Approximate curves with straight cut"),
     "layer": SLayer(
-        typeIn(["vcuts", "layer"]),
+        typeIn(["vcuts", "layer", "plugin"]),
         "Specify layer for the drawings"),
     "code": SPlugin(
         plugin.CutsPlugin,
@@ -427,45 +427,45 @@ FRAMING_SECTION = {
         always(),
         "Framing type"),
     "hspace": SLength(
-        typeIn(["frame", "railslr", "tightframe"]),
+        typeIn(["frame", "railslr", "tightframe", "plugin"]),
         "Horizontal space between PCBs and the frame"),
     "vspace": SLength(
-        typeIn(["frame", "railstb", "tightframe"]),
+        typeIn(["frame", "railstb", "tightframe", "plugin"]),
         "Vertical space between PCBs and the frame"),
     "space": SLength(
         never(),
         "Space between frame/rails and PCBs"),
     "width": SLength(
-        typeIn(["frame", "railstb", "railslr", "tightframe"]),
+        typeIn(["frame", "railstb", "railslr", "tightframe", "plugin"]),
         "Width of the framing"),
     "mintotalheight": SLength(
-        typeIn(["frame", "railstb", "tightframe"]),
+        typeIn(["frame", "railstb", "tightframe", "plugin"]),
         "Minimal height of the panel"
     ),
     "mintotalwidth": SLength(
-        typeIn(["frame", "raillr", "tightframe"]),
+        typeIn(["frame", "raillr", "tightframe", "plugin"]),
         "Minimal width of the panel"
     ),
     "maxtotalheight": SLength(
-        typeIn(["frame", "railstb", "tightframe"]),
+        typeIn(["frame", "railstb", "tightframe", "plugin"]),
         "Maximal height of the panel"
     ),
     "maxtotalwidth": SLength(
-        typeIn(["frame", "raillr", "tightframe"]),
+        typeIn(["frame", "raillr", "tightframe", "plugin"]),
         "Maximal width of the panel"
     ),
     "slotwidth": SLength(
-        typeIn(["tightframe"]),
+        typeIn(["tightframe", "plugin"]),
         "Width of the milled slot"),
     "cuts": SChoice(
         ["none", "both", "v", "h"],
-        typeIn(["frame"]),
+        typeIn(["frame", "plugin"]),
         "Add cuts to the corners of the frame"),
     "chamfer": SLength(
-        typeIn(["tightframe", "frame", "railslr", "railstb"]),
+        typeIn(["tightframe", "frame", "railslr", "railstb", "plugin"]),
         "Add chamfer to the 4 corners of the panel. Specify chamfer width."),
     "fillet": SLength(
-        typeIn(["tightframe", "frame", "railslr", "railstb"]),
+        typeIn(["tightframe", "frame", "railslr", "railstb", "plugin"]),
         "Add fillet to the 4 corners of the panel. Specify fillet radius."),
     "code": SPlugin(
         plugin.FramingPlugin,
@@ -488,16 +488,16 @@ TOOLING_SECTION = {
         always(),
         "Tooling type"),
     "hoffset": SLength(
-        typeIn(["3hole", "4hole"]),
+        typeIn(["3hole", "4hole", "plugin"]),
         "Horizontal offset for the hole"),
     "voffset": SLength(
-        typeIn(["3hole", "4hole"]),
+        typeIn(["3hole", "4hole", "plugin"]),
         "Vertical offset for the hole"),
     "size": SLength(
-        typeIn(["3hole", "4hole"]),
+        typeIn(["3hole", "4hole", "plugin"]),
         "Hole diameter"),
     "paste": SBool(
-        typeIn(["3hole", "4hole"]),
+        typeIn(["3hole", "4hole", "plugin"]),
         "Include holes on the paste layer"),
     "code": SPlugin(
         plugin.ToolingPlugin,
@@ -517,16 +517,16 @@ FIDUCIALS_SECTION = {
         always(),
         "Fiducial type"),
     "hoffset": SLength(
-        typeIn(["3fid", "4fid"]),
+        typeIn(["3fid", "4fid", "plugin"]),
         "Horizontal offset for the fiducial"),
     "voffset": SLength(
-        typeIn(["3fid", "4fid"]),
+        typeIn(["3fid", "4fid", "plugin"]),
         "Horizontal offset for the fiducial"),
     "coppersize": SLength(
-        typeIn(["3fid", "4fid"]),
+        typeIn(["3fid", "4fid", "plugin"]),
         "Diameter of the copper part"),
     "opening": SLength(
-        typeIn(["3fid", "4fid"]),
+        typeIn(["3fid", "4fid", "plugin"]),
         "Diameter of the opening"),
     "code": SPlugin(
         plugin.FiducialsPlugin,
