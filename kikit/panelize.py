@@ -1980,10 +1980,17 @@ class Panel:
             cutShape = square.difference(filletCircle)
             self.boardSubstrate.cut(cutShape)
 
-    def addCornerChamfers(self, size):
+    def addCornerChamfers(self, horizontalSize: KiLength, verticalSize: Optional[KiLength] = None):
+        """
+        Add chamfers to the panel frame. The chamfer is specified as size in
+        horizontal and vertical direction. If you specify only the horizontal
+        one, the chamfering will be 45°.
+        """
+        if verticalSize is None:
+            verticalSize = horizontalSize
         corners = self.panelCorners(-SHP_EPSILON, -SHP_EPSILON)
-        verticalStops = self.panelCorners(-SHP_EPSILON, size)
-        horizontalStops = self.panelCorners(size, -SHP_EPSILON)
+        verticalStops = self.panelCorners(-SHP_EPSILON, verticalSize)
+        horizontalStops = self.panelCorners(horizontalSize, -SHP_EPSILON)
         for t, v, h in zip(corners, verticalStops, horizontalStops):
             cutPoly = Polygon([t, v, h, t])
             self.boardSubstrate.cut(cutPoly)

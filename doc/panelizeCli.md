@@ -365,7 +365,8 @@ left/right rails.
   frame/rail. `space` overrides `hspace and vspace`.
 - `width` - specify with of the rails or frame
 - `fillet`, `chamfer` - fillet/chamfer frame corners. Specify radius or chamfer
-  size.
+  size. You can also separately specify `chamferwidth` and `chamferheight` to
+  create a non 45° chamfer.
 - `mintotalheight`, `mintotalwidth` – if needed, add extra material to the rail
   or frame to meet the minimal requested size. Useful for services that require
   minimal panel size.

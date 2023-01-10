@@ -461,9 +461,15 @@ FRAMING_SECTION = {
         ["none", "both", "v", "h"],
         typeIn(["frame", "plugin"]),
         "Add cuts to the corners of the frame"),
-    "chamfer": SLength(
+    "chamferwidth": SLength(
         typeIn(["tightframe", "frame", "railslr", "railstb", "plugin"]),
         "Add chamfer to the 4 corners of the panel. Specify chamfer width."),
+    "chamferheight": SLength(
+        typeIn(["tightframe", "frame", "railslr", "railstb", "plugin"]),
+        "Add chamfer to the 4 corners of the panel. Specify chamfer height."),
+    "chamfer": SLength(
+        typeIn(["tightframe", "frame", "railslr", "railstb", "plugin"]),
+        "Add chamfer to the 4 corners of the panel. Specifies a 45° chamfer."),
     "fillet": SLength(
         typeIn(["tightframe", "frame", "railslr", "railstb", "plugin"]),
         "Add fillet to the 4 corners of the panel. Specify fillet radius."),
@@ -481,6 +487,8 @@ def ppFraming(section):
     # The space parameter overrides hspace and vspace
     if "space" in section:
         section["hspace"] = section["vspace"] = section["space"]
+    if "chamfer" in section:
+        section["chamferwidth"] = section["chamferheight"] = section["chamfer"]
 
 TOOLING_SECTION = {
     "type": SChoice(

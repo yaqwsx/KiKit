@@ -420,19 +420,19 @@ def addFilletAndChamfer(preset, panel):
     """
     Add chamfer of frame based on the preset
     """
-    chamfer = preset["chamfer"]
-    if chamfer < 0:
-        raise PresetError(f"Invalid chamfer value specified: {chamfer}")
+    chamferWidth, chamferHeight = preset["chamferwidth"], preset["chamferheight"]
+    if chamferWidth < 0 or chamferHeight < 0:
+        raise PresetError(f"Invalid chamfer value specified: [{chamferWidth}, {chamferHeight}]")
     fillet = preset["fillet"]
     if fillet < 0:
         raise PresetError(f"Invalid fillet value specified: {fillet}")
-    if chamfer != 0 and fillet != 0:
+    if (chamferWidth != 0 or chamferHeight != 0) and fillet != 0:
         raise PresetError("You cannot specify both, chamfer and fillet. Set one of them to 0.")
 
     if fillet > 0:
         panel.addCornerFillets(fillet)
-    if chamfer > 0:
-        panel.addCornerChamfers(chamfer)
+    if chamferWidth > 0 or chamferHeight > 0:
+        panel.addCornerChamfers(chamferWidth, chamferHeight)
 
 
 def buildFraming(preset, panel):
