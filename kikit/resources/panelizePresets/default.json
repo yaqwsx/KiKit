@@ -80,6 +80,7 @@
         "layout": "3hole",
         "hoffset": "0mm",
         "voffset": "0mm",
+        "size": "2mm",
         "paste": false,
         "code": "none",
         "arg": ""
