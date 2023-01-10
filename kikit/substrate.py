@@ -523,6 +523,12 @@ class Substrate:
         """
         return self.substrates.bounds
 
+    def interiors(self):
+        """
+        Return shapely interiors of the substrate
+        """
+        return self.substrates.interiors
+
     def midpoint(self) -> Tuple[int, int]:
         """
         Return a mid point of the bounding box

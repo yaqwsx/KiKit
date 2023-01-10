@@ -636,6 +636,9 @@ POST_SECTION = {
     "millradius": SLength(
         always(),
         "Simulate milling operation"),
+    "millradiusouter": SLength(
+        always(),
+        "Simulate milling operation only on the outer perimeter of boards"),
     "reconstructarcs": SBool(
         always(),
         "Try to reconstruct arcs"),

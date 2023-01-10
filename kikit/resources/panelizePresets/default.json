@@ -166,6 +166,7 @@
         "copperfill": false,
         "reconstructarcs": false,
         "millradius": "0mm",
+        "millradiusouter": "0mm",
         "script": "",
         "scriptarg": "",
         "origin": "tl",

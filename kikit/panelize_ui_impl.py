@@ -600,8 +600,12 @@ def buildPostprocessing(preset, panel):
         type = preset["type"]
         if type != "auto":
             raise PresetError(f"Unknown type '{type}' of postprocessing specification.")
+        if preset["millradius"] > 0 and preset["millradiusouter"] > 0:
+            raise PresetError("You cannot specify both, millradius and millradiusouter")
         if preset["millradius"] > 0:
             panel.addMillFillets(preset["millradius"])
+        if preset["millradiusouter"] > 0:
+            panel.addTabMillFillets(preset["millradiusouter"])
         if preset["copperfill"]:
             panel.copperFillNonBoardAreas()
         if preset["origin"]:

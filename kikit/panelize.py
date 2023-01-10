@@ -1450,9 +1450,22 @@ class Panel:
     def addMillFillets(self, millRadius):
         """
         Add fillets to inner conernes which will be produced a by mill with
-        given radius.
+        given radius. This operation simulares milling.
         """
         self.boardSubstrate.millFillets(millRadius)
+
+    def addTabMillFillets(self, millRadius):
+        """
+        Add fillets to inner conernes which will be produced a by mill with
+        given radius. Simulates milling only on the outside of the board;
+        internal features of the board are not affected.
+        """
+        self.boardSubstrate.millFillets(millRadius)
+        holes = []
+        for s in self.substrates:
+            for int in s.interiors():
+                holes.append(Polygon(int.coords))
+        self.boardSubstrate.cut(shapely.ops.unary_union(holes))
 
     def clearTabsAnnotations(self):
         """

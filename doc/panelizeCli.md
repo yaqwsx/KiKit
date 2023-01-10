@@ -548,6 +548,8 @@ Finishing touches to the panel.
 - `millradius` - simulate the milling operation (add fillets to the internal
   corners). Specify mill radius (usually 1 mm). 0 radius disables the
   functionality.
+- `millradiusouter` ­– same as the previous one, modifies only board outer
+  counter. No internal features of the board are affected.
 - `reconstructarcs` - the panelization process works on top of a polygonal
   representation of the board. This options allows to reconstruct the arcs in
   the design before saving the panel.
