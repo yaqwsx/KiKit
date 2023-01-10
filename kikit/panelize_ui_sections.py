@@ -468,7 +468,7 @@ FRAMING_SECTION = {
         typeIn(["tightframe", "frame", "railslr", "railstb", "plugin"]),
         "Add chamfer to the 4 corners of the panel. Specify chamfer height."),
     "chamfer": SLength(
-        typeIn(["tightframe", "frame", "railslr", "railstb", "plugin"]),
+        never(),
         "Add chamfer to the 4 corners of the panel. Specifies a 45° chamfer."),
     "fillet": SLength(
         typeIn(["tightframe", "frame", "railslr", "railstb", "plugin"]),
