@@ -654,7 +654,11 @@ POST_SECTION = {
     "origin": SChoice(
         ANCHORS + [""],
         always(),
-        "Place auxiliary origin")
+        "Place auxiliary origin"),
+    "dimensions": SBool(
+        always(),
+        "Add dimensions markings to the finished panel"
+    )
 }
 
 def ppPost(section):

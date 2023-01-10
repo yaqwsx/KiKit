@@ -470,6 +470,12 @@ class Panel:
         # dictionary of variables for each appended board.
         self.projectVars: List[Dict[str, str]] = []
 
+        # We want to prolong dimensions of the panel by the size of fillet or
+        # chamfer, thus, we have to remember them
+        self.filletSize: Optional[KiLength] = None
+        self.chamferWidth: Optional[KiLength] = None
+        self.chamferHeight: Optional[KiLength] = None
+
     def save(self, reconstructArcs: bool=False, refillAllZones: bool=False):
         """
         Saves the panel to a file and makes the requested changes to the prl and
@@ -1979,6 +1985,7 @@ class Panel:
         return cuts
 
     def addCornerFillets(self, radius):
+        self.filletSize = radius
         corners = self.panelCorners()
         filletOrigins = self.panelCorners(radius, radius)
         for corner, opposite in zip(corners, filletOrigins):
@@ -2001,6 +2008,9 @@ class Panel:
         """
         if verticalSize is None:
             verticalSize = horizontalSize
+        self.chamferWidth = horizontalSize
+        self.chamferHeight = verticalSize
+
         corners = self.panelCorners(-SHP_EPSILON, -SHP_EPSILON)
         verticalStops = self.panelCorners(-SHP_EPSILON, verticalSize)
         horizontalStops = self.panelCorners(horizontalSize, -SHP_EPSILON)
@@ -2036,6 +2046,40 @@ class Panel:
         self.setGridOrigin(self.getGridOrigin() + vec)
         for drcE in self.drcExclusions:
             drcE.position += vec
+
+    def addPanelDimensions(self, layer: Layer, offset: KiLength) -> None:
+        """
+        Add vertial and horizontal dimensions to the panel
+        """
+        minx, miny, maxx, maxy = self.panelBBox()
+
+        hDim = pcbnew.PCB_DIM_ORTHOGONAL(self.board)
+        hDim.SetOrientation(pcbnew.PCB_DIM_ORTHOGONAL.DIR_HORIZONTAL)
+        hDim.SetHeight(-offset)
+        hDim.SetStart(pcbnew.wxPoint(minx, miny))
+        hDim.SetEnd(pcbnew.wxPoint(maxx, miny))
+        hDim.SetLayer(layer)
+        hDim.SetUnitsMode(pcbnew.DIM_UNITS_MODE_MILLIMETRES)
+        hDim.SetSuppressZeroes(True)
+        if self.chamferHeight is not None:
+            hDim.SetExtensionOffset(-self.chamferHeight)
+        if self.filletSize is not None:
+            hDim.SetExtensionOffset(-self.filletSize)
+        self.board.Add(hDim)
+
+        vDim = pcbnew.PCB_DIM_ORTHOGONAL(self.board)
+        vDim.SetOrientation(pcbnew.PCB_DIM_ORTHOGONAL.DIR_VERTICAL)
+        vDim.SetHeight(-offset)
+        vDim.SetStart(pcbnew.wxPoint(minx, miny))
+        vDim.SetEnd(pcbnew.wxPoint(minx, maxy))
+        vDim.SetLayer(layer)
+        vDim.SetUnitsMode(pcbnew.DIM_UNITS_MODE_MILLIMETRES)
+        vDim.SetSuppressZeroes(True)
+        if self.chamferWidth is not None:
+            vDim.SetExtensionOffset(-self.chamferWidth)
+        if self.filletSize is not None:
+            vDim.SetExtensionOffset(-self.filletSize)
+        self.board.Add(vDim)
 
 
 def getFootprintByReference(board, reference):

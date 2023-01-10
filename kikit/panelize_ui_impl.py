@@ -612,6 +612,8 @@ def buildPostprocessing(preset, panel):
             origin = resolveAnchor(preset["origin"])(panel.boardSubstrate.boundingBox())
             panel.setAuxiliaryOrigin(origin)
             panel.setGridOrigin(origin)
+        if preset["dimensions"]:
+            panel.addPanelDimensions(Layer.Dwgs_User, fromMm(5))
     except KeyError as e:
         raise PresetError(f"Missing parameter '{e}' in section 'postprocessing'")
 

@@ -170,7 +170,8 @@
         "script": "",
         "scriptarg": "",
         "origin": "tl",
-        "refillzones": false
+        "refillzones": false,
+        "dimensions": false
     },
     "page": {
         "type": "inherit",

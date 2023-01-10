@@ -568,5 +568,6 @@ Finishing touches to the panel.
 - `origin` - specify if the auxilary origin an grid origin should be placed. Can
   be one of `tl`, `tr`, `bl`, `br` (corners), `mt`, `mb`, `ml`, `mr` (middle of
   sides), `c` (center). Empty string does not changes the origin.
+- `dimensions` - `true` or `false`. Draw dimensions with the panel size.
 
 
