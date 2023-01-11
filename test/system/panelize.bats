@@ -227,6 +227,13 @@ load common
         $RES/conn.kicad_pcb panel_t20.kicad_pcb
 }
 
+@test "Render dimensions" {
+    kikit panelize \
+        --post 'dimensions: true;' \
+        --debug 'trace: true; deterministic: true' \
+        $RES/conn.kicad_pcb panel_t20.kicad_pcb
+}
+
 
 @test "Use layout plugin" {
     kikit panelize --dump preset.json \
