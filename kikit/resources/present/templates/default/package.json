@@ -5,7 +5,7 @@
   "dependencies": {},
   "devDependencies": {
     "@fullhuman/postcss-purgecss": "^2.1.0",
-    "cssnano": "^4.1.10",
+    "cssnano": "^5.1.14",
     "postcss": "^7.0.36",
     "postcss-purgecss": "^2.0.3",
     "tailwindcss": "^1.2.0"
