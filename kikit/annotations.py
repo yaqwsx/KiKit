@@ -37,7 +37,7 @@ class TabAnnotation(KiKitAnnotation):
     @staticmethod
     def fromFootprint(footprint):
         origin = footprint.GetPosition()
-        radOrientation = footprint.GetOrientationRadians()
+        radOrientation = footprint.GetOrientation().AsRadians()
         direction = (np.cos(radOrientation), -np.sin(radOrientation))
         props = readKiKitProps(footprint)
         width = units.readLength(props["width"])
