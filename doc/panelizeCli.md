@@ -481,6 +481,8 @@ option from `postprocess`.
 
 - `date` - formats current date as `<year>-<month>-<day>`
 - `time24` - formats current time in 24-hour format
+- `year`, `month`, `day`, `hour`, `minute`, `second` - individual variables 
+  for any date format 
 - `boardTitle` - the title from the source board
 - `boardDate` - the date from the source board
 - `boardRevision` - the revision from the source board

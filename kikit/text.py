@@ -28,6 +28,12 @@ def kikitTextVars(board: pcbnew.BOARD, vars: Dict[str, str]={}) -> Dict[str, Any
     availableVars: Dict[str, Formatter] = {
         "date": Formatter(lambda: dt.datetime.today().strftime("%Y-%m-%d"), vars),
         "time24": Formatter(lambda: dt.datetime.today().strftime("%H:%M"), vars),
+        "year": Formatter(lambda: dt.datetime.today().strftime("%Y"), vars),
+        "month": Formatter(lambda: dt.datetime.today().strftime("%m"), vars),
+        "day": Formatter(lambda: dt.datetime.today().strftime("%d"), vars),
+        "hour": Formatter(lambda: dt.datetime.today().strftime("%H"), vars),
+        "minute": Formatter(lambda: dt.datetime.today().strftime("%M"), vars),
+        "second": Formatter(lambda: dt.datetime.today().strftime("%S"), vars),
         "boardTitle": Formatter(lambda: board.GetTitleBlock().GetTitle(), vars),
         "boardDate": Formatter(lambda: board.GetTitleBlock().GetDate(), vars),
         "boardRevision": Formatter(lambda: board.GetTitleBlock().GetRevision(), vars),

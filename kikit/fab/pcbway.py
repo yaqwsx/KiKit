@@ -137,7 +137,8 @@ def exportPcbway(board, outputdir, assembly, schematic, ignore,
     gerberdir = os.path.join(outputdir, "gerber")
     shutil.rmtree(gerberdir, ignore_errors=True)
     gerberImpl(board, gerberdir, settings=exportSettingsPcbway)
-    archiveName = nametemplate.format("gerbers")
+
+    archiveName = expandNameTemplate(nametemplate, "gerbers", loadedBoard)
     shutil.make_archive(os.path.join(outputdir, archiveName), "zip", outputdir, "gerber")
 
     if not assembly:
@@ -172,6 +173,6 @@ def exportPcbway(board, outputdir, assembly, schematic, ignore,
         sys.exit("There are components with missing ordercode, aborting")
 
     posData = collectPosData(loadedBoard, correctionFields, bom=components, correctionFile=correctionpatterns)
-    posDataToFile(posData, os.path.join(outputdir, nametemplate.format("pos") + ".csv"))
+    posDataToFile(posData, os.path.join(outputdir, expandNameTemplate(nametemplate, "pos", loadedBoard) + ".csv"))
     types = collectSolderTypes(loadedBoard)
-    bomToCsv(bom, os.path.join(outputdir, nametemplate.format("bom") + ".csv"), nboards, types)
+    bomToCsv(bom, os.path.join(outputdir, expandNameTemplate(nametemplate, "bom", loadedBoard) + ".csv"), nboards, types)
