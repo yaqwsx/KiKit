@@ -254,7 +254,7 @@ def doTransformation(point: KiPoint, rotation: KiAngle, origin: KiPoint, transla
     segment.SetShape(STROKE_T.S_SEGMENT)
     segment.SetStart(toKiCADPoint(point))
     segment.SetEnd(VECTOR2I(0, 0))
-    segment.Rotate(toKiCADPoint(origin), -rotation)
+    segment.Rotate(toKiCADPoint(origin), -1 * rotation)
     segment.Move(toKiCADPoint(translation))
     # We build a fresh VECTOR2I - otherwise there is a shared reference
     return VECTOR2I(segment.GetStartX(), segment.GetStartY())
