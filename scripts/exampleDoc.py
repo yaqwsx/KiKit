@@ -525,11 +525,11 @@ script:
 
 ```.py
 from kikit.units import mm
-from pcbnew import VECTOR2I
+from kikit.common import toKiCADPoint
 
 def kikitPostprocess(panel, arg):
     minx, miny, maxx, maxy = panel.panelBBox()
-    position = VECTOR2I((minx + maxx) / 2, miny + 2 * mm)
+    position = toKiCADPoint(((minx + maxx) // 2, miny + 2 * mm))
     panel.addNPTHole(position, 3 * mm)
 ```
 

@@ -20,7 +20,7 @@ a = 1 * rad   # 1 radian
 You can also use functions `fromMm(mm)` and
 `toMm(kiUnits)` to convert to/from them if you like them more. You are
 also encouraged to use the functions and objects the native KiCAD Python API
-offers, e.g.: wxPoint(args)`, `wxPointMM(mmx, mmy)`, `wxRect(args)`, `wxRectMM(x, y, wx, wy).
+offers, e.g.: VECTOR2I(args)`, `BOX2I(args).
 
 
 ## Basic Concepts
@@ -38,7 +38,7 @@ use tab generator.
 
 To generate a piece of a substrate, create a shapely.Polygon. Then add the piece
 of substrate via `panelize.Panel.appendSubstrate`. This method also accepts a
-`wxRect` for convenience.
+`BOX2I` for convenience.
 
 The tab generator is available via `panelize.Panel.boardSubstrate.tab`. This
 method takes an origin point, direction, and tab width. It tries to build a tab
@@ -78,9 +78,10 @@ include components sticking out of the board outline, you can specify tolerance
 #### `appendBoard`
 ```
 appendBoard(self, filename, destination, sourceArea=None, origin=Origin.Center, 
-            rotationAngle=0, shrink=False, tolerance=0, bufferOutline=1000, 
-            netRenamer=None, refRenamer=None, inheritDrc=True, 
-            interpretAnnotations=True, bakeText=False)
+            rotationAngle=<pcbnew.EDA_ANGLE; proxy of <Swig Object of type 'EDA_ANGLE *' at 0x7f354e4f7de0> >, 
+            shrink=False, tolerance=0, bufferOutline=1000, netRenamer=None, 
+            refRenamer=None, inheritDrc=True, interpretAnnotations=True, 
+            bakeText=False)
 ```
 
 ## Panel class
@@ -97,9 +98,11 @@ This class has the following relevant members:
 
 #### `addCornerChamfers`
 ```
-addCornerChamfers(self, size)
+addCornerChamfers(self, horizontalSize, verticalSize=None)
 ```
-None
+Add chamfers to the panel frame. The chamfer is specified as size in
+horizontal and vertical direction. If you specify only the horizontal
+one, the chamfering will be 45°.
 
 #### `addCornerFiducials`
 ```
@@ -133,7 +136,7 @@ The offsets are measured from the outer edges of the substrate.
 ```
 addFiducial(self, position, copperDiameter, openingDiameter, bottom=False)
 ```
-Add fiducial, i.e round copper pad with solder mask opening to the position (`wxPoint`),
+Add fiducial, i.e round copper pad with solder mask opening to the position (`VECTOR2I`),
 with given copperDiameter and openingDiameter. By setting bottom to True, the fiducial
 is placed on bottom side.
 
@@ -141,7 +144,7 @@ is placed on bottom side.
 ```
 addKeepout(self, area, noTracks=True, noVias=True, noCopper=True)
 ```
-Add a keepout area from top and bottom layers. Area is a shapely
+Add a keepout area to all copper layers. Area is a shapely
 polygon. Return the keepout area.
 
 #### `addLine`
@@ -155,14 +158,28 @@ Add a line to the panel based on starting and ending point
 addMillFillets(self, millRadius)
 ```
 Add fillets to inner conernes which will be produced a by mill with
-given radius.
+given radius. This operation simulares milling.
 
 #### `addNPTHole`
 ```
 addNPTHole(self, position, diameter, paste=False)
 ```
-Add a drilled non-plated hole to the position (`wxPoint`) with given
+Add a drilled non-plated hole to the position (`VECTOR2I`) with given
 diameter. The paste option allows to place the hole on the paste layers.
+
+#### `addPanelDimensions`
+```
+addPanelDimensions(self, layer, offset)
+```
+Add vertial and horizontal dimensions to the panel
+
+#### `addTabMillFillets`
+```
+addTabMillFillets(self, millRadius)
+```
+Add fillets to inner conernes which will be produced a by mill with
+given radius. Simulates milling only on the outside of the board;
+internal features of the board are not affected.
 
 #### `addText`
 ```
@@ -189,14 +206,15 @@ Adds a horizontal V-CUT at pos (integer in KiCAD units).
 #### `appendBoard`
 ```
 appendBoard(self, filename, destination, sourceArea=None, origin=Origin.Center, 
-            rotationAngle=0, shrink=False, tolerance=0, bufferOutline=1000, 
-            netRenamer=None, refRenamer=None, inheritDrc=True, 
-            interpretAnnotations=True, bakeText=False)
+            rotationAngle=<pcbnew.EDA_ANGLE; proxy of <Swig Object of type 'EDA_ANGLE *' at 0x7f354e4f7de0> >, 
+            shrink=False, tolerance=0, bufferOutline=1000, netRenamer=None, 
+            refRenamer=None, inheritDrc=True, interpretAnnotations=True, 
+            bakeText=False)
 ```
 Appends a board to the panel.
 
-The sourceArea (wxRect) of the board specified by filename is extracted
-and placed at destination (wxPoint). The source area (wxRect) can be
+The sourceArea (BOX2I) of the board specified by filename is extracted
+and placed at destination (VECTOR2I). The source area (BOX2I) can be
 auto detected if it is not provided. Only board items which fit entirely
 into the source area are selected. You can also specify rotation. Both
 translation and rotation origin are specified by origin. Origin
@@ -216,7 +234,7 @@ this boards or not.
 
 Similarly, you can substitute variables in the text via bakeText.
 
-Returns bounding box (wxRect) of the extracted area placed at the
+Returns bounding box (BOX2I) of the extracted area placed at the
 destination and the extracted substrate of the board.
 
 #### `appendSubstrate`
@@ -224,7 +242,7 @@ destination and the extracted substrate of the board.
 appendSubstrate(self, substrate)
 ```
 Append a piece of substrate or a list of pieces to the panel. Substrate
-can be either wxRect or Shapely polygon. Newly appended corners can be
+can be either BOX2I or Shapely polygon. Newly appended corners can be
 rounded by specifying non-zero filletRadius.
 
 #### `boardsBBox`
@@ -283,7 +301,7 @@ You can also specify ghost substrates (for the future framing).
 
 #### `buildTabsFromAnnotations`
 ```
-buildTabsFromAnnotations(self)
+buildTabsFromAnnotations(self, fillet)
 ```
 Given annotations for the individual substrates, create tabs for them.
 Tabs are appended to the panel, cuts are returned.
@@ -301,7 +319,8 @@ Remove all existing tab annotations from the panel.
 copperFillNonBoardAreas(self, clearance=1000000, 
                         layers=[<Layer.F_Cu: 0>, <Layer.B_Cu: 31>], 
                         hatched=False, strokeWidth=1000000, 
-                        strokeSpacing=1000000, orientation=450)
+                        strokeSpacing=1000000, 
+                        orientation=<pcbnew.EDA_ANGLE; proxy of <Swig Object of type 'EDA_ANGLE *' at 0x7f354e5142a0> >)
 ```
 Fill given layers with copper on unused areas of the panel (frame, rails
 and tabs). You can specify the clearance, if it should be hatched
@@ -341,6 +360,12 @@ None
 getGridOrigin(self)
 ```
 None
+
+#### `getPageDimensions`
+```
+getPageDimensions(self)
+```
+Get page size in KiCAD units for the current panel
 
 #### `getPrlFilepath`
 ```
@@ -412,7 +437,8 @@ of where is the problem.
 
 #### `makeFrame`
 ```
-makeFrame(self, width, hspace, vspace, minWidth=0, minHeight=0)
+makeFrame(self, width, hspace, vspace, minWidth=0, minHeight=0, maxWidth=None, 
+          maxHeight=None)
 ```
 Build a frame around the boards. Specify width and spacing between the
 boards substrates and the frame. Return a tuple of vertical and
@@ -432,6 +458,10 @@ minWidth - if the panel doesn't meet this width, it is extended
 
 minHeight - if the panel doesn't meet this height, it is extended
 
+maxWidth - if the panel doesn't meet this width, TooLargeError is raised
+
+maxHeight - if the panel doesn't meet this height, TooLargeHeight is raised
+
 #### `makeFrameCutsH`
 ```
 makeFrameCutsH(self, innerArea, frameInnerArea, outerArea)
@@ -447,8 +477,9 @@ Generate vertical cuts for the frame corners and return them
 #### `makeGrid`
 ```
 makeGrid(self, boardfile, sourceArea, rows, cols, destination, placer, 
-         rotation=0, netRenamePattern=Board_{n}-{orig}, 
-         refRenamePattern=Board_{n}-{orig}, tolerance=0, bakeText=False)
+         rotation=<pcbnew.EDA_ANGLE; proxy of <Swig Object of type 'EDA_ANGLE *' at 0x7f354e514060> >, 
+         netRenamePattern=Board_{n}-{orig}, refRenamePattern=Board_{n}-{orig}, 
+         tolerance=0, bakeText=False)
 ```
 Place the given board in a grid pattern with given spacing. The board
 position of the gride is guided via placer. The nets and references are
@@ -468,7 +499,7 @@ rows - the number of boards to place in the vertical direction
 cols - the number of boards to place in the horizontal direction
 
 destination - the center coordinates of the first board in the grid (for
-example, wxPointMM(100,50))
+example, VECTOR2I(100 * mm,50 * mm))
 
 rotation - the rotation angle to be applied to the source board before
 placing it
@@ -521,21 +552,23 @@ to
 
 #### `makeRailsLr`
 ```
-makeRailsLr(self, thickness, minWidth=0)
+makeRailsLr(self, thickness, minWidth=0, maxWidth=None)
 ```
 Adds a rail to left and right. You can specify minimal width the panel
 has to feature.
 
 #### `makeRailsTb`
 ```
-makeRailsTb(self, thickness, minHeight=0)
+makeRailsTb(self, thickness, minHeight=0, maxHeight=None)
 ```
 Adds a rail to top and bottom. You can specify minimal height the panel
-has to feature.
+has to feature. You can also specify maximal height of the panel. If the
+height would be exceeded, TooLargeError is raised.
 
 #### `makeTightFrame`
 ```
-makeTightFrame(self, width, slotwidth, hspace, vspace, minWidth=0, minHeight=0)
+makeTightFrame(self, width, slotwidth, hspace, vspace, minWidth=0, minHeight=0, 
+               maxWidth=None, maxHeight=None)
 ```
 Build a full frame with board perimeter milled out.
 Add your boards to the panel first using appendBoard or makeGrid.
@@ -553,6 +586,10 @@ vspace - vertical space between board outline and substrate
 minWidth - if the panel doesn't meet this width, it is extended
 
 minHeight - if the panel doesn't meet this height, it is extended
+
+maxWidth - if the panel doesn't meet this width, TooLargeError is raised
+
+maxHeight - if the panel doesn't meet this height, TooLargeHeight is raised
 
 #### `makeVCuts`
 ```
@@ -695,7 +732,7 @@ Return shapely geometry representing the outer ring
 ```
 boundingBox(self)
 ```
-Return bounding box as wxRect
+Return bounding box as BOX2I
 
 #### `bounds`
 ```
@@ -721,6 +758,12 @@ exteriorRing(self)
 ```
 None
 
+#### `interiors`
+```
+interiors(self)
+```
+Return shapely interiors of the substrate
+
 #### `isSinglePiece`
 ```
 isSinglePiece(self)
@@ -737,7 +780,7 @@ Return a mid point of the bounding box
 ```
 millFillets(self, millRadius)
 ```
-Add fillets to inner conernes which will be produced a by mill with
+Add fillets to inner corners which will be produced by a mill with
 given radius.
 
 #### `orient`
@@ -750,8 +793,8 @@ Ensures that the substrate is oriented in a correct way.
 ```
 removeIslands(self)
 ```
-Removes all islads - pieces of substrate fully contained within outline
-of another board
+Removes all islands - pieces of substrate fully contained within the
+outline of another board
 
 #### `serialize`
 ```
@@ -761,17 +804,21 @@ Produces a list of PCB_SHAPE on the Edge.Cuts layer
 
 #### `tab`
 ```
-tab(self, origin, direction, width, partitionLine=None, maxHeight=50000000)
+tab(self, origin, direction, width, partitionLine=None, maxHeight=50000000, 
+    fillet=0)
 ```
 Create a tab for the substrate. The tab starts at the specified origin
 (2D point) and tries to penetrate existing substrate in direction (a 2D
 vector). The tab is constructed with given width. If the substrate is
 not penetrated within maxHeight, exception is raised.
 
-When partitionLine is specified, tha tab is extended to the opposite
+When partitionLine is specified, the tab is extended to the opposite
 side - limited by the partition line. Note that if tab cannot span
-towards the partition line, then the the tab is not created - it returns
-a tuple (None, None).
+towards the partition line, then the tab is not created - it returns a
+tuple (None, None).
+
+If a fillet is specified, it allows you to add fillet to the tab of
+specified radius.
 
 Returns a pair tab and cut outline. Add the tab it via union - batch
 adding of geometry is more efficient.
