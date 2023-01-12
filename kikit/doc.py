@@ -62,17 +62,9 @@ def panelizeAndDraw(name, command):
     output = os.path.join(dirname, "x.kicad_pcb")
     try:
         outimage = f"doc/resources/{name}.png"
-        subprocess.run(command + [output], check=True, capture_output=True)
-
-        r = subprocess.run(["pcbdraw", "plot", "--help"], capture_output=True)
-        if r.returncode == 0:
-            # We have a new PcbDraw
-            r = subprocess.run(["pcbdraw", "plot", "--vcuts", "Cmts.User", "--silent", output,
-                    outimage], check=True, capture_output=True)
-        else:
-            # We have an old PcbDraw
-            r = subprocess.run(["pcbdraw", "--vcuts", "--silent", output,
-                    outimage], check=True, capture_output=True)
+        subprocess.run(command + [output, "--debug", "trace: true"], check=True, capture_output=True)
+        r = subprocess.run(["pcbdraw", "plot", "--vcuts", "Cmts.User", "--silent", output,
+                outimage], check=True, capture_output=True)
         subprocess.run(["convert", outimage, "-define",
             "png:include-chunk=none", outimage], check=True, capture_output=True)
     except subprocess.CalledProcessError as e:
@@ -80,7 +72,8 @@ def panelizeAndDraw(name, command):
         print("Stdout: " + e.stdout.decode("utf8"), file=sys.stderr)
         print("Stderr: " + e.stderr.decode("utf8"), file=sys.stderr)
         sys.exit(1)
-    shutil.rmtree(dirname)
+    finally:
+        shutil.rmtree(dirname)
 
 
 runExampleThreads = []

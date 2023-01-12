@@ -18,7 +18,7 @@ doc/panelization.md: kikit/panelize.py scripts/panelizeDoc.py
 	PYTHONPATH="$(pwd):${PYTHONPATH}" python3 scripts/panelizeDoc.py > $@
 
 doc/resources/conn.png: doc/resources/conn.kicad_pcb
-	pcbdraw --silent $< $@ || pcbdraw plot --silent $< $@
+	pcbdraw plot --silent $< $@
 	convert $@ -define png:include-chunk=none $@
 
 doc/examples.md: scripts/exampleDoc.py doc/resources/conn.png
