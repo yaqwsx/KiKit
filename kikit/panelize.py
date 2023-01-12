@@ -1718,7 +1718,7 @@ class Panel:
             zoneContainer = pcbnew.ZONE(self.board)
             if hatched:
                 zoneContainer.SetFillMode(pcbnew.ZONE_FILL_MODE_HATCH_PATTERN)
-                zoneContainer.SetHatchOrientation(orientation // 10)
+                zoneContainer.SetHatchOrientation(orientation)
                 zoneContainer.SetHatchGap(strokeSpacing)
                 zoneContainer.SetHatchThickness(strokeWidth)
             zoneContainer.Outline().AddOutline(linestringToKicad(g.exterior))
