@@ -9,6 +9,7 @@ from kikit.defs import MODULE_ATTR_T
 from kikit.drc_ui import ReportLevel
 from kikit import drc
 from kikit import eeschema, eeschema_v6
+from kikit.text import kikitTextVars
 import sys
 
 if isV6() or isV7():
@@ -221,3 +222,11 @@ def ensureValidSch(filename):
 def ensureValidBoard(filename):
     if not isValidBoardPath(filename):
         raise RuntimeError(f"The path {filename} is not a valid KiCAD PCB file")
+
+def expandNameTemplate(template: str, filetype: str, board: pcbnew.BOARD) -> str:
+
+    textVars = kikitTextVars(board)
+    try:
+        return template.format(filetype, **textVars)
+    except KeyError as e:
+        raise RuntimeError(f"Unknown variable {e} in --nametemplate: {template}")

@@ -71,7 +71,8 @@ def exportJlcpcb(board, outputdir, assembly, schematic, ignore, field,
     gerberdir = os.path.join(outputdir, "gerber")
     shutil.rmtree(gerberdir, ignore_errors=True)
     gerberImpl(board, gerberdir)
-    archiveName = nametemplate.format("gerbers")
+
+    archiveName = expandNameTemplate(nametemplate, "gerbers", loadedBoard)
     shutil.make_archive(os.path.join(outputdir, archiveName), "zip", outputdir, "gerber")
 
     if not assembly:
@@ -103,5 +104,5 @@ def exportJlcpcb(board, outputdir, assembly, schematic, ignore, field,
     if missingFields and missingerror:
         sys.exit("There are components with missing ordercode, aborting")
 
-    posDataToFile(posData, os.path.join(outputdir, nametemplate.format("pos") + ".csv"))
-    bomToCsv(bom, os.path.join(outputdir, nametemplate.format("bom") + ".csv"))
+    posDataToFile(posData, os.path.join(outputdir, expandNameTemplate(nametemplate, "pos", loadedBoard) + ".csv"))
+    bomToCsv(bom, os.path.join(outputdir, expandNameTemplate(nametemplate, "bom", loadedBoard) + ".csv"))
