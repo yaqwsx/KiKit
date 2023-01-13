@@ -18,7 +18,7 @@ consists of three steps:
     specific feature under development), please follow
     [Installing a special version of KiKit](#installing-a-special-version-of-kikit).
 - register the GUI plugins and library:
-  - either install KiKit from PCM,
+  - either [install KiKit from PCM](#kikit-symbol-and-footprint-libraries),
   - or download KiKit packages and install them manually:
     - [KiKit](https://nightly.link/yaqwsx/KiKit/workflows/test-kikit/master/kikit-pcm.zip)
     - [KiKit Libraries](https://nightly.link/yaqwsx/KiKit/workflows/test-kikit/master/kikit-lib-pcm.zip)
@@ -145,6 +145,30 @@ pip install git+https://github.com/yaqwsx/KiKit@master
 # A concrete branch, e.g., from a pull request
 pip3 install git+https://github.com/yaqwsx/KiKit@someBranchName
 ```
+
+## KiKit Symbol and Footprint Libraries
+
+KiCad 6 comes with a "Plugin and Content Manager" (PCM) which can be used to add the KiKit 
+symbol and footprint libraries used in multi-board workflows.  The PCM is new functionality
+for KiCad though, and only does part of the installation.  To install the libraries using 
+the PCM:
+1. Open KiCad
+2. Open the `Tools` menu and select `Plugin and Content Manager`
+3. Select the `Libraries` tab and scroll down to `KiKit Library`
+4. Press `Install` and then `Apply Changes`
+5. Close the Plugin and Content Manager
+6. Back in the main KiCad window, open the `Preferences` menu and select `Manage Symbol Libraries`
+7. Select the `Global Libraries` tab, and click the `+` icon towards the bottom of the window then 
+enter `kikit` (all lowercase) as the nickname, and 
+`${KICAD6_3RD_PARTY}/symbols/com_github_yaqwsx_kikit-library/kikit.kicad_sym` as the Library Path.
+8. Press `OK`
+9. Back in the main KiCad window, open the `Preferences` menu and select `Manage Footprint Libraries`
+10. As before, add a row to the table in the `Global Libraries` tab, with a nickname `kikit` (all 
+lowercase again), and this time enter 
+`${KICAD6_3RD_PARTY}/footprints/com_github_yaqwsx_kikit-library/kikit.pretty` for the Library Path.
+11. Press `OK`
+12. From now on, you can find the KiKit symbols and footprints under `kikit` alongside all the 
+others.
 
 ## Optional dependencies
 
