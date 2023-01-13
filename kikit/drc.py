@@ -23,7 +23,7 @@ def roundCoord(x: int) -> int:
 def getItemDescription(item: pcbnew.BOARD_ITEM, units: pcbnew.EDA_UNITS = pcbnew.EDA_UNITS_MILLIMETRES):
     if isV7():
         uProvider = pcbnew.UNITS_PROVIDER(pcbnew.pcbIUScale, units)
-        return item.GetSelectMenuText(uProvider)
+        return item.GetItemDescription(uProvider)
     else:
         return item.GetSelectMenuText(units)
 
