@@ -1591,13 +1591,13 @@ class Panel:
                 self.substrates[i].annotations.append(a)
 
     def _buildSingleFullTab(self, s: Substrate, a: KiPoint, b: KiPoint,
-                            cutoutDepth: KiLength) \
+                            cutoutDepth: KiLength, patchConrners: bool) \
             -> Tuple[List[LineString], List[Polygon]]:
         partitionFace = LineString([a, b])
 
         npa, npb = np.array(a), np.array(b)
 
-        spanDirection = np.around(normalize(npb - npa))
+        spanDirection = np.around(normalize(npb - npa), 2)
         spanDirection = np.array([spanDirection[1], -spanDirection[0]])
 
         # We have to ensure that the direction always points towards the substrate
@@ -1611,24 +1611,25 @@ class Panel:
         candidateBox = Polygon([npa - spanDirection, npb - spanDirection, npb + sideEdge, npa + sideEdge])
         faceCandidate = s.exterior().intersection(candidateBox)
 
-        expectedDirection = np.around(normalize(npb - npa))
+        expectedDirection = np.around(normalize(npb - npa), 2)
         faceSegments = [LineString(x) for x in linestringToSegments(faceCandidate.exterior)
             if np.array_equal(
-                np.around(normalize(np.array(x[0]) - np.array(x[1]))),
+                np.around(normalize(np.array(x[0]) - np.array(x[1])), 2),
                 expectedDirection) or
                np.array_equal(
-                np.around(normalize(np.array(x[1]) - np.array(x[0]))),
+                np.around(normalize(np.array(x[1]) - np.array(x[0])), 2),
                 expectedDirection)]
-        faceDistances = [(x, np.around(partitionFace.distance(x))) for x in faceSegments]
+        faceDistances = [(x, np.around(partitionFace.distance(x), 2)) for x in faceSegments]
         minFaceDistance = min(faceDistances, key=lambda x: x[1])[1]
 
         cutFaces = [x for x, d in faceDistances if d == minFaceDistance]
         tabs, cuts = [], []
         for cutLine in listGeometries(shapely.ops.unary_union(cutFaces)):
-            polygon = Polygon(list(cutLine.coords) +
-                [np.array(cutLine.coords[-1]) - minFaceDistance * spanDirection,
-                 np.array(cutLine.coords[0]) - minFaceDistance * spanDirection])
-            tabs.append(polygon)
+            if minFaceDistance > 0: # Do not generate degenerated polygons
+                polygon = Polygon(list(cutLine.coords) +
+                    [np.array(cutLine.coords[-1]) - minFaceDistance * spanDirection,
+                    np.array(cutLine.coords[0]) - minFaceDistance * spanDirection])
+                tabs.append(polygon)
             cuts.append(LineString(list(cutLine.coords)[::-1]))
 
         solidThickness = max(0, minFaceDistance - cutoutDepth)
@@ -1636,17 +1637,18 @@ class Panel:
             tabs.append(Polygon([npa, npb,
                                  npb + spanDirection * solidThickness,
                                  npa + spanDirection * solidThickness]))
-
-        # Generate corner patches - we don't want cutouts on the board corners,
-        # so we create a triangle that will patch it.
-        for point in [npa, npb]:
-            corner = min(s.exteriorRing().coords, key=lambda x: Point(*x).distance(Point(*point)))
-            patch = Polygon([point, corner, corner - minFaceDistance * spanDirection])
-            tabs.append(patch)
+        if patchConrners:
+            # Generate corner patches - we don't want cutouts on the board corners,
+            # so we create a triangle that will patch it.
+            for point in [npa, npb]:
+                corner = min(s.exteriorRing().coords, key=lambda x: Point(*x).distance(Point(*point)))
+                patch = Polygon([point, corner, corner - minFaceDistance * spanDirection])
+                tabs.append(patch)
         return cuts, tabs
 
 
-    def buildFullTabs(self, cutoutDepth: KiLength) -> List[shapely.geometry.LineString]:
+    def buildFullTabs(self, cutoutDepth: KiLength, patchCorners: bool = True) \
+            -> List[shapely.geometry.LineString]:
         """
         Make full tabs. This strategy basically cuts the bounding boxes of the
         PCBs. Not suitable for mousebites or PCB that doesn't have a rectangular
@@ -1664,7 +1666,7 @@ class Panel:
         for s in self.substrates:
             for fragment in listGeometries(s.partitionLine):
                 for a, b in linestringToSegments(fragment):
-                    c, t = self._buildSingleFullTab(s, a, b, cutoutDepth)
+                    c, t = self._buildSingleFullTab(s, a, b, cutoutDepth, patchCorners)
                     self.appendSubstrate(t)
                     cuts += c
 

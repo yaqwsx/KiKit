@@ -362,6 +362,10 @@ TABS_SECTION = {
     "cutout": SLength(
         typeIn(["fixed", "plugin"]),
         "Depth of cutouts into the frame"),
+    "patchcorners": SBool(
+        typeIn(["fixed", "plugin"]),
+        "Choose if to apply corner patches for the full tabs"
+    ),
     "tabfootprints": SFootprintList(
         typeIn(["annotation", "plugin"]),
         "Specify custom footprints that will be used for tab annotations."),

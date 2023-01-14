@@ -298,7 +298,7 @@ def buildTabs(preset, panel, substrates, boundarySubstrates):
             panel.buildTabAnnotationsCorners(properties["width"])
             return panel.buildTabsFromAnnotations(properties["fillet"])
         if type == "full":
-            return panel.buildFullTabs(properties["cutout"])
+            return panel.buildFullTabs(properties["cutout"], properties["patchcorners"])
         if type == "annotation":
             return panel.buildTabsFromAnnotations(properties["fillet"])
         if type == "plugin":

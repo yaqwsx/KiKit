@@ -275,6 +275,10 @@ cut the bounding box of the PCB. There are no other options.
 - `cutout`: When your design features open pockets on the side, this parameter
   specifies extra cutout depth in order to ensure that a sharp corner of the
   pocket can be milled. The default is 1 mm.
+- `patchcorners`: The full tabs are appended to the nearest flat face of the
+  PCB. If the PCB has sharp corners, you want to add patches of substrate to
+  these corners. However, if the PCB has fillet or miter, you don't want to
+  apply the patches.
 
 #### Corner
 

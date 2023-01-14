@@ -41,7 +41,8 @@
         "fillet": "0mm",
         "code": "none",
         "arg": "",
-        "cutout": "1mm"
+        "cutout": "1mm",
+        "patchcorners": true
     },
     "cuts": {
         "type": "none",
