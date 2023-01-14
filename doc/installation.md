@@ -148,17 +148,21 @@ pip3 install git+https://github.com/yaqwsx/KiKit@someBranchName
 
 ## KiKit Symbol and Footprint Libraries
 
-KiCad 6 comes with a "Plugin and Content Manager" (PCM) which can be used to add the KiKit 
-symbol and footprint libraries used in multi-board workflows.  The PCM is new functionality
-for KiCad though, and only does part of the installation.  To install the libraries using 
-the PCM:
+From v6 onwards KiCad comes with a "Plugin and Content Manager" (PCM) which can be used to 
+add the KiKit symbol and footprint libraries used in multi-board workflows.  The PCM is new 
+functionality for KiCad though, and only does part of the installation in v6.  To install 
+the libraries using the PCM:
+
 1. Open KiCad
 2. Open the `Tools` menu and select `Plugin and Content Manager`
 3. Select the `Libraries` tab and scroll down to `KiKit Library`
 4. Press `Install` and then `Apply Changes`
 5. Close the Plugin and Content Manager
-6. Back in the main KiCad window, open the `Preferences` menu and select `Manage Symbol Libraries`
-7. Select the `Global Libraries` tab, and click the `+` icon towards the bottom of the window then 
+
+*The following steps are only required in KiCad 6, they are automated in KiCad 7*:
+
+7. Back in the main KiCad window, open the `Preferences` menu and select `Manage Symbol Libraries`
+8. Select the `Global Libraries` tab, and click the `+` icon towards the bottom of the window then 
 enter `kikit` (all lowercase) as the nickname, and 
 `${KICAD6_3RD_PARTY}/symbols/com_github_yaqwsx_kikit-library/kikit.kicad_sym` as the Library Path.
 8. Press `OK`
