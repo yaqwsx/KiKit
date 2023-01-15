@@ -92,6 +92,7 @@
         "voffset": "0mm",
         "coppersize": "1mm",
         "opening": "1mm",
+        "paste": false,
         "code": "none",
         "arg": ""
     },
