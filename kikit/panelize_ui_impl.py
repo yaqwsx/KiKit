@@ -521,11 +521,12 @@ def buildFiducials(preset, panel):
             return pluginInst.buildFiducials(panel)
         hoffset, voffset = fidPreset["hoffset"], fidPreset["voffset"]
         coppersize, opening = fidPreset["coppersize"], fidPreset["opening"]
+        paste = fidPreset["paste"]
         if type == "3fid":
-            panel.addCornerFiducials(3, hoffset, voffset, coppersize, opening)
+            panel.addCornerFiducials(3, hoffset, voffset, coppersize, opening, paste)
             return
         if type == "4fid":
-            panel.addCornerFiducials(4, hoffset, voffset, coppersize, opening)
+            panel.addCornerFiducials(4, hoffset, voffset, coppersize, opening, paste)
             return
         raise PresetError(f"Unknown type '{type}' of fiducial specification.")
     except KeyError as e:

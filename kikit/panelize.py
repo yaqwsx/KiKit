@@ -1403,11 +1403,14 @@ class Panel:
         self.board.Add(footprint)
 
     def addFiducial(self, position: VECTOR2I, copperDiameter: KiLength,
-                    openingDiameter: KiLength, bottom: bool=False):
+                    openingDiameter: KiLength, bottom: bool = False,
+                    paste: bool = False) -> None:
         """
-        Add fiducial, i.e round copper pad with solder mask opening to the position (`VECTOR2I`),
-        with given copperDiameter and openingDiameter. By setting bottom to True, the fiducial
-        is placed on bottom side.
+        Add fiducial, i.e round copper pad with solder mask opening to the
+        position (`VECTOR2I`), with given copperDiameter and openingDiameter. By
+        setting bottom to True, the fiducial is placed on bottom side. The
+        fiducial can also have an opening on the stencil. This is enabled by
+        paste = True.
         """
         footprint = pcbnew.FootprintLoad(KIKIT_LIB, "Fiducial")
         # As of V6, the footprint first needs to be added to the board,
@@ -1415,12 +1418,16 @@ class Panel:
         # and KiCAD crashes.
         self.board.Add(footprint)
         footprint.SetPosition(position)
-        if bottom:
-            footprint.Flip(position, False)
         for pad in footprint.Pads():
             pad.SetSize(toKiCADPoint((copperDiameter, copperDiameter)))
             pad.SetLocalSolderMaskMargin(int((openingDiameter - copperDiameter) / 2))
             pad.SetLocalClearance(int((openingDiameter - copperDiameter) / 2))
+            if paste:
+                layerSet = pad.GetLayerSet()
+                layerSet.AddLayer(Layer.F_Paste)
+                pad.SetLayerSet(layerSet)
+        if bottom:
+            footprint.Flip(position, False)
 
 
     def panelCorners(self, horizontalOffset=0, verticalOffset=0):
@@ -1435,8 +1442,9 @@ class Panel:
         bottomRight = toKiCADPoint((maxx - horizontalOffset, maxy - verticalOffset))
         return [topLeft, topRight, bottomLeft, bottomRight]
 
-    def addCornerFiducials(self, fidCount, horizontalOffset, verticalOffset,
-            copperDiameter, openingDiameter):
+    def addCornerFiducials(self, fidCount: int, horizontalOffset: KiLength,
+                           verticalOffset: KiLength, copperDiameter: KiLength,
+                           openingDiameter: KiLength, paste: bool = False) -> None:
         """
         Add up to 4 fiducials to the top-left, top-right, bottom-left and
         bottom-right corner of the board (in this order). This function expects
@@ -1445,8 +1453,8 @@ class Panel:
         The offsets are measured from the outer edges of the substrate.
         """
         for pos in self.panelCorners(horizontalOffset, verticalOffset)[:fidCount]:
-            self.addFiducial(pos, copperDiameter, openingDiameter, False)
-            self.addFiducial(pos, copperDiameter, openingDiameter, True)
+            self.addFiducial(pos, copperDiameter, openingDiameter, False, paste)
+            self.addFiducial(pos, copperDiameter, openingDiameter, True, paste)
 
     def addCornerTooling(self, holeCount, horizontalOffset, verticalOffset,
                          diameter, paste=False):

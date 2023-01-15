@@ -540,6 +540,9 @@ FIDUCIALS_SECTION = {
     "opening": SLength(
         typeIn(["3fid", "4fid", "plugin"]),
         "Diameter of the opening"),
+    "paste": SBool(
+        typeIn(["3fid", "4fid", "plugin"]),
+        "Include fiducials on the paste layer"),
     "code": SPlugin(
         plugin.FiducialsPlugin,
         typeIn(["plugin"]),

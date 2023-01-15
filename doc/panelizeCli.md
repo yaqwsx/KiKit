@@ -433,6 +433,8 @@ Add fiducial to the (rail/frame of) the panel.
 
 - `hoffset`, `voffset` - specify the offset from from panel edges
 - `coppersize`, `opening` - diameter of the copper spot and solder mask opening
+- `paste` - if true, the fiducials are included in the paste layer (therefore they
+  appear on the stencil).
 
 #### Plugin
 
