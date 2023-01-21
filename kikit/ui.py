@@ -20,4 +20,9 @@ cli.add_command(drc_ui.drc)
 
 
 if __name__ == '__main__':
+    # When KiCAD crashes, we want the user to know
+    import faulthandler
+    import sys
+    faulthandler.enable(sys.stderr)
+
     cli()
