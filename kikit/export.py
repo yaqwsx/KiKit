@@ -154,7 +154,6 @@ def gerberImpl(boardfile, outputdir, plot_plan=fullGerberPlotPlan, drilling=True
         # False to generate 2 separate drill files (one for plated holes, one for non plated holes)
         # True to generate only one drill file
         mergeNPTH = settings["MergeNPTH"]
-        print(f"Type {offset}: {type(offset)}")
         drlwriter.SetOptions(mirror, minimalHeader, offset, mergeNPTH)
         drlwriter.SetRouteModeForOvalHoles(False)
 
