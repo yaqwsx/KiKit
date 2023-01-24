@@ -17,6 +17,8 @@ jobs:
       - uses: ./.github/actions/setup-kicad
         with:
           kicad-version: ${{ matrix.kicad-version }}
+      - name: KiCAD version
+        run: python3 -c 'import pcbnew; print(pcbnew.GetBuildVersion())'
       - name: Install dependencies and KiKit
         run: |
           sudo apt-get -qq install --yes --no-install-recommends \
