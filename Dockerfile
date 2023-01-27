@@ -49,4 +49,5 @@ COPY --from=build \
     /usr/local/bin \
     /usr/local/bin
 
-CMD ["bash"]
+ENTRYPOINT [ "/usr/local/bin/kikit" ]
+WORKDIR "/kikit"
