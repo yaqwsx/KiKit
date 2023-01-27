@@ -12,8 +12,9 @@ consists of three steps:
   - [Linux](#installation-on-linux)
   - [Windows](#installation-on-windows)
   - [MacOS](macosInstallation.md) (**Extra steps are required, please, read the guide**)
-  - Or you can run KiKit inside [Docker](#running-kikit-via-docker) - which
-    might be useful e.g., for continuous integration.
+  - Or you can run KiKit inside [Docker](#running-kikit-via-docker) - which provides
+    the KiKit CLI in a known environment with all dependencies, and might also be
+    useful e.g., for continuous integration.
   - If you would like to install special version of KiKit (e.g., nightly or a
     specific feature under development), please follow
     [Installing a special version of KiKit](#installing-a-special-version-of-kikit).
@@ -156,46 +157,71 @@ pip3 install git+https://github.com/yaqwsx/KiKit@someBranchName
 
 ## Running KiKit via Docker
 
-This method is applicable to Windows, Linux and MacOS. This method is suitable if
-you plan to use KiKit inside a continuous integration.
+This method is applicable to Windows, Linux and MacOS. It provides access to
+all of the CLI commands in a known-working container, but doesn't allow your
+local install of KiCad to access KiKit via the KiKit plugin.
 
 First, install [Docker](https://www.docker.com/). The installation procedure
 varies by the platform, so Google up a recent guide for your platform.
 
-Then, pull the KiKit container via issuing one of the following commands:
+With Docker you can skip all of the install steps and instead run KiKit
+via (on Linux or Mac):
 
 ```
-docker pull yaqwsx/kikit:latest  # Pull latest stable version
-docker pull yaqwsx/kikit:v1.0.2  # Pull image with a concrete release
-docker pull yaqwsx/kikit:nightly # Pull upstream version of KiKit - content of the master branch
+docker run -v $(pwd):/kikit yaqwsx/kikit --help
+```
+(replacing the call to display the `--help` with whatever command you want to
+run.  Try `--version` or `panelize`)
+
+or on Windows:
+```
+docker run -v %cd%:/kikit yaqwsx/kikit --help
 ```
 
-To run KiKit commands for files in the current working directory issue the
-following command:
+Note that on Windows you might have to explicitly allow for
+mounting directories outside your user account (see [the following
+topic](https://forums.docker.com/t/volume-mounts-in-windows-does-not-work/10693/5)).
 
-```
-docker run -it -w /kikit -v $(pwd):/kikit yaqwsx/kikit /bin/bash
-```
+### Creating an alias to KiKit in Docker to save some typing
 
-Note that for Windows, the docker command differs slightly:
-
+If you're on Linux or Mac and are going to run commands repeatedly within the same
+directory you can create an alias *within the current terminal session* via:
 ```
-docker run -it -w /kikit -v %cd%:/kikit yaqwsx/kikit /bin/bash
+alias kikit="docker run -v $(pwd):/kikit yaqwsx/kikit"
 ```
+**Note** that `alias` is a Linux/ Unix command so won't work on Windows, you'll need
+to call `docker run -v %cd%:/kikit yaqwsx/kikit` each time.
+**Also note** that you must update the alias (by running the same alias command again)
+if you move to a different directory.  The current working directory for the alias
+is "frozen" at the directory you create the alias in.
 
-This will run a new terminal inside the docker container. You can issue any
-kikit commands here. Note that on Windows you might have to explicitly allow for
-mounting directories outside you user account (see [the following
-topis](https://forums.docker.com/t/volume-mounts-in-windows-does-not-work/10693/5)).
+From then on, until you close that terminal, you'll be able to just run `kikit` followed
+by the relevant paramenters (e.g. `kikit --version` or `kikit panelize`).
+
+### Running different versions of KiKit via Docker
 
 If you would like to run a particular version of KiKit, simply append a tag to
-the image name (e.g., `:nightly`).
+the image name (e.g., `yaqwsx/kikit:nightly`), and Docker will pull that version
+down and run that for you instead:
+
+```
+docker run -v $(pwd):/kikit yaqwsx/kikit:nightly --version
+```
+
+### Mac M1 containers
 
 There are also nightly containers of Mac M1 available with tag `nightly-m1`.
 
 If you want to use Makefile for your projects, the preferable way is to invoke
 `make` inside the container. The Docker image contains several often used tools
-and you can even run KiCAD from it (if you supply it with X-server).
+and you can even run KiCAD from it (if you supply it with X-server).  To call `make`
+within the container, override the container's entrypoint:
+
+```
+docker run -it -v $(pwd):/kikit --entrypoint '/usr/bin/make' --help
+```
+(replacing `--help` with your make command, such as `build` or `test`).
+
 
 # Choosing KiCAD version
 
