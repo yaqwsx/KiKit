@@ -26,7 +26,7 @@ def collectBom(components, lscsFields, ignore):
         orderCode = None
         for fieldName in lscsFields:
             orderCode = getField(c, fieldName)
-            if orderCode is not None:
+            if orderCode is not None and orderCode.strip() != "":
                 break
         cType = (
             getField(c, "Value"),
