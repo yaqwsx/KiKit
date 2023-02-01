@@ -935,7 +935,7 @@ class Panel:
             self.substrates[-1].annotations = annotations
         except substrate.PositionError as e:
             point = undoTransformation(e.point, rotationAngle, originPoint, translation)
-            raise substrate.PositionError(filename + ": " + e.origMessage, point)
+            raise substrate.PositionError(f"{filename}: {e.origMessage}", point)
         for drawing in otherDrawings:
             appendItem(self.board, drawing, yieldMapping)
 
