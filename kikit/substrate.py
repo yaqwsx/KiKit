@@ -635,7 +635,7 @@ class Substrate:
 
         origin = np.array(origin)
         try:
-            direction = np.around(normalize(direction))
+            direction = np.around(normalize(direction), 4)
             sideOriginA = origin + makePerpendicular(direction) * width / 2
             sideOriginB = origin - makePerpendicular(direction) * width / 2
             boundary = self.substrates.exterior
