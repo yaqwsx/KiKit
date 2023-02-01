@@ -271,7 +271,7 @@ def undoTransformation(point, rotation, origin, translation):
     segment.SetStart(VECTOR2I(int(point[0]), int(point[1])))
     segment.SetEnd(VECTOR2I(0, 0))
     segment.Move(VECTOR2I(-translation[0], -translation[1]))
-    segment.Rotate(origin, -rotation)
+    segment.Rotate(origin, -1 * rotation)
     # We build a fresh VECTOR2I - otherwise there is a shared reference
     return VECTOR2I(segment.GetStartX(), segment.GetStartY())
 
