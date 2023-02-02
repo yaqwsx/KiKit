@@ -1594,7 +1594,7 @@ class Panel:
             midy = (miny + maxy) / 2
 
             for x, y in product([minx, maxx], [miny, maxy]):
-                dir = normalize((midx - x, midy - y))
+                dir = normalize((np.sign(midx - x), np.sign(midy - y)))
                 a = TabAnnotation(None, (x, y), dir, width)
                 self.substrates[i].annotations.append(a)
 
