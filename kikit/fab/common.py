@@ -200,7 +200,7 @@ def collectPosData(board, correctionFields, posFilter=lambda x : True,
              footprintOrientation(footprint, getCompensation(footprint))) for footprint in footprints]
 
 def posDataToFile(posData, filename):
-    with open(filename, "w", newline="") as csvfile:
+    with open(filename, "w", newline="", encoding="utf-8") as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(["Designator", "Mid X", "Mid Y", "Layer", "Rotation"])
         for line in sorted(posData, key=lambda x: x[0]):

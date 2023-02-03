@@ -114,7 +114,7 @@ def loadPreset(path):
         if not os.path.exists(path):
             raise RuntimeError(f"Uknown built-in preset '{presetName}'")
     try:
-        with open(path, "r") as f:
+        with open(path, "r", encoding="utf-8") as f:
             preset = commentjson.load(f)
             validatePresetLayout(preset)
             return preset

@@ -172,7 +172,7 @@ class HtmlTemplate(Template):
             "boards": self.boards,
             "description": self.description
         })
-        with open(os.path.join(outputDirectory, "index.html"),"w") as outFile:
+        with open(os.path.join(outputDirectory, "index.html"),"w", encoding="utf-8") as outFile:
             outFile.write(content)
 
 def boardpage(outdir, description, board, resource, template, repository, name):

@@ -593,7 +593,7 @@ class Panel:
                 # thus, formatting
                 prl = json.load(f, object_pairs_hook=OrderedDict)
             prl["board"]["visible_layers"] = "fffffff_ffffffff"
-            with open(self.getPrlFilepath(), "w") as f:
+            with open(self.getPrlFilepath(), "w", encoding="utf-8") as f:
                 json.dump(prl, f, indent=2)
         except IOError:
             # The PRL file is not always created, ignore it
@@ -631,7 +631,7 @@ class Panel:
 
             currentPro["net_settings"]["classes"] = sourcePro["net_settings"]["classes"]
             currentPro["net_settings"]["classes"] += [x.serialize() for x in self.newNetClasses.values()]
-            with open(self.getProFilepath(), "w") as f:
+            with open(self.getProFilepath(), "w", encoding="utf-8") as f:
                 json.dump(currentPro, f, indent=2)
         except (KeyError, FileNotFoundError):
             # This means the source board has no DRC setting. Probably a board
@@ -674,7 +674,7 @@ class Panel:
         """
         if self.pageSize is None:
             return
-        with open(self.filename, "r") as f:
+        with open(self.filename, "r", encoding="utf-8") as f:
             tree = parseSexprF(f, limit=10) # Introduce limit to speed up parsing
         # Find paper property
         paperExpr = None
@@ -703,7 +703,7 @@ class Panel:
                 Atom(str(pageSize[1]), " "),
             ]
 
-        with open(self.filename, "w") as f:
+        with open(self.filename, "w", encoding="utf-8") as f:
             f.write(str(tree))
 
 
@@ -743,7 +743,7 @@ class Panel:
         # What follows is a hack as KiCAD has no API for page access. Therefore,
         # we have to read out the page size from the source board and save it so
         # we can recover it.
-        with open(board.GetFileName(), "r") as f:
+        with open(board.GetFileName(), "r", encoding="utf-8") as f:
             tree = parseSexprF(f, limit=10) # Introduce limit to speed up parsing
         self._inheritedPageDimensions = getPageDimensionsFromAst(tree)
 

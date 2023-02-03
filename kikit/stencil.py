@@ -336,7 +336,7 @@ def setStencilLayerVisibility(boardName):
         34,
         35
     ]
-    with open(prlPath, "w") as f:
+    with open(prlPath, "w", encoding="utf-8") as f:
         json.dump(prl, f, indent=2)
     pass
 

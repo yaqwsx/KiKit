@@ -37,7 +37,7 @@ def collectBom(components, lscsFields, ignore):
     return bom
 
 def bomToCsv(bomData, filename):
-    with open(filename, "w", newline="") as csvfile:
+    with open(filename, "w", newline="", encoding="utf-8") as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(["Comment", "Designator", "Footprint", "LCSC"])
         for cType, references in bomData.items():

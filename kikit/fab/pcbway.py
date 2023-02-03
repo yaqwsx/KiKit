@@ -94,7 +94,7 @@ def natural_sort(l):
     return sorted(l, key = alphanum_key)
 
 def bomToCsv(bomData, filename, nBoards, types):
-    with open(filename, "w", newline="") as csvfile:
+    with open(filename, "w", newline="", encoding="utf-8") as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(["Item #", "Designator", "Qty", "Manufacturer",
                          "Mfg Part #", "Description / Value", "Footprint",
