@@ -181,6 +181,8 @@ options.
   means no backbone). The backbone does not increase the spacing of the boards.
 - `vboneskip`, `hboneskip`: Skip every n backbones. I.e., 1 means place only
   every other backbone.
+- `vbonefirst`, `hbonefirst`: Specify first backbone to render. Allows to
+  specify the offset when skipping backbones. The offset is indexed from 1.
 - `vbonecut`, `hbonecut`: true/false. If there are both backbones specified,
   specifies if there should be a vertical or horizontal cut (or both) where the
   backbones cross.
@@ -481,8 +483,8 @@ option from `postprocess`.
 
 - `date` - formats current date as `<year>-<month>-<day>`
 - `time24` - formats current time in 24-hour format
-- `year`, `month`, `day`, `hour`, `minute`, `second` - individual variables 
-  for any date format 
+- `year`, `month`, `day`, `hour`, `minute`, `second` - individual variables
+  for any date format
 - `boardTitle` - the title from the source board
 - `boardDate` - the date from the source board
 - `boardRevision` - the revision from the source board

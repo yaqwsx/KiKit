@@ -13,6 +13,8 @@
         "vbackbone": "0mm",
         "hboneskip": 0,
         "vboneskip": 0,
+        "hbonefirst": 0,
+        "vbonefirst": 0,
         "vbonecut": true,
         "hbonecut": true,
         "baketext": true,

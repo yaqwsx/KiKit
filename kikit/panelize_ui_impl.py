@@ -248,7 +248,9 @@ def buildLayout(preset, panel, sourceBoard, sourceArea):
                 hbonewidth=layout["hbackbone"],
                 vbonewidth=layout["vbackbone"],
                 hboneskip=layout["hboneskip"],
-                vboneskip=layout["vboneskip"])
+                vboneskip=layout["vboneskip"],
+                hbonefirst=layout["hbonefirst"],
+                vbonefirst=layout["vbonefirst"])
             substrates = panel.makeGrid(
                 boardfile=sourceBoard, sourceArea=sourceArea,
                 rows=layout["rows"], cols=layout["cols"], destination=VECTOR2I(0, 0),
@@ -315,7 +317,8 @@ def buildBackBone(layout, panel, substrates, frameSpace):
     try:
         return panel.renderBackbone(layout["vbackbone"], layout["hbackbone"],
                                     layout["vbonecut"], layout["hbonecut"],
-                                    layout["vboneskip"], layout["hboneskip"])
+                                    layout["vboneskip"], layout["hboneskip"],
+                                    layout["vbonefirst"], layout["hbonefirst"])
     except KeyError as e:
         raise PresetError(f"Missing parameter '{e}' in section 'layout'")
 

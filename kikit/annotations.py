@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Dict, List, Set, Union
 import numpy as np
-import pcbnew
+from pcbnewTransition import pcbnew
 from kikit import units # type: ignore
 
 from kikit.common import fromMm, readParameterList

@@ -65,26 +65,30 @@ class BasicGridPosition(GridPlacerBase):
     """
     def __init__(self, horSpace: int, verSpace: int,
                  hbonewidth: int=0, vbonewidth: int=0,
-                 hboneskip: int=0, vboneskip: int=0) -> None:
+                 hboneskip: int=0, vboneskip: int=0,
+                 hbonefirst: int=0, vbonefirst: int=0) -> None:
         self.horSpace = horSpace
         self.verSpace = verSpace
         self.hbonewidth = hbonewidth
         self.vbonewidth = vbonewidth
         self.hboneskip = hboneskip
         self.vboneskip = vboneskip
+        self.hbonefirst = hbonefirst
+        self.vbonefirst = vbonefirst
 
     def position(self, i: int, j: int, boardSize: Optional[BOX2I]) -> VECTOR2I:
         if boardSize is None:
             assert i == 0 and j == 0
-            return VECTOR2I(0, 0)
+            boardSize = BOX2I(VECTOR2I(0, 0), VECTOR2I(0, 0))
         hbonecount = 0 if self.hbonewidth == 0 \
-                       else i // (self.hboneskip + 1)
+                       else max((i + self.hbonefirst)  // (self.hboneskip + 1), 0)
         vbonecount = 0 if self.vbonewidth == 0 \
-                       else j // (self.vboneskip + 1)
-        return VECTOR2I(j * (boardSize.GetWidth() + self.horSpace) + \
-                            vbonecount * (self.vbonewidth + self.horSpace),
-                       i * (boardSize.GetHeight() + self.verSpace) + \
-                            hbonecount * (self.hbonewidth + self.verSpace))
+                       else max((j + self.vbonefirst) // (self.vboneskip + 1), 0)
+        xPos = j * (boardSize.GetWidth() + self.horSpace) + \
+               vbonecount * (self.vbonewidth + self.horSpace)
+        yPos = i * (boardSize.GetHeight() + self.verSpace) + \
+               hbonecount * (self.hbonewidth + self.verSpace)
+        return VECTOR2I(xPos, yPos)
 
     def rotation(self, i: int, j: int) -> KiAngle:
         return EDA_ANGLE(0, pcbnew.DEGREES_T)
@@ -411,7 +415,7 @@ def maxTabCount(edgeLen, width, minDistance):
     c = 1 + (edgeLen - minDistance) // (minDistance + width)
     return max(0, int(c))
 
-def skipBackbones(backbones: List[LineString], skip: int,
+def skipBackbones(backbones: List[LineString], skip: int, first: int,
                   key: Callable[[LineString], int]) -> List[LineString]:
     """
     Given a list of backbones, get only every (skip + 1) other one. Treats
@@ -419,7 +423,7 @@ def skipBackbones(backbones: List[LineString], skip: int,
     """
     candidates = list(set(map(key, backbones)))
     candidates.sort()
-    active = set(itertools.islice(candidates, skip, None, skip + 1))
+    active = set(itertools.islice(candidates, first - 1, None, skip + 1))
     return [x for x in backbones if key(x) in active]
 
 def bakeTextVars(board: pcbnew.BOARD) -> None:
@@ -1905,7 +1909,8 @@ class Panel:
         self._renderLines(lines, Layer.Cmts_User, fromMm(0.5))
 
     def renderBackbone(self, vthickness: KiLength, hthickness: KiLength,
-            vcut: bool, hcut: bool, vskip: int=0, hskip: int=0):
+            vcut: bool, hcut: bool, vskip: int=0, hskip: int=0,
+            vfirst: int=0, hfirst: int=0):
         """
         Render horizontal and vertical backbone lines. If zero thickness is
         specified, no backbone is rendered.
@@ -1916,15 +1921,23 @@ class Panel:
         rendering one (i.e., skip 1 meand that every other backbone will be
         rendered)
 
+        vfirst and hfirst are indices of the first backbone to render. They are
+        1-indexed.
+
         Return a list of cuts
         """
+        if vfirst == 0:
+            vfirst = vskip + 1
+        if hfirst == 0:
+            hfirst = hfirst + 1
+
         hbones = [] if hthickness == 0 \
                     else list(filter(lambda l: isHorizontal(l.coords[0], l.coords[1]), self.backboneLines))
-        activeHbones = skipBackbones(hbones, hskip, lambda x: x.coords[0][1])
+        activeHbones = skipBackbones(hbones, hskip, hfirst, lambda x: x.coords[0][1])
 
         vbones = [] if vthickness == 0 \
                     else list(filter(lambda l: isVertical(l.coords[0], l.coords[1]), self.backboneLines))
-        activeVbones = skipBackbones(vbones, vskip, lambda x: x.coords[0][0])
+        activeVbones = skipBackbones(vbones, vskip, vfirst, lambda x: x.coords[0][0])
 
 
         cutpoints = commonPoints(self.backboneLines)

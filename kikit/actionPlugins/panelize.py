@@ -547,7 +547,7 @@ class PanelizeDialog(wx.Dialog):
                 defaultPreset = loadPresetChain([":default"])
                 preset = self.collectReleventPreset()
                 presetUpdates = presetDifferential(defaultPreset, preset)
-                with open(pathname, "w") as file:
+                with open(pathname, "w", encoding="utf-8") as file:
                     json.dump(presetUpdates, file, indent=4)
                 wx.MessageBox(f"Configuration exported to {pathname}", "Success",
                     style=wx.OK | wx.ICON_INFORMATION, parent=self)
@@ -563,7 +563,7 @@ class PanelizeDialog(wx.Dialog):
                 return
             pathname = fileDialog.GetPath()
             try:
-                with open(pathname, "r") as file:
+                with open(pathname, "r", encoding="utf-8") as file:
                     preset = json.load(file)
                     self.populateInitialValue(preset)
                     self.OnChange()

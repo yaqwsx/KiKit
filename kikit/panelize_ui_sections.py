@@ -55,6 +55,13 @@ class SNum(SectionBase):
     def validate(self, x):
         return int(x)
 
+class SNaturalNum(SNum):
+    def validate(self, x):
+        val = int(x)
+        if val < 0:
+            raise PresetError(f"A non-negative number expected, got '{x}'")
+        return val
+
 class SStr(SectionBase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -255,19 +262,25 @@ LAYOUT_SECTION = {
     "vbackbone": SLength(
         typeIn(["grid", "plugin"]),
         "The width of vertical backbone (0 means no backbone)"),
-    "hboneskip": SNum(
+    "hboneskip": SNaturalNum(
         typeIn(["grid", "plugin"]),
         "Skip every given number of horizontal backbones"),
-    "vboneskip": SNum(
+    "vboneskip": SNaturalNum(
         typeIn(["grid", "plugin"]),
         "Skip every given number of vertical backbones"),
+    "hbonefirst": SNaturalNum(
+        typeIn(["grid", "plugin"]),
+        "Specify first horizontal backbone to render"),
+    "vbonefirst": SNaturalNum(
+        typeIn(["grid", "plugin"]),
+        "Specify first vertical backbone to render"),
     "rotation": SAngle(
         always(),
         "Rotate the boards before placing them in the panel"),
-    "rows": SNum(
+    "rows": SNaturalNum(
         typeIn(["grid", "plugin"]),
         "Specify the number of rows in the grid pattern"),
-    "cols": SNum(
+    "cols": SNaturalNum(
         typeIn(["grid", "plugin"]),
         "Specify the number of columns in the grid pattern"),
     "vbonecut": SBool(
