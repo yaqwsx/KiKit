@@ -40,6 +40,25 @@ class HideReferencesDialog(wx.Dialog):
         self.action.SetSelection(1)
         item_grid.Add(self.action, 1, wx.EXPAND)
 
+        label = wx.StaticText(panel, label="Apply to:",
+            size=wx.Size(200, -1),
+            style=wx.ALIGN_RIGHT)
+        label.Wrap(200)
+        item_grid.Add(label, 1, wx.ALIGN_CENTRE_VERTICAL)
+        self.scope = wx.Choice(panel, style=wx.CB_DROPDOWN,
+            choices=["References only", "Values only", "References and values"])
+        self.scope.SetSelection(2)
+        item_grid.Add(self.scope, 1, wx.EXPAND)
+
+        label = wx.StaticText(panel, label="Include all text items:",
+            size=wx.Size(200, -1),
+            style=wx.ALIGN_RIGHT)
+        label.Wrap(200)
+        item_grid.Add(label, 1, wx.ALIGN_CENTRE_VERTICAL)
+        self.generous = wx.CheckBox(panel)
+        self.generous.SetValue(True)
+        item_grid.Add(self.generous, 1, wx.EXPAND)
+
         label = wx.StaticText(panel,
             label="Mathing references:",
             size=wx.Size(200, -1),
@@ -82,6 +101,15 @@ class HideReferencesDialog(wx.Dialog):
     def GetPattern(self):
         return self.pattern.GetValue()
 
+    def GetGenerous(self):
+        return self.generous.GetValue()
+
+    def ModifyReferences(self):
+        return self.scope.GetSelection() in [0, 2]
+
+    def ModifyValues(self):
+        return self.scope.GetSelection() in [1, 2]
+
     def OnPatternChange(self, event):
         try:
             regex = re.compile(self.pattern.GetValue())
@@ -93,7 +121,7 @@ class HideReferencesDialog(wx.Dialog):
                 for footprint in self.board.GetFootprints():
                     if regex.match(footprint.GetReference()):
                         refs.append(footprint.GetReference())
-                if len(refs) > 1:
+                if len(refs) > 0:
                     self.matchingText.SetLabel(", ".join(refs))
                 else:
                     self.matchingText.SetLabel("None")
@@ -119,7 +147,10 @@ class HideReferencesPlugin(pcbnew.ActionPlugin):
             ok = dialog.ShowModal()
             if not ok:
                 return
-            modify.references(board, dialog.GetShowLabels(), dialog.GetPattern())
+            if dialog.ModifyReferences():
+                modify.references(board, dialog.GetShowLabels(), dialog.GetPattern(), dialog.GetGenerous())
+            if dialog.ModifyValues():
+                modify.values(board, dialog.GetShowLabels(), dialog.GetPattern(), dialog.GetGenerous())
         except Exception as e:
             dlg = wx.MessageDialog(None, f"Cannot perform: {e}", "Error", wx.OK)
             dlg.ShowModal()
@@ -130,10 +161,11 @@ class HideReferencesPlugin(pcbnew.ActionPlugin):
 plugin = HideReferencesPlugin
 
 if __name__ == "__main__":
+    import sys
     # Run test dialog
     app = wx.App()
 
-    dialog = HideReferencesDialog()
+    dialog = HideReferencesDialog(board=pcbnew.LoadBoard(sys.argv[1]))
     dialog.ShowModal()
 
     app.MainLoop()
