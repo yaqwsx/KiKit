@@ -15,6 +15,12 @@ case $1 in
     sudo apt-get install --yes --no-install-recommends kicad
     ;;
 
+  'v7')
+    sudo add-apt-repository --yes ppa:kicad/kicad-7.0-releases
+    sudo apt-get update
+    sudo apt-get install --yes --no-install-recommends kicad
+    ;;
+
   'nightly')
     sudo add-apt-repository --yes ppa:kicad/kicad-dev-nightly
     sudo apt-get update
