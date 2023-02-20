@@ -1355,17 +1355,21 @@ class Panel:
         to
         """
         bloatedSubstrate = prep(self.boardSubstrate.substrates.buffer(SHP_EPSILON))
+        offsetCuts = []
         for cut in cuts:
             cut = cut.simplify(SHP_EPSILON) # Remove self-intersecting geometry
             cut = prolongCut(cut, prolongation)
             offsetCut = cut.parallel_offset(offset, "left")
-            length = offsetCut.length
+            offsetCuts.append(offsetCut)
+
+        for cut in listGeometries(shapely.ops.unary_union(offsetCuts).simplify(SHP_EPSILON)):
+            length = cut.length
             count = int(length / spacing) + 1
             for i in range(count):
                 if count == 1:
-                    hole = offsetCut.interpolate(0.5, normalized=True)
+                    hole = cut.interpolate(0.5, normalized=True)
                 else:
-                    hole = offsetCut.interpolate( i * length / (count - 1) )
+                    hole = cut.interpolate( i * length / (count - 1) )
                 if bloatedSubstrate.intersects(hole):
                     self.addNPTHole(toKiCADPoint((hole.x, hole.y)), diameter)
 
