@@ -40,7 +40,6 @@ def getReference(component):
         return eeschema_v6.getReference(component)
     return eeschema.getReference(component)
 
-
 def ensurePassingDrc(board):
     failed = drc.runImpl(board,
         useMm=True,
@@ -203,7 +202,7 @@ def posDataToFile(posData, filename):
     with open(filename, "w", newline="", encoding="utf-8") as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(["Designator", "Mid X", "Mid Y", "Layer", "Rotation"])
-        for line in sorted(posData, key=lambda x: x[0]):
+        for line in sorted(posData, key=lambda x: naturalComponentKey(x[0])):
             line = list(line)
             for i in [1, 2, 4]:
                 line[i] = f"{line[i]:.2f}" # Most Fab houses expect only 2 decimal digits
@@ -230,3 +229,7 @@ def expandNameTemplate(template: str, filetype: str, board: pcbnew.BOARD) -> str
         return template.format(filetype, **textVars)
     except KeyError as e:
         raise RuntimeError(f"Unknown variable {e} in --nametemplate: {template}")
+
+def naturalComponentKey(reference: str) -> Tuple[str, int]:
+    text, num = splitOn(reference, lambda x: not x.isdigit())
+    return str(text), int(num)

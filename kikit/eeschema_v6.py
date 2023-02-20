@@ -3,6 +3,10 @@ from kikit.sexpr import Atom, parseSexprF
 from itertools import islice
 import os
 from typing import Optional
+from copy import deepcopy
+
+class SchematicError(RuntimeError):
+    pass
 
 @dataclass
 class Symbol:
@@ -16,6 +20,7 @@ class Symbol:
 
 @dataclass
 class SymbolInstance:
+    symbol_path: Optional[str] = None
     path: Optional[str] = None
     reference: Optional[str] = None
     unit: Optional[int] = None
@@ -48,6 +53,12 @@ def isSheet(sexpr):
     item = sexpr[0]
     return isinstance(item, Atom) and item.value == "sheet"
 
+def isUuid(sexpr):
+    if isinstance(sexpr, Atom) or len(sexpr) == 0:
+        return False
+    item = sexpr[0]
+    return isinstance(item, Atom) and item.value == "uuid"
+
 def isPath(sexpr):
     if isinstance(sexpr, Atom) or len(sexpr) == 0:
         return False
@@ -60,15 +71,29 @@ def getUuid(sexpr):
             return x[1].value
     return None
 
+def getElement(sexpr, name):
+    for x in islice(sexpr, 1, None):
+        key = getAttributeKey(x)
+        if key is None:
+            continue
+        if key == name:
+            return x
+    return None
+
+def getAttributeKey(sexpr):
+    if not sexpr:
+        return None
+    key = sexpr[0]
+    if not isinstance(key, Atom):
+        return None
+    return key.value
+
 def extractSymbol(sexpr, path):
     s = Symbol()
     for x in islice(sexpr, 1, None):
-        if not x:
+        key = getAttributeKey(x)
+        if key is None:
             continue
-        key = x[0]
-        if not isinstance(key, Atom):
-            continue
-        key = key.value
         if key == "lib_id":
             s.lib_id = x[1].value
         elif key == "lib_id":
@@ -84,16 +109,49 @@ def extractSymbol(sexpr, path):
             s.properties[x[1].value] = x[2].value
     return s
 
-def extractSymbolInstance(sexpr):
+def extractSymbolInstance(sexpr, sheetPath):
+    i = SymbolInstance()
+    seen = False
+
+    def collectInstanceProperties(pathElem):
+        nonlocal i, seen
+        for x in islice(pathElem, 2, None):
+            key = getAttributeKey(x)
+            if key is None:
+                continue
+            seen = True
+            if key == "reference":
+                i.reference = x[1].value
+            elif key == "unit":
+                i.unit = int(x[1].value)
+            elif key == "value":
+                i.value = x[1].value
+            elif key == "footprint":
+                i.footprint = x[1].value
+
+    for x in islice(sexpr, 1, None):
+        key = getAttributeKey(x)
+        if key is None:
+            continue
+        if key == "uuid":
+            i.symbol_path = sheetPath + "/" + x[1].value
+        elif key == "instances":
+            projects = [proj for proj in islice(x, 1, None)
+                if getAttributeKey(proj) == "project"]
+            for proj in projects:
+                paths = [path for path in islice(proj, 1, None)
+                    if isPath(path) and sheetPath == path.items[1].value]
+                for path in paths:
+                    collectInstanceProperties(path)
+    return i if seen else None
+
+def extractSymbolInstanceV6(sexpr, path):
     s = SymbolInstance()
-    s.path = sexpr[1].value
+    s.symbol_path = path + sexpr[1].value
     for x in islice(sexpr, 2, None):
-        if not len(x) > 1:
+        key = getAttributeKey(x)
+        if key is None:
             continue
-        key = x[0]
-        if not isinstance(key, Atom):
-            continue
-        key = key.value
         if key == "reference":
             s.reference = x[1].value
         elif key == "unit":
@@ -104,36 +162,44 @@ def extractSymbolInstance(sexpr):
             s.footprint = x[1].value
     return s
 
-def collectSymbols(filename, path=""):
+def collectSymbols(filename, path = None):
     """
     Crawl given sheet and return two lists - one with symbols, one with
     symbol instances
     """
+    isRoot = path is None
     with open(filename, encoding="utf-8") as f:
         sheetSExpr = parseSexprF(f)
     symbols, instances = [], []
     for item in sheetSExpr.items:
+        if isUuid(item) and path is None:
+            path = "/" + item.items[1].value
         if isSymbol(item):
             symbols.append(extractSymbol(item, path))
+            instance = extractSymbolInstance(item, path)
+            if instance is not None:
+                instances.append(instance)
             continue
         if isSheet(item):
             f = getProperty(item, "Sheet file")
+            if f is None:
+                # v7 format
+                f = getProperty(item, "Sheetfile")
+            if f is None:
+                raise SchematicError("Invalid format - no Sheet file")
             uuid = getUuid(item)
             dirname = os.path.dirname(filename)
             if len(dirname) > 0:
                 f = dirname + "/" + f
             s, i = collectSymbols(f, path + "/" + uuid)
             symbols += s
-            # The instances shouldn't appear in subsheets, however, in cases
-            # when the sheet used to be a top-level sheet, they are preserved by
-            # KiCAD. So we intentionally ignore them.
-            #
-            # instances += i
+            instances += i
             continue
-        if isSymbolInstances(item):
+        # v6 contains symbol instances in a top-level sheet in symbol instances
+        if isSymbolInstances(item) and isRoot:
             for p in item.items:
                 if isPath(p):
-                    instances.append(extractSymbolInstance(p))
+                    instances.append(extractSymbolInstanceV6(p, path))
             continue
     return symbols, instances
 
@@ -155,11 +221,15 @@ def extractComponents(filename):
 
     components = []
     for inst in instances:
-        s = symbolsDict[inst.path]
+        s = deepcopy(symbolsDict[inst.symbol_path])
         # Note that s should be unique, so we can safely modify it
-        s.properties["Reference"] = inst.reference
-        s.properties["Value"] = inst.value
-        s.properties["Footprint"] = inst.footprint
-        s.unit = inst.unit
+        if inst.reference is not None:
+            s.properties["Reference"] = inst.reference
+        if inst.value is not None:
+            s.properties["Value"] = inst.value
+        if inst.footprint is not None:
+            s.properties["Footprint"] = inst.footprint
+        if inst.unit is not None:
+            s.unit = inst.unit
         components.append(s)
     return components

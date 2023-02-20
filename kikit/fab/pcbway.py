@@ -87,12 +87,6 @@ def collectBom(components, manufacturerFields, partNumberFields,
         bom[cType] = bom.get(cType, []) + [reference]
     return bom
 
-def natural_sort(l):
-    #https://stackoverflow.com/questions/4836710/is-there-a-built-in-function-for-string-natural-sort
-    convert = lambda text: int(text) if text.isdigit() else text.lower()
-    alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ]
-    return sorted(l, key = alphanum_key)
-
 def bomToCsv(bomData, filename, nBoards, types):
     with open(filename, "w", newline="", encoding="utf-8") as csvfile:
         writer = csv.writer(csvfile)
@@ -105,9 +99,9 @@ def bomToCsv(bomData, filename, nBoards, types):
         for cType, references in bomData.items():
             tmp[references[0]] = (references, cType)
 
-        for i in natural_sort(tmp):
+        for i in sorted(tmp, key=naturalComponentKey):
             references, cType = tmp[i]
-            references = natural_sort(references)
+            references = sorted(references, key=naturalComponentKey)
             description, footprint, manufacturer, partNumber, notes, solderType = cType
             if solderType is None:
                 solderType = types[references[0]]

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Tuple, Union, Callable
 from kikit.defs import Layer
 from kikit.typing import Box
 from pcbnewTransition import pcbnew, isV7
@@ -297,6 +297,19 @@ def resolveAnchor(anchor):
         "c":  lambda x: x.GetPosition() + toKiCADPoint((x.GetWidth() / 2, x.GetHeight() / 2))
     }
     return choices[anchor]
+
+def splitOn(input: str, predicate: Callable[[str], bool]) \
+        -> Tuple[str, str]:
+    """
+    Split a string into a head fullfilling predicate and the rest
+    """
+    left = ""
+    for i, x in enumerate(input):
+        if predicate(x):
+            left += x
+        else:
+            break
+    return left, input[i:]
 
 def indexOf(list, predicate):
     """

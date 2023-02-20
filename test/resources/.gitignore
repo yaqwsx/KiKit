@@ -1,0 +1,3 @@
+*-backups
+!*.kicad_*
+!fp-info-cache
