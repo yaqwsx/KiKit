@@ -5,6 +5,12 @@ import versioneer
 import os
 import sys
 
+# Some packages on Linux for v7 change the location of the pcbnew module, let's
+# add the new location to path:
+import os
+if os.name != "nt":
+    sys.path.append("/usr/lib/kicad/lib/python3/dist-packages")
+
 try:
     import pcbnew
 except ImportError:
