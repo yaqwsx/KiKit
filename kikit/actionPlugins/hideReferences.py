@@ -60,7 +60,7 @@ class HideReferencesDialog(wx.Dialog):
         item_grid.Add(self.generous, 1, wx.EXPAND)
 
         label = wx.StaticText(panel,
-            label="Mathing references:",
+            label="Matching references:",
             size=wx.Size(200, -1),
             style=wx.ALIGN_RIGHT)
         label.Wrap(200)
