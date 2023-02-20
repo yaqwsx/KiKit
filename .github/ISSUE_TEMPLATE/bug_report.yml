@@ -9,6 +9,11 @@ body:
       required: true
     - label: I use the KiKit at least 1.2.0 (older version are not supported)
       required: true
+    - label: >
+        I understand that version 1.2.0 is not compatible with KiCAD 7 and if
+        this is a bug report about v7 incompatibility, I tried the latest
+        upstream version first
+      required: true
 - type: input
   attributes:
     label: KiKit version
