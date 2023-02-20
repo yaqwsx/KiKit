@@ -10,6 +10,11 @@ import sys
 import os
 if os.name != "nt":
     sys.path.append("/usr/lib/kicad/lib/python3/dist-packages")
+    try:
+        from ctypes import cdll
+        cdll.LoadLibrary("/usr/lib/kicad/lib/x86_64-linux-gnu/libkicad_3dsg.so.2.0.0")
+    except Exception:
+        pass # Ignore any errors as the library just might not exists here
 
 try:
     import pcbnew
