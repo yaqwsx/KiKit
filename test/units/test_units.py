@@ -1,5 +1,5 @@
 import pytest
-from pcbnew import FromMM, FromMils
+from pcbnewTransition.pcbnew import FromMM, FromMils
 from kikit.units import readLength, readAngle, UnitError
 
 def test_readLength():

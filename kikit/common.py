@@ -4,7 +4,7 @@ from kikit.defs import Layer
 from kikit.typing import Box
 from pcbnewTransition import pcbnew, isV7
 from kikit.intervals import AxialLine
-from pcbnew import BOX2I, VECTOR2I, EDA_ANGLE
+from pcbnewTransition.pcbnew import BOX2I, VECTOR2I, EDA_ANGLE
 import os
 from itertools import product, chain, islice
 import numpy as np

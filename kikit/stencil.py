@@ -1,5 +1,5 @@
 from pcbnewTransition import pcbnew
-from pcbnew import VECTOR2I
+from pcbnewTransition.pcbnew import VECTOR2I
 import numpy as np
 import json
 from collections import OrderedDict

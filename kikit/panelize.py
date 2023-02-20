@@ -8,7 +8,7 @@ from pathlib import Path
 
 from typing import Any, Callable, Dict, Iterable, List, Set, Tuple, Union
 
-from pcbnew import (LoadBoard, ToMM, VECTOR2I, BOX2I, EDA_ANGLE)
+from pcbnewTransition.pcbnew import (LoadBoard, ToMM, VECTOR2I, BOX2I, EDA_ANGLE)
 from enum import Enum
 from shapely.geometry import (Polygon, MultiPolygon, Point, LineString, box,
                               GeometryCollection, MultiLineString)

@@ -2,7 +2,7 @@
 import sys
 import os
 from pcbnewTransition import pcbnew
-from pcbnew import *
+from pcbnewTransition.pcbnew import *
 
 from kikit.defs import Layer
 
