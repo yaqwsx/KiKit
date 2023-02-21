@@ -713,7 +713,11 @@ class Substrate:
         candidates = [x for x in geoms if x.intersects(tab)]
         if len(candidates) != 1:
             raise TabFilletError(f"Unexpected number of fillet candidates: {len(candidates)}")
-        newFace = candidates[0].intersection(self.substrates)
+        # Shapely is numerically unstable for this, bloat the polygon slighlty
+        # to ensure there is an intersection
+        candidate = candidates[0].buffer(SHP_EPSILON)
+
+        newFace = candidate.intersection(self.substrates.exterior)
         if isinstance(newFace, GeometryCollection):
             newFace = MultiLineString([x for x in newFace.geoms if not isinstance(x, Polygon)])
         if isinstance(newFace, MultiLineString):
@@ -722,7 +726,7 @@ class Substrate:
             raise TabFilletError(f"Unexpected result of filleted tab face: {type(newFace)}, {json.dumps(shapely.geometry.mapping(newFace), indent=4)}")
         if Point(tabFace.coords[0]).distance(Point(newFace.coords[0])) > Point(tabFace.coords[0]).distance(Point(newFace.coords[-1])):
             newFace = LineString(reversed(newFace.coords))
-        return candidates[0], newFace
+        return candidate, newFace
 
     def _strPosition(self, point):
         msg = f"[{toMm(point[0])}, {toMm(point[1])}]"
