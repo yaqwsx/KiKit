@@ -12,6 +12,7 @@ from kikit.export import gerberImpl
 def collectBom(components, lscsFields, ignore):
     bom = {}
     for c in components:
+        print(c)
         if getUnit(c) != 1:
             continue
         reference = getReference(c)
@@ -22,6 +23,8 @@ def collectBom(components, lscsFields, ignore):
         if getField(c, "JLCPCB_IGNORE") is not None and getField(c, "JLCPCB_IGNORE") != "":
             continue
         if hasattr(c, "in_bom") and not c.in_bom:
+            continue
+        if hasattr(c, "on_board") and not c.on_board:
             continue
         orderCode = None
         for fieldName in lscsFields:

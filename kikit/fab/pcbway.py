@@ -45,6 +45,8 @@ def collectBom(components, manufacturerFields, partNumberFields,
             continue
         if hasattr(c, "in_bom") and not c.in_bom:
             continue
+        if hasattr(c, "on_board") and not c.on_board:
+            continue
         manufacturer = None
         for manufacturerName in manufacturerFields:
             manufacturer = getField(c, manufacturerName)
