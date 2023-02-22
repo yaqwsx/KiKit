@@ -3,11 +3,11 @@
 To install KiKit on Windows, you have to open "KiCAD Command Prompt". You can
 find it in the start menu:
 
-![KiCAD Command Prompt in Start menu](/resources/windowsCommandPrompt1.jpg)
+![KiCAD Command Prompt in Start menu](../resources/windowsCommandPrompt1.jpg)
 
 Once you have it open like this:
 
-![KiCAD Command Prompt in Start menu](/resources/windowsCommandPrompt2.jpg)
+![KiCAD Command Prompt in Start menu](../resources/windowsCommandPrompt2.jpg)
 
 you can put command in there and confirm them by pressing
 enter. This is also the prompt from which you will invoke all KiKit's CLI

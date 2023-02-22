@@ -22,7 +22,7 @@ All commands also support the following options:
 - `--nametemplate <str>`:  If you want to name your files differently, specify
   this option. This option takes a string that should contain `{}`. This string
   will be replaced by `gerber`, `pos` or `bom` in the out file names. The
-  extension is appended automatically. [Variables in text](/panelization/cli.md#available-variables-in-text)
+  extension is appended automatically. [Variables in text](../panelization/cli.md#available-variables-in-text)
   are also supported eg: `{boardTitle}_rev{boardRevision}_{date}_{}`.
 
 Each of the fab command also take additional, manufacturer specific, options.

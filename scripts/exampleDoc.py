@@ -33,7 +33,7 @@ We will show everything on a single board located in
 [`docs/resources/conn.kicad_pcb`](https://raw.githubusercontent.com/yaqwsx/KiKit/master/docs/resources/conn.kicad_pcb). The board looks like this when rendered via
 PcbDraw:
 
-![conn](/resources/conn.png)
+![conn](../resources/conn.png)
 """)
 
 print(
@@ -417,7 +417,7 @@ The most powerful feature of KiKit regarding tab placement are tabs via
 annotation. Remember our test board? When you open it in Pcbnew, you can see
 that there are some special footprints – KiKit's annotations:
 
-![conn-pcbnew](/resources/conn-pcbnew.png)
+![conn-pcbnew](../resources/conn-pcbnew.png)
 
 They specify where to place tabs. You can even specify individual tab width via
 text property of the symbol. How to use it? Just specify tab type to

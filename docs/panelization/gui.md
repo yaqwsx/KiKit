@@ -10,11 +10,11 @@ from a project) as the generated panel replaces the currently open board.
 
 You can invoke the GUI via clicking on the panelization icon:
 
-![Pcbnew toolbar with the icon](/resources/panelizeToolbar.png)
+![Pcbnew toolbar with the icon](../resources/panelizeToolbar.png)
 
 Then the following window will open:
 
-![Panelization plugin Window](/resources/panelizeWindow.png)
+![Panelization plugin Window](../resources/panelizeWindow.png)
 
 There are three parts of the window:
 

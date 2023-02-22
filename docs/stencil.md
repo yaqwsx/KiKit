@@ -32,9 +32,9 @@ stencils](https://blog.honzamrazek.cz/2020/01/printing-solder-paste-stencils-on-
 on my blog. These stencils are quick solution when you urgently need a stencil
 but probably they don't last long and might come with imperfections.
 
-![3D printed stencil model](/resources/3dstencil1.png)
+![3D printed stencil model](resources/3dstencil1.png)
 
-![3D printed stencil model](/resources/3dstencil2.jpg)
+![3D printed stencil model](resources/3dstencil2.jpg)
 
 To generate such stencil, just call:
 ```
@@ -87,22 +87,22 @@ The stencil you receive should look like on the following picture. It has mouse
 bites so you can easily break it off to precise size. It also has mounting
 holes.
 
-![Stencil](/resources/stencil1.jpg)
+![Stencil](resources/stencil1.jpg)
 
 Once you break the stencils off, you mount them in the jig frame:
 
-![Stencil](/resources/stencil2.jpg)
+![Stencil](resources/stencil2.jpg)
 
 Then you print alignment parts for your board and mount in onto the jig using M2
 screws:
 
-![Stencil](/resources/stencil3.jpg)
+![Stencil](resources/stencil3.jpg)
 
-![Stencil](/resources/stencil4.jpg)
+![Stencil](resources/stencil4.jpg)
 
 Then you just use 2mm pins to align the frame and you can apply the paste!
 
-![Stencil](/resources/stencil5.jpg)
+![Stencil](resources/stencil5.jpg)
 
 The acrylic jig is reusable - you just have to mount new alignment pieces and
 change the stencil.

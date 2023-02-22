@@ -7,11 +7,11 @@ information "this part of the free space belongs to this PCB substrate and this
 PCB is responsible for placing tabs in that space". So for a regular input
 the partition line can look like this:
 
-![partition1](/resources/partition1.svg)
+![partition1](../resources/partition1.svg)
 
 For more complicated input, it can look like this:
 
-![partition2](/resources/partition2.svg)
+![partition2](../resources/partition2.svg)
 
 Note several facts:
 - partition line is used for backbone generator
@@ -32,29 +32,29 @@ the panel) and a cut-line.
 So assume we have the following PCB outline (the PCB is below the line, there is
 a free space above the line):
 
-![tabdrawing1](/resources/tabdrawing1.svg)
+![tabdrawing1](../resources/tabdrawing1.svg)
 
 Then you specify your tab origin and its direction:
 
-![tabdrawing2](/resources/tabdrawing2.svg)
+![tabdrawing2](../resources/tabdrawing2.svg)
 
 This is your input (e.g., via an annotation). Now KiKit does its job; it shoots
 two rays `tabWidth` apart and looks for the intersection with existing
 substrates. Note that if the ray starts within the PCB, no intersection will be
 found.
 
-![tabdrawing3](/resources/tabdrawing3.svg)
+![tabdrawing3](../resources/tabdrawing3.svg)
 
 Once we have the intersections, we can easily generate the tab substrate and the
 cut:
 
-![tabdrawing4](/resources/tabdrawing4.svg)
+![tabdrawing4](../resources/tabdrawing4.svg)
 
 Note that if we specify a partition line, than we shoot new rays in the opposite
 direction and try to hit the line. If we manage to do so, we get a tab.
 Otherwise, no tab is generated.
 
-![tabdrawing5](/resources/tabdrawing5.svg)
+![tabdrawing5](../resources/tabdrawing5.svg)
 
 This is the basic algorithm for generating tabs. Well, we might also call them
 "half tabs". KiKit usually generates the half tabs around the board bounding box

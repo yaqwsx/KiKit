@@ -13,7 +13,7 @@ We will show everything on a single board located in
 [`docs/resources/conn.kicad_pcb`](https://raw.githubusercontent.com/yaqwsx/KiKit/master/docs/resources/conn.kicad_pcb). The board looks like this when rendered via
 PcbDraw:
 
-![conn](/resources/conn.png)
+![conn](../resources/conn.png)
 
 
 ## Basic panels & layout
@@ -40,7 +40,7 @@ Let's start with our first panel.
             docs/resources/conn.kicad_pcb panel.kicad_pcb
         ```
 
-    ![examplePanel1](/resources/examplePanel1.png)
+    ![examplePanel1](../resources/examplePanel1.png)
 
 We specified that we want 2x2 panel, no space between board and separate them by
 V-cuts. We also specified that we want to build full tabs (although no tabs are
@@ -107,7 +107,7 @@ why:
             docs/resources/conn.kicad_pcb panel.kicad_pcb
         ```
 
-    ![examplePanel2](/resources/examplePanel2.png)
+    ![examplePanel2](../resources/examplePanel2.png)
 
 We specified a milling simulation post-processing. This simulates the milling
 operation in the fab house. As you can see, the sharp internal corners cannot be
@@ -140,7 +140,7 @@ the boards. So let's fix it:
             docs/resources/conn.kicad_pcb panel.kicad_pcb
         ```
 
-    ![examplePanel3](/resources/examplePanel3.png)
+    ![examplePanel3](../resources/examplePanel3.png)
 
 In that way, the rounded corners can be machined. Lets' see the same example
 with mousebites instead:
@@ -165,7 +165,7 @@ with mousebites instead:
             docs/resources/conn.kicad_pcb panel.kicad_pcb
         ```
 
-    ![examplePanel4](/resources/examplePanel4.png)
+    ![examplePanel4](../resources/examplePanel4.png)
 
 We changed cut type to mousebites and we specified that they should be
 performed by 0.5mm holes with a spacing of 1 mm. You could also use inches if
@@ -199,7 +199,7 @@ What happens, when we simulate the milling operation?
             docs/resources/conn.kicad_pcb panel.kicad_pcb
         ```
 
-    ![examplePanel5](/resources/examplePanel5.png)
+    ![examplePanel5](../resources/examplePanel5.png)
 
 See? The cuts are somewhat short. This is due to the internal corners that
 cannot be milled. KiKit can fix that for you – just specify you want to prolong
@@ -227,7 +227,7 @@ your cuts tangentially by a small amount:
             docs/resources/conn.kicad_pcb panel.kicad_pcb
         ```
 
-    ![examplePanel6](/resources/examplePanel6.png)
+    ![examplePanel6](../resources/examplePanel6.png)
 
 If you want, you can also specify a number of tabs to generate. KiKit will place
 them evenly:
@@ -254,7 +254,7 @@ them evenly:
             docs/resources/conn.kicad_pcb panel.kicad_pcb
         ```
 
-    ![examplePanel7](/resources/examplePanel7.png)
+    ![examplePanel7](../resources/examplePanel7.png)
 
 You can also append frame or rails to the panel. Frames and rail are useful in
 the following situations:
@@ -291,7 +291,7 @@ Let's start with rails:
             docs/resources/conn.kicad_pcb panel.kicad_pcb
         ```
 
-    ![examplePanel8](/resources/examplePanel8.png)
+    ![examplePanel8](../resources/examplePanel8.png)
 
 Similarly, you can add left and right rail via the `railslr` type. If you want
 a full frame, use the type `frame`. When you place a full frame, it might make
@@ -322,7 +322,7 @@ easily. Let's see an example:
             docs/resources/conn.kicad_pcb panel.kicad_pcb
         ```
 
-    ![examplePanel9](/resources/examplePanel9.png)
+    ![examplePanel9](../resources/examplePanel9.png)
 
 Note that you can also use just only a vertical or horizontal frame cuts:
 
@@ -350,7 +350,7 @@ Note that you can also use just only a vertical or horizontal frame cuts:
             docs/resources/conn.kicad_pcb panel.kicad_pcb
         ```
 
-    ![examplePanel10](/resources/examplePanel10.png)
+    ![examplePanel10](../resources/examplePanel10.png)
 
 When you use V-cuts it might make sense to not remove all material, but only
 mill a slot around the board of the board. This yields a stronger panel – and
@@ -382,7 +382,7 @@ mousebites.
             docs/resources/conn.kicad_pcb panel.kicad_pcb
         ```
 
-    ![examplePanel11](/resources/examplePanel11.png)
+    ![examplePanel11](../resources/examplePanel11.png)
 
 Once we have a frame, we can append a tooling holes, fiducials and some text to
 it:
@@ -417,7 +417,7 @@ it:
             docs/resources/conn.kicad_pcb panel.kicad_pcb
         ```
 
-    ![examplePanel12](/resources/examplePanel12.png)
+    ![examplePanel12](../resources/examplePanel12.png)
 
 If you want to add text to both rails, you can use section `--text2` to add a
 second text. You can also use variables enclosed in curly brackets (`{}`). The
@@ -456,7 +456,7 @@ introduce new variables.
             docs/resources/conn.kicad_pcb panel.kicad_pcb
         ```
 
-    ![examplePanel13](/resources/examplePanel13.png)
+    ![examplePanel13](../resources/examplePanel13.png)
 
 There are many options for text and fiducials. Be sure to read the [full
 documentation](cli.md).
@@ -492,7 +492,7 @@ sharp corners, you can add a chamfer or a fillet to the panel frame/rails:
             docs/resources/conn.kicad_pcb panel.kicad_pcb
         ```
 
-    ![examplePanel14](/resources/examplePanel14.png)
+    ![examplePanel14](../resources/examplePanel14.png)
 !!! example "Panelization command"
 
     === "Linux/macOS"
@@ -521,7 +521,7 @@ sharp corners, you can add a chamfer or a fillet to the panel frame/rails:
             docs/resources/conn.kicad_pcb panel.kicad_pcb
         ```
 
-    ![examplePanel15](/resources/examplePanel15.png)
+    ![examplePanel15](../resources/examplePanel15.png)
 
 Some services, e.g., JLC PCB require a minimal panel size. If you want to ensure
 that your panel meets the criteria, you can specify minimal total width/height
@@ -557,7 +557,7 @@ of the panel. Let's see an example:
             docs/resources/conn.kicad_pcb panel.kicad_pcb
         ```
 
-    ![examplePanel16](/resources/examplePanel16.png)
+    ![examplePanel16](../resources/examplePanel16.png)
 
 ## Advanced features & layouts
 
@@ -593,7 +593,7 @@ shaped boards:
             docs/resources/conn.kicad_pcb panel.kicad_pcb
         ```
 
-    ![examplePanel17](/resources/examplePanel17.png)
+    ![examplePanel17](../resources/examplePanel17.png)
 
 When your board has a connector sticking one one side of the board, it makes
 sense to rotate the boards every other column, row or combination of both. KiKit
@@ -626,7 +626,7 @@ be sure to turn it off before panelizing. Here's an example:
             docs/resources/conn.kicad_pcb panel.kicad_pcb
         ```
 
-    ![examplePanel18](/resources/examplePanel18.png)
+    ![examplePanel18](../resources/examplePanel18.png)
 
 Another solution might be to not put tabs on, e.g., vertical edges of the PCB.
 However, in that case your panel might be weak for further assembly. You can
@@ -659,7 +659,7 @@ depanelization of your boards easier. Enough theory, let's see an example
             docs/resources/conn.kicad_pcb panel.kicad_pcb
         ```
 
-    ![examplePanel19](/resources/examplePanel19.png)
+    ![examplePanel19](../resources/examplePanel19.png)
 
 Often, not all backbones are needed. Especially for larger panels. Therefore, if
 you want, you can skip some of them. Consider the following 4×4 panel with only
@@ -689,13 +689,13 @@ ever other backbone:
             docs/resources/conn.kicad_pcb panel.kicad_pcb
         ```
 
-    ![examplePanel20](/resources/examplePanel20.png)
+    ![examplePanel20](../resources/examplePanel20.png)
 
 The most powerful feature of KiKit regarding tab placement are tabs via
 annotation. Remember our test board? When you open it in Pcbnew, you can see
 that there are some special footprints – KiKit's annotations:
 
-![conn-pcbnew](/resources/conn-pcbnew.png)
+![conn-pcbnew](../resources/conn-pcbnew.png)
 
 They specify where to place tabs. You can even specify individual tab width via
 text property of the symbol. How to use it? Just specify tab type to
@@ -728,7 +728,7 @@ capture the annotations.
             docs/resources/conn.kicad_pcb panel.kicad_pcb
         ```
 
-    ![examplePanel21](/resources/examplePanel21.png)
+    ![examplePanel21](../resources/examplePanel21.png)
 
 Well, the panel looks strange – right? That's because KiKit always constructs a
 half-bridges. When you specify the tabs location, you have to either ensure they
@@ -762,7 +762,7 @@ section [Understanding tabs](tabs.md). Let's fix it:
             docs/resources/conn.kicad_pcb panel.kicad_pcb
         ```
 
-    ![examplePanel22](/resources/examplePanel22.png)
+    ![examplePanel22](../resources/examplePanel22.png)
 
 Note that the annotation can have an arbitrary orientation. The arrow just must
 be outside board edge and points towards it. KiKit will also place only those
@@ -799,7 +799,7 @@ can do so via `copperfill` section:
             docs/resources/conn.kicad_pcb panel.kicad_pcb
         ```
 
-    ![examplePanel23](/resources/examplePanel23.png)
+    ![examplePanel23](../resources/examplePanel23.png)
 
 When you use V-cuts with `copperfill` you (or your fab house) might want to
 include a clearance around the V-cuts:
@@ -830,7 +830,7 @@ include a clearance around the V-cuts:
             docs/resources/conn.kicad_pcb panel.kicad_pcb
         ```
 
-    ![examplePanel24](/resources/examplePanel24.png)
+    ![examplePanel24](../resources/examplePanel24.png)
 
 If you, for example do not wish to cover the tabs with copper, you can also
 specify clearance. Also, some manufacturers don't like when you have large solid
@@ -862,7 +862,7 @@ copper areas. In that case, you can use a hatch pattern to fill the area:
             docs/resources/conn.kicad_pcb panel.kicad_pcb
         ```
 
-    ![examplePanel25](/resources/examplePanel25.png)
+    ![examplePanel25](../resources/examplePanel25.png)
 
 Note one last facts about V-cuts. V-cuts can only be straight and
 horizontal/vertical. But you can use them with circular boards if you want by
@@ -915,7 +915,7 @@ Then run KiKit:
             docs/resources/conn.kicad_pcb panel.kicad_pcb
         ```
 
-    ![examplePanel26](/resources/examplePanel26.png)
+    ![examplePanel26](../resources/examplePanel26.png)
 
 You can learn more about available functions from the comment in the source code
 or in the [Python API reference](python_api.md). The basic concepts are

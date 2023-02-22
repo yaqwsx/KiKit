@@ -11,7 +11,7 @@ First, draw a separate schematics sheet for each of your boards and propagate
 the pins on the inter-board connectors. E.g., in one of my project it looks like
 this:
 
-![Multi board schematics](/resources/multiboardsch.jpg)
+![Multi board schematics](resources/multiboardsch.jpg)
 
 I also place the corresponding connectors next to each other to illustrate that
 they connect. Then draw your board schematics as usual - with one exception.
@@ -20,7 +20,7 @@ This ensures that the power lines are separate for each board and DRC won't
 complain, that you have not connected the power between two board.
 
 Then, draw all your boards into a single board file side-by-side. See file
-[resources/multiboard.kicad_pcb](/resources/multiboard.kicad_pcb) for a dead
+[resources/multiboard.kicad_pcb](resources/multiboard.kicad_pcb) for a dead
 simple illustration. You can also draw lines that will help you align your
 boards' connectors.
 
@@ -33,10 +33,10 @@ This can be done in two ways:
 - via annotation
 
 We will show how to use it on
-[resources/multiboard.kicad_pcb](/resources/multiboard.kicad_pcb) which looks
+[resources/multiboard.kicad_pcb](resources/multiboard.kicad_pcb) which looks
 like this:
 
-![Multi board PCB](/resources/multiboardpcb.jpg)
+![Multi board PCB](resources/multiboardpcb.jpg)
 
 
 ## Bounding box selection

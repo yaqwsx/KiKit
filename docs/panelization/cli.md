@@ -198,7 +198,7 @@ Implements a custom layout based on a plugin.
 ### Source
 
 This option allows you to specify the source area, e.g., when multiple boards
-are present. You can read more about multi-board project [here](/multiboard.md).
+are present. You can read more about multi-board project [here](../multiboard.md).
 
 **Types**: auto, rectangle, annotation
 

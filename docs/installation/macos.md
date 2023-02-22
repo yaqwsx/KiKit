@@ -14,11 +14,11 @@ KiKit's installation on MacOS is twofold:
 
 Open Keychain a select "Create a Certificate":
 
-![](/resources/key-1.png)
+![](../resources/key-1.png)
 
 Then, enter name "kikit", select "Self-Signed Root" and type "Code Signing":
 
-![](/resources/key-2.png)
+![](../resources/key-2.png)
 
 Confirm and the certificate is ready.
 
