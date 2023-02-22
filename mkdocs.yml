@@ -1,0 +1,71 @@
+site_name: KiKit — Automation for KiCAD
+
+repo_url: https://github.com/yaqwsx/KiKit
+repo_name: yaqwsx/KiKit
+
+theme:
+  name: material
+  palette:
+    primary: green
+  font:
+    text: Roboto
+  logo: assets/logo.png
+  favicon: assets/logo.png
+  features:
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.expand
+    - navigation.indexes
+  icon:
+    repo: fontawesome/brands/github
+
+markdown_extensions:
+  - admonition
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+
+plugins:
+  - search:
+      lang: en
+  - mike:
+
+extra:
+  version:
+    provider: mike
+
+nav:
+  - Home: index.md
+  - Installation:
+    - Intro: installation/intro.md
+    - Backend installation:
+      - Linux: installation/linux.md
+      - Windows: installation/windows.md
+      - macOS: installation/macos.md
+    - GUI and libs installation: installation/gui_and_libs.md
+    - installation/docker.md
+    - installation/upgrading.md
+    - installation/choosing_kicad.md
+  - Overview: cli.md
+  - Panelization:
+    - Introduction: panelization/intro.md
+    - CLI: panelization/cli.md
+    - Examples: panelization/examples.md
+    - Plugins: panelization/plugins.md
+    - GUI: panelization/gui.md
+    - Creating panels via scripting: panelization/scripting.md
+    - Python API: panelization/python_api.md
+    - Understanding tabs: panelization/tabs.md
+  - Fabrication:
+    - Introduction: fabrication/intro.md
+    - Fab houses:
+      - JLC PCB: fabrication/jlcpcb.md
+      - Pcb Way: fabrication/pcbway.md
+      - OSH Park: fabrication/oshpark.md
+  - Multiboard workflow: multiboard.md
+  - Present: present.md
+  - Stencil: stencil.md
+  - FAQ: faq.md

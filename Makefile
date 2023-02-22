@@ -12,16 +12,16 @@ PCM_LIB_RESOURCES :=  $(shell find pcm/kikit-lib -type f -print) \
 
 all: doc package test pcm
 
-doc: doc/panelization.md doc/examples.md
+doc: docs/panelization/python_api.md docs/panelization/examples.md
 
-doc/panelization.md: kikit/panelize.py scripts/panelizeDoc.py
+docs/panelization/python_api.md: kikit/panelize.py scripts/panelizeDoc.py
 	PYTHONPATH="$(pwd):${PYTHONPATH}" python3 scripts/panelizeDoc.py > $@
 
-doc/resources/conn.png: doc/resources/conn.kicad_pcb
+doc/resources/conn.png: docs/resources/conn.kicad_pcb
 	pcbdraw plot --silent $< $@
 	convert $@ -define png:include-chunk=none $@
 
-doc/examples.md: scripts/exampleDoc.py doc/resources/conn.png
+docs/panelization/examples.md: scripts/exampleDoc.py docs/resources/conn.png
 	PYTHONPATH="$(pwd):${PYTHONPATH}" python3 scripts/exampleDoc.py > $@
 
 package:

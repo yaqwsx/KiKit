@@ -14,7 +14,7 @@ def autoName():
     counter += 1
     return f"scriptingPanel{counter}"
 
-SRC = "doc/resources/conn.kicad_pcb"
+SRC = "docs/resources/conn.kicad_pcb"
 
 print(
 """

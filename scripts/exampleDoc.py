@@ -15,7 +15,7 @@ def autoName():
     counter += 1
     return f"examplePanel{counter}"
 
-SRC = "doc/resources/conn.kicad_pcb"
+SRC = "docs/resources/conn.kicad_pcb"
 
 print(
 """
@@ -25,21 +25,20 @@ This document will show you several examples of KiKit CLI for panelization. Note
 that this is **not an exhaustive description** of everything that KiKit can do,
 nor proper documentation. For further details, please refer to:
 
-- [installation guide](installation.md)
-- [description of all panelization options](panelizeCli.md)
-- [more detail about KiKit's algorithm for tab creation](understandingTabs.md)
-- [reference for the Python interface](panelization.md)
+- [description of all panelization options](cli.md)
+- [more detail about KiKit's algorithm for tab creation](tabs.md)
+- [reference for the Python interface](python_api.md)
 
 We will show everything on a single board located in
-`doc/resources/conn.kicad_pcb`. The board looks like this when rendered via
+[`docs/resources/conn.kicad_pcb`](https://raw.githubusercontent.com/yaqwsx/KiKit/master/docs/resources/conn.kicad_pcb). The board looks like this when rendered via
 PcbDraw:
 
-![conn](resources/conn.png)
+![conn](/resources/conn.png)
 """)
 
 print(
 """
-# Basic panels & layout
+## Basic panels & layout
 
 Let's start with our first panel.
 """)
@@ -71,7 +70,7 @@ menu.
 Also note that KiKit accepts all options in categories (e.g., `layout`, `tabs`,
 `cuts`, ...). You can specify the parameters as a semicolon-separated key-value
 list. To learn about the precise syntax of the CLI and about all options, please
-refer to – [documentation](panelizeCli.md).
+refer to – [documentation](cli.md).
 
 One side note – if you try it with your own board some components might be gone.
 KiKit respects the KiCAD component selection criteria. When you specify an input
@@ -292,7 +291,7 @@ runBoardExample(autoName(),
 
 print("""
 There are many options for text and fiducials. Be sure to read the [full
-documentation](panelizeCli.md).
+documentation](cli.md).
 
 If you have an automatic feeder in your PNP machine or you just dislike
 sharp corners, you can add a chamfer or a fillet to the panel frame/rails:
@@ -341,7 +340,7 @@ runBoardExample(autoName(),
 
 
 print("""
-# Advanced features & layouts
+## Advanced features & layouts
 
 It is possible that you have some critical features you want to avoid with tabs.
 KiKit has several features that can help you. Let's start with the simple ones.
@@ -418,7 +417,7 @@ The most powerful feature of KiKit regarding tab placement are tabs via
 annotation. Remember our test board? When you open it in Pcbnew, you can see
 that there are some special footprints – KiKit's annotations:
 
-![conn-pcbnew](resources/conn-pcbnew.png)
+![conn-pcbnew](/resources/conn-pcbnew.png)
 
 They specify where to place tabs. You can even specify individual tab width via
 text property of the symbol. How to use it? Just specify tab type to
@@ -441,7 +440,7 @@ Well, the panel looks strange – right? That's because KiKit always constructs 
 half-bridges. When you specify the tabs location, you have to either ensure they
 match or put a piece of substrate they can reach – e.g., a backbone or a
 tightframe. If you are interested in the details, read more about tabs in
-section [Understanding tabs](understandingTabs.md). Let's fix it:
+section [Understanding tabs](tabs.md). Let's fix it:
 """)
 
 runBoardExample(autoName(),
@@ -458,7 +457,7 @@ print("""
 Note that the annotation can have an arbitrary orientation. The arrow just must
 be outside board edge and points towards it. KiKit will also place only those
 tabs, that have a neighboring substrate. For precise algorithm, see section
-[understanding tabs](understandingTabs.md).
+[understanding tabs](tabs.md).
 
 When you make flex PCBs or you want to save etchant, it make sense to pour
 copper on all non-functional parts of the panel. It will make the PCB rigid. You
@@ -513,7 +512,7 @@ horizontal/vertical. But you can use them with circular boards if you want by
 cutting a little inside them. The option `cutcurves`, that will approximate the
 cut by staring and ending point.
 
-# I would like... but KiKit does not support it!
+## I would like... but KiKit does not support it!
 
 If you need something special; e.g., custom placement of tooling holes, multiple
 texts, etc. KiKit has you covered.
@@ -542,78 +541,67 @@ runBoardExample(autoName(),
         ["--tabs", "fixed; width: 3mm; vcount: 2"],
         ["--cuts", "mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm"],
         ["--framing", "railstb; width: 5mm; space: 3mm;"],
-        ["--post", "millradius: 1mm; script: doc/resources/examplePost.py"],
+        ["--post", "millradius: 1mm; script: docs/resources/examplePost.py"],
         [SRC]])
 
 
 print("""
 You can learn more about available functions from the comment in the source code
-or in [documentation](panelization.md).
+or in the [Python API reference](python_api.md). The basic concepts are
+summarized in the [scripting guide](scripting.md).
 
 If you implement a feature that your fab house requires (e.g., new tooling hole
 type), consider submitting a pull request for KiKit instead. I believe the
 others will benefit from it.
 
-# Managing presets
+## Managing presets
 
 The last section of this document is dedicated to management of presets. You can
-read the specification in the [documentation for CLI](panelizeCli.md). Here I
-would like to focus on practical examples.
+read the specification in the [documentation for CLI](cli.md). Here I would like
+to focus on practical examples.
 
 As you should know from the documentation, the panelization preset is divided
 into sections; e. g., `layout`, `tabs`, etc. The key-value parameters in these
 sections can be specified via JSON files. In KiKit, you can specify these files
 via `-p` option:
 
-```
-kikit panelize -p myPreset.json -p :<builtInPreset> <other parameters>
-```
+``` kikit panelize -p myPreset.json -p :<builtInPreset> <other parameters> ```
 
 The parameters in the later specified presets override the parameters in the
 previously specified presets. This allows you to define a named piece-wise
 presets. Therefore, you can prepare various presets for mousebites – e.g.,
 `fineMousebites.json` and `coarseMousebites.json`:
 
-```.js
-// fineMousebites.json
-{
+```.js // fineMousebites.json {
     "cuts": {
-        "type": "mousebites",
-        "drill": "0.5mm",
-        "spacing": "0.9mm",
-        "offset": "0.25mm"
+        "type": "mousebites", "drill": "0.5mm", "spacing": "0.9mm", "offset":
+        "0.25mm"
     }
 }
 
-// coarseMousebites.json
-{
+// coarseMousebites.json {
     "cuts": {
-        "type": "mousebites",
-        "drill": "0.3mm",
-        "spacing": "0.2mm",
-        "offset": "0.15mm"
+        "type": "mousebites", "drill": "0.3mm", "spacing": "0.2mm", "offset":
+        "0.15mm"
     }
 }
 ```
 
 Then you can specify your panelization commands easily via:
 
-```
-kikit panelize -p fineMousebites.json <otheroptions>
-```
+``` kikit panelize -p fineMousebites.json <otheroptions> ```
 
 Therefore, you can build a custom library of commonly used-options; e.g., per
 fabrication house. KiKit offers some built-in presets – see
-[`panelizePresets`](../kikit/resources/panelizePresets). Note that the built-in
-preset `default.json` is always used as a base and it specifies conservative
-default values so you can only override the options relevant for you.
+[`panelizePresets`](https://github.com/yaqwsx/KiKit/tree/master/kikit/resources/panelizePresets).
+Note that the built-in preset `default.json` is always used as a base and it
+specifies conservative default values so you can only override the options
+relevant for you.
 
 To give you an example – with KiKit, you will no longer have to remember what
 diameter of tooling holes JLC PCB requires, just use:
 
-```
-kikit panelize -p :jlcTooling <otheroptions>
-```
+``` kikit panelize -p :jlcTooling <otheroptions> ```
 """)
 
 

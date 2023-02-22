@@ -1,18 +1,22 @@
+---
+hide:
+  - navigation
+---
+
 # KiKit – Automation for KiCAD
 
-![KiKit Logo](https://github.com/yaqwsx/KiKit/raw/master/kikit/resources/graphics/kikitIcon_64x64.png)
+![KiKit Promo](/resources/promo.jpg)
 
 KiKit is a Python library, KiCAD plugin and  a CLI tool to automate several
 tasks in a standard KiCAD workflow like:
 
 - panelization of both, regular and oddly shaped, boards (see
-  [examples](doc/examples.md))
+  [examples](panelization/examples.md))
 - automated exporting manufacturing data based on manufacturer presets
 - multi-board project in KiCAD
 - building board presentation pages (see [an example presentation page generated
   by KiKit](https://roboticsbrno.github.io/RB0002-BatteryPack))
 
-![KiKit Promo](https://github.com/yaqwsx/KiKit/blob/master/doc/resources/promo.jpg?raw=true)
 
 ## Do You Enjoy KiKit or Does It Save You Time?
 
@@ -30,20 +34,6 @@ PS: Be sure to check out my other KiCAD & PCB related projects:
 - [Pinion](https://github.com/yaqwsx/Pinion/)
 - [PcbDraw](https://github.com/yaqwsx/PcbDraw/)
 - [JlcParts](https://github.com/yaqwsx/jlcparts)
-
-## Installation
-
-KiKit is available as a [PyPi package](https://pypi.org/project/KiKit/),
-therefore, you can install it via pip:
-
-```
-pip3 install kikit
-```
-
-Then you can install the Pcbnew action plugins via KiCAD's PCM.
-
-For more detailed instructions with steps to enable GUI plugins, please see the
-[installation guide](doc/installation.md).
 
 ## Why Should I Use It?
 
@@ -70,24 +60,24 @@ manufacturing data and board presentation pages.
 - compared to hand-creation of panels, your panels will pass DRC (as tracks from
   different instances of the same board have distinct nets when using KiKit)
 - if you have multiple boards in a single file, you can split them
-- simplifying [multi-board project in KiCAD](doc/multiboard.md)
-- [automated export of gerbers and assembly data](doc/fabrication.md)
-- [3D printed self-registering solder paste stencils](doc/stencil.md)
-- [steel stencils with alignment jig](doc/stencil.md)
+- simplifying [multi-board project in KiCAD](multiboard.md)
+- [automated export of gerbers and assembly data](fabrication/intro.md)
+- [3D printed self-registering solder paste stencils](stencil.md)
+- [steel stencils with alignment jig](stencil.md)
 - create powerfull shell scrips or Makefiles which automates your workflow...
-- ...or invoke the functionality via [GUI in KiCAD](doc/plugins.md).
+- ...or invoke the functionality via [GUI in KiCAD](panelization/gui.md).
 
 ## How To Use It?
 
-Read the [CLI documentation](doc/cli.md) and the [panelize
-documentation](doc/panelization.md). Also don't miss the
-[examples](doc/examples.md). There is also a quick not on how to use
-[panelization action plugin](doc/panelizeGui.md). If you are interested in
-generating solder paste stencils, see [Stencil documentation](doc/stencil.md)
+Read the [CLI documentation](panelization/cli.md) and the [panelize
+documentation](panelization/scripting.md). Also don't miss the
+[examples](panelization/examples.md). There is also a quick not on how to use
+[panelization action plugin](panelization/gui.md). If you are interested in
+generating solder paste stencils, see [Stencil documentation](stencil.md)
 
 ## KiKit Is Broken or Does Not Work as Expected
 
-Please, first check [FAQ](doc/faq.md). If you have not found answer for your
+Please, first check [FAQ](faq.md). If you have not found answer for your
 problem there, feel free to open an issue on GitHub.
 
 If you would like to have a feature in KiKit that is currently not on a roadmap,

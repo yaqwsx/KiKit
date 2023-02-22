@@ -1,0 +1,26 @@
+name: Build documentation
+on:
+  push:
+    branches:
+      - master
+jobs:
+  build-doc:
+    name: Build upstream version documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Install dependencies
+        run: |
+          pip3 install mkdocs-material  mike
+      - name: Setup doc deploy
+        run: |
+          git config --global user.name Documentation Bot
+          git config --global user.email bot@github.com
+      - name: Build docs
+        run: mike deploy --push --update-aliases upstream
