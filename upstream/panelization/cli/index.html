@@ -1,0 +1,2252 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../intro/">
+      
+      
+        <link rel="next" href="../examples/">
+      
+      <link rel="icon" href="../../assets/logo.png">
+      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-9.0.13">
+    
+    
+      
+        <title>CLI - KiKit — Automation for KiCAD</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ffa9267a.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.a0c5b2b5.min.css">
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#panelization-cli" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="KiKit — Automation for KiCAD" class="md-header__button md-logo" aria-label="KiKit — Automation for KiCAD" data-md-component="logo">
+      
+  <img src="../../assets/logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            KiKit — Automation for KiCAD
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              CLI
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/yaqwsx/KiKit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    yaqwsx/KiKit
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../.." class="md-tabs__link">
+      Home
+    </a>
+  </li>
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../installation/intro/" class="md-tabs__link">
+        Installation
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../../cli/" class="md-tabs__link">
+      Overview
+    </a>
+  </li>
+
+      
+        
+  
+  
+    
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../intro/" class="md-tabs__link md-tabs__link--active">
+        Panelization
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../fabrication/intro/" class="md-tabs__link">
+        Fabrication
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../../multiboard/" class="md-tabs__link">
+      Multiboard workflow
+    </a>
+  </li>
+
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../../present/" class="md-tabs__link">
+      Present
+    </a>
+  </li>
+
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../../stencil/" class="md-tabs__link">
+      Stencil
+    </a>
+  </li>
+
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../../faq/" class="md-tabs__link">
+      FAQ
+    </a>
+  </li>
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="KiKit — Automation for KiCAD" class="md-nav__button md-logo" aria-label="KiKit — Automation for KiCAD" data-md-component="logo">
+      
+  <img src="../../assets/logo.png" alt="logo">
+
+    </a>
+    KiKit — Automation for KiCAD
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/yaqwsx/KiKit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    yaqwsx/KiKit
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+        
+      
+      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+      
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+          Installation
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Installation
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/intro/" class="md-nav__link">
+        Intro
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+        
+      
+      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_2" >
+      
+      
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
+          Backend installation
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_2_2">
+          <span class="md-nav__icon md-icon"></span>
+          Backend installation
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/linux/" class="md-nav__link">
+        Linux
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/windows/" class="md-nav__link">
+        Windows
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/macos/" class="md-nav__link">
+        macOS
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/gui_and_libs/" class="md-nav__link">
+        GUI and libs installation
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/docker/" class="md-nav__link">
+        Running KiKit via Docker
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/upgrading/" class="md-nav__link">
+        Upgrading KiKit and installing special versions
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/choosing_kicad/" class="md-nav__link">
+        Choosing KiCAD version
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli/" class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+      
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+          Panelization
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Panelization
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../intro/" class="md-nav__link">
+        Introduction
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          CLI
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        CLI
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#configurations" class="md-nav__link">
+    Configurations
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#units" class="md-nav__link">
+    Units
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration-categories" class="md-nav__link">
+    Configuration categories
+  </a>
+  
+    <nav class="md-nav" aria-label="Configuration categories">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#layout" class="md-nav__link">
+    Layout
+  </a>
+  
+    <nav class="md-nav" aria-label="Layout">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#grid" class="md-nav__link">
+    Grid
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plugin" class="md-nav__link">
+    Plugin
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#source" class="md-nav__link">
+    Source
+  </a>
+  
+    <nav class="md-nav" aria-label="Source">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#auto" class="md-nav__link">
+    Auto
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rectangle" class="md-nav__link">
+    Rectangle
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#annotation" class="md-nav__link">
+    Annotation
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tabs" class="md-nav__link">
+    Tabs
+  </a>
+  
+    <nav class="md-nav" aria-label="Tabs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed" class="md-nav__link">
+    Fixed
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#spacing" class="md-nav__link">
+    Spacing
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#full" class="md-nav__link">
+    Full
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#corner" class="md-nav__link">
+    Corner
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#annotation_1" class="md-nav__link">
+    Annotation
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plugin_1" class="md-nav__link">
+    Plugin
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cuts" class="md-nav__link">
+    Cuts
+  </a>
+  
+    <nav class="md-nav" aria-label="Cuts">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#none" class="md-nav__link">
+    None
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mousebites" class="md-nav__link">
+    Mousebites
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v-cuts" class="md-nav__link">
+    V-Cuts
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#layer" class="md-nav__link">
+    Layer
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plugin_2" class="md-nav__link">
+    Plugin
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#framing" class="md-nav__link">
+    Framing
+  </a>
+  
+    <nav class="md-nav" aria-label="Framing">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#railstbrailslr" class="md-nav__link">
+    Railstb/Railslr
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#frame" class="md-nav__link">
+    Frame
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tighframe" class="md-nav__link">
+    Tighframe
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plugin_3" class="md-nav__link">
+    Plugin
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tooling" class="md-nav__link">
+    Tooling
+  </a>
+  
+    <nav class="md-nav" aria-label="Tooling">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#plugin_4" class="md-nav__link">
+    Plugin
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fiducials" class="md-nav__link">
+    Fiducials
+  </a>
+  
+    <nav class="md-nav" aria-label="Fiducials">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#plugin_5" class="md-nav__link">
+    Plugin
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#text" class="md-nav__link">
+    Text
+  </a>
+  
+    <nav class="md-nav" aria-label="Text">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#available-variables-in-text" class="md-nav__link">
+    Available variables in text
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#page" class="md-nav__link">
+    Page
+  </a>
+  
+    <nav class="md-nav" aria-label="Page">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#custom" class="md-nav__link">
+    Custom
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#copperfill" class="md-nav__link">
+    Copperfill
+  </a>
+  
+    <nav class="md-nav" aria-label="Copperfill">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#solid" class="md-nav__link">
+    Solid
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hatched" class="md-nav__link">
+    Hatched
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#post" class="md-nav__link">
+    Post
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/" class="md-nav__link">
+        Examples
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../plugins/" class="md-nav__link">
+        Plugins
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gui/" class="md-nav__link">
+        GUI
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../scripting/" class="md-nav__link">
+        Creating panels via scripting
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python_api/" class="md-nav__link">
+        Python API
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tabs/" class="md-nav__link">
+        Understanding tabs
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+        
+      
+      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+      
+      
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+          Fabrication
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_5">
+          <span class="md-nav__icon md-icon"></span>
+          Fabrication
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fabrication/intro/" class="md-nav__link">
+        Introduction
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+        
+      
+      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_2" >
+      
+      
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_5_2" id="__nav_5_2_label" tabindex="0">
+          Fab houses
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_2_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_5_2">
+          <span class="md-nav__icon md-icon"></span>
+          Fab houses
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fabrication/jlcpcb/" class="md-nav__link">
+        JLC PCB
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fabrication/pcbway/" class="md-nav__link">
+        Pcb Way
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fabrication/oshpark/" class="md-nav__link">
+        OSH Park
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../multiboard/" class="md-nav__link">
+        Multiboard workflow
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../present/" class="md-nav__link">
+        Present
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../stencil/" class="md-nav__link">
+        Stencil
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../faq/" class="md-nav__link">
+        FAQ
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#configurations" class="md-nav__link">
+    Configurations
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#units" class="md-nav__link">
+    Units
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration-categories" class="md-nav__link">
+    Configuration categories
+  </a>
+  
+    <nav class="md-nav" aria-label="Configuration categories">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#layout" class="md-nav__link">
+    Layout
+  </a>
+  
+    <nav class="md-nav" aria-label="Layout">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#grid" class="md-nav__link">
+    Grid
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plugin" class="md-nav__link">
+    Plugin
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#source" class="md-nav__link">
+    Source
+  </a>
+  
+    <nav class="md-nav" aria-label="Source">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#auto" class="md-nav__link">
+    Auto
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rectangle" class="md-nav__link">
+    Rectangle
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#annotation" class="md-nav__link">
+    Annotation
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tabs" class="md-nav__link">
+    Tabs
+  </a>
+  
+    <nav class="md-nav" aria-label="Tabs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed" class="md-nav__link">
+    Fixed
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#spacing" class="md-nav__link">
+    Spacing
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#full" class="md-nav__link">
+    Full
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#corner" class="md-nav__link">
+    Corner
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#annotation_1" class="md-nav__link">
+    Annotation
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plugin_1" class="md-nav__link">
+    Plugin
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cuts" class="md-nav__link">
+    Cuts
+  </a>
+  
+    <nav class="md-nav" aria-label="Cuts">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#none" class="md-nav__link">
+    None
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mousebites" class="md-nav__link">
+    Mousebites
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#v-cuts" class="md-nav__link">
+    V-Cuts
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#layer" class="md-nav__link">
+    Layer
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plugin_2" class="md-nav__link">
+    Plugin
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#framing" class="md-nav__link">
+    Framing
+  </a>
+  
+    <nav class="md-nav" aria-label="Framing">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#railstbrailslr" class="md-nav__link">
+    Railstb/Railslr
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#frame" class="md-nav__link">
+    Frame
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tighframe" class="md-nav__link">
+    Tighframe
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plugin_3" class="md-nav__link">
+    Plugin
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tooling" class="md-nav__link">
+    Tooling
+  </a>
+  
+    <nav class="md-nav" aria-label="Tooling">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#plugin_4" class="md-nav__link">
+    Plugin
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fiducials" class="md-nav__link">
+    Fiducials
+  </a>
+  
+    <nav class="md-nav" aria-label="Fiducials">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#plugin_5" class="md-nav__link">
+    Plugin
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#text" class="md-nav__link">
+    Text
+  </a>
+  
+    <nav class="md-nav" aria-label="Text">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#available-variables-in-text" class="md-nav__link">
+    Available variables in text
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#page" class="md-nav__link">
+    Page
+  </a>
+  
+    <nav class="md-nav" aria-label="Page">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#custom" class="md-nav__link">
+    Custom
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#copperfill" class="md-nav__link">
+    Copperfill
+  </a>
+  
+    <nav class="md-nav" aria-label="Copperfill">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#solid" class="md-nav__link">
+    Solid
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hatched" class="md-nav__link">
+    Hatched
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#post" class="md-nav__link">
+    Post
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="panelization-cli">Panelization CLI</h1>
+<p>The whole panelization process of KiKit's CLI is driven by a configuration
+structure. The configuration contains several categories (e.g., <code>layout</code>,
+<code>tabs</code>, <code>framing</code>). Each of the categories have number of named parameters
+(e.g., <code>tabsCount</code>). All categories and their parameters are described further
+below.</p>
+<p>Note that you can use the <a href="../gui/">pcbnew action plugin</a> to
+interactively construct the panelization configuration structure.</p>
+<h2 id="configurations">Configurations</h2>
+<p>The configuration can be supplied to KiKit via a JSON file with comments and
+from the command line. The example of a configuration in a JSON file is the
+following</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="c1">// There can be C-like comments</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="s2">&quot;layout&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">        </span><span class="s2">&quot;type&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;grid&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">        </span><span class="s2">&quot;rows&quot;</span><span class="o">:</span><span class="w"> </span><span class="mf">1</span><span class="p">,</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">        </span><span class="s2">&quot;cols&quot;</span><span class="o">:</span><span class="w"> </span><span class="mf">1</span><span class="p">,</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">        </span><span class="s2">&quot;hspace&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;0mm&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">        </span><span class="s2">&quot;vspace&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;0mm&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">        </span><span class="s2">&quot;rotation&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;0deg&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">        </span><span class="s2">&quot;alternation&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;none&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">        </span><span class="s2">&quot;renamenet&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;Board_{n}-{orig}&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">        </span><span class="s2">&quot;renameref&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;{orig}&quot;</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="w">    </span><span class="s2">&quot;source&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="w">        </span><span class="s2">&quot;type&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="w">        </span><span class="s2">&quot;tolerance&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;1mm&quot;</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="w">    </span><span class="s2">&quot;tabs&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="w">        </span><span class="s2">&quot;type&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;normal&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="w">        </span><span class="s2">&quot;source&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;none&quot;</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a><span class="w">    </span><span class="s2">&quot;cuts&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a><span class="w">        </span><span class="s2">&quot;type&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;none&quot;</span>
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a><span class="w">    </span><span class="s2">&quot;framing&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a><span class="w">        </span><span class="s2">&quot;type&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;none&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a><span class="w">        </span><span class="s2">&quot;thickness&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;0mm&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a><span class="w">    </span><span class="s2">&quot;post&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a><span class="w">        </span><span class="s2">&quot;type&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a><span class="w">        </span><span class="s2">&quot;millradius&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;0mm&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a><span class="w">        </span><span class="s2">&quot;copperfill&quot;</span><span class="o">:</span><span class="w"> </span><span class="kc">false</span>
+<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a><span class="p">}</span>
+</code></pre></div>
+<p>KiKit accepts <code>-p &lt;configurationFile&gt;</code> option to specify one or more
+configurations. When multiple configurations are specified, they are composed
+into a single configuration. The later specified configurations overwrite
+parameters of the former specified configurations. This allows us to start with
+a basic configuration and have a number of small configurations specifying
+details.</p>
+<p>To give and example, consider the two following configurations:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1">// A</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="p">{</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="s2">&quot;tabs&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">        </span><span class="s2">&quot;type&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;normal&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">        </span><span class="s2">&quot;width&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;3mm&quot;</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">    </span><span class="s2">&quot;framing&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">        </span><span class="s2">&quot;type&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;frame&quot;</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="p">}</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="c1">// B</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="p">{</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">    </span><span class="s2">&quot;framing&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="w">        </span><span class="s2">&quot;type&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;rails&quot;</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="w">        </span><span class="s2">&quot;width&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;5mm&quot;</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="p">}</span>
+</code></pre></div>
+<p>When we merge <code>B</code> into <code>A</code>, we get:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="p">{</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span><span class="s2">&quot;tabs&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">        </span><span class="s2">&quot;type&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;normal&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">        </span><span class="s2">&quot;width&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;3mm&quot;</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">    </span><span class="s2">&quot;framing&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">        </span><span class="s2">&quot;type&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;rails&quot;</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">        </span><span class="s2">&quot;width&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;5mm&quot;</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="p">}</span>
+</code></pre></div>
+<p>You can also override every parameter from CLI. There is an option for each
+category, which accepts a semicolon-separated list of key-value pairs; e.g.:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>--layout &#39;rows: 3; cols: 4&#39;
+</code></pre></div>
+<p>The options from CLI have the highest priority - they override values from
+specified from the files. If you need to specify the character <code>;</code>, you can
+escape it via <code>\</code>.</p>
+<p>Therefore, a full invocation of KiKit for panelization can look like this:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>kikit panelize -p myDefault.json -p useVcuts.json -p myFrame.json
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    --layout &#39;rows: 3; cols: 4&#39;
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    board.kicad_pcb panel.kicad_pcb.
+</code></pre></div></p>
+<p>Note the single quotes -- without them your shell will eat the spaces and the
+command will be interpreted badly. The command will use our default
+configuration, then it will override some options to use V-cuts and then it adds
+a frame specified by <code>myFrame.json</code>. Last we specify the panel size from CLI.</p>
+<p>Note that KiKit always start with a default configuration (specified in the file
+<a href="https://github.com/yaqwsx/KiKit/blob/master/kikit/resources/panelizePresets/default.json">default.json</a>).
+There are also some configuration files shipped with KiKit. You can find them in
+the directory <code>kikit/resources/panelizePresets</code>. When you want to use them via
+option <code>-p</code>, just prefix their name with <code>:</code> and drop the suffix. E.g., for
+<code>vcuts.json</code> use <code>-p :vcuts</code>.</p>
+<p>If you would like to inspect which configuration was used by KiKit, you can dump
+it into a file with the <code>-d &lt;filename&gt;</code> option.</p>
+<h2 id="units">Units</h2>
+<p>You can specify units in the configuration files and CLI. Always specify them as
+string, e.g., "2mm" or "0.5 inch" (do not forget the quotes in the JSON files).</p>
+<p>Supported length units: mm, cm, dm, m, mil, inch, in.</p>
+<p>Supported angle units: deg, °, rad.</p>
+<h2 id="configuration-categories">Configuration categories</h2>
+<p>There are the following categories: layout, source, tabs, cuts, framing, and
+tooling.</p>
+<p>Each category has a mandatory parameter <code>type</code> which dictates the style of that
+feature. Note that you can specify the type parameter in a simplified manner in
+the CLI by specifying it first and omitting the <code>type</code> word; e.g., <code>--cuts
+'mousebites, someParameter: 10cm'</code>.</p>
+<h3 id="layout">Layout</h3>
+<p><strong>Types</strong>: grid, plugin</p>
+<p><strong>Common options</strong>:</p>
+<ul>
+<li><code>hspace</code>, <code>vspace</code>, <code>space</code>: Specify the gap between the boards. You can
+  specify separately vertical and horizontal spacing or you can specify <code>space</code>
+  to make them the same (it has higher priority).</li>
+<li><code>rotation</code>: Rotate the boards before placing them in the panel</li>
+<li><code>renamenet</code>, <code>renameref</code>: A pattern by which to rename the nets and
+  references. You can use <code>{n}</code> and <code>{orig}</code> to get the board number and
+  original name. Default values are <code>Board_{n}-{orig}</code> for nets and <code>{orig}</code> for
+  references.</li>
+<li><code>baketext</code>: A flag that indicates if text variables should be substituted or
+  not.</li>
+</ul>
+<h4 id="grid">Grid</h4>
+<p>The boars are placed in a grid pattern connected by tabs. There are no special
+options.</p>
+<ul>
+<li><code>rows</code>, <code>cols</code>: Specify the number of boards in the grid pattern</li>
+<li><code>alternation</code>: Specify alternations of board rotation.<ul>
+<li><code>none</code>: Do not alternate</li>
+<li><code>rows</code>: Rotate boards by 180° on every next row</li>
+<li><code>cols</code>: Rotate boards by 180° on every next column</li>
+<li><code>rowsCols</code>: Rotate boards by 180° based on a chessboard pattern</li>
+</ul>
+</li>
+<li><code>vbackbone</code>, <code>hbackbone</code>: The width of vertical and horizontal backbone (0
+  means no backbone). The backbone does not increase the spacing of the boards.</li>
+<li><code>vboneskip</code>, <code>hboneskip</code>: Skip every n backbones. I.e., 1 means place only
+  every other backbone.</li>
+<li><code>vbonefirst</code>, <code>hbonefirst</code>: Specify first backbone to render. Allows to
+  specify the offset when skipping backbones. The offset is indexed from 1.</li>
+<li><code>vbonecut</code>, <code>hbonecut</code>: true/false. If there are both backbones specified,
+  specifies if there should be a vertical or horizontal cut (or both) where the
+  backbones cross.</li>
+</ul>
+<h4 id="plugin">Plugin</h4>
+<p>Implements a custom layout based on a plugin.</p>
+<ul>
+<li><code>code</code>: the plugin specification. See (plugin documentation)[plugin.md] for
+  more details</li>
+<li><code>arg</code>: text argument for the user plugin</li>
+</ul>
+<h3 id="source">Source</h3>
+<p>This option allows you to specify the source area, e.g., when multiple boards
+are present. You can read more about multi-board project <a href="/multiboard.md">here</a>.</p>
+<p><strong>Types</strong>: auto, rectangle, annotation</p>
+<p><strong>Common options</strong>:</p>
+<ul>
+<li><code>stack</code>: specify the number of layers of the panel. Valid options are
+  <code>2layer</code>, <code>4layer</code>, <code>6layer</code> or <code>inehrit</code> (default). The use case for this
+  option is when you design a multiple boards in a single desing and you
+  separate them, however, one boards is e.g., 4 layer and one 2 layer. Then you
+  design both of them as 4 layer and you specify <code>stack: 2layer</code> for the 2 layer
+  one when panelizing or separating.</li>
+</ul>
+<h4 id="auto">Auto</h4>
+<p>Find all board edges and use them to construct source rectangle. Suitable for
+most cases when there is only a single board in the design. Note that might want
+to increase <code>tolerance</code> or specify the source area explicitly via <code>rectangle</code> if
+you have components sticking out of your design.</p>
+<ul>
+<li><code>tolerance</code>: KiKit extracts only board items that fit fully into the source
+  area (including all drawings on all layers). Tolerance enlarges the source
+  area by given amount, to e.g., not omit KiKit annotations for tabs or
+  connectors sticking out of the board.</li>
+</ul>
+<h4 id="rectangle">Rectangle</h4>
+<p>Specify the source rectangle explicitly.</p>
+<ul>
+<li><code>tlx, tly, brx, bry</code>: specify the coordinates (via length units) of the
+  rectangle via top-left and bottom-right corner.</li>
+</ul>
+<h4 id="annotation">Annotation</h4>
+<p>KiKit offers you to place an annotation footprint <code>kikit:Board</code> into your design
+file to name the board. The area is determined by a bounding box of the lines in
+the <code>Edge.Cuts</code> layer that the arrows point to. Note that the tip of the arrow
+must lie on the PCB edge or slightly outside of it.</p>
+<ul>
+<li><code>ref</code>: specify the annotation symbol reference</li>
+<li><code>tolerance</code>: see above</li>
+</ul>
+<h3 id="tabs">Tabs</h3>
+<p><strong>Types</strong>: fixed, spacing, full, annotation, plugin</p>
+<p>Place tabs. To make some of the options clear, please see the <a href="../tabs/">explanation of
+tab placement process</a>.</p>
+<h4 id="fixed">Fixed</h4>
+<p>Place given number of tabs on the PCB edge. The tabs are spaced uniformly. If
+you need a custom tab placement (e.g., to avoid critical feature), see type
+<em>annotation</em>.</p>
+<ul>
+<li><code>vwidth</code>, <code>hwidth</code>, <code>width</code>: The width of tabs in the vertical and horizontal
+  direction. <code>width</code> overrides both.</li>
+<li><code>vcount</code>, <code>hcount</code>: Number of tabs in a given direction.</li>
+<li><code>mindistance</code>: Minimal spacing between the tabs. If there are too many tabs,
+  their count is reduced.</li>
+</ul>
+<h4 id="spacing">Spacing</h4>
+<p>Place tabs on the PCB edges based on spacing.</p>
+<ul>
+<li><code>vwidth</code>, <code>hwidth</code>, <code>width</code>: The width of tabs in the vertical and horizontal
+  direction. <code>width</code> overrides both.</li>
+<li><code>spacing</code>: The maximum spacing of the tabs.</li>
+</ul>
+<h4 id="full">Full</h4>
+<p>Create tabs that are full width of the PCB. Suitable for PCBs separated by
+V-Cuts. This mode does not make much sense for mousebites in practice. Note that
+in this mode the cuts do not faithfully copy the PCB outline and, instead, they
+cut the bounding box of the PCB. There are no other options.</p>
+<ul>
+<li><code>cutout</code>: When your design features open pockets on the side, this parameter
+  specifies extra cutout depth in order to ensure that a sharp corner of the
+  pocket can be milled. The default is 1 mm.</li>
+<li><code>patchcorners</code>: The full tabs are appended to the nearest flat face of the
+  PCB. If the PCB has sharp corners, you want to add patches of substrate to
+  these corners. However, if the PCB has fillet or miter, you don't want to
+  apply the patches.</li>
+</ul>
+<h4 id="corner">Corner</h4>
+<p>Create tabs in the corners of the PCB.</p>
+<ul>
+<li><code>width</code>: The width of tabs</li>
+</ul>
+<h4 id="annotation_1">Annotation</h4>
+<p>Add tabs based on PCB annotations. Place a footprint <code>kikit:Tab</code> at the edges of
+your PCB. You can edit the text field prefixed with <code>KIKIT:</code> to adjust the tab
+parameters. If you want to specify a custom tab symbol (e.g., with predefined)
+width, you can specify <code>tabfootprints</code> as a list of footprints separated by
+comma. For example: <code>myLib:Tab2mm, myLib:Tab3mm</code>.</p>
+<p>The individual tabs can have the following properties specified in the text
+field of the component as <code>KIKIT:&lt;propertyname&gt;</code>:</p>
+<ul>
+<li><code>width</code>: width of the tab.</li>
+</ul>
+<h4 id="plugin_1">Plugin</h4>
+<p>Tabs based on a plugin.</p>
+<ul>
+<li><code>code</code>: the plugin specification. See (plugin documentation)[plugin.md] for
+  more details</li>
+<li><code>arg</code>: text argument for the user plugin</li>
+</ul>
+<h3 id="cuts">Cuts</h3>
+<p>Specify how to perform the cuts on the tabs separating the board.</p>
+<p><strong>Types</strong>: none, mousebites, vcuts, layer, plugin</p>
+<h4 id="none">None</h4>
+<p>Do not perform any cuts</p>
+<h4 id="mousebites">Mousebites</h4>
+<p>Use mousebites to</p>
+<ul>
+<li><code>drill</code> - specify drill size for the bites</li>
+<li><code>spacing</code> - specify the spacing of the holes</li>
+<li><code>offset</code> - specify the offset, positive offset puts the cuts into the board,
+  negative puts the cuts into the tabs</li>
+<li><code>prolong</code> - distance for tangential prolongation of the cuts (to cut through
+  the internal corner fillets caused by milling)</li>
+</ul>
+<h4 id="v-cuts">V-Cuts</h4>
+<ul>
+<li><code>clearance</code> - specify clearance for copper around V-cuts</li>
+<li><code>cutcurves</code> - true/false - specify if curves should be approximated by
+  straight cuts (e.g., for cutting tabs on circular boards)</li>
+<li><code>offset</code> - specify the offset, positive offset puts the cuts into the board,
+  negative puts the cuts into the tabs</li>
+<li><code>layer</code> - specify the layer to render V-cuts on.</li>
+</ul>
+<h4 id="layer">Layer</h4>
+<p>When KiKit reports it cannot perform cuts, you can render the cuts into a layer
+with this option to understand what's going on. Shouldn't be used for the final
+design.</p>
+<ul>
+<li><code>layer</code> - specify the layer to render the cuts on.</li>
+<li><code>prolong</code> - distance for tangential prolongation of the cuts. It has the same
+  meaning as mousebites.</li>
+</ul>
+<h4 id="plugin_2">Plugin</h4>
+<p>Cuts based on a plugin.</p>
+<ul>
+<li><code>code</code>: the plugin specification. See (plugin documentation)[plugin.md] for
+  more details</li>
+<li><code>arg</code>: text argument for the user plugin</li>
+</ul>
+<h3 id="framing">Framing</h3>
+<p>KiKit allows you to frame the panel with a full frame, or bottom/top or
+left/right rails.</p>
+<p><strong>Types</strong>: none, railstb, railslr, frame, tightframe, plugin
+<strong>Common options</strong>:</p>
+<ul>
+<li><code>hspace</code>, <code>vspace</code>, <code>space</code> - specify the space between PCB and the
+  frame/rail. <code>space</code> overrides <code>hspace and vspace</code>.</li>
+<li><code>width</code> - specify with of the rails or frame</li>
+<li><code>fillet</code>, <code>chamfer</code> - fillet/chamfer frame corners. Specify radius or chamfer
+  size. You can also separately specify <code>chamferwidth</code> and <code>chamferheight</code> to
+  create a non 45° chamfer.</li>
+<li><code>mintotalheight</code>, <code>mintotalwidth</code> – if needed, add extra material to the rail
+  or frame to meet the minimal requested size. Useful for services that require
+  minimal panel size.</li>
+</ul>
+<h4 id="railstbrailslr">Railstb/Railslr</h4>
+<p>Add rail (either on top and bottom or on left and right) to the panel.</p>
+<h4 id="frame">Frame</h4>
+<p>Add a frame around the board.</p>
+<ul>
+<li><code>cuts</code> - one of <code>none</code>, <code>both</code>, <code>v</code>, <code>h</code> - specify whether to add cuts to the
+  corners of the frame for easy removal. Default <code>both</code>.</li>
+</ul>
+<h4 id="tighframe">Tighframe</h4>
+<p>Add a frame around the board which fills the whole area of the panel - the
+boards have just a milled slot around their perimeter.</p>
+<ul>
+<li><code>slotwidth</code> - width of the milled slot.</li>
+</ul>
+<h4 id="plugin_3">Plugin</h4>
+<p>Frame based on a plugin.</p>
+<ul>
+<li><code>code</code>: the plugin specification. See (plugin documentation)[plugin.md] for
+  more details</li>
+<li><code>arg</code>: text argument for the user plugin</li>
+</ul>
+<h3 id="tooling">Tooling</h3>
+<p>Add tooling holes to the (rail/frame of) the panel. The holes are positioned
+by</p>
+<p><strong>Types</strong>: none, 3hole, 4hole, plugin</p>
+<p><strong>Common options</strong>:</p>
+<ul>
+<li><code>hoffset</code>, <code>voffset</code> - specify the offset from from panel edges</li>
+<li><code>size</code> - diameter of the holes</li>
+<li><code>paste</code> - if true, the holes are included in the paste layer (therefore they
+  appear on the stencil).</li>
+</ul>
+<h4 id="plugin_4">Plugin</h4>
+<p>Tooling based on a plugin.</p>
+<ul>
+<li><code>code</code>: the plugin specification. See (plugin documentation)[plugin.md] for
+  more details</li>
+<li><code>arg</code>: text argument for the user plugin</li>
+</ul>
+<h3 id="fiducials">Fiducials</h3>
+<p>Add fiducial to the (rail/frame of) the panel.</p>
+<p><strong>Types</strong>: none, 3fid, 4fid, plugin</p>
+<p><strong>Common options</strong>:</p>
+<ul>
+<li><code>hoffset</code>, <code>voffset</code> - specify the offset from from panel edges</li>
+<li><code>coppersize</code>, <code>opening</code> - diameter of the copper spot and solder mask opening</li>
+<li><code>paste</code> - if true, the fiducials are included in the paste layer (therefore they
+  appear on the stencil).</li>
+</ul>
+<h4 id="plugin_5">Plugin</h4>
+<p>Fiducials based on a plugin.</p>
+<ul>
+<li><code>code</code>: the plugin specification. See (plugin documentation)[plugin.md] for
+  more details</li>
+<li><code>arg</code>: text argument for the user plugin</li>
+</ul>
+<h3 id="text">Text</h3>
+<p>Add text to the panel. Allows you to put a single block of text on panel. You
+can use variables enclosed in <code>{}</code>. E.g. <code>{boardTitle} | {boardDate}</code>. The list
+of all available variables in listed bellow. In the case you need more
+independent texts on the panel, you can use sections names <code>text2</code>, <code>text3</code> and
+<code>text3</code> to add at most 4 text. All these sections behave the same and accept the
+same options.</p>
+<p>If you need more texts or more sophisticated placing options, see <code>script</code>
+option from <code>postprocess</code>.</p>
+<p><strong>Types</strong>: none, simple</p>
+<p><strong>Common options</strong>:</p>
+<ul>
+<li><code>text</code> - The text to be displayed. Note that you can escape <code>;</code> via <code>\</code></li>
+<li><code>anchor</code> - Origin of the text. Can be one of <code>tl</code>, <code>tr</code>, <code>bl</code>, <code>br</code> (corners),
+  <code>mt</code>, <code>mb</code>, <code>ml</code>, <code>mr</code> (middle of sides), <code>c</code> (center). The anchors refer to
+  the panel outline. Default <code>mt</code></li>
+<li><code>hoffset</code>, <code>voffset</code> - specify the offset from anchor. Respects KiCAD
+  coordinate system. Default <code>0mm</code>.</li>
+<li><code>orientation</code> - specify the orientation (angle). Default <code>0deg</code></li>
+<li><code>width</code>, <code>height</code> - width and height of the characters (the same parameters as
+  KiCAD uses). Default <code>1.5mm</code>.</li>
+<li><code>hjustify</code> - justification of the text. One of <code>left</code>, <code>right</code>, <code>center</code>.
+  Default <code>center</code>.</li>
+<li><code>vjustify</code> - justification of the text. One of <code>top</code>, <code>bottom</code>, <code>center</code>.
+  Default <code>center</code></li>
+<li><code>thickness</code> - stroke thickness. Default <code>0.3mm</code>.</li>
+<li><code>layer</code> - specify text layer</li>
+<li><code>plugin</code> - specify the plugin that provides extra variables for the text</li>
+</ul>
+<h4 id="available-variables-in-text">Available variables in text</h4>
+<ul>
+<li><code>date</code> - formats current date as <code>&lt;year&gt;-&lt;month&gt;-&lt;day&gt;</code></li>
+<li><code>time24</code> - formats current time in 24-hour format</li>
+<li><code>year</code>, <code>month</code>, <code>day</code>, <code>hour</code>, <code>minute</code>, <code>second</code> - individual variables
+  for any date format</li>
+<li><code>boardTitle</code> - the title from the source board</li>
+<li><code>boardDate</code> - the date from the source board</li>
+<li><code>boardRevision</code> - the revision from the source board</li>
+<li><code>boardCompany</code> - the company from the source board</li>
+<li><code>boardComment1</code>-<code>boardComment9</code> - comments from the source board</li>
+</ul>
+<p>You can get extra variables by providing custom <a href="../plugins/">text plugin</a> via
+the <code>plugin</code> field.</p>
+<h3 id="page">Page</h3>
+<p>Sets page size on the resulting panel and position the panel in the page. The
+type of style dictates paper size. The default <code>inherit</code> option inherits paper
+size from the source board. This feature is not supported on KiCAD 5</p>
+<p><strong>Types</strong>: <code>inherit</code>, <code>custom</code>, <code>A0</code>, <code>A1</code>, <code>A2</code>, <code>A3</code>, <code>A4</code>, <code>A5</code>, <code>A</code>, <code>B</code>,
+<code>C</code>, <code>D</code>, <code>E</code>, <code>USLetter</code>, <code>USLegal</code>, <code>USLedger</code>, <code>A0-portrait</code>, <code>A1-portrait</code>,
+<code>A2-portrait</code>, <code>A3-portrait</code>, <code>A4-portrait</code>, <code>A5-portrait</code>, <code>A-portrait</code>,
+<code>B-portrait</code>, <code>C-portrait</code>, <code>D-portrait</code>, <code>E-portrait</code>, <code>USLetter-portrait</code>,
+<code>USLegal-portrait</code>, <code>USLedger-portrait</code></p>
+<p><strong>Common options</strong>:</p>
+<ul>
+<li><code>anchor</code> - Point of the panel to be placed at given position. Can be one of
+  <code>tl</code>, <code>tr</code>, <code>bl</code>, <code>br</code> (corners), <code>mt</code>, <code>mb</code>, <code>ml</code>, <code>mr</code> (middle of sides),
+  <code>c</code> (center). The anchors refer to the panel outline. Default <code>mt</code></li>
+<li><code>posx</code>, <code>posy</code> - the position of the panel on the page. Default <code>50%</code> for
+  <code>posx</code> and <code>20mm</code> for <code>posy</code>.</li>
+</ul>
+<h4 id="custom">Custom</h4>
+<p>Instead of the pre-defined paper size you can also specify a custom paper size
+via <code>width</code> and <code>height</code>.</p>
+<h3 id="copperfill">Copperfill</h3>
+<p>Fill non-board areas of the panel with copper.</p>
+<p><strong>Types</strong>: none, solid, hatched</p>
+<p><strong>Common options</strong>:</p>
+<ul>
+<li><code>clearance</code> - optional extra clearance from the board perimeters. Suitable
+  for, e.g., not filling the tabs with copper.</li>
+<li><code>layers</code> - comma-separated list of layer to fill. Default top and bottom. You
+  can specify a shortcut <code>all</code> to fill all layers.</li>
+</ul>
+<h4 id="solid">Solid</h4>
+<p>Fill with solid copper.</p>
+<h4 id="hatched">Hatched</h4>
+<p>Use hatch pattern for the fill.</p>
+<ul>
+<li><code>width</code> - the width of the strokes</li>
+<li><code>spacing</code> - the space between the strokes</li>
+<li><code>orientation</code> - the orientation of the strokes</li>
+</ul>
+<h3 id="post">Post</h3>
+<p>Finishing touches to the panel.</p>
+<p><strong>Types</strong>: auto</p>
+<p><strong>Common options</strong>:</p>
+<ul>
+<li><code>copperfill</code> - fill tabs and frame with copper (e.g., to save etchant or to
+  increase rigidity of flex-PCB panels)</li>
+<li><code>millradius</code> - simulate the milling operation (add fillets to the internal
+  corners). Specify mill radius (usually 1 mm). 0 radius disables the
+  functionality.</li>
+<li><code>millradiusouter</code> ­– same as the previous one, modifies only board outer
+  counter. No internal features of the board are affected.</li>
+<li><code>reconstructarcs</code> - the panelization process works on top of a polygonal
+  representation of the board. This options allows to reconstruct the arcs in
+  the design before saving the panel.</li>
+<li><code>refillzones</code> – refill the user zones after the panel is build. This is only
+  necessary when you want your zones to avoid cuts in panel.</li>
+<li><code>script</code> - a path to custom Python file. The file should contain a function
+  <code>kikitPostprocess(panel, args)</code> that receives the prepared panel as the
+  <code>kikit.panelize.Panel</code> object and the user-supplied arguments as a string -
+  see <code>scriptarg</code>. The function can make arbitrary changes to the panel - you
+  can append text, footprints, alter labels, etc. The function is invoked after
+  the whole panel is constructed (including all other postprocessing). <strong>If you
+  try to add a functionality for a common fabrication houses via scripting,
+  consider submitting PR for KiKit</strong>.</li>
+<li><code>scriptarg</code>: An arbitrary string passed to the user post-processing script
+  specified in <code>script</code></li>
+<li><code>origin</code> - specify if the auxilary origin an grid origin should be placed. Can
+  be one of <code>tl</code>, <code>tr</code>, <code>bl</code>, <code>br</code> (corners), <code>mt</code>, <code>mb</code>, <code>ml</code>, <code>mr</code> (middle of
+  sides), <code>c</code> (center). Empty string does not changes the origin.</li>
+<li><code>dimensions</code> - <code>true</code> or <code>false</code>. Draw dimensions with the panel size.</li>
+</ul>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tracking", "navigation.tabs", "navigation.tabs.sticky", "navigation.expand", "navigation.indexes"], "search": "../../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.2a6f1dda.min.js"></script>
+      
+    
+  </body>
+</html>
