@@ -6,7 +6,7 @@ KiKit is a Python library, KiCAD plugin and  a CLI tool to automate several
 tasks in a standard KiCAD workflow like:
 
 - panelization of both, regular and oddly shaped, boards (see
-  [examples](doc/examples.md))
+  [examples](https://yaqwsx.github.io/KiKit/latest/panelization/examples/))
 - automated exporting manufacturing data based on manufacturer presets
 - multi-board project in KiCAD
 - building board presentation pages (see [an example presentation page generated
@@ -43,7 +43,7 @@ pip3 install kikit
 Then you can install the Pcbnew action plugins via KiCAD's PCM.
 
 For more detailed instructions with steps to enable GUI plugins, please see the
-[installation guide](doc/installation.md).
+[installation guide](https://yaqwsx.github.io/KiKit/latest/installation/intro/).
 
 ## Why Should I Use It?
 
@@ -70,24 +70,24 @@ manufacturing data and board presentation pages.
 - compared to hand-creation of panels, your panels will pass DRC (as tracks from
   different instances of the same board have distinct nets when using KiKit)
 - if you have multiple boards in a single file, you can split them
-- simplifying [multi-board project in KiCAD](doc/multiboard.md)
-- [automated export of gerbers and assembly data](doc/fabrication.md)
-- [3D printed self-registering solder paste stencils](doc/stencil.md)
-- [steel stencils with alignment jig](doc/stencil.md)
+- simplifying [multi-board project in KiCAD](https://yaqwsx.github.io/KiKit/latest/multiboard/)
+- [automated export of gerbers and assembly data](https://yaqwsx.github.io/KiKit/latest/fabrication/intro/)
+- [3D printed self-registering solder paste stencils](https://yaqwsx.github.io/KiKit/upstream/latest/#3d-printed-stencils)
+- [steel stencils with alignment jig](https://yaqwsx.github.io/KiKit/latest/stencil/#steel-stencils)
 - create powerfull shell scrips or Makefiles which automates your workflow...
-- ...or invoke the functionality via [GUI in KiCAD](doc/plugins.md).
+- ...or invoke the functionality via [GUI in KiCAD](https://yaqwsx.github.io/KiKit/latest/panelization/gui/).
 
 ## How To Use It?
 
-Read the [CLI documentation](doc/cli.md) and the [panelize
+Read the [CLI documentation](https://yaqwsx.github.io/KiKit/latest/panelization/cli/) and the [panelize
 documentation](doc/panelization.md). Also don't miss the
-[examples](doc/examples.md). There is also a quick not on how to use
-[panelization action plugin](doc/panelizeGui.md). If you are interested in
-generating solder paste stencils, see [Stencil documentation](doc/stencil.md)
+[examples](https://yaqwsx.github.io/KiKit/examples/panelization/examples/). There is also a quick not on how to use
+[panelization action plugin](https://yaqwsx.github.io/KiKit/latest/panelization/gui/). If you are interested in
+generating solder paste stencils, see [Stencil documentation](https://yaqwsx.github.io/KiKit/latest/stencil/)
 
 ## KiKit Is Broken or Does Not Work as Expected
 
-Please, first check [FAQ](doc/faq.md). If you have not found answer for your
+Please, first check [FAQ](https://yaqwsx.github.io/KiKit/latest/faq/). If you have not found answer for your
 problem there, feel free to open an issue on GitHub.
 
 If you would like to have a feature in KiKit that is currently not on a roadmap,
