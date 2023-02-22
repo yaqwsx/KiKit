@@ -12,7 +12,7 @@ tasks in a standard KiCAD workflow like:
 - building board presentation pages (see [an example presentation page generated
   by KiKit](https://roboticsbrno.github.io/RB0002-BatteryPack))
 
-![KiKit Promo](https://github.com/yaqwsx/KiKit/blob/master/doc/resources/promo.jpg?raw=true)
+![KiKit Promo](https://github.com/yaqwsx/KiKit/blob/master/docs/resources/promo.jpg?raw=true)
 
 ## Do You Enjoy KiKit or Does It Save You Time?
 
