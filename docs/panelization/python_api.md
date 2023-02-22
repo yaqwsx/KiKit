@@ -78,7 +78,7 @@ include components sticking out of the board outline, you can specify tolerance
 #### `appendBoard`
 ```
 appendBoard(self, filename, destination, sourceArea=None, origin=Origin.Center, 
-            rotationAngle=<pcbnew.EDA_ANGLE; proxy of <Swig Object of type 'EDA_ANGLE *' at 0x7fa88ea454a0> >, 
+            rotationAngle=<pcbnew.EDA_ANGLE; proxy of <Swig Object of type 'EDA_ANGLE *' at 0x7f7a1f7f94a0> >, 
             shrink=False, tolerance=0, bufferOutline=1000, netRenamer=None, 
             refRenamer=None, inheritDrc=True, interpretAnnotations=True, 
             bakeText=False)
@@ -209,7 +209,7 @@ Adds a horizontal V-CUT at pos (integer in KiCAD units).
 #### `appendBoard`
 ```
 appendBoard(self, filename, destination, sourceArea=None, origin=Origin.Center, 
-            rotationAngle=<pcbnew.EDA_ANGLE; proxy of <Swig Object of type 'EDA_ANGLE *' at 0x7fa88ea454a0> >, 
+            rotationAngle=<pcbnew.EDA_ANGLE; proxy of <Swig Object of type 'EDA_ANGLE *' at 0x7f7a1f7f94a0> >, 
             shrink=False, tolerance=0, bufferOutline=1000, netRenamer=None, 
             refRenamer=None, inheritDrc=True, interpretAnnotations=True, 
             bakeText=False)
@@ -323,7 +323,7 @@ copperFillNonBoardAreas(self, clearance=1000000,
                         layers=[<Layer.F_Cu: 0>, <Layer.B_Cu: 31>], 
                         hatched=False, strokeWidth=1000000, 
                         strokeSpacing=1000000, 
-                        orientation=<pcbnew.EDA_ANGLE; proxy of <Swig Object of type 'EDA_ANGLE *' at 0x7fa88ea459b0> >)
+                        orientation=<pcbnew.EDA_ANGLE; proxy of <Swig Object of type 'EDA_ANGLE *' at 0x7f7a1f7f99b0> >)
 ```
 Fill given layers with copper on unused areas of the panel (frame, rails
 and tabs). You can specify the clearance, if it should be hatched
@@ -480,7 +480,7 @@ Generate vertical cuts for the frame corners and return them
 #### `makeGrid`
 ```
 makeGrid(self, boardfile, sourceArea, rows, cols, destination, placer, 
-         rotation=<pcbnew.EDA_ANGLE; proxy of <Swig Object of type 'EDA_ANGLE *' at 0x7fa88ea45320> >, 
+         rotation=<pcbnew.EDA_ANGLE; proxy of <Swig Object of type 'EDA_ANGLE *' at 0x7f7a1f7f9320> >, 
          netRenamePattern=Board_{n}-{orig}, refRenamePattern=Board_{n}-{orig}, 
          tolerance=0, bakeText=False)
 ```

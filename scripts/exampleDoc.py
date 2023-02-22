@@ -572,14 +572,17 @@ previously specified presets. This allows you to define a named piece-wise
 presets. Therefore, you can prepare various presets for mousebites – e.g.,
 `fineMousebites.json` and `coarseMousebites.json`:
 
-```.js // fineMousebites.json {
+```.js
+// fineMousebites.json
+{
     "cuts": {
         "type": "mousebites", "drill": "0.5mm", "spacing": "0.9mm", "offset":
         "0.25mm"
     }
 }
 
-// coarseMousebites.json {
+// coarseMousebites.json
+{
     "cuts": {
         "type": "mousebites", "drill": "0.3mm", "spacing": "0.2mm", "offset":
         "0.15mm"
