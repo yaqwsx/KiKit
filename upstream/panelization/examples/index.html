@@ -2016,19 +2016,22 @@ via <code>-p</code> option:</p>
 previously specified presets. This allows you to define a named piece-wise
 presets. Therefore, you can prepare various presets for mousebites – e.g.,
 <code>fineMousebites.json</code> and <code>coarseMousebites.json</code>:</p>
-<p>```.js // fineMousebites.json {
-    "cuts": {
-        "type": "mousebites", "drill": "0.5mm", "spacing": "0.9mm", "offset":
-        "0.25mm"
-    }
-}</p>
-<p>// coarseMousebites.json {
-    "cuts": {
-        "type": "mousebites", "drill": "0.3mm", "spacing": "0.2mm", "offset":
-        "0.15mm"
-    }
-}
-```</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-53-1" name="__codelineno-53-1" href="#__codelineno-53-1"></a><span class="c1">// fineMousebites.json</span>
+<a id="__codelineno-53-2" name="__codelineno-53-2" href="#__codelineno-53-2"></a><span class="p">{</span>
+<a id="__codelineno-53-3" name="__codelineno-53-3" href="#__codelineno-53-3"></a><span class="w">    </span><span class="s2">&quot;cuts&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-53-4" name="__codelineno-53-4" href="#__codelineno-53-4"></a><span class="w">        </span><span class="s2">&quot;type&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;mousebites&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;drill&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;0.5mm&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;spacing&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;0.9mm&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;offset&quot;</span><span class="o">:</span>
+<a id="__codelineno-53-5" name="__codelineno-53-5" href="#__codelineno-53-5"></a><span class="w">        </span><span class="s2">&quot;0.25mm&quot;</span>
+<a id="__codelineno-53-6" name="__codelineno-53-6" href="#__codelineno-53-6"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-53-7" name="__codelineno-53-7" href="#__codelineno-53-7"></a><span class="p">}</span>
+<a id="__codelineno-53-8" name="__codelineno-53-8" href="#__codelineno-53-8"></a>
+<a id="__codelineno-53-9" name="__codelineno-53-9" href="#__codelineno-53-9"></a><span class="c1">// coarseMousebites.json</span>
+<a id="__codelineno-53-10" name="__codelineno-53-10" href="#__codelineno-53-10"></a><span class="p">{</span>
+<a id="__codelineno-53-11" name="__codelineno-53-11" href="#__codelineno-53-11"></a><span class="w">    </span><span class="s2">&quot;cuts&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-53-12" name="__codelineno-53-12" href="#__codelineno-53-12"></a><span class="w">        </span><span class="s2">&quot;type&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;mousebites&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;drill&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;0.3mm&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;spacing&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;0.2mm&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;offset&quot;</span><span class="o">:</span>
+<a id="__codelineno-53-13" name="__codelineno-53-13" href="#__codelineno-53-13"></a><span class="w">        </span><span class="s2">&quot;0.15mm&quot;</span>
+<a id="__codelineno-53-14" name="__codelineno-53-14" href="#__codelineno-53-14"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-53-15" name="__codelineno-53-15" href="#__codelineno-53-15"></a><span class="p">}</span>
+</code></pre></div>
 <p>Then you can specify your panelization commands easily via:</p>
 <p><code>kikit panelize -p fineMousebites.json &lt;otheroptions&gt;</code></p>
 <p>Therefore, you can build a custom library of commonly used-options; e.g., per
