@@ -1092,7 +1092,7 @@ nor proper documentation. For further details, please refer to:</p>
 <p>We will show everything on a single board located in
 <a href="https://raw.githubusercontent.com/yaqwsx/KiKit/master/docs/resources/conn.kicad_pcb"><code>docs/resources/conn.kicad_pcb</code></a>. The board looks like this when rendered via
 PcbDraw:</p>
-<p><img alt="conn" src="/resources/conn.png" /></p>
+<p><img alt="conn" src="../../resources/conn.png" /></p>
 <h2 id="basic-panels-layout">Basic panels &amp; layout</h2>
 <p>Let's start with our first panel.</p>
 <div class="admonition example">
@@ -1117,7 +1117,7 @@ PcbDraw:</p>
 </div>
 </div>
 </div>
-<p><img alt="examplePanel1" src="/resources/examplePanel1.png" /></p>
+<p><img alt="examplePanel1" src="../../resources/examplePanel1.png" /></p>
 </div>
 <p>We specified that we want 2x2 panel, no space between board and separate them by
 V-cuts. We also specified that we want to build full tabs (although no tabs are
@@ -1177,7 +1177,7 @@ why:</p>
 </div>
 </div>
 </div>
-<p><img alt="examplePanel2" src="/resources/examplePanel2.png" /></p>
+<p><img alt="examplePanel2" src="../../resources/examplePanel2.png" /></p>
 </div>
 <p>We specified a milling simulation post-processing. This simulates the milling
 operation in the fab house. As you can see, the sharp internal corners cannot be
@@ -1210,7 +1210,7 @@ the boards. So let's fix it:</p>
 </div>
 </div>
 </div>
-<p><img alt="examplePanel3" src="/resources/examplePanel3.png" /></p>
+<p><img alt="examplePanel3" src="../../resources/examplePanel3.png" /></p>
 </div>
 <p>In that way, the rounded corners can be machined. Lets' see the same example
 with mousebites instead:</p>
@@ -1236,7 +1236,7 @@ with mousebites instead:</p>
 </div>
 </div>
 </div>
-<p><img alt="examplePanel4" src="/resources/examplePanel4.png" /></p>
+<p><img alt="examplePanel4" src="../../resources/examplePanel4.png" /></p>
 </div>
 <p>We changed cut type to mousebites and we specified that they should be
 performed by 0.5mm holes with a spacing of 1 mm. You could also use inches if
@@ -1269,7 +1269,7 @@ break away the tabs, all burs will be inside the intended board outline.</p>
 </div>
 </div>
 </div>
-<p><img alt="examplePanel5" src="/resources/examplePanel5.png" /></p>
+<p><img alt="examplePanel5" src="../../resources/examplePanel5.png" /></p>
 </div>
 <p>See? The cuts are somewhat short. This is due to the internal corners that
 cannot be milled. KiKit can fix that for you – just specify you want to prolong
@@ -1298,7 +1298,7 @@ your cuts tangentially by a small amount:</p>
 </div>
 </div>
 </div>
-<p><img alt="examplePanel6" src="/resources/examplePanel6.png" /></p>
+<p><img alt="examplePanel6" src="../../resources/examplePanel6.png" /></p>
 </div>
 <p>If you want, you can also specify a number of tabs to generate. KiKit will place
 them evenly:</p>
@@ -1326,7 +1326,7 @@ them evenly:</p>
 </div>
 </div>
 </div>
-<p><img alt="examplePanel7" src="/resources/examplePanel7.png" /></p>
+<p><img alt="examplePanel7" src="../../resources/examplePanel7.png" /></p>
 </div>
 <p>You can also append frame or rails to the panel. Frames and rail are useful in
 the following situations:</p>
@@ -1364,7 +1364,7 @@ the following situations:</p>
 </div>
 </div>
 </div>
-<p><img alt="examplePanel8" src="/resources/examplePanel8.png" /></p>
+<p><img alt="examplePanel8" src="../../resources/examplePanel8.png" /></p>
 </div>
 <p>Similarly, you can add left and right rail via the <code>railslr</code> type. If you want
 a full frame, use the type <code>frame</code>. When you place a full frame, it might make
@@ -1396,7 +1396,7 @@ easily. Let's see an example:</p>
 </div>
 </div>
 </div>
-<p><img alt="examplePanel9" src="/resources/examplePanel9.png" /></p>
+<p><img alt="examplePanel9" src="../../resources/examplePanel9.png" /></p>
 </div>
 <p>Note that you can also use just only a vertical or horizontal frame cuts:</p>
 <div class="admonition example">
@@ -1425,7 +1425,7 @@ easily. Let's see an example:</p>
 </div>
 </div>
 </div>
-<p><img alt="examplePanel10" src="/resources/examplePanel10.png" /></p>
+<p><img alt="examplePanel10" src="../../resources/examplePanel10.png" /></p>
 </div>
 <p>When you use V-cuts it might make sense to not remove all material, but only
 mill a slot around the board of the board. This yields a stronger panel – and
@@ -1458,7 +1458,7 @@ mousebites.</p>
 </div>
 </div>
 </div>
-<p><img alt="examplePanel11" src="/resources/examplePanel11.png" /></p>
+<p><img alt="examplePanel11" src="../../resources/examplePanel11.png" /></p>
 </div>
 <p>Once we have a frame, we can append a tooling holes, fiducials and some text to
 it:</p>
@@ -1494,7 +1494,7 @@ it:</p>
 </div>
 </div>
 </div>
-<p><img alt="examplePanel12" src="/resources/examplePanel12.png" /></p>
+<p><img alt="examplePanel12" src="../../resources/examplePanel12.png" /></p>
 </div>
 <p>If you want to add text to both rails, you can use section <code>--text2</code> to add a
 second text. You can also use variables enclosed in curly brackets (<code>{}</code>). The
@@ -1534,7 +1534,7 @@ introduce new variables.</p>
 </div>
 </div>
 </div>
-<p><img alt="examplePanel13" src="/resources/examplePanel13.png" /></p>
+<p><img alt="examplePanel13" src="../../resources/examplePanel13.png" /></p>
 </div>
 <p>There are many options for text and fiducials. Be sure to read the <a href="../cli/">full
 documentation</a>.</p>
@@ -1570,7 +1570,7 @@ sharp corners, you can add a chamfer or a fillet to the panel frame/rails:</p>
 </div>
 </div>
 </div>
-<p><img alt="examplePanel14" src="/resources/examplePanel14.png" /></p>
+<p><img alt="examplePanel14" src="../../resources/examplePanel14.png" /></p>
 </div>
 <div class="admonition example">
 <p class="admonition-title">Panelization command</p>
@@ -1602,7 +1602,7 @@ sharp corners, you can add a chamfer or a fillet to the panel frame/rails:</p>
 </div>
 </div>
 </div>
-<p><img alt="examplePanel15" src="/resources/examplePanel15.png" /></p>
+<p><img alt="examplePanel15" src="../../resources/examplePanel15.png" /></p>
 </div>
 <p>Some services, e.g., JLC PCB require a minimal panel size. If you want to ensure
 that your panel meets the criteria, you can specify minimal total width/height
@@ -1639,7 +1639,7 @@ of the panel. Let's see an example:</p>
 </div>
 </div>
 </div>
-<p><img alt="examplePanel16" src="/resources/examplePanel16.png" /></p>
+<p><img alt="examplePanel16" src="../../resources/examplePanel16.png" /></p>
 </div>
 <h2 id="advanced-features-layouts">Advanced features &amp; layouts</h2>
 <p>It is possible that you have some critical features you want to avoid with tabs.
@@ -1673,7 +1673,7 @@ shaped boards:</p>
 </div>
 </div>
 </div>
-<p><img alt="examplePanel17" src="/resources/examplePanel17.png" /></p>
+<p><img alt="examplePanel17" src="../../resources/examplePanel17.png" /></p>
 </div>
 <p>When your board has a connector sticking one one side of the board, it makes
 sense to rotate the boards every other column, row or combination of both. KiKit
@@ -1707,7 +1707,7 @@ be sure to turn it off before panelizing. Here's an example:</p>
 </div>
 </div>
 </div>
-<p><img alt="examplePanel18" src="/resources/examplePanel18.png" /></p>
+<p><img alt="examplePanel18" src="../../resources/examplePanel18.png" /></p>
 </div>
 <p>Another solution might be to not put tabs on, e.g., vertical edges of the PCB.
 However, in that case your panel might be weak for further assembly. You can
@@ -1741,7 +1741,7 @@ depanelization of your boards easier. Enough theory, let's see an example</p>
 </div>
 </div>
 </div>
-<p><img alt="examplePanel19" src="/resources/examplePanel19.png" /></p>
+<p><img alt="examplePanel19" src="../../resources/examplePanel19.png" /></p>
 </div>
 <p>Often, not all backbones are needed. Especially for larger panels. Therefore, if
 you want, you can skip some of them. Consider the following 4×4 panel with only
@@ -1772,12 +1772,12 @@ ever other backbone:</p>
 </div>
 </div>
 </div>
-<p><img alt="examplePanel20" src="/resources/examplePanel20.png" /></p>
+<p><img alt="examplePanel20" src="../../resources/examplePanel20.png" /></p>
 </div>
 <p>The most powerful feature of KiKit regarding tab placement are tabs via
 annotation. Remember our test board? When you open it in Pcbnew, you can see
 that there are some special footprints – KiKit's annotations:</p>
-<p><img alt="conn-pcbnew" src="/resources/conn-pcbnew.png" /></p>
+<p><img alt="conn-pcbnew" src="../../resources/conn-pcbnew.png" /></p>
 <p>They specify where to place tabs. You can even specify individual tab width via
 text property of the symbol. How to use it? Just specify tab type to
 <code>annotation</code>. We also have to increase the source area tolerance, so it can
@@ -1810,7 +1810,7 @@ capture the annotations.</p>
 </div>
 </div>
 </div>
-<p><img alt="examplePanel21" src="/resources/examplePanel21.png" /></p>
+<p><img alt="examplePanel21" src="../../resources/examplePanel21.png" /></p>
 </div>
 <p>Well, the panel looks strange – right? That's because KiKit always constructs a
 half-bridges. When you specify the tabs location, you have to either ensure they
@@ -1845,7 +1845,7 @@ section <a href="../tabs/">Understanding tabs</a>. Let's fix it:</p>
 </div>
 </div>
 </div>
-<p><img alt="examplePanel22" src="/resources/examplePanel22.png" /></p>
+<p><img alt="examplePanel22" src="../../resources/examplePanel22.png" /></p>
 </div>
 <p>Note that the annotation can have an arbitrary orientation. The arrow just must
 be outside board edge and points towards it. KiKit will also place only those
@@ -1882,7 +1882,7 @@ can do so via <code>copperfill</code> section:</p>
 </div>
 </div>
 </div>
-<p><img alt="examplePanel23" src="/resources/examplePanel23.png" /></p>
+<p><img alt="examplePanel23" src="../../resources/examplePanel23.png" /></p>
 </div>
 <p>When you use V-cuts with <code>copperfill</code> you (or your fab house) might want to
 include a clearance around the V-cuts:</p>
@@ -1914,7 +1914,7 @@ include a clearance around the V-cuts:</p>
 </div>
 </div>
 </div>
-<p><img alt="examplePanel24" src="/resources/examplePanel24.png" /></p>
+<p><img alt="examplePanel24" src="../../resources/examplePanel24.png" /></p>
 </div>
 <p>If you, for example do not wish to cover the tabs with copper, you can also
 specify clearance. Also, some manufacturers don't like when you have large solid
@@ -1947,7 +1947,7 @@ copper areas. In that case, you can use a hatch pattern to fill the area:</p>
 </div>
 </div>
 </div>
-<p><img alt="examplePanel25" src="/resources/examplePanel25.png" /></p>
+<p><img alt="examplePanel25" src="../../resources/examplePanel25.png" /></p>
 </div>
 <p>Note one last facts about V-cuts. V-cuts can only be straight and
 horizontal/vertical. But you can use them with circular boards if you want by
@@ -1995,7 +1995,7 @@ script:</p>
 </div>
 </div>
 </div>
-<p><img alt="examplePanel26" src="/resources/examplePanel26.png" /></p>
+<p><img alt="examplePanel26" src="../../resources/examplePanel26.png" /></p>
 </div>
 <p>You can learn more about available functions from the comment in the source code
 or in the <a href="../python_api/">Python API reference</a>. The basic concepts are

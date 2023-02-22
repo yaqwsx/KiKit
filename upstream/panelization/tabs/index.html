@@ -999,9 +999,9 @@ so-called partition line for each individual PCB. Partition line is an oriented
 information "this part of the free space belongs to this PCB substrate and this
 PCB is responsible for placing tabs in that space". So for a regular input
 the partition line can look like this:</p>
-<p><img alt="partition1" src="/resources/partition1.svg" /></p>
+<p><img alt="partition1" src="../../resources/partition1.svg" /></p>
 <p>For more complicated input, it can look like this:</p>
-<p><img alt="partition2" src="/resources/partition2.svg" /></p>
+<p><img alt="partition2" src="../../resources/partition2.svg" /></p>
 <p>Note several facts:
 - partition line is used for backbone generator
 - partition line is not generated automatically, it is up to the user to
@@ -1018,21 +1018,21 @@ out of two components - a piece of a substrate (which will be later appended to
 the panel) and a cut-line.</p>
 <p>So assume we have the following PCB outline (the PCB is below the line, there is
 a free space above the line):</p>
-<p><img alt="tabdrawing1" src="/resources/tabdrawing1.svg" /></p>
+<p><img alt="tabdrawing1" src="../../resources/tabdrawing1.svg" /></p>
 <p>Then you specify your tab origin and its direction:</p>
-<p><img alt="tabdrawing2" src="/resources/tabdrawing2.svg" /></p>
+<p><img alt="tabdrawing2" src="../../resources/tabdrawing2.svg" /></p>
 <p>This is your input (e.g., via an annotation). Now KiKit does its job; it shoots
 two rays <code>tabWidth</code> apart and looks for the intersection with existing
 substrates. Note that if the ray starts within the PCB, no intersection will be
 found.</p>
-<p><img alt="tabdrawing3" src="/resources/tabdrawing3.svg" /></p>
+<p><img alt="tabdrawing3" src="../../resources/tabdrawing3.svg" /></p>
 <p>Once we have the intersections, we can easily generate the tab substrate and the
 cut:</p>
-<p><img alt="tabdrawing4" src="/resources/tabdrawing4.svg" /></p>
+<p><img alt="tabdrawing4" src="../../resources/tabdrawing4.svg" /></p>
 <p>Note that if we specify a partition line, than we shoot new rays in the opposite
 direction and try to hit the line. If we manage to do so, we get a tab.
 Otherwise, no tab is generated.</p>
-<p><img alt="tabdrawing5" src="/resources/tabdrawing5.svg" /></p>
+<p><img alt="tabdrawing5" src="../../resources/tabdrawing5.svg" /></p>
 <p>This is the basic algorithm for generating tabs. Well, we might also call them
 "half tabs". KiKit usually generates the half tabs around the board bounding box
 and then expects that two half tabs in the middle of the panel will merge into a

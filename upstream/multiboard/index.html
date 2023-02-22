@@ -1099,14 +1099,14 @@ match.</p>
 <p>First, draw a separate schematics sheet for each of your boards and propagate
 the pins on the inter-board connectors. E.g., in one of my project it looks like
 this:</p>
-<p><img alt="Multi board schematics" src="/resources/multiboardsch.jpg" /></p>
+<p><img alt="Multi board schematics" src="../resources/multiboardsch.jpg" /></p>
 <p>I also place the corresponding connectors next to each other to illustrate that
 they connect. Then draw your board schematics as usual - with one exception.
 <strong>Do not use global power symbols nor global labels</strong>, use only local labels.
 This ensures that the power lines are separate for each board and DRC won't
 complain, that you have not connected the power between two board.</p>
 <p>Then, draw all your boards into a single board file side-by-side. See file
-<a href="/resources/multiboard.kicad_pcb">resources/multiboard.kicad_pcb</a> for a dead
+<a href="../resources/multiboard.kicad_pcb">resources/multiboard.kicad_pcb</a> for a dead
 simple illustration. You can also draw lines that will help you align your
 boards' connectors.</p>
 <p>Before manufacturing, use KiKit to extract the boards into a separate board
@@ -1117,9 +1117,9 @@ files via the <code>extract</code> command.</p>
 <li>via annotation</li>
 </ul>
 <p>We will show how to use it on
-<a href="/resources/multiboard.kicad_pcb">resources/multiboard.kicad_pcb</a> which looks
+<a href="../resources/multiboard.kicad_pcb">resources/multiboard.kicad_pcb</a> which looks
 like this:</p>
-<p><img alt="Multi board PCB" src="/resources/multiboardpcb.jpg" /></p>
+<p><img alt="Multi board PCB" src="../resources/multiboardpcb.jpg" /></p>
 <h2 id="bounding-box-selection">Bounding box selection</h2>
 <p>Simply specify the top left and bottom right corner. Everything that fits fully
 inside it, will be included in the board. The command for separation of board A
