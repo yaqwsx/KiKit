@@ -588,6 +588,7 @@ class PanelizePlugin(pcbnew.ActionPlugin):
 
     def Run(self):
         try:
+            dialog = None
             if not self.dirty and not pcbnew.GetBoard().IsEmpty():
                 dlg = wx.MessageDialog(
                     None,
@@ -600,7 +601,6 @@ class PanelizePlugin(pcbnew.ActionPlugin):
                 dlg.Destroy()
                 if ret == wx.ID_NO:
                     return
-            dialog = None
             dialog = initDialog(lambda: PanelizeDialog(None, pcbnew.GetBoard(), self.preset))
             dialog.ShowModal()
             self.preset = dialog.collectPreset(includeInput=True)
