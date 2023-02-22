@@ -5,6 +5,7 @@ import os
 import kikit
 from kikit import modify
 from kikit.common import PKG_BASE
+from .common import initDialog, destroyDialog
 
 class HideReferencesDialog(wx.Dialog):
     def __init__(self, parent=None, board=None):
@@ -143,7 +144,8 @@ class HideReferencesPlugin(pcbnew.ActionPlugin):
     def Run(self):
         try:
             board = pcbnew.GetBoard()
-            dialog = HideReferencesDialog(board=board)
+            dialog = None
+            dialog = initDialog(lambda: HideReferencesDialog(board=board))
             ok = dialog.ShowModal()
             if not ok:
                 return
@@ -156,16 +158,14 @@ class HideReferencesPlugin(pcbnew.ActionPlugin):
             dlg.ShowModal()
             dlg.Destroy()
         finally:
-            dialog.Destroy()
+            destroyDialog(dialog)
 
 plugin = HideReferencesPlugin
 
 if __name__ == "__main__":
     import sys
-    # Run test dialog
-    app = wx.App()
 
-    dialog = HideReferencesDialog(board=pcbnew.LoadBoard(sys.argv[1]))
+    dialog = initDialog(lambda: HideReferencesDialog(board=pcbnew.LoadBoard(sys.argv[1])))
     dialog.ShowModal()
 
-    app.MainLoop()
+    destroyDialog(dialog)

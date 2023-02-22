@@ -6,6 +6,7 @@ from kikit.panelize_ui_impl import loadPresetChain, obtainPreset, mergePresets
 from kikit import panelize_ui
 from kikit.panelize import appendItem
 from kikit.common import PKG_BASE
+from .common import initDialog, destroyDialog
 import kikit.panelize_ui_sections
 import wx
 import json
@@ -599,8 +600,8 @@ class PanelizePlugin(pcbnew.ActionPlugin):
                 dlg.Destroy()
                 if ret == wx.ID_NO:
                     return
-
-            dialog = PanelizeDialog(None, pcbnew.GetBoard(), self.preset)
+            dialog = None
+            dialog = initDialog(lambda: PanelizeDialog(None, pcbnew.GetBoard(), self.preset))
             dialog.ShowModal()
             self.preset = dialog.collectPreset(includeInput=True)
             self.dirty = self.dirty or dialog.dirty
@@ -610,8 +611,7 @@ class PanelizePlugin(pcbnew.ActionPlugin):
             dlg.ShowModal()
             dlg.Destroy()
         finally:
-            if "dialog" in locals():
-                dialog.Destroy()
+            destroyDialog(dialog)
 
 
 plugin = PanelizePlugin
