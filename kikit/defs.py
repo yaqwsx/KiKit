@@ -63,6 +63,18 @@ class Layer(IntEnum):
     def allCu():
         return list(range(Layer.F_Cu, Layer.B_Cu + 1))
 
+    @staticmethod
+    def all():
+        return list(range(Layer.F_Cu, Layer.User_4 + 1))
+
+    @staticmethod
+    def allTech():
+        return list(x for x in range(Layer.Dwgs_User, Layer.User_4 + 1))
+
+    @staticmethod
+    def allSilk():
+        return [Layer.F_SilkS, Layer.B_SilkS]
+
 class STROKE_T(IntEnum):
     S_SEGMENT = 0
     S_RECT = 1

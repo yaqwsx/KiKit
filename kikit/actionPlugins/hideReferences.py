@@ -1,9 +1,11 @@
+import pcbnew
 from pcbnewTransition import pcbnew
 import wx
 import re
 import os
 import kikit
 from kikit import modify
+from kikit.defs import Layer
 from kikit.common import PKG_BASE
 from .common import initDialog, destroyDialog
 
@@ -60,6 +62,43 @@ class HideReferencesDialog(wx.Dialog):
         self.generous.SetValue(True)
         item_grid.Add(self.generous, 1, wx.EXPAND)
 
+        label = wx.StaticText(panel, label="Layers to include:",
+            size=wx.Size(200, -1),
+            style=wx.ALIGN_RIGHT | wx.ALIGN_TOP)
+        label.Wrap(200)
+        item_grid.Add(label, 1, wx.ALIGN_CENTRE_VERTICAL)
+
+        self.layers = wx.CheckListBox(panel, choices=[str(Layer(l).name) for l in Layer.all()])
+        for l in Layer.all():
+            self.layers.Check(l)
+        item_grid.Add(self.layers, 1, wx.EXPAND)
+
+        label = wx.StaticText(panel, label="Select layers:",
+            size=wx.Size(200, -1),
+            style=wx.ALIGN_RIGHT | wx.ALIGN_TOP)
+        label.Wrap(200)
+        item_grid.Add(label, 1, wx.ALIGN_CENTRE_VERTICAL)
+
+        buttonGrid = wx.FlexGridSizer(0, 2, 3, 5)
+        item_grid.Add(buttonGrid, 1, wx.EXPAND)
+
+        allLayersBtn = wx.Button(panel, label='All layers')
+        self.Bind(wx.EVT_BUTTON, self.OnAllLayers, id=allLayersBtn.GetId())
+        buttonGrid.Add(allLayersBtn, 1, wx.EXPAND)
+
+        noLayersBtn = wx.Button(panel, label='No layers')
+        self.Bind(wx.EVT_BUTTON, self.OnNoLayers, id=noLayersBtn.GetId())
+        buttonGrid.Add(noLayersBtn, 1, wx.EXPAND)
+
+        techLayersBtn = wx.Button(panel, label='Technical layers')
+        self.Bind(wx.EVT_BUTTON, self.OnTechnicalLayers, id=techLayersBtn.GetId())
+        buttonGrid.Add(techLayersBtn, 1, wx.EXPAND)
+
+        silkLayersBtn = wx.Button(panel, label='Silkscreen layers')
+        self.Bind(wx.EVT_BUTTON, self.OnSilkscreenLayers, id=silkLayersBtn.GetId())
+        buttonGrid.Add(silkLayersBtn, 1, wx.EXPAND)
+
+
         label = wx.StaticText(panel,
             label="Matching references:",
             size=wx.Size(200, -1),
@@ -82,7 +121,7 @@ class HideReferencesDialog(wx.Dialog):
         self.Bind(wx.EVT_BUTTON, self.OnCreate, id=self.okButton.GetId())
         button_box.Add(self.okButton, 1)
 
-        vbox.Add(item_grid, 1, wx.EXPAND | wx.ALIGN_CENTRE | wx.ALL, 10)
+        vbox.Add(item_grid, 1, wx.EXPAND | wx.ALL, 10)
         vbox.Add(button_box, 0, wx.ALIGN_RIGHT | wx.LEFT | wx.RIGHT | wx.BOTTOM, 20)
         panel.SetSizer(vbox)
         vbox.Fit(self)
@@ -96,6 +135,22 @@ class HideReferencesDialog(wx.Dialog):
     def OnCreate(self, event):
         self.EndModal(1)
 
+    def OnAllLayers(self, event):
+        for l in Layer.all():
+            self.layers.Check(l)
+
+    def OnNoLayers(self, event):
+        for l in Layer.all():
+            self.layers.Check(l, False)
+
+    def OnTechnicalLayers(self, event):
+        for l in Layer.allTech():
+            self.layers.Check(l)
+
+    def OnSilkscreenLayers(self, event):
+        for l in Layer.allSilk():
+            self.layers.Check(l)
+
     def GetShowLabels(self):
         return self.action.GetSelection() == 0
 
@@ -104,6 +159,9 @@ class HideReferencesDialog(wx.Dialog):
 
     def GetGenerous(self):
         return self.generous.GetValue()
+
+    def GetActiveLayers(self):
+        return set(self.layers.GetCheckedItems())
 
     def ModifyReferences(self):
         return self.scope.GetSelection() in [0, 2]
@@ -150,9 +208,11 @@ class HideReferencesPlugin(pcbnew.ActionPlugin):
             if not ok:
                 return
             if dialog.ModifyReferences():
-                modify.references(board, dialog.GetShowLabels(), dialog.GetPattern(), dialog.GetGenerous())
+                modify.references(board, dialog.GetShowLabels(),
+                     dialog.GetPattern(), dialog.GetGenerous(), dialog.GetActiveLayers())
             if dialog.ModifyValues():
-                modify.values(board, dialog.GetShowLabels(), dialog.GetPattern(), dialog.GetGenerous())
+                modify.values(board, dialog.GetShowLabels(),
+                    dialog.GetPattern(), dialog.GetGenerous(), dialog.GetActiveLayers())
         except Exception as e:
             dlg = wx.MessageDialog(None, f"Cannot perform: {e}", "Error", wx.OK)
             dlg.ShowModal()
