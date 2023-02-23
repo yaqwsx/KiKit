@@ -1779,7 +1779,7 @@ class Panel:
         zone.SetDoNotAllowVias(noVias)
         zone.SetDoNotAllowCopperPour(noCopper)
 
-        zone.SetLayerSet(pcbnew.LSET.AllCuMask())
+        zone.SetLayerSet(pcbnew.LSET.AllCuMask(self.copperLayerCount))
 
         self.board.Add(zone)
         return zone
