@@ -1933,7 +1933,7 @@ class Panel:
         if vfirst == 0:
             vfirst = vskip + 1
         if hfirst == 0:
-            hfirst = hfirst + 1
+            hfirst = hskip + 1
 
         hbones = [] if hthickness == 0 \
                     else list(filter(lambda l: isHorizontal(l.coords[0], l.coords[1]), self.backboneLines))
@@ -1942,7 +1942,6 @@ class Panel:
         vbones = [] if vthickness == 0 \
                     else list(filter(lambda l: isVertical(l.coords[0], l.coords[1]), self.backboneLines))
         activeVbones = skipBackbones(vbones, vskip, vfirst, lambda x: x.coords[0][0])
-
 
         cutpoints = commonPoints(self.backboneLines)
         pieces, cuts = [], []
