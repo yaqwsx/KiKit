@@ -116,12 +116,12 @@ def runBoardExample(name, args):
         end = "\n" if i + 1 == len(args) else " ^\n"
         print(" ".join(quoteWindows(c)), end=end)
     print("        ```\n")
-    print("    ![{0}](/resources/{0}.png)".format(name))
+    print("    ![{0}](../resources/{0}.png)".format(name))
 
-    t = threading.Thread(target=lambda: panelizeAndDraw(name, realArgs))
-    t.start()
-    global runExampleThreads
-    runExampleThreads.append(t)
+    # t = threading.Thread(target=lambda: panelizeAndDraw(name, realArgs))
+    # t.start()
+    # global runExampleThreads
+    # runExampleThreads.append(t)
 
 def runScriptingExample(name, args):
     """
@@ -137,7 +137,7 @@ def runScriptingExample(name, args):
         end = "\n" if i + 1 == len(args) else " \\\n"
         print(" ".join(quote(c)), end=end)
     print("```\n")
-    print("![{0}](/resources/{0}.png)".format(name))
+    print("![{0}](../resources/{0}.png)".format(name))
 
     t = threading.Thread(target=lambda: panelizeAndDraw(name, realArgs))
     t.start()

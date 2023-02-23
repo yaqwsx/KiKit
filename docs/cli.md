@@ -58,10 +58,9 @@ Read more in a separate [documentation section](stencil.md).
 
 ## Modify commands
 
-- `kikit modify references --show/--hide --generous / --strict --pattern
+- `kikit modify references --show/--hide  --pattern
   <pattern> <board>` hide or show all references on the board matching a regular
-  pattern. The generous option hides also all text item within the footprint
-  that contain reference.
+  pattern.
 
-- `kikit modify values --show/--hide --generous / --strict --pattern
+- `kikit modify values --show/--hide  --pattern
   <pattern> <board>` is the same as above, just with footprint values.

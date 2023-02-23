@@ -1,4 +1,3 @@
-import pcbnew
 from pcbnewTransition import pcbnew
 import wx
 import re
@@ -10,9 +9,13 @@ from kikit.common import PKG_BASE
 from .common import initDialog, destroyDialog
 
 class HideReferencesDialog(wx.Dialog):
-    def __init__(self, parent=None, board=None):
-        wx.Dialog.__init__(self, parent, title=f'Specify which components to hide (version {kikit.__version__})')
+    def __init__(self, parent=None, board=None, action=None):
+        wx.Dialog.__init__(self,
+            parent,
+            title=f'Specify which components to hide (version {kikit.__version__})',
+            style=wx.RESIZE_BORDER | wx.DEFAULT_DIALOG_STYLE)
         self.board = board
+        self.actionCallback = action
 
         self.Bind(wx.EVT_CLOSE, self.OnCancel, id=self.GetId())
 
@@ -53,15 +56,6 @@ class HideReferencesDialog(wx.Dialog):
         self.scope.SetSelection(2)
         item_grid.Add(self.scope, 1, wx.EXPAND)
 
-        label = wx.StaticText(panel, label="Include all text items:",
-            size=wx.Size(200, -1),
-            style=wx.ALIGN_RIGHT)
-        label.Wrap(200)
-        item_grid.Add(label, 1, wx.ALIGN_CENTRE_VERTICAL)
-        self.generous = wx.CheckBox(panel)
-        self.generous.SetValue(True)
-        item_grid.Add(self.generous, 1, wx.EXPAND)
-
         label = wx.StaticText(panel, label="Layers to include:",
             size=wx.Size(200, -1),
             style=wx.ALIGN_RIGHT | wx.ALIGN_TOP)
@@ -90,11 +84,11 @@ class HideReferencesDialog(wx.Dialog):
         self.Bind(wx.EVT_BUTTON, self.OnNoLayers, id=noLayersBtn.GetId())
         buttonGrid.Add(noLayersBtn, 1, wx.EXPAND)
 
-        techLayersBtn = wx.Button(panel, label='Technical layers')
+        techLayersBtn = wx.Button(panel, label='Toggle technical layers')
         self.Bind(wx.EVT_BUTTON, self.OnTechnicalLayers, id=techLayersBtn.GetId())
         buttonGrid.Add(techLayersBtn, 1, wx.EXPAND)
 
-        silkLayersBtn = wx.Button(panel, label='Silkscreen layers')
+        silkLayersBtn = wx.Button(panel, label='Toggle silkscreen layers')
         self.Bind(wx.EVT_BUTTON, self.OnSilkscreenLayers, id=silkLayersBtn.GetId())
         buttonGrid.Add(silkLayersBtn, 1, wx.EXPAND)
 
@@ -114,12 +108,14 @@ class HideReferencesDialog(wx.Dialog):
         item_grid.Add(self.matchingText, 1, wx.EXPAND)
 
         button_box = wx.BoxSizer(wx.HORIZONTAL)
-        cancelButton = wx.Button(panel, label='Cancel')
+
+        cancelButton = wx.Button(panel, label='Close')
         self.Bind(wx.EVT_BUTTON, self.OnCancel, id=cancelButton.GetId())
         button_box.Add(cancelButton, 1, wx.RIGHT, 10)
-        self.okButton = wx.Button(panel, label='Apply')
-        self.Bind(wx.EVT_BUTTON, self.OnCreate, id=self.okButton.GetId())
-        button_box.Add(self.okButton, 1)
+
+        self.applyButton = wx.Button(panel, label='Apply')
+        self.Bind(wx.EVT_BUTTON, self.OnApply, id=self.applyButton.GetId())
+        button_box.Add(self.applyButton, 1)
 
         vbox.Add(item_grid, 1, wx.EXPAND | wx.ALL, 10)
         vbox.Add(button_box, 0, wx.ALIGN_RIGHT | wx.LEFT | wx.RIGHT | wx.BOTTOM, 20)
@@ -131,9 +127,11 @@ class HideReferencesDialog(wx.Dialog):
 
     def OnCancel(self, event):
         self.EndModal(0)
+        destroyDialog(self)
 
-    def OnCreate(self, event):
-        self.EndModal(1)
+    def OnApply(self, event):
+        if self.actionCallback is not None:
+            self.actionCallback(self)
 
     def OnAllLayers(self, event):
         for l in Layer.all():
@@ -144,21 +142,22 @@ class HideReferencesDialog(wx.Dialog):
             self.layers.Check(l, False)
 
     def OnTechnicalLayers(self, event):
+        checked = set(self.layers.GetCheckedItems())
+        enable = not all(x in checked for x in Layer.allTech())
         for l in Layer.allTech():
-            self.layers.Check(l)
+            self.layers.Check(l, enable)
 
     def OnSilkscreenLayers(self, event):
+        checked = set(self.layers.GetCheckedItems())
+        enable = not all(x in checked for x in Layer.allSilk())
         for l in Layer.allSilk():
-            self.layers.Check(l)
+            self.layers.Check(l, enable)
 
     def GetShowLabels(self):
         return self.action.GetSelection() == 0
 
     def GetPattern(self):
         return self.pattern.GetValue()
-
-    def GetGenerous(self):
-        return self.generous.GetValue()
 
     def GetActiveLayers(self):
         return set(self.layers.GetCheckedItems())
@@ -172,7 +171,7 @@ class HideReferencesDialog(wx.Dialog):
     def OnPatternChange(self, event):
         try:
             regex = re.compile(self.pattern.GetValue())
-            self.okButton.Enable()
+            self.applyButton.Enable()
             if not self.board:
                 self.matchingText.SetLabel("")
             else:
@@ -186,7 +185,7 @@ class HideReferencesDialog(wx.Dialog):
                     self.matchingText.SetLabel("None")
             self.matchingText.Wrap(350)
         except re.error as e:
-            self.okButton.Disable()
+            self.applyButton.Disable()
             self.matchingText.SetLabel(f"Invalid regular expression: {e}")
             self.matchingText.Wrap(350)
 
@@ -199,26 +198,31 @@ class HideReferencesPlugin(pcbnew.ActionPlugin):
         self.icon_file_name = os.path.join(PKG_BASE, "resources", "graphics", "removeRefIcon_24x24.png")
         self.show_toolbar_button = True
 
-    def Run(self):
+    def action(self, dialog):
         try:
-            board = pcbnew.GetBoard()
-            dialog = None
-            dialog = initDialog(lambda: HideReferencesDialog(board=board))
-            ok = dialog.ShowModal()
-            if not ok:
-                return
             if dialog.ModifyReferences():
-                modify.references(board, dialog.GetShowLabels(),
-                     dialog.GetPattern(), dialog.GetGenerous(), dialog.GetActiveLayers())
+                modify.references(dialog.board, dialog.GetShowLabels(),
+                     dialog.GetPattern(), dialog.GetActiveLayers())
             if dialog.ModifyValues():
-                modify.values(board, dialog.GetShowLabels(),
-                    dialog.GetPattern(), dialog.GetGenerous(), dialog.GetActiveLayers())
+                modify.values(dialog.board, dialog.GetShowLabels(),
+                    dialog.GetPattern(), dialog.GetActiveLayers())
+            pcbnew.Refresh()
         except Exception as e:
             dlg = wx.MessageDialog(None, f"Cannot perform: {e}", "Error", wx.OK)
             dlg.ShowModal()
             dlg.Destroy()
-        finally:
-            destroyDialog(dialog)
+
+    def Run(self):
+        try:
+            board = pcbnew.GetBoard()
+            dialog = None
+            dialog = initDialog(lambda: HideReferencesDialog(
+                board=board, action=lambda d: self.action(d)))
+            dialog.Show()
+        except Exception as e:
+            dlg = wx.MessageDialog(None, f"Cannot perform: {e}", "Error", wx.OK)
+            dlg.ShowModal()
+            dlg.Destroy()
 
 plugin = HideReferencesPlugin
 
