@@ -14,8 +14,9 @@ class Symbol:
     path: Optional[str] = None
     unit: Optional[int] = None
     lib_id: Optional[str] = None
-    in_bom: Optional[bool] = None
-    on_board: Optional[bool] = None
+    in_bom: bool = True
+    on_board: bool = True
+    dnp: bool = False
     properties: dict = field(default_factory=dict)
 
 @dataclass
@@ -105,6 +106,8 @@ def extractSymbol(sexpr, path):
             s.in_bom = x[1].value == "yes"
         elif key == "on_board":
             s.on_board = x[1].value == "yes"
+        elif key == "dnp":
+            s.dnp = x[1].value == "yes"
         elif key == "property":
             s.properties[x[1].value] = x[2].value
     return s

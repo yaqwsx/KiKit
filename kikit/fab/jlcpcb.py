@@ -25,6 +25,8 @@ def collectBom(components, lscsFields, ignore):
             continue
         if hasattr(c, "on_board") and not c.on_board:
             continue
+        if hasattr(c, "dnp") and c.dnp:
+            continue
         orderCode = None
         for fieldName in lscsFields:
             orderCode = getField(c, fieldName)
