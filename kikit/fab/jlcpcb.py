@@ -12,7 +12,6 @@ from kikit.export import gerberImpl
 def collectBom(components, lscsFields, ignore):
     bom = {}
     for c in components:
-        print(c)
         if getUnit(c) != 1:
             continue
         reference = getReference(c)
