@@ -16,65 +16,71 @@ class HideReferencesDialog(wx.Dialog):
             style=wx.RESIZE_BORDER | wx.DEFAULT_DIALOG_STYLE)
         self.board = board
         self.actionCallback = action
+        self.text = ""
 
         self.Bind(wx.EVT_CLOSE, self.OnCancel, id=self.GetId())
+        self.Bind(wx.EVT_SIZE, self.OnSize)
 
-        panel = wx.Panel(self)
+        self.SetMinSize(wx.Size(520, 620))
+
+        panel = self
 
         vbox = wx.BoxSizer(wx.VERTICAL)
-        item_grid = wx.FlexGridSizer(0, 2, 3, 5)
-        item_grid.AddGrowableCol(1)
+        self.item_grid = wx.FlexGridSizer(0, 2, 3, 5)
+        self.item_grid.AddGrowableCol(1)
 
         label = wx.StaticText(panel,
             label="Apply to labels pattern:\n(regular expression)",
             size=wx.Size(200, -1),
             style=wx.ALIGN_RIGHT)
         label.Wrap(200)
-        item_grid.Add(label, 1, wx.ALIGN_CENTRE_VERTICAL)
+        self.item_grid.Add(label, 1, wx.ALIGN_CENTRE_VERTICAL)
         self.pattern = wx.TextCtrl(panel, style=wx.TE_LEFT, value='.*',
             size=wx.Size(350, -1))
         self.Bind(wx.EVT_TEXT, self.OnPatternChange, id=self.pattern.GetId())
-        item_grid.Add(self.pattern, 1, wx.EXPAND)
+        self.item_grid.Add(self.pattern, 0, wx.EXPAND)
 
         label = wx.StaticText(panel, label="What to do:",
             size=wx.Size(200, -1),
             style=wx.ALIGN_RIGHT)
         label.Wrap(200)
-        item_grid.Add(label, 1, wx.ALIGN_CENTRE_VERTICAL)
+        self.item_grid.Add(label, 1, wx.ALIGN_CENTRE_VERTICAL)
         self.action = wx.Choice(panel, style=wx.CB_DROPDOWN,
             choices=["Show", "Hide"])
         self.action.SetSelection(1)
-        item_grid.Add(self.action, 1, wx.EXPAND)
+        self.item_grid.Add(self.action, 0, wx.EXPAND)
 
         label = wx.StaticText(panel, label="Apply to:",
             size=wx.Size(200, -1),
             style=wx.ALIGN_RIGHT)
         label.Wrap(200)
-        item_grid.Add(label, 1, wx.ALIGN_CENTRE_VERTICAL)
+        self.item_grid.Add(label, 1, wx.ALIGN_CENTRE_VERTICAL)
         self.scope = wx.Choice(panel, style=wx.CB_DROPDOWN,
             choices=["References only", "Values only", "References and values"])
         self.scope.SetSelection(2)
-        item_grid.Add(self.scope, 1, wx.EXPAND)
+        self.item_grid.Add(self.scope, 0, wx.EXPAND)
 
         label = wx.StaticText(panel, label="Layers to include:",
             size=wx.Size(200, -1),
             style=wx.ALIGN_RIGHT | wx.ALIGN_TOP)
         label.Wrap(200)
-        item_grid.Add(label, 1, wx.ALIGN_CENTRE_VERTICAL)
+        self.item_grid.Add(label, 0, wx.ALIGN_CENTRE_VERTICAL)
 
         self.layers = wx.CheckListBox(panel, choices=[str(Layer(l).name) for l in Layer.all()])
         for l in Layer.all():
             self.layers.Check(l)
-        item_grid.Add(self.layers, 1, wx.EXPAND)
+        self.item_grid.Add(self.layers, 0, wx.EXPAND)
 
         label = wx.StaticText(panel, label="Select layers:",
             size=wx.Size(200, -1),
             style=wx.ALIGN_RIGHT | wx.ALIGN_TOP)
         label.Wrap(200)
-        item_grid.Add(label, 1, wx.ALIGN_CENTRE_VERTICAL)
+        self.item_grid.Add(label, 0, wx.ALIGN_CENTRE_VERTICAL)
 
         buttonGrid = wx.FlexGridSizer(0, 2, 3, 5)
-        item_grid.Add(buttonGrid, 1, wx.EXPAND)
+        buttonGrid.AddGrowableCol(0)
+        buttonGrid.AddGrowableCol(1)
+        self.item_grid.Add(buttonGrid, 0, wx.EXPAND)
 
         allLayersBtn = wx.Button(panel, label='All layers')
         self.Bind(wx.EVT_BUTTON, self.OnAllLayers, id=allLayersBtn.GetId())
@@ -98,14 +104,13 @@ class HideReferencesDialog(wx.Dialog):
             size=wx.Size(200, -1),
             style=wx.ALIGN_RIGHT)
         label.Wrap(200)
-        item_grid.Add(label, 1, wx.ALIGN_TOP)
+        self.item_grid.Add(label, 1, wx.ALIGN_TOP)
         self.matchingText = wx.StaticText(panel,
             label="Matching references:",
             size=wx.Size(350, 80),
             style=wx.ALIGN_LEFT | wx.ST_ELLIPSIZE_END)
-        self.matchingText.Wrap(350)
-        self.matchingText.SetMaxSize(wx.Size(350, 80))
-        item_grid.Add(self.matchingText, 1, wx.EXPAND)
+        self.item_grid.Add(self.matchingText, 1, wx.EXPAND)
+        self.item_grid.AddGrowableRow(5)
 
         button_box = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -117,17 +122,31 @@ class HideReferencesDialog(wx.Dialog):
         self.Bind(wx.EVT_BUTTON, self.OnApply, id=self.applyButton.GetId())
         button_box.Add(self.applyButton, 1)
 
-        vbox.Add(item_grid, 1, wx.EXPAND | wx.ALL, 10)
+        vbox.Add(self.item_grid, 1, wx.EXPAND | wx.ALL, 10)
         vbox.Add(button_box, 0, wx.ALIGN_RIGHT | wx.LEFT | wx.RIGHT | wx.BOTTOM, 20)
+
         panel.SetSizer(vbox)
         vbox.Fit(self)
         self.Centre()
-
         self.OnPatternChange(None)
 
+    def SetTextPreview(self, text = None):
+        if text is not None:
+            self.text = text
+        self.matchingText.SetLabel(self.text)
+        self.matchingText.Wrap(self.item_grid.GetColWidths()[1])
+
+    def Show(self):
+        self.OnPatternChange(None)
+        super().Show()
+
+    def OnSize(self, event):
+        self.SetTextPreview()
+        if event is not None:
+            event.Skip()
+
     def OnCancel(self, event):
-        self.EndModal(0)
-        destroyDialog(self)
+        self.Hide()
 
     def OnApply(self, event):
         if self.actionCallback is not None:
@@ -173,24 +192,32 @@ class HideReferencesDialog(wx.Dialog):
             regex = re.compile(self.pattern.GetValue())
             self.applyButton.Enable()
             if not self.board:
-                self.matchingText.SetLabel("")
+                self.SetTextPreview("")
             else:
                 refs = []
                 for footprint in self.board.GetFootprints():
                     if regex.match(footprint.GetReference()):
                         refs.append(footprint.GetReference())
                 if len(refs) > 0:
-                    self.matchingText.SetLabel(", ".join(refs))
+                    self.SetTextPreview(", ".join(refs))
                 else:
-                    self.matchingText.SetLabel("None")
-            self.matchingText.Wrap(350)
+                    self.SetTextPreview("None")
         except re.error as e:
             self.applyButton.Disable()
-            self.matchingText.SetLabel(f"Invalid regular expression: {e}")
-            self.matchingText.Wrap(350)
+            self.SetTextPreview(f"Invalid regular expression: {e}")
+        finally:
+            self.SendSizeEvent()
 
 
 class HideReferencesPlugin(pcbnew.ActionPlugin):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.dialog = initDialog(lambda: HideReferencesDialog(
+                                 board=None, action=lambda d: self.action(d)))
+
+    def __del__(self):
+        destroyDialog(self.dialog)
+
     def defaults(self):
         self.name = "KiKit: Show/hide references"
         self.category = "KiKit"
@@ -200,6 +227,7 @@ class HideReferencesPlugin(pcbnew.ActionPlugin):
 
     def action(self, dialog):
         try:
+            dialog = self.dialog
             if dialog.ModifyReferences():
                 modify.references(dialog.board, dialog.GetShowLabels(),
                      dialog.GetPattern(), dialog.GetActiveLayers())
@@ -214,11 +242,8 @@ class HideReferencesPlugin(pcbnew.ActionPlugin):
 
     def Run(self):
         try:
-            board = pcbnew.GetBoard()
-            dialog = None
-            dialog = initDialog(lambda: HideReferencesDialog(
-                board=board, action=lambda d: self.action(d)))
-            dialog.Show()
+            self.dialog.board = pcbnew.GetBoard()
+            self.dialog.Show()
         except Exception as e:
             dlg = wx.MessageDialog(None, f"Cannot perform: {e}", "Error", wx.OK)
             dlg.ShowModal()
