@@ -88,7 +88,7 @@ class BasicGridPosition(GridPlacerBase):
                vbonecount * (self.vbonewidth + self.horSpace)
         yPos = i * (boardSize.GetHeight() + self.verSpace) + \
                hbonecount * (self.hbonewidth + self.verSpace)
-        return VECTOR2I(xPos, yPos)
+        return toKiCADPoint((xPos, yPos))
 
     def rotation(self, i: int, j: int) -> KiAngle:
         return EDA_ANGLE(0, pcbnew.DEGREES_T)
@@ -1116,7 +1116,7 @@ class Panel:
         cols - the number of boards to place in the horizontal direction
 
         destination - the center coordinates of the first board in the grid (for
-        example, VECTOR2I(100 * mm,50 * mm))
+        example, VECTOR2I(100 * mm, 50 * mm))
 
         rotation - the rotation angle to be applied to the source board before
         placing it
