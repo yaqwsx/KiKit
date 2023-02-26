@@ -1,0 +1,2090 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../cli/">
+      
+      
+        <link rel="next" href="../plugins/">
+      
+      <link rel="icon" href="../../assets/logo.png">
+      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-9.0.13">
+    
+    
+      
+        <title>Examples - KiKit — Automation for KiCAD</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ffa9267a.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.a0c5b2b5.min.css">
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#examples" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="KiKit — Automation for KiCAD" class="md-header__button md-logo" aria-label="KiKit — Automation for KiCAD" data-md-component="logo">
+      
+  <img src="../../assets/logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            KiKit — Automation for KiCAD
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Examples
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/yaqwsx/KiKit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    yaqwsx/KiKit
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../.." class="md-tabs__link">
+      Home
+    </a>
+  </li>
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../installation/intro/" class="md-tabs__link">
+        Installation
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../../cli/" class="md-tabs__link">
+      Overview
+    </a>
+  </li>
+
+      
+        
+  
+  
+    
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../intro/" class="md-tabs__link md-tabs__link--active">
+        Panelization
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../fabrication/intro/" class="md-tabs__link">
+        Fabrication
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../../multiboard/" class="md-tabs__link">
+      Multiboard workflow
+    </a>
+  </li>
+
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../../present/" class="md-tabs__link">
+      Present
+    </a>
+  </li>
+
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../../stencil/" class="md-tabs__link">
+      Stencil
+    </a>
+  </li>
+
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../../faq/" class="md-tabs__link">
+      FAQ
+    </a>
+  </li>
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="KiKit — Automation for KiCAD" class="md-nav__button md-logo" aria-label="KiKit — Automation for KiCAD" data-md-component="logo">
+      
+  <img src="../../assets/logo.png" alt="logo">
+
+    </a>
+    KiKit — Automation for KiCAD
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/yaqwsx/KiKit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    yaqwsx/KiKit
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+        
+      
+      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+      
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+          Installation
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Installation
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/intro/" class="md-nav__link">
+        Intro
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+        
+      
+      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_2" >
+      
+      
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
+          Backend installation
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_2_2">
+          <span class="md-nav__icon md-icon"></span>
+          Backend installation
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/linux/" class="md-nav__link">
+        Linux
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/windows/" class="md-nav__link">
+        Windows
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/macos/" class="md-nav__link">
+        macOS
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/gui_and_libs/" class="md-nav__link">
+        GUI and libs installation
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/docker/" class="md-nav__link">
+        Running KiKit via Docker
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/upgrading/" class="md-nav__link">
+        Upgrading KiKit and installing special versions
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/choosing_kicad/" class="md-nav__link">
+        Choosing KiCAD version
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli/" class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+      
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+          Panelization
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Panelization
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../intro/" class="md-nav__link">
+        Introduction
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli/" class="md-nav__link">
+        CLI
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Examples
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Examples
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#basic-panels-layout" class="md-nav__link">
+    Basic panels &amp; layout
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-features-layouts" class="md-nav__link">
+    Advanced features &amp; layouts
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#i-would-like-but-kikit-does-not-support-it" class="md-nav__link">
+    I would like... but KiKit does not support it!
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#managing-presets" class="md-nav__link">
+    Managing presets
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../plugins/" class="md-nav__link">
+        Plugins
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gui/" class="md-nav__link">
+        GUI
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../scripting/" class="md-nav__link">
+        Creating panels via scripting
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python_api/" class="md-nav__link">
+        Python API
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tabs/" class="md-nav__link">
+        Understanding tabs
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+        
+      
+      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+      
+      
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+          Fabrication
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_5">
+          <span class="md-nav__icon md-icon"></span>
+          Fabrication
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fabrication/intro/" class="md-nav__link">
+        Introduction
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+        
+      
+      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_2" >
+      
+      
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_5_2" id="__nav_5_2_label" tabindex="0">
+          Fab houses
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_2_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_5_2">
+          <span class="md-nav__icon md-icon"></span>
+          Fab houses
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fabrication/jlcpcb/" class="md-nav__link">
+        JLC PCB
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fabrication/pcbway/" class="md-nav__link">
+        Pcb Way
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../fabrication/oshpark/" class="md-nav__link">
+        OSH Park
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../multiboard/" class="md-nav__link">
+        Multiboard workflow
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../present/" class="md-nav__link">
+        Present
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../stencil/" class="md-nav__link">
+        Stencil
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../faq/" class="md-nav__link">
+        FAQ
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#basic-panels-layout" class="md-nav__link">
+    Basic panels &amp; layout
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-features-layouts" class="md-nav__link">
+    Advanced features &amp; layouts
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#i-would-like-but-kikit-does-not-support-it" class="md-nav__link">
+    I would like... but KiKit does not support it!
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#managing-presets" class="md-nav__link">
+    Managing presets
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="examples">Examples</h1>
+<p>This document will show you several examples of KiKit CLI for panelization. Note
+that this is <strong>not an exhaustive description</strong> of everything that KiKit can do,
+nor proper documentation. For further details, please refer to:</p>
+<ul>
+<li><a href="../cli/">description of all panelization options</a></li>
+<li><a href="../tabs/">more detail about KiKit's algorithm for tab creation</a></li>
+<li><a href="../python_api/">reference for the Python interface</a></li>
+</ul>
+<p>We will show everything on a single board located in
+<a href="https://raw.githubusercontent.com/yaqwsx/KiKit/master/docs/resources/conn.kicad_pcb"><code>docs/resources/conn.kicad_pcb</code></a>. The board looks like this when rendered via
+PcbDraw:</p>
+<p><img alt="conn" src="../../resources/conn.png" /></p>
+<h2 id="basic-panels-layout">Basic panels &amp; layout</h2>
+<p>Let's start with our first panel.</p>
+<div class="admonition example">
+<p class="admonition-title">Panelization command</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Linux/macOS</label><label for="__tabbed_1_2">Windows</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>kikit panelize \
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    --layout &#39;grid; rows: 2; cols: 2;&#39; \
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    --tabs full \
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    --cuts vcuts \
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>kikit panelize ^
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    --layout &quot;grid; rows: 2; cols: 2;&quot; ^
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    --tabs full ^
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    --cuts vcuts ^
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><img alt="examplePanel1" src="../../resources/examplePanel1.png" /></p>
+</div>
+<p>We specified that we want 2x2 panel, no space between board and separate them by
+V-cuts. We also specified that we want to build full tabs (although no tabs are
+visible in this example). This is ,however, essential – if we omitted tabs, no
+cuts between the boards would be performed. Note, that due to the rounded
+corners, this panel cannot be manufactured. We will fix it later.</p>
+<p>Note that the <code>\</code> in the input is there to make shell happy, so we can break our
+command into multiple lines. Also note that there are single quotes around the
+key-value pair – again, to make shell happy and to interpret a string with
+spaces as a single option.</p>
+<p>Note that <strong>on Windows you have the enter the commands into KiCAD Command
+Prompt</strong> instead of the regular Command Prompt. You can find it under the Start
+menu.</p>
+<p>Also note that KiKit accepts all options in categories (e.g., <code>layout</code>, <code>tabs</code>,
+<code>cuts</code>, ...). You can specify the parameters as a semicolon-separated key-value
+list. To learn about the precise syntax of the CLI and about all options, please
+refer to – <a href="../cli/">documentation</a>.</p>
+<p>One side note – if you try it with your own board some components might be gone.
+KiKit respects the KiCAD component selection criteria. When you specify an input
+rectangle, only the components that <strong>fully fit</strong> inside the input rectangle are
+selected. This however take in account <strong>both name and value labels</strong> (even when
+they are hidden).</p>
+<p>When you do not specify the source are explicitly, KiKit takes the board outline
+bounding box as the source area. Therefore, by default, components outside the
+board substrate are not copied to panel.</p>
+<p>Note that this is intended behavior; for once it is consistent with KiCAD
+behavior of user selection and also it allows to easily ignore surrounding
+comments and drawings in the board sheet (it makes no sense to have 12 same
+copies of the notes around the board).</p>
+<p>How to include the missing components?
+- specify the source area explicitly to include all your components
+- specify <code>--source 'tolerance: 10mm'</code> to enlarge the board outline bounding box
+  by e.g. 10 mm. The default value is 1 mm.</p>
+<p>I told you that the panel above is not suitable for manufacturing. Let's see
+why:</p>
+<div class="admonition example">
+<p class="admonition-title">Panelization command</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Linux/macOS</label><label for="__tabbed_2_2">Windows</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>kikit panelize \
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    --layout &#39;grid; rows: 2; cols: 2;&#39; \
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    --tabs full \
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    --cuts vcuts \
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    --post &#39;millradius: 1mm&#39; \
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>kikit panelize ^
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    --layout &quot;grid; rows: 2; cols: 2;&quot; ^
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    --tabs full ^
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    --cuts vcuts ^
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    --post &quot;millradius: 1mm&quot; ^
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><img alt="examplePanel2" src="../../resources/examplePanel2.png" /></p>
+</div>
+<p>We specified a milling simulation post-processing. This simulates the milling
+operation in the fab house. As you can see, the sharp internal corners cannot be
+manufactured. I recommend you to use milling postprocessing always – you can
+easily see if your cuts are off or you have too narrow slots in your design.</p>
+<p>Usually, one would use full tabs only for rectangular boards. Usually, when you
+have rounded corners, you will use short tabs instead and add some space between
+the boards. So let's fix it:</p>
+<div class="admonition example">
+<p class="admonition-title">Panelization command</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="3:2"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">Linux/macOS</label><label for="__tabbed_3_2">Windows</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>kikit panelize \
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    --layout &#39;grid; rows: 2; cols: 2; space: 2mm&#39; \
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    --tabs &#39;fixed; hwidth: 10mm; vwidth: 15mm&#39; \
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    --cuts vcuts \
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    --post &#39;millradius: 1mm&#39; \
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>kikit panelize ^
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>    --layout &quot;grid; rows: 2; cols: 2; space: 2mm&quot; ^
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    --tabs &quot;fixed; hwidth: 10mm; vwidth: 15mm&quot; ^
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    --cuts vcuts ^
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    --post &quot;millradius: 1mm&quot; ^
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><img alt="examplePanel3" src="../../resources/examplePanel3.png" /></p>
+</div>
+<p>In that way, the rounded corners can be machined. Lets' see the same example
+with mousebites instead:</p>
+<div class="admonition example">
+<p class="admonition-title">Panelization command</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="4:2"><input checked="checked" id="__tabbed_4_1" name="__tabbed_4" type="radio" /><input id="__tabbed_4_2" name="__tabbed_4" type="radio" /><div class="tabbed-labels"><label for="__tabbed_4_1">Linux/macOS</label><label for="__tabbed_4_2">Windows</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>kikit panelize \
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    --layout &#39;grid; rows: 2; cols: 2; space: 2mm&#39; \
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>    --tabs &#39;fixed; width: 5mm&#39; \
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    --cuts &#39;mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm&#39; \
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>kikit panelize ^
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>    --layout &quot;grid; rows: 2; cols: 2; space: 2mm&quot; ^
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>    --tabs &quot;fixed; width: 5mm&quot; ^
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>    --cuts &quot;mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm&quot; ^
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><img alt="examplePanel4" src="../../resources/examplePanel4.png" /></p>
+</div>
+<p>We changed cut type to mousebites and we specified that they should be
+performed by 0.5mm holes with a spacing of 1 mm. You could also use inches if
+you want – just specify `<number>in. Since we use mousebites, we used narrower
+tabs. We also specified that the cuts should be inset 0.25 mm into the board
+outline. This is suitable when your board should fit into a cover – when you
+break away the tabs, all burs will be inside the intended board outline.</p>
+<p>What happens, when we simulate the milling operation?</p>
+<div class="admonition example">
+<p class="admonition-title">Panelization command</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="5:2"><input checked="checked" id="__tabbed_5_1" name="__tabbed_5" type="radio" /><input id="__tabbed_5_2" name="__tabbed_5" type="radio" /><div class="tabbed-labels"><label for="__tabbed_5_1">Linux/macOS</label><label for="__tabbed_5_2">Windows</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>kikit panelize \
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>    --layout &#39;grid; rows: 2; cols: 2; space: 2mm&#39; \
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>    --tabs &#39;fixed; width: 5mm&#39; \
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    --cuts &#39;mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm&#39; \
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>    --post &#39;millradius: 1mm&#39; \
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>kikit panelize ^
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>    --layout &quot;grid; rows: 2; cols: 2; space: 2mm&quot; ^
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>    --tabs &quot;fixed; width: 5mm&quot; ^
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>    --cuts &quot;mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm&quot; ^
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>    --post &quot;millradius: 1mm&quot; ^
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><img alt="examplePanel5" src="../../resources/examplePanel5.png" /></p>
+</div>
+<p>See? The cuts are somewhat short. This is due to the internal corners that
+cannot be milled. KiKit can fix that for you – just specify you want to prolong
+your cuts tangentially by a small amount:</p>
+<div class="admonition example">
+<p class="admonition-title">Panelization command</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="6:2"><input checked="checked" id="__tabbed_6_1" name="__tabbed_6" type="radio" /><input id="__tabbed_6_2" name="__tabbed_6" type="radio" /><div class="tabbed-labels"><label for="__tabbed_6_1">Linux/macOS</label><label for="__tabbed_6_2">Windows</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>kikit panelize \
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>    --layout &#39;grid; rows: 2; cols: 2; space: 2mm&#39; \
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>    --tabs &#39;fixed; width: 3mm&#39; \
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>    --cuts &#39;mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm&#39; \
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>    --post &#39;millradius: 1mm&#39; \
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>kikit panelize ^
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>    --layout &quot;grid; rows: 2; cols: 2; space: 2mm&quot; ^
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>    --tabs &quot;fixed; width: 3mm&quot; ^
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>    --cuts &quot;mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm&quot; ^
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>    --post &quot;millradius: 1mm&quot; ^
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><img alt="examplePanel6" src="../../resources/examplePanel6.png" /></p>
+</div>
+<p>If you want, you can also specify a number of tabs to generate. KiKit will place
+them evenly:</p>
+<div class="admonition example">
+<p class="admonition-title">Panelization command</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="7:2"><input checked="checked" id="__tabbed_7_1" name="__tabbed_7" type="radio" /><input id="__tabbed_7_2" name="__tabbed_7" type="radio" /><div class="tabbed-labels"><label for="__tabbed_7_1">Linux/macOS</label><label for="__tabbed_7_2">Windows</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>kikit panelize \
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>    --layout &#39;grid; rows: 2; cols: 2; space: 2mm&#39; \
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>    --tabs &#39;fixed; width: 3mm; vcount: 2&#39; \
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>    --cuts &#39;mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm&#39; \
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>    --post &#39;millradius: 1mm&#39; \
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>kikit panelize ^
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>    --layout &quot;grid; rows: 2; cols: 2; space: 2mm&quot; ^
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>    --tabs &quot;fixed; width: 3mm; vcount: 2&quot; ^
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>    --cuts &quot;mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm&quot; ^
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>    --post &quot;millradius: 1mm&quot; ^
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><img alt="examplePanel7" src="../../resources/examplePanel7.png" /></p>
+</div>
+<p>You can also append frame or rails to the panel. Frames and rail are useful in
+the following situations:</p>
+<ul>
+<li>you want to assemble your board, so you need tooling holes, fiducial.</li>
+<li>you want to append a text to board (e.g., to identify a manufacturing batch)</li>
+<li>your boards are not rectangluar and you want to use V-Cuts (most manufactures
+  require the outer edge of the panel to be a rectangle in order to manufacture
+  V-Cuts)</li>
+</ul>
+<p>Let's start with rails:</p>
+<div class="admonition example">
+<p class="admonition-title">Panelization command</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="8:2"><input checked="checked" id="__tabbed_8_1" name="__tabbed_8" type="radio" /><input id="__tabbed_8_2" name="__tabbed_8" type="radio" /><div class="tabbed-labels"><label for="__tabbed_8_1">Linux/macOS</label><label for="__tabbed_8_2">Windows</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>kikit panelize \
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>    --layout &#39;grid; rows: 2; cols: 2; space: 2mm&#39; \
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>    --tabs &#39;fixed; width: 3mm; vcount: 2&#39; \
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>    --cuts &#39;mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm&#39; \
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>    --framing &#39;railstb; width: 5mm; space: 3mm;&#39; \
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>    --post &#39;millradius: 1mm&#39; \
+<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>kikit panelize ^
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>    --layout &quot;grid; rows: 2; cols: 2; space: 2mm&quot; ^
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>    --tabs &quot;fixed; width: 3mm; vcount: 2&quot; ^
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>    --cuts &quot;mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm&quot; ^
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>    --framing &quot;railstb; width: 5mm; space: 3mm;&quot; ^
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>    --post &quot;millradius: 1mm&quot; ^
+<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><img alt="examplePanel8" src="../../resources/examplePanel8.png" /></p>
+</div>
+<p>Similarly, you can add left and right rail via the <code>railslr</code> type. If you want
+a full frame, use the type <code>frame</code>. When you place a full frame, it might make
+sense to include cuts in the corner of the frame, so you can break it apart
+easily. Let's see an example:</p>
+<div class="admonition example">
+<p class="admonition-title">Panelization command</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="9:2"><input checked="checked" id="__tabbed_9_1" name="__tabbed_9" type="radio" /><input id="__tabbed_9_2" name="__tabbed_9" type="radio" /><div class="tabbed-labels"><label for="__tabbed_9_1">Linux/macOS</label><label for="__tabbed_9_2">Windows</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>kikit panelize \
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>    --layout &#39;grid; rows: 2; cols: 2; space: 2mm&#39; \
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>    --tabs &#39;fixed; width: 3mm; vcount: 2&#39; \
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>    --cuts &#39;mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm&#39; \
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>    --framing &#39;frame; width: 5mm; space: 3mm; cuts: both&#39; \
+<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>    --post &#39;millradius: 1mm&#39; \
+<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>kikit panelize ^
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>    --layout &quot;grid; rows: 2; cols: 2; space: 2mm&quot; ^
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>    --tabs &quot;fixed; width: 3mm; vcount: 2&quot; ^
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>    --cuts &quot;mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm&quot; ^
+<a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>    --framing &quot;frame; width: 5mm; space: 3mm; cuts: both&quot; ^
+<a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a>    --post &quot;millradius: 1mm&quot; ^
+<a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><img alt="examplePanel9" src="../../resources/examplePanel9.png" /></p>
+</div>
+<p>Note that you can also use just only a vertical or horizontal frame cuts:</p>
+<div class="admonition example">
+<p class="admonition-title">Panelization command</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="10:2"><input checked="checked" id="__tabbed_10_1" name="__tabbed_10" type="radio" /><input id="__tabbed_10_2" name="__tabbed_10" type="radio" /><div class="tabbed-labels"><label for="__tabbed_10_1">Linux/macOS</label><label for="__tabbed_10_2">Windows</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>kikit panelize \
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>    --layout &#39;grid; rows: 2; cols: 2; space: 2mm&#39; \
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>    --tabs &#39;fixed; width: 3mm; vcount: 2&#39; \
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>    --cuts &#39;mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm&#39; \
+<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>    --framing &#39;frame; width: 5mm; space: 3mm; cuts: h&#39; \
+<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>    --post &#39;millradius: 1mm&#39; \
+<a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>kikit panelize ^
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>    --layout &quot;grid; rows: 2; cols: 2; space: 2mm&quot; ^
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>    --tabs &quot;fixed; width: 3mm; vcount: 2&quot; ^
+<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>    --cuts &quot;mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm&quot; ^
+<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>    --framing &quot;frame; width: 5mm; space: 3mm; cuts: h&quot; ^
+<a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>    --post &quot;millradius: 1mm&quot; ^
+<a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><img alt="examplePanel10" src="../../resources/examplePanel10.png" /></p>
+</div>
+<p>When you use V-cuts it might make sense to not remove all material, but only
+mill a slot around the board of the board. This yields a stronger panel – and
+some manufacturers require such style for assembly with V-Cuts. This is achieved
+via framing type <code>tightframe</code>. Note that it does not make much sense with
+mousebites.</p>
+<div class="admonition example">
+<p class="admonition-title">Panelization command</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="11:2"><input checked="checked" id="__tabbed_11_1" name="__tabbed_11" type="radio" /><input id="__tabbed_11_2" name="__tabbed_11" type="radio" /><div class="tabbed-labels"><label for="__tabbed_11_1">Linux/macOS</label><label for="__tabbed_11_2">Windows</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>kikit panelize \
+<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>    --layout &#39;grid; rows: 2; cols: 2; space: 6mm&#39; \
+<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>    --tabs &#39;fixed; width: 3mm; vcount: 2&#39; \
+<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a>    --cuts vcuts \
+<a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a>    --framing &#39;tightframe; width: 5mm; space: 3mm; &#39; \
+<a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a>    --post &#39;millradius: 1mm&#39; \
+<a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>kikit panelize ^
+<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a>    --layout &quot;grid; rows: 2; cols: 2; space: 6mm&quot; ^
+<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a>    --tabs &quot;fixed; width: 3mm; vcount: 2&quot; ^
+<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a>    --cuts vcuts ^
+<a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a>    --framing &quot;tightframe; width: 5mm; space: 3mm; &quot; ^
+<a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a>    --post &quot;millradius: 1mm&quot; ^
+<a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><img alt="examplePanel11" src="../../resources/examplePanel11.png" /></p>
+</div>
+<p>Once we have a frame, we can append a tooling holes, fiducials and some text to
+it:</p>
+<div class="admonition example">
+<p class="admonition-title">Panelization command</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="12:2"><input checked="checked" id="__tabbed_12_1" name="__tabbed_12" type="radio" /><input id="__tabbed_12_2" name="__tabbed_12" type="radio" /><div class="tabbed-labels"><label for="__tabbed_12_1">Linux/macOS</label><label for="__tabbed_12_2">Windows</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>kikit panelize \
+<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>    --layout &#39;grid; rows: 2; cols: 2; space: 2mm&#39; \
+<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>    --tabs &#39;fixed; width: 3mm; vcount: 2&#39; \
+<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a>    --cuts &#39;mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm&#39; \
+<a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a>    --framing &#39;railstb; width: 5mm; space: 3mm;&#39; \
+<a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a>    --tooling &#39;3hole; hoffset: 2.5mm; voffset: 2.5mm; size: 1.5mm&#39; \
+<a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a>    --fiducials &#39;3fid; hoffset: 5mm; voffset: 2.5mm; coppersize: 2mm; opening: 1mm;&#39; \
+<a id="__codelineno-22-8" name="__codelineno-22-8" href="#__codelineno-22-8"></a>    --text &#39;simple; text: yaqwsx&#39;s panel; anchor: mt; voffset: 2.5mm; hjustify: center; vjustify: center;&#39; \
+<a id="__codelineno-22-9" name="__codelineno-22-9" href="#__codelineno-22-9"></a>    --post &#39;millradius: 1mm&#39; \
+<a id="__codelineno-22-10" name="__codelineno-22-10" href="#__codelineno-22-10"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>kikit panelize ^
+<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a>    --layout &quot;grid; rows: 2; cols: 2; space: 2mm&quot; ^
+<a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a>    --tabs &quot;fixed; width: 3mm; vcount: 2&quot; ^
+<a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a>    --cuts &quot;mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm&quot; ^
+<a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a>    --framing &quot;railstb; width: 5mm; space: 3mm;&quot; ^
+<a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a>    --tooling &quot;3hole; hoffset: 2.5mm; voffset: 2.5mm; size: 1.5mm&quot; ^
+<a id="__codelineno-23-7" name="__codelineno-23-7" href="#__codelineno-23-7"></a>    --fiducials &quot;3fid; hoffset: 5mm; voffset: 2.5mm; coppersize: 2mm; opening: 1mm;&quot; ^
+<a id="__codelineno-23-8" name="__codelineno-23-8" href="#__codelineno-23-8"></a>    --text &quot;simple; text: yaqwsx&#39;s panel; anchor: mt; voffset: 2.5mm; hjustify: center; vjustify: center;&quot; ^
+<a id="__codelineno-23-9" name="__codelineno-23-9" href="#__codelineno-23-9"></a>    --post &quot;millradius: 1mm&quot; ^
+<a id="__codelineno-23-10" name="__codelineno-23-10" href="#__codelineno-23-10"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><img alt="examplePanel12" src="../../resources/examplePanel12.png" /></p>
+</div>
+<p>If you want to add text to both rails, you can use section <code>--text2</code> to add a
+second text. You can also use variables enclosed in curly brackets (<code>{}</code>). The
+list of supported variables is listed in the documentation. Also, plugins can
+introduce new variables.</p>
+<div class="admonition example">
+<p class="admonition-title">Panelization command</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="13:2"><input checked="checked" id="__tabbed_13_1" name="__tabbed_13" type="radio" /><input id="__tabbed_13_2" name="__tabbed_13" type="radio" /><div class="tabbed-labels"><label for="__tabbed_13_1">Linux/macOS</label><label for="__tabbed_13_2">Windows</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>kikit panelize \
+<a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a>    --layout &#39;grid; rows: 2; cols: 2; space: 2mm&#39; \
+<a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a>    --tabs &#39;fixed; width: 3mm; vcount: 2&#39; \
+<a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a>    --cuts &#39;mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm&#39; \
+<a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a>    --framing &#39;railstb; width: 5mm; space: 3mm;&#39; \
+<a id="__codelineno-24-6" name="__codelineno-24-6" href="#__codelineno-24-6"></a>    --tooling &#39;3hole; hoffset: 2.5mm; voffset: 2.5mm; size: 1.5mm&#39; \
+<a id="__codelineno-24-7" name="__codelineno-24-7" href="#__codelineno-24-7"></a>    --fiducials &#39;3fid; hoffset: 5mm; voffset: 2.5mm; coppersize: 2mm; opening: 1mm;&#39; \
+<a id="__codelineno-24-8" name="__codelineno-24-8" href="#__codelineno-24-8"></a>    --text &#39;simple; text: yaqwsx&#39;s panel; anchor: mt; voffset: 2.5mm; hjustify: center; vjustify: center;&#39; \
+<a id="__codelineno-24-9" name="__codelineno-24-9" href="#__codelineno-24-9"></a>    --text2 &#39;simple; text: Created on {date}; anchor: mb; voffset: -2.5mm; hjustify: center; vjustify: center;&#39; \
+<a id="__codelineno-24-10" name="__codelineno-24-10" href="#__codelineno-24-10"></a>    --post &#39;millradius: 1mm&#39; \
+<a id="__codelineno-24-11" name="__codelineno-24-11" href="#__codelineno-24-11"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>kikit panelize ^
+<a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a>    --layout &quot;grid; rows: 2; cols: 2; space: 2mm&quot; ^
+<a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a>    --tabs &quot;fixed; width: 3mm; vcount: 2&quot; ^
+<a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a>    --cuts &quot;mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm&quot; ^
+<a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a>    --framing &quot;railstb; width: 5mm; space: 3mm;&quot; ^
+<a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a>    --tooling &quot;3hole; hoffset: 2.5mm; voffset: 2.5mm; size: 1.5mm&quot; ^
+<a id="__codelineno-25-7" name="__codelineno-25-7" href="#__codelineno-25-7"></a>    --fiducials &quot;3fid; hoffset: 5mm; voffset: 2.5mm; coppersize: 2mm; opening: 1mm;&quot; ^
+<a id="__codelineno-25-8" name="__codelineno-25-8" href="#__codelineno-25-8"></a>    --text &quot;simple; text: yaqwsx&#39;s panel; anchor: mt; voffset: 2.5mm; hjustify: center; vjustify: center;&quot; ^
+<a id="__codelineno-25-9" name="__codelineno-25-9" href="#__codelineno-25-9"></a>    --text2 &quot;simple; text: Created on {date}; anchor: mb; voffset: -2.5mm; hjustify: center; vjustify: center;&quot; ^
+<a id="__codelineno-25-10" name="__codelineno-25-10" href="#__codelineno-25-10"></a>    --post &quot;millradius: 1mm&quot; ^
+<a id="__codelineno-25-11" name="__codelineno-25-11" href="#__codelineno-25-11"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><img alt="examplePanel13" src="../../resources/examplePanel13.png" /></p>
+</div>
+<p>There are many options for text and fiducials. Be sure to read the <a href="../cli/">full
+documentation</a>.</p>
+<p>If you have an automatic feeder in your PNP machine or you just dislike
+sharp corners, you can add a chamfer or a fillet to the panel frame/rails:</p>
+<div class="admonition example">
+<p class="admonition-title">Panelization command</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="14:2"><input checked="checked" id="__tabbed_14_1" name="__tabbed_14" type="radio" /><input id="__tabbed_14_2" name="__tabbed_14" type="radio" /><div class="tabbed-labels"><label for="__tabbed_14_1">Linux/macOS</label><label for="__tabbed_14_2">Windows</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a>kikit panelize \
+<a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a>    --layout &#39;grid; rows: 2; cols: 2; space: 2mm&#39; \
+<a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a>    --tabs &#39;fixed; width: 3mm; vcount: 2&#39; \
+<a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a>    --cuts &#39;mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm&#39; \
+<a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a>    --framing &#39;railstb; width: 5mm; space: 3mm; fillet: 1mm&#39; \
+<a id="__codelineno-26-6" name="__codelineno-26-6" href="#__codelineno-26-6"></a>    --tooling &#39;3hole; hoffset: 2.5mm; voffset: 2.5mm; size: 1.5mm&#39; \
+<a id="__codelineno-26-7" name="__codelineno-26-7" href="#__codelineno-26-7"></a>    --fiducials &#39;3fid; hoffset: 5mm; voffset: 2.5mm; coppersize: 2mm; opening: 1mm;&#39; \
+<a id="__codelineno-26-8" name="__codelineno-26-8" href="#__codelineno-26-8"></a>    --post &#39;millradius: 1mm&#39; \
+<a id="__codelineno-26-9" name="__codelineno-26-9" href="#__codelineno-26-9"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a>kikit panelize ^
+<a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a>    --layout &quot;grid; rows: 2; cols: 2; space: 2mm&quot; ^
+<a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a>    --tabs &quot;fixed; width: 3mm; vcount: 2&quot; ^
+<a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a>    --cuts &quot;mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm&quot; ^
+<a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a>    --framing &quot;railstb; width: 5mm; space: 3mm; fillet: 1mm&quot; ^
+<a id="__codelineno-27-6" name="__codelineno-27-6" href="#__codelineno-27-6"></a>    --tooling &quot;3hole; hoffset: 2.5mm; voffset: 2.5mm; size: 1.5mm&quot; ^
+<a id="__codelineno-27-7" name="__codelineno-27-7" href="#__codelineno-27-7"></a>    --fiducials &quot;3fid; hoffset: 5mm; voffset: 2.5mm; coppersize: 2mm; opening: 1mm;&quot; ^
+<a id="__codelineno-27-8" name="__codelineno-27-8" href="#__codelineno-27-8"></a>    --post &quot;millradius: 1mm&quot; ^
+<a id="__codelineno-27-9" name="__codelineno-27-9" href="#__codelineno-27-9"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><img alt="examplePanel14" src="../../resources/examplePanel14.png" /></p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">Panelization command</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="15:2"><input checked="checked" id="__tabbed_15_1" name="__tabbed_15" type="radio" /><input id="__tabbed_15_2" name="__tabbed_15" type="radio" /><div class="tabbed-labels"><label for="__tabbed_15_1">Linux/macOS</label><label for="__tabbed_15_2">Windows</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a>kikit panelize \
+<a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a>    --layout &#39;grid; rows: 2; cols: 2; space: 2mm&#39; \
+<a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a>    --tabs &#39;fixed; width: 3mm; vcount: 2&#39; \
+<a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a>    --cuts &#39;mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm&#39; \
+<a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a>    --framing &#39;railstb; width: 5mm; space: 3mm; chamfer: 1mm&#39; \
+<a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a>    --tooling &#39;3hole; hoffset: 2.5mm; voffset: 2.5mm; size: 1.5mm&#39; \
+<a id="__codelineno-28-7" name="__codelineno-28-7" href="#__codelineno-28-7"></a>    --fiducials &#39;3fid; hoffset: 5mm; voffset: 2.5mm; coppersize: 2mm; opening: 1mm;&#39; \
+<a id="__codelineno-28-8" name="__codelineno-28-8" href="#__codelineno-28-8"></a>    --post &#39;millradius: 1mm&#39; \
+<a id="__codelineno-28-9" name="__codelineno-28-9" href="#__codelineno-28-9"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a>kikit panelize ^
+<a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a>    --layout &quot;grid; rows: 2; cols: 2; space: 2mm&quot; ^
+<a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a>    --tabs &quot;fixed; width: 3mm; vcount: 2&quot; ^
+<a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a>    --cuts &quot;mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm&quot; ^
+<a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a>    --framing &quot;railstb; width: 5mm; space: 3mm; chamfer: 1mm&quot; ^
+<a id="__codelineno-29-6" name="__codelineno-29-6" href="#__codelineno-29-6"></a>    --tooling &quot;3hole; hoffset: 2.5mm; voffset: 2.5mm; size: 1.5mm&quot; ^
+<a id="__codelineno-29-7" name="__codelineno-29-7" href="#__codelineno-29-7"></a>    --fiducials &quot;3fid; hoffset: 5mm; voffset: 2.5mm; coppersize: 2mm; opening: 1mm;&quot; ^
+<a id="__codelineno-29-8" name="__codelineno-29-8" href="#__codelineno-29-8"></a>    --post &quot;millradius: 1mm&quot; ^
+<a id="__codelineno-29-9" name="__codelineno-29-9" href="#__codelineno-29-9"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><img alt="examplePanel15" src="../../resources/examplePanel15.png" /></p>
+</div>
+<p>Some services, e.g., JLC PCB require a minimal panel size. If you want to ensure
+that your panel meets the criteria, you can specify minimal total width/height
+of the panel. Let's see an example:</p>
+<div class="admonition example">
+<p class="admonition-title">Panelization command</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="16:2"><input checked="checked" id="__tabbed_16_1" name="__tabbed_16" type="radio" /><input id="__tabbed_16_2" name="__tabbed_16" type="radio" /><div class="tabbed-labels"><label for="__tabbed_16_1">Linux/macOS</label><label for="__tabbed_16_2">Windows</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a>kikit panelize \
+<a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a>    --layout &#39;grid; rows: 2; cols: 2; space: 2mm&#39; \
+<a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a>    --tabs &#39;fixed; width: 3mm; vcount: 2&#39; \
+<a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a>    --cuts &#39;mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm&#39; \
+<a id="__codelineno-30-5" name="__codelineno-30-5" href="#__codelineno-30-5"></a>    --framing &#39;frame; width: 5mm; space: 3mm; mintotalheight: 100mm; mintotalwidth: 100mm&#39; \
+<a id="__codelineno-30-6" name="__codelineno-30-6" href="#__codelineno-30-6"></a>    --tooling &#39;3hole; hoffset: 2.5mm; voffset: 2.5mm; size: 1.5mm&#39; \
+<a id="__codelineno-30-7" name="__codelineno-30-7" href="#__codelineno-30-7"></a>    --fiducials &#39;3fid; hoffset: 5mm; voffset: 2.5mm; coppersize: 2mm; opening: 1mm;&#39; \
+<a id="__codelineno-30-8" name="__codelineno-30-8" href="#__codelineno-30-8"></a>    --text &#39;simple; text: yaqwsx&#39;s panel with minimal dimensions; anchor: mt; voffset: 2.5mm; hjustify: center; vjustify: center;&#39; \
+<a id="__codelineno-30-9" name="__codelineno-30-9" href="#__codelineno-30-9"></a>    --post &#39;millradius: 1mm&#39; \
+<a id="__codelineno-30-10" name="__codelineno-30-10" href="#__codelineno-30-10"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a>kikit panelize ^
+<a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a>    --layout &quot;grid; rows: 2; cols: 2; space: 2mm&quot; ^
+<a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a>    --tabs &quot;fixed; width: 3mm; vcount: 2&quot; ^
+<a id="__codelineno-31-4" name="__codelineno-31-4" href="#__codelineno-31-4"></a>    --cuts &quot;mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm&quot; ^
+<a id="__codelineno-31-5" name="__codelineno-31-5" href="#__codelineno-31-5"></a>    --framing &quot;frame; width: 5mm; space: 3mm; mintotalheight: 100mm; mintotalwidth: 100mm&quot; ^
+<a id="__codelineno-31-6" name="__codelineno-31-6" href="#__codelineno-31-6"></a>    --tooling &quot;3hole; hoffset: 2.5mm; voffset: 2.5mm; size: 1.5mm&quot; ^
+<a id="__codelineno-31-7" name="__codelineno-31-7" href="#__codelineno-31-7"></a>    --fiducials &quot;3fid; hoffset: 5mm; voffset: 2.5mm; coppersize: 2mm; opening: 1mm;&quot; ^
+<a id="__codelineno-31-8" name="__codelineno-31-8" href="#__codelineno-31-8"></a>    --text &quot;simple; text: yaqwsx&#39;s panel with minimal dimensions; anchor: mt; voffset: 2.5mm; hjustify: center; vjustify: center;&quot; ^
+<a id="__codelineno-31-9" name="__codelineno-31-9" href="#__codelineno-31-9"></a>    --post &quot;millradius: 1mm&quot; ^
+<a id="__codelineno-31-10" name="__codelineno-31-10" href="#__codelineno-31-10"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><img alt="examplePanel16" src="../../resources/examplePanel16.png" /></p>
+</div>
+<h2 id="advanced-features-layouts">Advanced features &amp; layouts</h2>
+<p>It is possible that you have some critical features you want to avoid with tabs.
+KiKit has several features that can help you. Let's start with the simple ones.</p>
+<p>First, you can rotate the boards in your layout. This might make not much sense
+for rectanglar boards, but it might save you when you have circular or oddly
+shaped boards:</p>
+<div class="admonition example">
+<p class="admonition-title">Panelization command</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="17:2"><input checked="checked" id="__tabbed_17_1" name="__tabbed_17" type="radio" /><input id="__tabbed_17_2" name="__tabbed_17" type="radio" /><div class="tabbed-labels"><label for="__tabbed_17_1">Linux/macOS</label><label for="__tabbed_17_2">Windows</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a>kikit panelize \
+<a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a>    --layout &#39;grid; rows: 2; cols: 2; space: 0mm; rotation: 45deg;&#39; \
+<a id="__codelineno-32-3" name="__codelineno-32-3" href="#__codelineno-32-3"></a>    --tabs &#39;fixed; width: 3mm;&#39; \
+<a id="__codelineno-32-4" name="__codelineno-32-4" href="#__codelineno-32-4"></a>    --cuts &#39;mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.75mm&#39; \
+<a id="__codelineno-32-5" name="__codelineno-32-5" href="#__codelineno-32-5"></a>    --framing &#39;frame; width: 5mm; space: 3mm; cuts: both&#39; \
+<a id="__codelineno-32-6" name="__codelineno-32-6" href="#__codelineno-32-6"></a>    --post &#39;millradius: 1mm&#39; \
+<a id="__codelineno-32-7" name="__codelineno-32-7" href="#__codelineno-32-7"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a>kikit panelize ^
+<a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a>    --layout &quot;grid; rows: 2; cols: 2; space: 0mm; rotation: 45deg;&quot; ^
+<a id="__codelineno-33-3" name="__codelineno-33-3" href="#__codelineno-33-3"></a>    --tabs &quot;fixed; width: 3mm;&quot; ^
+<a id="__codelineno-33-4" name="__codelineno-33-4" href="#__codelineno-33-4"></a>    --cuts &quot;mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.75mm&quot; ^
+<a id="__codelineno-33-5" name="__codelineno-33-5" href="#__codelineno-33-5"></a>    --framing &quot;frame; width: 5mm; space: 3mm; cuts: both&quot; ^
+<a id="__codelineno-33-6" name="__codelineno-33-6" href="#__codelineno-33-6"></a>    --post &quot;millradius: 1mm&quot; ^
+<a id="__codelineno-33-7" name="__codelineno-33-7" href="#__codelineno-33-7"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><img alt="examplePanel17" src="../../resources/examplePanel17.png" /></p>
+</div>
+<p>When your board has a connector sticking one one side of the board, it makes
+sense to rotate the boards every other column, row or combination of both. KiKit
+supports this via layout option <code>alternation</code>. You should be careful about
+component references when rotating boards – KiCAD's references have a property
+"Stay upright" which makes them always face up (even when placed on a panel). So
+be sure to turn it off before panelizing. Here's an example:</p>
+<div class="admonition example">
+<p class="admonition-title">Panelization command</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="18:2"><input checked="checked" id="__tabbed_18_1" name="__tabbed_18" type="radio" /><input id="__tabbed_18_2" name="__tabbed_18" type="radio" /><div class="tabbed-labels"><label for="__tabbed_18_1">Linux/macOS</label><label for="__tabbed_18_2">Windows</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a>kikit panelize \
+<a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a>    --layout &#39;grid; rows: 2; cols: 2; space: 3mm; alternation: cols;&#39; \
+<a id="__codelineno-34-3" name="__codelineno-34-3" href="#__codelineno-34-3"></a>    --tabs &#39;fixed; width: 3mm; vcount: 2&#39; \
+<a id="__codelineno-34-4" name="__codelineno-34-4" href="#__codelineno-34-4"></a>    --cuts &#39;mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm&#39; \
+<a id="__codelineno-34-5" name="__codelineno-34-5" href="#__codelineno-34-5"></a>    --framing &#39;frame; width: 5mm; space: 3mm; cuts: both&#39; \
+<a id="__codelineno-34-6" name="__codelineno-34-6" href="#__codelineno-34-6"></a>    --post &#39;millradius: 1mm&#39; \
+<a id="__codelineno-34-7" name="__codelineno-34-7" href="#__codelineno-34-7"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a>kikit panelize ^
+<a id="__codelineno-35-2" name="__codelineno-35-2" href="#__codelineno-35-2"></a>    --layout &quot;grid; rows: 2; cols: 2; space: 3mm; alternation: cols;&quot; ^
+<a id="__codelineno-35-3" name="__codelineno-35-3" href="#__codelineno-35-3"></a>    --tabs &quot;fixed; width: 3mm; vcount: 2&quot; ^
+<a id="__codelineno-35-4" name="__codelineno-35-4" href="#__codelineno-35-4"></a>    --cuts &quot;mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm&quot; ^
+<a id="__codelineno-35-5" name="__codelineno-35-5" href="#__codelineno-35-5"></a>    --framing &quot;frame; width: 5mm; space: 3mm; cuts: both&quot; ^
+<a id="__codelineno-35-6" name="__codelineno-35-6" href="#__codelineno-35-6"></a>    --post &quot;millradius: 1mm&quot; ^
+<a id="__codelineno-35-7" name="__codelineno-35-7" href="#__codelineno-35-7"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><img alt="examplePanel18" src="../../resources/examplePanel18.png" /></p>
+</div>
+<p>Another solution might be to not put tabs on, e.g., vertical edges of the PCB.
+However, in that case your panel might be weak for further assembly. You can
+make it more stiff by including backbones – a full piece of substrate between
+the panels. You can add either vertical, horizontal or both backbones.
+Also, similarly with frames, you can put cuts on your backbone to make
+depanelization of your boards easier. Enough theory, let's see an example</p>
+<div class="admonition example">
+<p class="admonition-title">Panelization command</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="19:2"><input checked="checked" id="__tabbed_19_1" name="__tabbed_19" type="radio" /><input id="__tabbed_19_2" name="__tabbed_19" type="radio" /><div class="tabbed-labels"><label for="__tabbed_19_1">Linux/macOS</label><label for="__tabbed_19_2">Windows</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a>kikit panelize \
+<a id="__codelineno-36-2" name="__codelineno-36-2" href="#__codelineno-36-2"></a>    --layout &#39;grid; rows: 2; cols: 2; space: 2mm; hbackbone: 5mm; hbonecut: true&#39; \
+<a id="__codelineno-36-3" name="__codelineno-36-3" href="#__codelineno-36-3"></a>    --tabs &#39;fixed; width: 3mm; vcount: 2; hcount: 0&#39; \
+<a id="__codelineno-36-4" name="__codelineno-36-4" href="#__codelineno-36-4"></a>    --cuts &#39;mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm&#39; \
+<a id="__codelineno-36-5" name="__codelineno-36-5" href="#__codelineno-36-5"></a>    --framing &#39;railstb; width: 5mm; space: 3mm;&#39; \
+<a id="__codelineno-36-6" name="__codelineno-36-6" href="#__codelineno-36-6"></a>    --post &#39;millradius: 1mm&#39; \
+<a id="__codelineno-36-7" name="__codelineno-36-7" href="#__codelineno-36-7"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a>kikit panelize ^
+<a id="__codelineno-37-2" name="__codelineno-37-2" href="#__codelineno-37-2"></a>    --layout &quot;grid; rows: 2; cols: 2; space: 2mm; hbackbone: 5mm; hbonecut: true&quot; ^
+<a id="__codelineno-37-3" name="__codelineno-37-3" href="#__codelineno-37-3"></a>    --tabs &quot;fixed; width: 3mm; vcount: 2; hcount: 0&quot; ^
+<a id="__codelineno-37-4" name="__codelineno-37-4" href="#__codelineno-37-4"></a>    --cuts &quot;mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm&quot; ^
+<a id="__codelineno-37-5" name="__codelineno-37-5" href="#__codelineno-37-5"></a>    --framing &quot;railstb; width: 5mm; space: 3mm;&quot; ^
+<a id="__codelineno-37-6" name="__codelineno-37-6" href="#__codelineno-37-6"></a>    --post &quot;millradius: 1mm&quot; ^
+<a id="__codelineno-37-7" name="__codelineno-37-7" href="#__codelineno-37-7"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><img alt="examplePanel19" src="../../resources/examplePanel19.png" /></p>
+</div>
+<p>Often, not all backbones are needed. Especially for larger panels. Therefore, if
+you want, you can skip some of them. Consider the following 4×4 panel with only
+ever other backbone:</p>
+<div class="admonition example">
+<p class="admonition-title">Panelization command</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="20:2"><input checked="checked" id="__tabbed_20_1" name="__tabbed_20" type="radio" /><input id="__tabbed_20_2" name="__tabbed_20" type="radio" /><div class="tabbed-labels"><label for="__tabbed_20_1">Linux/macOS</label><label for="__tabbed_20_2">Windows</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-38-1" name="__codelineno-38-1" href="#__codelineno-38-1"></a>kikit panelize \
+<a id="__codelineno-38-2" name="__codelineno-38-2" href="#__codelineno-38-2"></a>    --layout &#39;grid; rows: 4; cols: 4; space: 2mm; hbackbone: 5mm; vbackbone: 5mm; hboneskip: 1; vboneskip: 1&#39; \
+<a id="__codelineno-38-3" name="__codelineno-38-3" href="#__codelineno-38-3"></a>    --tabs &#39;fixed; width: 3mm; vcount: 2; hcount: 0&#39; \
+<a id="__codelineno-38-4" name="__codelineno-38-4" href="#__codelineno-38-4"></a>    --cuts &#39;mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm&#39; \
+<a id="__codelineno-38-5" name="__codelineno-38-5" href="#__codelineno-38-5"></a>    --framing &#39;railstb; width: 5mm; space: 3mm;&#39; \
+<a id="__codelineno-38-6" name="__codelineno-38-6" href="#__codelineno-38-6"></a>    --post &#39;millradius: 1mm&#39; \
+<a id="__codelineno-38-7" name="__codelineno-38-7" href="#__codelineno-38-7"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-39-1" name="__codelineno-39-1" href="#__codelineno-39-1"></a>kikit panelize ^
+<a id="__codelineno-39-2" name="__codelineno-39-2" href="#__codelineno-39-2"></a>    --layout &quot;grid; rows: 4; cols: 4; space: 2mm; hbackbone: 5mm; vbackbone: 5mm; hboneskip: 1; vboneskip: 1&quot; ^
+<a id="__codelineno-39-3" name="__codelineno-39-3" href="#__codelineno-39-3"></a>    --tabs &quot;fixed; width: 3mm; vcount: 2; hcount: 0&quot; ^
+<a id="__codelineno-39-4" name="__codelineno-39-4" href="#__codelineno-39-4"></a>    --cuts &quot;mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm&quot; ^
+<a id="__codelineno-39-5" name="__codelineno-39-5" href="#__codelineno-39-5"></a>    --framing &quot;railstb; width: 5mm; space: 3mm;&quot; ^
+<a id="__codelineno-39-6" name="__codelineno-39-6" href="#__codelineno-39-6"></a>    --post &quot;millradius: 1mm&quot; ^
+<a id="__codelineno-39-7" name="__codelineno-39-7" href="#__codelineno-39-7"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><img alt="examplePanel20" src="../../resources/examplePanel20.png" /></p>
+</div>
+<p>The most powerful feature of KiKit regarding tab placement are tabs via
+annotation. Remember our test board? When you open it in Pcbnew, you can see
+that there are some special footprints – KiKit's annotations:</p>
+<p><img alt="conn-pcbnew" src="../../resources/conn-pcbnew.png" /></p>
+<p>They specify where to place tabs. You can even specify individual tab width via
+text property of the symbol. How to use it? Just specify tab type to
+<code>annotation</code>. We also have to increase the source area tolerance, so it can
+capture the annotations.</p>
+<div class="admonition example">
+<p class="admonition-title">Panelization command</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="21:2"><input checked="checked" id="__tabbed_21_1" name="__tabbed_21" type="radio" /><input id="__tabbed_21_2" name="__tabbed_21" type="radio" /><div class="tabbed-labels"><label for="__tabbed_21_1">Linux/macOS</label><label for="__tabbed_21_2">Windows</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-40-1" name="__codelineno-40-1" href="#__codelineno-40-1"></a>kikit panelize \
+<a id="__codelineno-40-2" name="__codelineno-40-2" href="#__codelineno-40-2"></a>    --layout &#39;grid; rows: 2; cols: 2; space: 5mm;&#39; \
+<a id="__codelineno-40-3" name="__codelineno-40-3" href="#__codelineno-40-3"></a>    --tabs annotation \
+<a id="__codelineno-40-4" name="__codelineno-40-4" href="#__codelineno-40-4"></a>    --source &#39;tolerance: 15mm&#39; \
+<a id="__codelineno-40-5" name="__codelineno-40-5" href="#__codelineno-40-5"></a>    --cuts &#39;mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm&#39; \
+<a id="__codelineno-40-6" name="__codelineno-40-6" href="#__codelineno-40-6"></a>    --framing &#39;railstb; width: 5mm; space: 3mm;&#39; \
+<a id="__codelineno-40-7" name="__codelineno-40-7" href="#__codelineno-40-7"></a>    --post &#39;millradius: 1mm&#39; \
+<a id="__codelineno-40-8" name="__codelineno-40-8" href="#__codelineno-40-8"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-41-1" name="__codelineno-41-1" href="#__codelineno-41-1"></a>kikit panelize ^
+<a id="__codelineno-41-2" name="__codelineno-41-2" href="#__codelineno-41-2"></a>    --layout &quot;grid; rows: 2; cols: 2; space: 5mm;&quot; ^
+<a id="__codelineno-41-3" name="__codelineno-41-3" href="#__codelineno-41-3"></a>    --tabs annotation ^
+<a id="__codelineno-41-4" name="__codelineno-41-4" href="#__codelineno-41-4"></a>    --source &quot;tolerance: 15mm&quot; ^
+<a id="__codelineno-41-5" name="__codelineno-41-5" href="#__codelineno-41-5"></a>    --cuts &quot;mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm&quot; ^
+<a id="__codelineno-41-6" name="__codelineno-41-6" href="#__codelineno-41-6"></a>    --framing &quot;railstb; width: 5mm; space: 3mm;&quot; ^
+<a id="__codelineno-41-7" name="__codelineno-41-7" href="#__codelineno-41-7"></a>    --post &quot;millradius: 1mm&quot; ^
+<a id="__codelineno-41-8" name="__codelineno-41-8" href="#__codelineno-41-8"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><img alt="examplePanel21" src="../../resources/examplePanel21.png" /></p>
+</div>
+<p>Well, the panel looks strange – right? That's because KiKit always constructs a
+half-bridges. When you specify the tabs location, you have to either ensure they
+match or put a piece of substrate they can reach – e.g., a backbone or a
+tightframe. If you are interested in the details, read more about tabs in
+section <a href="../tabs/">Understanding tabs</a>. Let's fix it:</p>
+<div class="admonition example">
+<p class="admonition-title">Panelization command</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="22:2"><input checked="checked" id="__tabbed_22_1" name="__tabbed_22" type="radio" /><input id="__tabbed_22_2" name="__tabbed_22" type="radio" /><div class="tabbed-labels"><label for="__tabbed_22_1">Linux/macOS</label><label for="__tabbed_22_2">Windows</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-42-1" name="__codelineno-42-1" href="#__codelineno-42-1"></a>kikit panelize \
+<a id="__codelineno-42-2" name="__codelineno-42-2" href="#__codelineno-42-2"></a>    --layout &#39;grid; rows: 2; cols: 2; space: 2mm; hbackbone: 3mm; vbackbone: 3mm&#39; \
+<a id="__codelineno-42-3" name="__codelineno-42-3" href="#__codelineno-42-3"></a>    --tabs annotation \
+<a id="__codelineno-42-4" name="__codelineno-42-4" href="#__codelineno-42-4"></a>    --source &#39;tolerance: 15mm&#39; \
+<a id="__codelineno-42-5" name="__codelineno-42-5" href="#__codelineno-42-5"></a>    --cuts &#39;mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm&#39; \
+<a id="__codelineno-42-6" name="__codelineno-42-6" href="#__codelineno-42-6"></a>    --framing &#39;railstb; width: 5mm; space: 3mm;&#39; \
+<a id="__codelineno-42-7" name="__codelineno-42-7" href="#__codelineno-42-7"></a>    --post &#39;millradius: 1mm&#39; \
+<a id="__codelineno-42-8" name="__codelineno-42-8" href="#__codelineno-42-8"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-43-1" name="__codelineno-43-1" href="#__codelineno-43-1"></a>kikit panelize ^
+<a id="__codelineno-43-2" name="__codelineno-43-2" href="#__codelineno-43-2"></a>    --layout &quot;grid; rows: 2; cols: 2; space: 2mm; hbackbone: 3mm; vbackbone: 3mm&quot; ^
+<a id="__codelineno-43-3" name="__codelineno-43-3" href="#__codelineno-43-3"></a>    --tabs annotation ^
+<a id="__codelineno-43-4" name="__codelineno-43-4" href="#__codelineno-43-4"></a>    --source &quot;tolerance: 15mm&quot; ^
+<a id="__codelineno-43-5" name="__codelineno-43-5" href="#__codelineno-43-5"></a>    --cuts &quot;mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm&quot; ^
+<a id="__codelineno-43-6" name="__codelineno-43-6" href="#__codelineno-43-6"></a>    --framing &quot;railstb; width: 5mm; space: 3mm;&quot; ^
+<a id="__codelineno-43-7" name="__codelineno-43-7" href="#__codelineno-43-7"></a>    --post &quot;millradius: 1mm&quot; ^
+<a id="__codelineno-43-8" name="__codelineno-43-8" href="#__codelineno-43-8"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><img alt="examplePanel22" src="../../resources/examplePanel22.png" /></p>
+</div>
+<p>Note that the annotation can have an arbitrary orientation. The arrow just must
+be outside board edge and points towards it. KiKit will also place only those
+tabs, that have a neighboring substrate. For precise algorithm, see section
+<a href="../tabs/">understanding tabs</a>.</p>
+<p>When you make flex PCBs or you want to save etchant, it make sense to pour
+copper on all non-functional parts of the panel. It will make the PCB rigid. You
+can do so via <code>copperfill</code> section:</p>
+<div class="admonition example">
+<p class="admonition-title">Panelization command</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="23:2"><input checked="checked" id="__tabbed_23_1" name="__tabbed_23" type="radio" /><input id="__tabbed_23_2" name="__tabbed_23" type="radio" /><div class="tabbed-labels"><label for="__tabbed_23_1">Linux/macOS</label><label for="__tabbed_23_2">Windows</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-44-1" name="__codelineno-44-1" href="#__codelineno-44-1"></a>kikit panelize \
+<a id="__codelineno-44-2" name="__codelineno-44-2" href="#__codelineno-44-2"></a>    --layout &#39;grid; rows: 2; cols: 2; space: 2mm&#39; \
+<a id="__codelineno-44-3" name="__codelineno-44-3" href="#__codelineno-44-3"></a>    --tabs &#39;fixed; width: 3mm;&#39; \
+<a id="__codelineno-44-4" name="__codelineno-44-4" href="#__codelineno-44-4"></a>    --cuts &#39;mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm&#39; \
+<a id="__codelineno-44-5" name="__codelineno-44-5" href="#__codelineno-44-5"></a>    --framing &#39;railstb; width: 5mm; space: 3mm;&#39; \
+<a id="__codelineno-44-6" name="__codelineno-44-6" href="#__codelineno-44-6"></a>    --copperfill solid \
+<a id="__codelineno-44-7" name="__codelineno-44-7" href="#__codelineno-44-7"></a>    --post &#39;millradius: 1mm;&#39; \
+<a id="__codelineno-44-8" name="__codelineno-44-8" href="#__codelineno-44-8"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-45-1" name="__codelineno-45-1" href="#__codelineno-45-1"></a>kikit panelize ^
+<a id="__codelineno-45-2" name="__codelineno-45-2" href="#__codelineno-45-2"></a>    --layout &quot;grid; rows: 2; cols: 2; space: 2mm&quot; ^
+<a id="__codelineno-45-3" name="__codelineno-45-3" href="#__codelineno-45-3"></a>    --tabs &quot;fixed; width: 3mm;&quot; ^
+<a id="__codelineno-45-4" name="__codelineno-45-4" href="#__codelineno-45-4"></a>    --cuts &quot;mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm&quot; ^
+<a id="__codelineno-45-5" name="__codelineno-45-5" href="#__codelineno-45-5"></a>    --framing &quot;railstb; width: 5mm; space: 3mm;&quot; ^
+<a id="__codelineno-45-6" name="__codelineno-45-6" href="#__codelineno-45-6"></a>    --copperfill solid ^
+<a id="__codelineno-45-7" name="__codelineno-45-7" href="#__codelineno-45-7"></a>    --post &quot;millradius: 1mm;&quot; ^
+<a id="__codelineno-45-8" name="__codelineno-45-8" href="#__codelineno-45-8"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><img alt="examplePanel23" src="../../resources/examplePanel23.png" /></p>
+</div>
+<p>When you use V-cuts with <code>copperfill</code> you (or your fab house) might want to
+include a clearance around the V-cuts:</p>
+<div class="admonition example">
+<p class="admonition-title">Panelization command</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="24:2"><input checked="checked" id="__tabbed_24_1" name="__tabbed_24" type="radio" /><input id="__tabbed_24_2" name="__tabbed_24" type="radio" /><div class="tabbed-labels"><label for="__tabbed_24_1">Linux/macOS</label><label for="__tabbed_24_2">Windows</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-46-1" name="__codelineno-46-1" href="#__codelineno-46-1"></a>kikit panelize \
+<a id="__codelineno-46-2" name="__codelineno-46-2" href="#__codelineno-46-2"></a>    --layout &#39;grid; rows: 2; cols: 2; space: 2mm&#39; \
+<a id="__codelineno-46-3" name="__codelineno-46-3" href="#__codelineno-46-3"></a>    --tabs &#39;fixed; hwidth: 10mm; vwidth: 15mm&#39; \
+<a id="__codelineno-46-4" name="__codelineno-46-4" href="#__codelineno-46-4"></a>    --cuts &#39;vcuts; clearance: 1.5mm&#39; \
+<a id="__codelineno-46-5" name="__codelineno-46-5" href="#__codelineno-46-5"></a>    --framing &#39;railstb; width: 5mm; space: 3mm;&#39; \
+<a id="__codelineno-46-6" name="__codelineno-46-6" href="#__codelineno-46-6"></a>    --copperfill solid \
+<a id="__codelineno-46-7" name="__codelineno-46-7" href="#__codelineno-46-7"></a>    --post &#39;millradius: 1mm;&#39; \
+<a id="__codelineno-46-8" name="__codelineno-46-8" href="#__codelineno-46-8"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-47-1" name="__codelineno-47-1" href="#__codelineno-47-1"></a>kikit panelize ^
+<a id="__codelineno-47-2" name="__codelineno-47-2" href="#__codelineno-47-2"></a>    --layout &quot;grid; rows: 2; cols: 2; space: 2mm&quot; ^
+<a id="__codelineno-47-3" name="__codelineno-47-3" href="#__codelineno-47-3"></a>    --tabs &quot;fixed; hwidth: 10mm; vwidth: 15mm&quot; ^
+<a id="__codelineno-47-4" name="__codelineno-47-4" href="#__codelineno-47-4"></a>    --cuts &quot;vcuts; clearance: 1.5mm&quot; ^
+<a id="__codelineno-47-5" name="__codelineno-47-5" href="#__codelineno-47-5"></a>    --framing &quot;railstb; width: 5mm; space: 3mm;&quot; ^
+<a id="__codelineno-47-6" name="__codelineno-47-6" href="#__codelineno-47-6"></a>    --copperfill solid ^
+<a id="__codelineno-47-7" name="__codelineno-47-7" href="#__codelineno-47-7"></a>    --post &quot;millradius: 1mm;&quot; ^
+<a id="__codelineno-47-8" name="__codelineno-47-8" href="#__codelineno-47-8"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><img alt="examplePanel24" src="../../resources/examplePanel24.png" /></p>
+</div>
+<p>If you, for example do not wish to cover the tabs with copper, you can also
+specify clearance. Also, some manufacturers don't like when you have large solid
+copper areas. In that case, you can use a hatch pattern to fill the area:</p>
+<div class="admonition example">
+<p class="admonition-title">Panelization command</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="25:2"><input checked="checked" id="__tabbed_25_1" name="__tabbed_25" type="radio" /><input id="__tabbed_25_2" name="__tabbed_25" type="radio" /><div class="tabbed-labels"><label for="__tabbed_25_1">Linux/macOS</label><label for="__tabbed_25_2">Windows</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-48-1" name="__codelineno-48-1" href="#__codelineno-48-1"></a>kikit panelize \
+<a id="__codelineno-48-2" name="__codelineno-48-2" href="#__codelineno-48-2"></a>    --layout &#39;grid; rows: 2; cols: 2; space: 2mm&#39; \
+<a id="__codelineno-48-3" name="__codelineno-48-3" href="#__codelineno-48-3"></a>    --tabs &#39;fixed; width: 3mm;&#39; \
+<a id="__codelineno-48-4" name="__codelineno-48-4" href="#__codelineno-48-4"></a>    --cuts &#39;mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm&#39; \
+<a id="__codelineno-48-5" name="__codelineno-48-5" href="#__codelineno-48-5"></a>    --framing &#39;railstb; width: 5mm; space: 3mm;&#39; \
+<a id="__codelineno-48-6" name="__codelineno-48-6" href="#__codelineno-48-6"></a>    --copperfill &#39;hatched; clearance: 2mm; spacing: 0.5mm; width: 0.5mm&#39; \
+<a id="__codelineno-48-7" name="__codelineno-48-7" href="#__codelineno-48-7"></a>    --post &#39;millradius: 1mm;&#39; \
+<a id="__codelineno-48-8" name="__codelineno-48-8" href="#__codelineno-48-8"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-49-1" name="__codelineno-49-1" href="#__codelineno-49-1"></a>kikit panelize ^
+<a id="__codelineno-49-2" name="__codelineno-49-2" href="#__codelineno-49-2"></a>    --layout &quot;grid; rows: 2; cols: 2; space: 2mm&quot; ^
+<a id="__codelineno-49-3" name="__codelineno-49-3" href="#__codelineno-49-3"></a>    --tabs &quot;fixed; width: 3mm;&quot; ^
+<a id="__codelineno-49-4" name="__codelineno-49-4" href="#__codelineno-49-4"></a>    --cuts &quot;mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm&quot; ^
+<a id="__codelineno-49-5" name="__codelineno-49-5" href="#__codelineno-49-5"></a>    --framing &quot;railstb; width: 5mm; space: 3mm;&quot; ^
+<a id="__codelineno-49-6" name="__codelineno-49-6" href="#__codelineno-49-6"></a>    --copperfill &quot;hatched; clearance: 2mm; spacing: 0.5mm; width: 0.5mm&quot; ^
+<a id="__codelineno-49-7" name="__codelineno-49-7" href="#__codelineno-49-7"></a>    --post &quot;millradius: 1mm;&quot; ^
+<a id="__codelineno-49-8" name="__codelineno-49-8" href="#__codelineno-49-8"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><img alt="examplePanel25" src="../../resources/examplePanel25.png" /></p>
+</div>
+<p>Note one last facts about V-cuts. V-cuts can only be straight and
+horizontal/vertical. But you can use them with circular boards if you want by
+cutting a little inside them. The option <code>cutcurves</code>, that will approximate the
+cut by staring and ending point.</p>
+<h2 id="i-would-like-but-kikit-does-not-support-it">I would like... but KiKit does not support it!</h2>
+<p>If you need something special; e.g., custom placement of tooling holes, multiple
+texts, etc. KiKit has you covered.</p>
+<p>The CLI interface allows you to run a custom script over the final panel. The
+script can use KiKit Python interface to modify it. For the sake of simplicity,
+let's add a hole in the middle of the frame. Therefore, we write the following
+script:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-50-1" name="__codelineno-50-1" href="#__codelineno-50-1"></a><span class="kn">from</span> <span class="nn">kikit.units</span> <span class="kn">import</span> <span class="n">mm</span>
+<a id="__codelineno-50-2" name="__codelineno-50-2" href="#__codelineno-50-2"></a><span class="kn">from</span> <span class="nn">kikit.common</span> <span class="kn">import</span> <span class="n">toKiCADPoint</span>
+<a id="__codelineno-50-3" name="__codelineno-50-3" href="#__codelineno-50-3"></a>
+<a id="__codelineno-50-4" name="__codelineno-50-4" href="#__codelineno-50-4"></a><span class="k">def</span> <span class="nf">kikitPostprocess</span><span class="p">(</span><span class="n">panel</span><span class="p">,</span> <span class="n">arg</span><span class="p">):</span>
+<a id="__codelineno-50-5" name="__codelineno-50-5" href="#__codelineno-50-5"></a>    <span class="n">minx</span><span class="p">,</span> <span class="n">miny</span><span class="p">,</span> <span class="n">maxx</span><span class="p">,</span> <span class="n">maxy</span> <span class="o">=</span> <span class="n">panel</span><span class="o">.</span><span class="n">panelBBox</span><span class="p">()</span>
+<a id="__codelineno-50-6" name="__codelineno-50-6" href="#__codelineno-50-6"></a>    <span class="n">position</span> <span class="o">=</span> <span class="n">toKiCADPoint</span><span class="p">(((</span><span class="n">minx</span> <span class="o">+</span> <span class="n">maxx</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">miny</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">mm</span><span class="p">))</span>
+<a id="__codelineno-50-7" name="__codelineno-50-7" href="#__codelineno-50-7"></a>    <span class="n">panel</span><span class="o">.</span><span class="n">addNPTHole</span><span class="p">(</span><span class="n">position</span><span class="p">,</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">mm</span><span class="p">)</span>
+</code></pre></div>
+<p>Then run KiKit:</p>
+<div class="admonition example">
+<p class="admonition-title">Panelization command</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="26:2"><input checked="checked" id="__tabbed_26_1" name="__tabbed_26" type="radio" /><input id="__tabbed_26_2" name="__tabbed_26" type="radio" /><div class="tabbed-labels"><label for="__tabbed_26_1">Linux/macOS</label><label for="__tabbed_26_2">Windows</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-51-1" name="__codelineno-51-1" href="#__codelineno-51-1"></a>kikit panelize \
+<a id="__codelineno-51-2" name="__codelineno-51-2" href="#__codelineno-51-2"></a>    --layout &#39;grid; rows: 2; cols: 2; space: 2mm&#39; \
+<a id="__codelineno-51-3" name="__codelineno-51-3" href="#__codelineno-51-3"></a>    --tabs &#39;fixed; width: 3mm; vcount: 2&#39; \
+<a id="__codelineno-51-4" name="__codelineno-51-4" href="#__codelineno-51-4"></a>    --cuts &#39;mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm&#39; \
+<a id="__codelineno-51-5" name="__codelineno-51-5" href="#__codelineno-51-5"></a>    --framing &#39;railstb; width: 5mm; space: 3mm;&#39; \
+<a id="__codelineno-51-6" name="__codelineno-51-6" href="#__codelineno-51-6"></a>    --post &#39;millradius: 1mm; script: docs/resources/examplePost.py&#39; \
+<a id="__codelineno-51-7" name="__codelineno-51-7" href="#__codelineno-51-7"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-52-1" name="__codelineno-52-1" href="#__codelineno-52-1"></a>kikit panelize ^
+<a id="__codelineno-52-2" name="__codelineno-52-2" href="#__codelineno-52-2"></a>    --layout &quot;grid; rows: 2; cols: 2; space: 2mm&quot; ^
+<a id="__codelineno-52-3" name="__codelineno-52-3" href="#__codelineno-52-3"></a>    --tabs &quot;fixed; width: 3mm; vcount: 2&quot; ^
+<a id="__codelineno-52-4" name="__codelineno-52-4" href="#__codelineno-52-4"></a>    --cuts &quot;mousebites; drill: 0.5mm; spacing: 1mm; offset: 0.2mm; prolong: 0.5mm&quot; ^
+<a id="__codelineno-52-5" name="__codelineno-52-5" href="#__codelineno-52-5"></a>    --framing &quot;railstb; width: 5mm; space: 3mm;&quot; ^
+<a id="__codelineno-52-6" name="__codelineno-52-6" href="#__codelineno-52-6"></a>    --post &quot;millradius: 1mm; script: docs/resources/examplePost.py&quot; ^
+<a id="__codelineno-52-7" name="__codelineno-52-7" href="#__codelineno-52-7"></a>    docs/resources/conn.kicad_pcb panel.kicad_pcb
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><img alt="examplePanel26" src="../../resources/examplePanel26.png" /></p>
+</div>
+<p>You can learn more about available functions from the comment in the source code
+or in the <a href="../python_api/">Python API reference</a>. The basic concepts are
+summarized in the <a href="../scripting/">scripting guide</a>.</p>
+<p>If you implement a feature that your fab house requires (e.g., new tooling hole
+type), consider submitting a pull request for KiKit instead. I believe the
+others will benefit from it.</p>
+<h2 id="managing-presets">Managing presets</h2>
+<p>The last section of this document is dedicated to management of presets. You can
+read the specification in the <a href="../cli/">documentation for CLI</a>. Here I would like
+to focus on practical examples.</p>
+<p>As you should know from the documentation, the panelization preset is divided
+into sections; e. g., <code>layout</code>, <code>tabs</code>, etc. The key-value parameters in these
+sections can be specified via JSON files. In KiKit, you can specify these files
+via <code>-p</code> option:</p>
+<p><code>kikit panelize -p myPreset.json -p :&lt;builtInPreset&gt; &lt;other parameters&gt;</code></p>
+<p>The parameters in the later specified presets override the parameters in the
+previously specified presets. This allows you to define a named piece-wise
+presets. Therefore, you can prepare various presets for mousebites – e.g.,
+<code>fineMousebites.json</code> and <code>coarseMousebites.json</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-53-1" name="__codelineno-53-1" href="#__codelineno-53-1"></a><span class="c1">// fineMousebites.json</span>
+<a id="__codelineno-53-2" name="__codelineno-53-2" href="#__codelineno-53-2"></a><span class="p">{</span>
+<a id="__codelineno-53-3" name="__codelineno-53-3" href="#__codelineno-53-3"></a><span class="w">    </span><span class="s2">&quot;cuts&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-53-4" name="__codelineno-53-4" href="#__codelineno-53-4"></a><span class="w">        </span><span class="s2">&quot;type&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;mousebites&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;drill&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;0.5mm&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;spacing&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;0.9mm&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;offset&quot;</span><span class="o">:</span>
+<a id="__codelineno-53-5" name="__codelineno-53-5" href="#__codelineno-53-5"></a><span class="w">        </span><span class="s2">&quot;0.25mm&quot;</span>
+<a id="__codelineno-53-6" name="__codelineno-53-6" href="#__codelineno-53-6"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-53-7" name="__codelineno-53-7" href="#__codelineno-53-7"></a><span class="p">}</span>
+<a id="__codelineno-53-8" name="__codelineno-53-8" href="#__codelineno-53-8"></a>
+<a id="__codelineno-53-9" name="__codelineno-53-9" href="#__codelineno-53-9"></a><span class="c1">// coarseMousebites.json</span>
+<a id="__codelineno-53-10" name="__codelineno-53-10" href="#__codelineno-53-10"></a><span class="p">{</span>
+<a id="__codelineno-53-11" name="__codelineno-53-11" href="#__codelineno-53-11"></a><span class="w">    </span><span class="s2">&quot;cuts&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-53-12" name="__codelineno-53-12" href="#__codelineno-53-12"></a><span class="w">        </span><span class="s2">&quot;type&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;mousebites&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;drill&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;0.3mm&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;spacing&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;0.2mm&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;offset&quot;</span><span class="o">:</span>
+<a id="__codelineno-53-13" name="__codelineno-53-13" href="#__codelineno-53-13"></a><span class="w">        </span><span class="s2">&quot;0.15mm&quot;</span>
+<a id="__codelineno-53-14" name="__codelineno-53-14" href="#__codelineno-53-14"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-53-15" name="__codelineno-53-15" href="#__codelineno-53-15"></a><span class="p">}</span>
+</code></pre></div>
+<p>Then you can specify your panelization commands easily via:</p>
+<p><code>kikit panelize -p fineMousebites.json &lt;otheroptions&gt;</code></p>
+<p>Therefore, you can build a custom library of commonly used-options; e.g., per
+fabrication house. KiKit offers some built-in presets – see
+<a href="https://github.com/yaqwsx/KiKit/tree/master/kikit/resources/panelizePresets"><code>panelizePresets</code></a>.
+Note that the built-in preset <code>default.json</code> is always used as a base and it
+specifies conservative default values so you can only override the options
+relevant for you.</p>
+<p>To give you an example – with KiKit, you will no longer have to remember what
+diameter of tooling holes JLC PCB requires, just use:</p>
+<p><code>kikit panelize -p :jlcTooling &lt;otheroptions&gt;</code></p>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tracking", "navigation.tabs", "navigation.tabs.sticky", "navigation.expand", "navigation.indexes"], "search": "../../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.2a6f1dda.min.js"></script>
+      
+    
+  </body>
+</html>
