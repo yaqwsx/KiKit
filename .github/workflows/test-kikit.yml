@@ -13,7 +13,7 @@ jobs:
       matrix:
         kicad-version: [v6, v7, nightly]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: ./.github/actions/setup-kicad
         with:
           kicad-version: ${{ matrix.kicad-version }}
@@ -35,7 +35,7 @@ jobs:
     runs-on: ubuntu-20.04
     needs: test
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: ./.github/actions/setup-kicad
         with:
           kicad-version: v6
@@ -54,7 +54,7 @@ jobs:
           path: build/pcm-kikit-lib
           retention-days: 7
   deploy-docker:
-    name: "Build and deploy Docker container"
+    name: "Deploy nightly Docker"
     runs-on: ubuntu-22.04
     needs: test
     if: github.ref == 'refs/heads/master' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
@@ -88,7 +88,7 @@ jobs:
             additional_packages: gcc-aarch64-linux-gnu libgeos-dev
             additional_python_packages: python3-dev
     steps:
-      - uses: actions/checkout@v2 # Required for kikit version estimation
+      - uses: actions/checkout@v3 # Required for kikit version estimation
         with:
           fetch-depth: 0 # = fetch all
       - name: Set up QEMU
