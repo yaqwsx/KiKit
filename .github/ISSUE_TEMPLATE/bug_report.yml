@@ -7,12 +7,7 @@ body:
     options:
     - label: I have read [FAQ](https://yaqwsx.github.io/KiKit/latest/faq/)
       required: true
-    - label: I use the KiKit at least 1.2.0 (older version are not supported)
-      required: true
-    - label: >
-        I understand that version 1.2.0 is not compatible with KiCAD 7 and if
-        this is a bug report about v7 incompatibility, I tried the latest
-        upstream version first
+    - label: I use KiKit at least version 1.3.0 (older version are not supported)
       required: true
 - type: input
   attributes:
