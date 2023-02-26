@@ -29,7 +29,6 @@ jobs:
           sudo env PYTHONPATH=$PYTHONPATH LD_LIBRARY_PATH=$LD_LIBRARY_PATH \
             python -m pip install -e .\[dev\]
       - run: make test
-      - run: make doc
       - run: sudo env PYTHONPATH=$PYTHONPATH LD_LIBRARY_PATH=$LD_LIBRARY_PATH make package
   build-pcm:
     name: Build PCM packages
@@ -56,13 +55,13 @@ jobs:
           retention-days: 7
   deploy-docker:
     name: "Build and deploy Docker container"
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: test
     if: github.ref == 'refs/heads/master' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
     strategy:
       matrix:
         build-config:
-          - name: "x64"
+          - name: x64
             suffix: ""
             platform: linux/amd64
             repo: ubuntu
@@ -74,12 +73,26 @@ jobs:
             repo: arm64v8/ubuntu
             additional_packages: gcc-aarch64-linux-gnu libgeos-dev
             additional_python_packages: python3-dev
+          - name: "x64 v7"
+            suffix: "-v7"
+            platform: linux/amd64
+            repo: ubuntu
+            kicad_version: "7.0"
+            additional_packages: ""
+            additional_python_packages: ""
+          - name: "m1 v7"
+            suffix: -m1-v7
+            platform: linux/arm64/v8
+            repo: arm64v8/ubuntu
+            kicad_version: "7.0"
+            additional_packages: gcc-aarch64-linux-gnu libgeos-dev
+            additional_python_packages: python3-dev
     steps:
       - uses: actions/checkout@v2 # Required for kikit version estimation
         with:
           fetch-depth: 0 # = fetch all
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
+        uses: docker/setup-qemu-action@v2
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
       - name: Login to DockerHub
