@@ -1784,7 +1784,7 @@ class Panel:
         self.board.Add(zone)
         return zone
 
-    def addText(self, text, position, orientation=0,
+    def addText(self, text, position, orientation=fromDegrees(0),
                 width=fromMm(1.5), height=fromMm(1.5), thickness=fromMm(0.3),
                 hJustify=EDA_TEXT_HJUSTIFY_T.GR_TEXT_HJUSTIFY_CENTER,
                 vJustify=EDA_TEXT_VJUSTIFY_T.GR_TEXT_VJUSTIFY_CENTER,
