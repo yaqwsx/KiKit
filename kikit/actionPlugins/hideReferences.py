@@ -217,14 +217,6 @@ class HideReferencesPlugin(pcbnew.ActionPlugin):
         self.icon_file_name = os.path.join(PKG_BASE, "resources", "graphics", "removeRefIcon_24x24.png")
         self.show_toolbar_button = True
 
-    def find_pcbnew_window(self):
-        windows = wx.GetTopLevelWindows()
-        name = wx.GetTranslation("PCB Editor").lower()
-        pcbneww = [w for w in windows if name in w.GetTitle().lower()]
-        if len(pcbneww) != 1:
-            return None
-        return pcbneww[0]
-
     def error(self, msg):
         wx.MessageBox(msg, "Error", wx.OK | wx.ICON_ERROR)
 
@@ -242,8 +234,8 @@ class HideReferencesPlugin(pcbnew.ActionPlugin):
 
     def Run(self):
         # Find the pcbnew main window
-        pcbnew_window = self.find_pcbnew_window()
-        if not pcbnew_window:
+        pcbnew_window = wx.FindWindowByName("PcbFrame")
+        if pcbnew_window is None:
             # Something failed, abort
             self.error("Failed to find pcbnew main window")
             return
