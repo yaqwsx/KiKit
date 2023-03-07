@@ -146,7 +146,7 @@ class HideReferencesDialog(wx.Dialog):
             event.Skip()
 
     def OnCancel(self, event):
-        self.Hide()
+        destroyDialog(self)
 
     def OnApply(self, event):
         if self.actionCallback is not None:
@@ -210,14 +210,6 @@ class HideReferencesDialog(wx.Dialog):
 
 
 class HideReferencesPlugin(pcbnew.ActionPlugin):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.dialog = initDialog(lambda: HideReferencesDialog(
-                                 board=None, action=lambda d: self.action(d)))
-
-    def __del__(self):
-        destroyDialog(self.dialog)
-
     def defaults(self):
         self.name = "KiKit: Show/hide references"
         self.category = "KiKit"
@@ -225,9 +217,19 @@ class HideReferencesPlugin(pcbnew.ActionPlugin):
         self.icon_file_name = os.path.join(PKG_BASE, "resources", "graphics", "removeRefIcon_24x24.png")
         self.show_toolbar_button = True
 
+    def find_pcbnew_window(self):
+        windows = wx.GetTopLevelWindows()
+        name = wx.GetTranslation("PCB Editor").lower()
+        pcbneww = [w for w in windows if name in w.GetTitle().lower()]
+        if len(pcbneww) != 1:
+            return None
+        return pcbneww[0]
+
+    def error(self, msg):
+        wx.MessageBox(msg, "Error", wx.OK | wx.ICON_ERROR)
+
     def action(self, dialog):
         try:
-            dialog = self.dialog
             if dialog.ModifyReferences():
                 modify.references(dialog.board, dialog.GetShowLabels(),
                      dialog.GetPattern(), dialog.GetActiveLayers())
@@ -236,18 +238,22 @@ class HideReferencesPlugin(pcbnew.ActionPlugin):
                     dialog.GetPattern(), dialog.GetActiveLayers())
             pcbnew.Refresh()
         except Exception as e:
-            dlg = wx.MessageDialog(None, f"Cannot perform: {e}", "Error", wx.OK)
-            dlg.ShowModal()
-            dlg.Destroy()
+            self.error(f"Cannot perform: {e}")
 
     def Run(self):
+        # Find the pcbnew main window
+        pcbnew_window = self.find_pcbnew_window()
+        if not pcbnew_window:
+            # Something failed, abort
+            self.error("Failed to find pcbnew main window")
+            return
         try:
-            self.dialog.board = pcbnew.GetBoard()
-            self.dialog.Show()
+            dialog = initDialog(lambda: HideReferencesDialog(board=pcbnew.GetBoard(),
+                                action=lambda d: self.action(d),
+                                parent=pcbnew_window))
+            dialog.Show()
         except Exception as e:
-            dlg = wx.MessageDialog(None, f"Cannot perform: {e}", "Error", wx.OK)
-            dlg.ShowModal()
-            dlg.Destroy()
+            self.error(f"Cannot perform: {e}")
 
 plugin = HideReferencesPlugin
 
