@@ -408,6 +408,18 @@ def biteBoundary(boundary, pointA, pointB, tolerance=fromMm(0.01)):
     return None
 
 
+def collectionToPointList(collection):
+    geoms = list()
+    for geom in collection:
+        if isinstance(geom, Point):
+            geoms.append(geom)
+        elif isinstance(geom, LineString):
+            # When a linestring is an intersection, we know that the starting or
+            # ending points are the nearest one
+            geoms.extend([Point(geom.coords[0]), Point(geom.coords[-1])])
+    return geoms
+
+
 def closestIntersectionPoint(origin, direction, outline, maxDistance):
     """Find the closest intersection between an outline from a point within a maximum distance under a given direction"""
     testLine = LineString([origin, origin + direction * maxDistance])
@@ -424,14 +436,10 @@ def closestIntersectionPoint(origin, direction, outline, maxDistance):
             plt.show()
         raise NoIntersectionError(f"No intersection found within given distance", origin)
     origin = Point(origin[0], origin[1])
-    if isinstance(inter, Point):
-        geoms = [inter]
-    elif isinstance(inter, LineString):
-        # When a linestring is an intersection, we know that the starting or
-        # ending points are the nearest one
-        geoms = [Point(inter.coords[0]), Point(inter.coords[-1])]
+    if hasattr(inter, '__iter__'):
+        geoms = collectionToPointList(inter)
     else:
-        geoms = inter.geoms
+        geoms = collectionToPointList([inter])
     return min([(g, origin.distance(g)) for g in geoms], key=lambda t: t[1])[0]
 
 def linestringToKicad(linestring):
