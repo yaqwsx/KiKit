@@ -417,6 +417,8 @@ def collectionToPointList(collection):
             # When a linestring is an intersection, we know that the starting or
             # ending points are the nearest one
             geoms.extend([Point(geom.coords[0]), Point(geom.coords[-1])])
+        else:
+            raise TypeError(f"intersection() returned an unsupported datatype: {geom.__class__.__name__}")
     return geoms
 
 
