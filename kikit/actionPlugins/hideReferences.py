@@ -9,13 +9,14 @@ from kikit.common import PKG_BASE
 from .common import initDialog, destroyDialog
 
 class HideReferencesDialog(wx.Dialog):
-    def __init__(self, parent=None, board=None, action=None):
+    def __init__(self, state, parent=None, board=None, action=None, updateState=None):
         wx.Dialog.__init__(self,
             parent,
             title=f'Specify which components to hide (version {kikit.__version__})',
             style=wx.RESIZE_BORDER | wx.DEFAULT_DIALOG_STYLE)
         self.board = board
         self.actionCallback = action
+        self.updateStatusCallback = updateState
         self.text = ""
 
         self.Bind(wx.EVT_CLOSE, self.OnCancel, id=self.GetId())
@@ -35,7 +36,7 @@ class HideReferencesDialog(wx.Dialog):
             style=wx.ALIGN_RIGHT)
         label.Wrap(200)
         self.item_grid.Add(label, 1, wx.ALIGN_CENTRE_VERTICAL)
-        self.pattern = wx.TextCtrl(panel, style=wx.TE_LEFT, value='.*',
+        self.pattern = wx.TextCtrl(panel, style=wx.TE_LEFT, value=state.get("pattern", ".*"),
             size=wx.Size(350, -1))
         self.Bind(wx.EVT_TEXT, self.OnPatternChange, id=self.pattern.GetId())
         self.item_grid.Add(self.pattern, 0, wx.EXPAND)
@@ -47,7 +48,7 @@ class HideReferencesDialog(wx.Dialog):
         self.item_grid.Add(label, 1, wx.ALIGN_CENTRE_VERTICAL)
         self.action = wx.Choice(panel, style=wx.CB_DROPDOWN,
             choices=["Show", "Hide"])
-        self.action.SetSelection(1)
+        self.action.SetSelection(state.get("action", 1))
         self.item_grid.Add(self.action, 0, wx.EXPAND)
 
         label = wx.StaticText(panel, label="Apply to:",
@@ -57,7 +58,7 @@ class HideReferencesDialog(wx.Dialog):
         self.item_grid.Add(label, 1, wx.ALIGN_CENTRE_VERTICAL)
         self.scope = wx.Choice(panel, style=wx.CB_DROPDOWN,
             choices=["References only", "Values only", "References and values"])
-        self.scope.SetSelection(2)
+        self.scope.SetSelection(state.get("scope", 2))
         self.item_grid.Add(self.scope, 0, wx.EXPAND)
 
         label = wx.StaticText(panel, label="Layers to include:",
@@ -67,8 +68,9 @@ class HideReferencesDialog(wx.Dialog):
         self.item_grid.Add(label, 0, wx.ALIGN_CENTRE_VERTICAL)
 
         self.layers = wx.CheckListBox(panel, choices=[str(Layer(l).name) for l in Layer.all()])
-        for l in Layer.all():
-            self.layers.Check(l)
+        layerCheckState = state.get("layers", [True for _ in Layer.all()])
+        for l, checked in zip(Layer.all(), layerCheckState):
+            self.layers.Check(l, checked)
         self.item_grid.Add(self.layers, 0, wx.EXPAND)
 
         label = wx.StaticText(panel, label="Select layers:",
@@ -146,6 +148,14 @@ class HideReferencesDialog(wx.Dialog):
             event.Skip()
 
     def OnCancel(self, event):
+        if self.updateStatusCallback is not None:
+            selectedLayers = self.GetActiveLayers()
+            self.updateStatusCallback({
+                "pattern": self.GetPattern(),
+                "scope": self.scope.GetSelection(),
+                "action": self.action.GetSelection(),
+                "layers": [l in selectedLayers for l in Layer.all()]
+            })
         destroyDialog(self)
 
     def OnApply(self, event):
@@ -217,6 +227,10 @@ class HideReferencesPlugin(pcbnew.ActionPlugin):
         self.icon_file_name = os.path.join(PKG_BASE, "resources", "graphics", "removeRefIcon_24x24.png")
         self.show_toolbar_button = True
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._dialogState = {}
+
     def error(self, msg):
         wx.MessageBox(msg, "Error", wx.OK | wx.ICON_ERROR)
 
@@ -232,6 +246,9 @@ class HideReferencesPlugin(pcbnew.ActionPlugin):
         except Exception as e:
             self.error(f"Cannot perform: {e}")
 
+    def updateState(self, newState):
+        self._dialogState = newState
+
     def Run(self):
         # Find the pcbnew main window
         pcbnew_window = wx.FindWindowByName("PcbFrame")
@@ -240,9 +257,12 @@ class HideReferencesPlugin(pcbnew.ActionPlugin):
             self.error("Failed to find pcbnew main window")
             return
         try:
-            dialog = initDialog(lambda: HideReferencesDialog(board=pcbnew.GetBoard(),
-                                action=lambda d: self.action(d),
-                                parent=pcbnew_window))
+            dialog = initDialog(lambda: HideReferencesDialog(
+                                    state=self._dialogState,
+                                    board=pcbnew.GetBoard(),
+                                    action=lambda d: self.action(d),
+                                    updateState=lambda s: self.updateState(s),
+                                    parent=pcbnew_window))
             dialog.Show()
         except Exception as e:
             self.error(f"Cannot perform: {e}")
@@ -252,7 +272,8 @@ plugin = HideReferencesPlugin
 if __name__ == "__main__":
     import sys
 
-    dialog = initDialog(lambda: HideReferencesDialog(board=pcbnew.LoadBoard(sys.argv[1])))
+    dialog = initDialog(lambda: HideReferencesDialog(
+                            {},
+                            board=pcbnew.LoadBoard(sys.argv[1]),
+                            updateState=print))
     dialog.ShowModal()
-
-    destroyDialog(dialog)
