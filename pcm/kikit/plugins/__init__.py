@@ -16,8 +16,8 @@ class MissingKiKitDialog(wx.Dialog):
 
         bSizer1.Add(self.staticText, 1, wx.ALL | wx.EXPAND, 5)
 
-        self.hyperlink = wx.adv.HyperlinkCtrl(self, wx.ID_ANY, u"https://github.com/yaqwsx/KiKit/blob/master/doc/installation.md",
-                                              u"https://github.com/yaqwsx/KiKit/blob/master/doc/installation.md", wx.DefaultPosition, wx.DefaultSize, wx.adv.HL_ALIGN_CENTRE | wx.adv.HL_DEFAULT_STYLE)
+        self.hyperlink = wx.adv.HyperlinkCtrl(self, wx.ID_ANY, u"https://yaqwsx.github.io/KiKit/latest/installation/intro/",
+                                              u"https://yaqwsx.github.io/KiKit/latest/installation/intro/", wx.DefaultPosition, wx.DefaultSize, wx.adv.HL_ALIGN_CENTRE | wx.adv.HL_DEFAULT_STYLE)
         bSizer1.Add(self.hyperlink, 0, wx.ALL | wx.EXPAND, 5)
 
         self.okButton = wx.Button(
