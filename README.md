@@ -85,6 +85,13 @@ documentation](doc/panelization.md). Also don't miss the
 [panelization action plugin](https://yaqwsx.github.io/KiKit/latest/panelization/gui/). If you are interested in
 generating solder paste stencils, see [Stencil documentation](https://yaqwsx.github.io/KiKit/latest/stencil/)
 
+## Acknowledgements
+
+The project is supported by:
+
+- [My GitHub sponsors](https://github.com/sponsors/yaqwsx) and
+- [<img src="https://nlnet.nl/logo/banner.svg" width="150"/>](https://nlnet.nl/project/KiKit/#ack)
+
 ## KiKit Is Broken or Does Not Work as Expected
 
 Please, first check [FAQ](https://yaqwsx.github.io/KiKit/latest/faq/). If you have not found answer for your

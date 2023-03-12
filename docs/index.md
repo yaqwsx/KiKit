@@ -75,6 +75,13 @@ documentation](panelization/scripting.md). Also don't miss the
 [panelization action plugin](panelization/gui.md). If you are interested in
 generating solder paste stencils, see [Stencil documentation](stencil.md)
 
+## Acknowledgements
+
+The project is supported by:
+
+- [My GitHub sponsors](https://github.com/sponsors/yaqwsx) and
+- [<img src="https://nlnet.nl/logo/banner.svg" width="150"/>](https://nlnet.nl/project/KiKit/#ack)
+
 ## KiKit Is Broken or Does Not Work as Expected
 
 Please, first check [FAQ](faq.md). If you have not found answer for your
