@@ -104,8 +104,15 @@ class AnnotationReader:
 
     @staticmethod
     def getDefault() -> AnnotationReader:
+        """
+        Return AnnotationReader object initialized with default annotations registered
+        """
         r = AnnotationReader()
         r.registerTab("kikit", "Tab")
         r.registerBoard("kikit", "Board")
+
+        # Since KiCAD 7.0 the plugins installed via the Plugin and Content Manager get prepended with `PCM_`
+        r.registerTab("PCM_kikit", "Tab")
+        r.registerBoard("PCM_kikit", "Board")
         return r
 
