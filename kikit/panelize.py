@@ -20,6 +20,7 @@ import numpy as np
 import os
 import json
 from collections import OrderedDict
+from re import sub as re_sub
 
 from kikit import substrate
 from kikit import units
@@ -613,7 +614,7 @@ class Panel:
         into the project file.
         """
         if len(self.sourcePaths) > 1:
-            raise RuntimeError("Merging of DRC rules of multiple boards is currently unsupported")
+            print("WARNING: Multiple source boards found. DRC Rules MUST MATCH. Unpredictable behavior if not.")
         if len(self.sourcePaths) == 0:
             return # Nothing to merge
 
@@ -1104,7 +1105,12 @@ class Panel:
 
         Parameters:
 
-        boardfile - the path to the filename of the board to be added
+        boardfile - the path to the filename of the board to be added.
+            If a file with `-rX-cY` appended to boardfile, where X and Y are the
+            row and column number of that position on the grid respectively,
+            is found, then `makeGrid()` will use that file in that position of
+            the grid instead. All boards must be compatible: have the same
+            board outline, stack up, DRC rules, etc.
 
         sourceArea - the region within the file specified to be selected (see
         also tolerance, below)
@@ -1164,8 +1170,14 @@ class Panel:
         for i, j in product(range(rows), range(cols)):
             dest = destination + placer.position(i, j, topLeftSize)
             boardRotation = rotation + placer.rotation(i, j)
+            location_board = re_sub(r'(.*)(.kicad_pcb)', r'\1' + f"-r{i}-c{j}" + r'\2', boardfile)
+            if os.path.exists(location_board):
+                print(f"Using location specific board at row {i}, column {j}: {location_board}")
+                board = location_board
+            else:
+                board = boardfile
             boardSize = self.appendBoard(
-                boardfile, dest, sourceArea=sourceArea,
+                board, dest, sourceArea=sourceArea,
                 tolerance=tolerance, origin=Origin.Center,
                 rotationAngle=boardRotation, netRenamer=netRenamer,
                 refRenamer=refRenamer, bakeText=bakeText)
