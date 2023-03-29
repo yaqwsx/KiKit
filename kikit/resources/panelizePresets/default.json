@@ -19,7 +19,10 @@
         "hbonecut": true,
         "baketext": true,
         "code": "none",
-        "arg": ""
+        "arg": "",
+        "destination": "[0, 0]",
+        "boards": "",
+        "locations": ""
     },
     "source": {
         "type": "auto",

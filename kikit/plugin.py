@@ -3,6 +3,7 @@
 # 'plugin'. In order not to break the existing PCM installations we import this
 # and leave it here for at least a couple of months to ensure that everybody
 # upgrades to a new PCM package.
+from pcbnew import VECTOR2I
 from kikit.actionPlugins import importAllPlugins # type: ignore
 
 from typing import Any, Dict, Iterable
@@ -92,7 +93,7 @@ class LayoutPlugin:
     This type of plugin can create user specified board layouts
     """
     def __init__(self, preset: Preset, userArg: str, netPattern: str,
-                 refPattern: str, vspace: int, hspace: int, rotation: int) -> None:
+                 refPattern: str, vspace: int, hspace: int, rotation: int, destination: VECTOR2I) -> None:
         self.preset = preset
         self.userArg = userArg
         self.netPattern = netPattern
@@ -100,6 +101,7 @@ class LayoutPlugin:
         self.vspace = vspace
         self.hspace = hspace
         self.rotation = rotation
+        self.destination = destination
 
     def buildLayout(self, panel: Panel, inputFile: str,
                     sourceArea: pcbnew.BOX2I) -> Iterable[Substrate]:

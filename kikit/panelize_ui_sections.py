@@ -1,9 +1,12 @@
 from dataclasses import dataclass
 import os
 from typing import Any, List
+
+from pcbnew import VECTOR2I_MM
 from kikit import plugin
 from kikit.units import readLength, readAngle, readPercents
 from kikit.defs import Layer, EDA_TEXT_HJUSTIFY_T, EDA_TEXT_VJUSTIFY_T, PAPER_SIZES
+import json
 
 class PresetError(RuntimeError):
     pass
@@ -189,6 +192,15 @@ class SList(SectionBase):
     def validate(self, x: str) -> Any:
         return [v.strip() for v in x.split(",")]
 
+class SVec(SectionBase):
+    def validate(self, x: str) -> Any:
+        return VECTOR2I_MM(*json.loads(x))
+
+class SVecList(SList):
+    def validate(self, x: str) -> Any:
+        s = '[' + x + ']'
+        return [VECTOR2I_MM(*v) for v in json.loads(s)]
+
 class SLayerList(SList):
     def __init__(self, isGuiRelevant, description, shortcuts={}):
         super().__init__(isGuiRelevant, description)
@@ -240,7 +252,7 @@ def never():
 
 LAYOUT_SECTION = {
     "type": SChoice(
-        ["grid", "plugin"],
+        ["grid", "plugin", "manual"],
         always(),
         "Layout type"),
     "alternation": SChoice(
@@ -297,8 +309,16 @@ LAYOUT_SECTION = {
         "Reference renaming pattern"),
     "baketext": SBool(
         always(),
-        "Substitute variables in text elements"
-    ),
+        "Substitute variables in text elements"),
+    "destination": SVec(
+        always(),
+        "Destination of source board"),
+    "boards": SList(
+        typeIn(["manual"]), 
+        "List of additional boards to add to the panel"),
+    "locations": SVecList(
+        typeIn(["manual"]),
+        "List of locations to place additional boards"),
     "code": SPlugin(
         plugin.LayoutPlugin,
         typeIn(["plugin"]),
@@ -313,6 +333,9 @@ def ppLayout(section):
     # The space parameter overrides hspace and vspace
     if "space" in section:
         section["hspace"] = section["vspace"] = section["space"]
+    if "boards" in section or "locations" in section:
+        if len(section["boards"]) != len(section["locations"]):
+            raise PresetError(f"Error in layout, 'boards' and 'locations' must be equal length")
 
 SOURCE_SECTION = {
     "type": SChoice(
