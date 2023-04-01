@@ -5,6 +5,7 @@ import io
 import glob
 import traceback
 from kikit.panelize_ui_sections import *
+from json import JSONDecodeError
 
 PKG_BASE = os.path.dirname(__file__)
 PRESETS = os.path.join(PKG_BASE, "resources/panelizePresets")
@@ -33,6 +34,44 @@ def splitStr(delimiter, escapeChar, s):
     for x in reader:
         return x
 
+
+class Input(click.ParamType):
+    """
+    A CLI argument type for defining input boards. Can be either
+    - Path to PCB file
+    - Path to JSON file containing list of Board objects
+    - JSON string containing list of Board objects
+    """
+    name = "input"
+
+    def convert(self, value, param, ctx):
+        if len(value.strip()) == 0:
+            self.fail(f"{value} is not a valid argument specification",
+                param, ctx)
+        try:
+            values = []
+            if value.endswith(".kicad_pcb"):
+                values.append(Board(value, ["0mm","0mm"]))
+            else:
+                json_str = value
+                s = Section()
+                if value.endswith(".json"):
+                    with open(value) as json_file:
+                      json_str = json_file.read() 
+                for d in json.loads(json_str): 
+                    source = {}
+                    if "source" in d.keys():
+                        source = s.convert(d.get("source"), param, ctx)
+                    values.append(Board(d["board"], d["pos"], source))
+            return values
+        except IOError:
+            self.fail(f"Could not open file '{value}'",
+                param,
+                ctx)
+        except JSONDecodeError as e:
+            self.fail(f"Invalid JSON at Line: {e.lineno}, Col: {e.colno}",
+                param,
+                ctx)
 
 class Section(click.ParamType):
     """
@@ -138,8 +177,7 @@ def completeSection(section):
     return fun
 
 @click.command()
-@click.argument("input", type=click.Path(dir_okay=False),
-    **addCompatibleShellCompletion(pathCompletion(".kicad_pcb")))
+@click.argument("input", type=Input())
 @click.argument("output", type=click.Path(dir_okay=False),
     **addCompatibleShellCompletion(pathCompletion(".kicad_pcb")))
 @click.option("--preset", "-p", multiple=True,
@@ -244,7 +282,8 @@ def doPanelization(input, output, preset, plugins=[]):
         import kikit.substrate
         kikit.substrate.TABFAIL_VISUAL = True
 
-    board = LoadBoard(input)
+
+    board = LoadBoard(input[0].path)
     panel = Panel(output)
 
     useHookPlugins = ki.loadHookPlugins(plugins, board, preset)

@@ -9,7 +9,6 @@ from kikit.units import BaseValue, BaseAngle, PercentageValue
 from kikit.panelize_ui_sections import *
 from kikit.substrate import SubstrateNeighbors
 from kikit.common import resolveAnchor
-from pcbnew import VECTOR2I
 import commentjson
 import enum
 import json
@@ -52,8 +51,6 @@ def encodePreset(value):
         return {encodePreset(k): encodePreset(v) for k, v in value.items()}
     if isinstance(value, FootprintId):
         return f"{value.lib}:{value.footprint}"
-    if isinstance(value, VECTOR2I):
-        return str([value.x, value.y])
     raise RuntimeError(f"Cannot serialize {value} of type {type(value)}")
 
 def dumpPreset(preset):
@@ -232,7 +229,7 @@ def obtainPreset(presetPaths, validate=True, **kwargs):
     postProcessPreset(preset)
     return preset
 
-def buildLayout(preset, panel, sourceBoard, sourceArea):
+def buildLayout(preset, panel, boardList, sourceArea):
     """
     Build layout for the boards - e.g., make a grid out of them.
 
@@ -255,8 +252,8 @@ def buildLayout(preset, panel, sourceBoard, sourceArea):
                 hbonefirst=layout["hbonefirst"],
                 vbonefirst=layout["vbonefirst"])
             substrates = panel.makeGrid(
-                boardfile=sourceBoard, sourceArea=sourceArea,
-                rows=layout["rows"], cols=layout["cols"], destination=layout["destination"],
+                boardfile=boardList[0].path, sourceArea=sourceArea,
+                rows=layout["rows"], cols=layout["cols"], destination=VECTOR2I(0, 0),
                 rotation=layout["rotation"], placer=placer,
                 netRenamePattern=layout["renamenet"], refRenamePattern=layout["renameref"],
                 bakeText=layout["baketext"])
@@ -265,12 +262,10 @@ def buildLayout(preset, panel, sourceBoard, sourceArea):
             backboneCuts = buildBackBone(layout, panel, substrates, framing)
             return substrates, framingSubstrates, backboneCuts
         if type == "manual":
-            board_list = [sourceBoard] + layout["boards"]
-            dest_list = [layout["destination"]] + layout["locations"]
-            for b,d in zip(board_list, dest_list):
-                board = LoadBoard(b)
-                sourceArea = readSourceArea(preset["source"], board)
-                panel.appendBoard(b, d, sourceArea, inheritDrc=False)
+            for current in boardList:
+                board = LoadBoard(current.path)
+                sourceArea = readSourceArea(current.mergeSource(preset["source"]), board)
+                panel.appendBoard(current.path, VECTOR2I(*current.pos), sourceArea, inheritDrc=False)
             substrates = panel.substrates
             framingSubstrates = dummyFramingSubstrate(substrates, preset)
             panel.buildPartitionLineFromBB(framingSubstrates)
@@ -280,8 +275,8 @@ def buildLayout(preset, panel, sourceBoard, sourceArea):
         if type == "plugin":
             lPlugin = layout["code"](preset, layout["arg"], layout["renamenet"],
                                      layout["renameref"], layout["vspace"],
-                                     layout["hspace"], layout["rotation"], layout["destination"])
-            substrates = lPlugin.buildLayout(panel, sourceBoard, sourceArea)
+                                     layout["hspace"], layout["rotation"])
+            substrates = lPlugin.buildLayout(panel, boardList, sourceArea)
             framingSubstrates = dummyFramingSubstrate(substrates, preset)
             lPlugin.buildPartitionLine(panel, framingSubstrates)
             backboneCuts = lPlugin.buildExtraCuts(panel)
