@@ -112,5 +112,6 @@ jobs:
             REPO=${{ matrix.build-config.repo }}
             ADDITIONAL_PACKAGES=${{ matrix.build-config.additional_packages }}
             ADDITIONAL_PYTHON_PACKAGES=${{ matrix.build-config.additional_python_packages }}
+            KICAD_VERSION=${{ matrix.build-config.kicad_version }}
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
