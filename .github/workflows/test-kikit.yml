@@ -65,12 +65,14 @@ jobs:
             suffix: ""
             platform: linux/amd64
             repo: ubuntu
+            kicad_version: "6.0"
             additional_packages: ""
             additional_python_packages: ""
           - name: "m1"
             suffix: -m1
             platform: linux/arm64/v8
             repo: arm64v8/ubuntu
+            kicad_version: "6.0"
             additional_packages: gcc-aarch64-linux-gnu libgeos-dev
             additional_python_packages: python3-dev
           - name: "x64 v7"
