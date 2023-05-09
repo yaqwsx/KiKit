@@ -636,66 +636,69 @@ class Substrate:
         self.orient()
 
         origin = np.array(origin)
-        try:
-            direction = np.around(normalize(direction), 4)
-            sideOriginA = origin + makePerpendicular(direction) * width / 2
-            sideOriginB = origin - makePerpendicular(direction) * width / 2
-            boundary = self.substrates.exterior
-            splitPointA = closestIntersectionPoint(sideOriginA, direction,
-                boundary, maxHeight)
-            splitPointB = closestIntersectionPoint(sideOriginB, direction,
-                boundary, maxHeight)
-            tabFace = biteBoundary(boundary, splitPointB, splitPointA)
-            if partitionLine is None:
-                # There is nothing else to do, return the tab
-                tab = Polygon(list(tabFace.coords) + [sideOriginA, sideOriginB])
-                return self._makeTabFillet(tab, tabFace, fillet)
-            # Span the tab towards the partition line
-            # There might be multiple geometries in the partition line, so try them
-            # individually.
-            direction = -direction
-            for p in listGeometries(partitionLine):
-                try:
-                    partitionSplitPointA = closestIntersectionPoint(splitPointA.coords[0],
-                            direction, p, maxHeight)
-                    partitionSplitPointB = closestIntersectionPoint(splitPointB.coords[0],
-                            direction, p, maxHeight)
-                except NoIntersectionError: # We cannot span towards the partition line
-                    continue
-                if isLinestringCyclic(p):
-                    candidates = [(partitionSplitPointA, partitionSplitPointB)]
-                else:
-                    candidates = [(partitionSplitPointA, partitionSplitPointB),
-                        (partitionSplitPointB, partitionSplitPointA)]
-                for i, (spa, spb) in enumerate(candidates):
-                    partitionFace = biteBoundary(p, spa, spb)
-                    if partitionFace is None:
-                        continue
-                    partitionFaceCoord = list(partitionFace.coords)
-                    if i == 1:
-                        partitionFaceCoord = partitionFaceCoord[::-1]
-                    # We offset the tab face a little so we can be sure that we
-                    # penetrate the board substrate. Otherwise, there is a
-                    # numerical instability on small slopes that yields
-                    # artifacts on substrate union
-                    offsetTabFace = [(p[0] - SHP_EPSILON * direction[0], p[1] - SHP_EPSILON * direction[1]) for p in tabFace.coords]
-                    tab = Polygon(offsetTabFace + partitionFaceCoord)
+        for geom in listGeometries(self.substrates):
+            try:
+                direction = np.around(normalize(direction), 4)
+                sideOriginA = origin + makePerpendicular(direction) * width / 2
+                sideOriginB = origin - makePerpendicular(direction) * width / 2
+                boundary = geom.exterior
+                splitPointA = closestIntersectionPoint(sideOriginA, direction,
+                    boundary, maxHeight)
+                splitPointB = closestIntersectionPoint(sideOriginB, direction,
+                    boundary, maxHeight)
+                tabFace = biteBoundary(boundary, splitPointB, splitPointA)
+                if partitionLine is None:
+                    # There is nothing else to do, return the tab
+                    tab = Polygon(list(tabFace.coords) + [sideOriginA, sideOriginB])
                     return self._makeTabFillet(tab, tabFace, fillet)
-            return None, None
-        except NoIntersectionError as e:
-            message = "Cannot create tab:\n"
-            message += f"  Annotation position {self._strPosition(origin)}\n"
-            message += f"  Tab ray origin that failed: {self._strPosition(origin)}\n"
-            message += "Possible causes:\n"
-            message += "- too wide tab so it does not hit the board,\n"
-            message += "- annotation is placed inside the board,\n"
-            message += "- ray length is not sufficient,\n"
-            raise RuntimeError(message) from None
-        except TabFilletError as e:
-            message = f"Cannot create fillet for tab: {e}\n"
-            message += f"  Annotation position {self._strPosition(origin)}\n"
-            message += "This is a bug. Please open an issue and provide the board on which the fillet failed."
-            raise RuntimeError(message) from None
+                # Span the tab towards the partition line
+                # There might be multiple geometries in the partition line, so try them
+                # individually.
+                direction = -direction
+                for p in listGeometries(partitionLine):
+                    try:
+                        partitionSplitPointA = closestIntersectionPoint(splitPointA.coords[0],
+                                direction, p, maxHeight)
+                        partitionSplitPointB = closestIntersectionPoint(splitPointB.coords[0],
+                                direction, p, maxHeight)
+                    except NoIntersectionError: # We cannot span towards the partition line
+                        continue
+                    if isLinestringCyclic(p):
+                        candidates = [(partitionSplitPointA, partitionSplitPointB)]
+                    else:
+                        candidates = [(partitionSplitPointA, partitionSplitPointB),
+                            (partitionSplitPointB, partitionSplitPointA)]
+                    for i, (spa, spb) in enumerate(candidates):
+                        partitionFace = biteBoundary(p, spa, spb)
+                        if partitionFace is None:
+                            continue
+                        partitionFaceCoord = list(partitionFace.coords)
+                        if i == 1:
+                            partitionFaceCoord = partitionFaceCoord[::-1]
+                        # We offset the tab face a little so we can be sure that we
+                        # penetrate the board substrate. Otherwise, there is a
+                        # numerical instability on small slopes that yields
+                        # artifacts on substrate union
+                        offsetTabFace = [(p[0] - SHP_EPSILON * direction[0], p[1] - SHP_EPSILON * direction[1]) for p in tabFace.coords]
+                        tab = Polygon(offsetTabFace + partitionFaceCoord)
+                        return self._makeTabFillet(tab, tabFace, fillet)
+                return None, None
+            except NoIntersectionError as e:
+                continue
+            except TabFilletError as e:
+                message = f"Cannot create fillet for tab: {e}\n"
+                message += f"  Annotation position {self._strPosition(origin)}\n"
+                message += "This is a bug. Please open an issue and provide the board on which the fillet failed."
+                raise RuntimeError(message) from None
+
+        message = "Cannot create tab:\n"
+        message += f"  Annotation position {self._strPosition(origin)}\n"
+        message += f"  Tab ray origin that failed: {self._strPosition(origin)}\n"
+        message += "Possible causes:\n"
+        message += "- too wide tab so it does not hit the board,\n"
+        message += "- annotation is placed inside the board,\n"
+        message += "- ray length is not sufficient,\n"
+        raise RuntimeError(message) from None
 
     def _makeTabFillet(self, tab: Polygon, tabFace: LineString, fillet: KiLength) \
             -> Tuple[Polygon, LineString]:
