@@ -424,14 +424,16 @@ def closestIntersectionPoint(origin, direction, outline, maxDistance):
             plt.show()
         raise NoIntersectionError(f"No intersection found within given distance", origin)
     origin = Point(origin[0], origin[1])
-    if isinstance(inter, Point):
-        geoms = [inter]
-    elif isinstance(inter, LineString):
-        # When a linestring is an intersection, we know that the starting or
-        # ending points are the nearest one
-        geoms = [Point(inter.coords[0]), Point(inter.coords[-1])]
-    else:
-        geoms = inter.geoms
+    geoms = list()
+    for geom in listGeometries(inter):
+        if isinstance(geom, Point):
+            geoms.append(geom)
+        elif isinstance(geom, LineString):
+            # When a linestring is an intersection, we know that the starting or
+            # ending points are the nearest one
+            geoms.extend([Point(geom.coords[0]), Point(geom.coords[-1])])
+        else:
+            raise TypeError(f"intersection() returned an unsupported datatype: {geom.__class__.__name__}")
     return min([(g, origin.distance(g)) for g in geoms], key=lambda t: t[1])[0]
 
 def linestringToKicad(linestring):

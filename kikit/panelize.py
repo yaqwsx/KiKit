@@ -1338,7 +1338,7 @@ class Panel:
         for cut in cuts:
             if len(cut.simplify(SHP_EPSILON).coords) > 2 and not boundCurves:
                 raise RuntimeError("Cannot V-Cut a curve")
-            cut = cut.parallel_offset(offset, "left")
+            cut = cut.simplify(1).parallel_offset(offset, "left")
             start = roundPoint(cut.coords[0])
             end = roundPoint(cut.coords[-1])
             if start.x == end.x or (abs(start.x - end.x) <= fromMm(0.5) and boundCurves):
