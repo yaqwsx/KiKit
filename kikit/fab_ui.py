@@ -28,7 +28,6 @@ def execute(fab, kwargs):
     try:
         return fab(**kwargs)
     except Exception as e:
-        import sys
         sys.stderr.write(f"An error occurred: {e}\n")
         sys.stderr.write("No output files produced\n")
         if debug:

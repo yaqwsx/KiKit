@@ -1,4 +1,5 @@
 from __future__ import annotations
+import sys
 from typing import List, Optional, Tuple, Union, Callable
 from kikit.defs import Layer
 from kikit.typing import Box
@@ -345,8 +346,6 @@ def readParameterList(inputStr):
     except (TypeError, IndexError):
         raise RuntimeError(f"'{pair}' is not a valid key: value pair")
 
-nolog = None
-
 def fakeKiCADGui():
     """
     KiCAD assumes wxApp and locale exists. If we invoke a command, fake the
@@ -359,13 +358,20 @@ def fakeKiCADGui():
     if os.name != "nt" and os.environ.get("DISPLAY", "").strip() == "":
         return None
 
-    # We force redirection of logs into the wx subsystem and then...
-    app = wx.App(redirect=True)
-    app.InitLocale()
+    # Originally, we created wx App and initiated the locale. However, the only
+    # purpose of this was to supress the warnings from KiCAD. It seems that the
+    # existence of partially initiated app breaks some functions (e.g., the
+    # Excellon writer). Therefore, instead of initiating the app, as shown
+    # below, we simply redirect stdout/stderr to /dev/null and allow only for
+    # output via sys.stdout and sys.stderr.
+    # app = wx.App()
+    # app.InitLocale()
+    # return app
 
-    # ... we disable logging - as KiCAD 7.0.2 uses GUI logger that causes
-    # crashes when there is not GUI.
-    global nolog
-    nolog = wx.LogNull()
+    sys.stdout = os.fdopen(os.dup(1), "w")
+    sys.stderr = os.fdopen(os.dup(2), "w")
 
-    return app
+    os.dup2(os.open(os.devnull,os.O_RDWR), 1)
+    os.dup2(os.open(os.devnull,os.O_RDWR), 2)
+
+    return None
