@@ -1,3 +1,4 @@
+import traceback
 import click
 
 def fabCommand(f):
@@ -19,6 +20,9 @@ def fabCommand(f):
 def execute(fab, kwargs):
     debug = kwargs["debug"]
     del kwargs["debug"]
+
+    if debug:
+        traceback.print_exc(file=sys.stderr)
 
     try:
         return fab(**kwargs)
