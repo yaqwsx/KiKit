@@ -161,7 +161,7 @@ def gerberImpl(boardfile, outputdir, plot_plan=fullGerberPlotPlan, drilling=True
         zerosFmt = settings["ZerosFormat"]
         drlwriter.SetFormat(metricFmt, zerosFmt)
         genDrl = True
-        genMap = False # There seem to be a bug in KiCAD newer than 7.0.2 that prevents us from building map files. But it seems that nobody is using them, so as a temporary work-around we disable it
+        genMap = True
         drlwriter.CreateDrillandMapFilesSet(pctl.GetPlotDirName(), genDrl, genMap)
 
         # One can create a text file to report drill statistics

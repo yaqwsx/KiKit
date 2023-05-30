@@ -345,6 +345,8 @@ def readParameterList(inputStr):
     except (TypeError, IndexError):
         raise RuntimeError(f"'{pair}' is not a valid key: value pair")
 
+nolog = None
+
 def fakeKiCADGui():
     """
     KiCAD assumes wxApp and locale exists. If we invoke a command, fake the
@@ -357,6 +359,13 @@ def fakeKiCADGui():
     if os.name != "nt" and os.environ.get("DISPLAY", "").strip() == "":
         return None
 
-    app = wx.App()
+    # We force redirection of logs into the wx subsystem and then...
+    app = wx.App(redirect=True)
     app.InitLocale()
+
+    # ... we disable logging - as KiCAD 7.0.2 uses GUI logger that causes
+    # crashes when there is not GUI.
+    global nolog
+    nolog = wx.LogNull()
+
     return app
