@@ -59,7 +59,7 @@ setuptools.setup(
     install_requires=[
         "numpy", # Required for MacOS
         "pcbnewTransition >= 0.3.4, <=0.4",
-        "shapely>=1.7",
+        "shapely>=1.7,<2.0",
         "click>=7.1",
         "markdown2>=2.4",
         "pybars3>=0.9",
