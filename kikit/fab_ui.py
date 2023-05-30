@@ -1,4 +1,5 @@
 import traceback
+import sys
 import click
 
 def fabCommand(f):
