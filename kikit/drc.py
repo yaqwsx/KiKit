@@ -90,6 +90,8 @@ class Violation:
         return f"@({pos}): {getItemDescription(obj, units)}"
 
     def eqRepr(self) -> Tuple[str, Union[Tuple[str, str], str]]:
+        if len(self.objects) == 0: # E.g., copper sliver has no related objects
+            return (self.type, self.description)
         if len(self.objects) == 1:
             return (self.type, self.objects[0])
         if len(self.objects) == 2:
