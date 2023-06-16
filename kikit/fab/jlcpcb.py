@@ -11,6 +11,7 @@ from kikit.export import gerberImpl
 
 def collectBom(components, lscsFields, ignore):
     bom = {}
+    ref_comp = {}
     for c in components:
         if getUnit(c) != 1:
             continue
@@ -27,18 +28,26 @@ def collectBom(components, lscsFields, ignore):
             continue
         if hasattr(c, "dnp") and c.dnp:
             continue
-        orderCode = None
+        orderCodes = []
         for fieldName in lscsFields:
             orderCode = getField(c, fieldName)
             if orderCode is not None and orderCode.strip() != "":
-                break
-        cType = (
-            getField(c, "Value"),
-            getField(c, "Footprint"),
-            orderCode
-        )
-        bom[cType] = bom.get(cType, []) + [reference]
-    return bom
+                orderCodes.append(orderCode)
+        for i in range(len(orderCodes)):
+            cType = (
+                getField(c, "Value"),
+                getField(c, "Footprint"),
+                orderCodes[i]
+            )
+            if i < 1:
+                bom_ref = reference
+            else:
+                bom_ref = "{}_{}".format(reference, i + 1)
+
+            ref_comp[bom_ref] = c
+
+            bom[cType] = bom.get(cType, []) + [bom_ref]
+    return bom, ref_comp
 
 def bomToCsv(bomData, filename):
     with open(filename, "w", newline="", encoding="utf-8") as csvfile:
@@ -90,10 +99,10 @@ def exportJlcpcb(board, outputdir, assembly, schematic, ignore, field,
     correctionFields = [x.strip() for x in corrections.split(",")]
     components = extractComponents(schematic)
     ordercodeFields = [x.strip() for x in field.split(",")]
-    bom = collectBom(components, ordercodeFields, refsToIgnore)
+    bom, ref_comp = collectBom(components, ordercodeFields, refsToIgnore)
 
     posData = collectPosData(loadedBoard, correctionFields,
-        bom=components, posFilter=noFilter, correctionFile=correctionpatterns)
+        bom=ref_comp, posFilter=noFilter, correctionFile=correctionpatterns)
     boardReferences = set([x[0] for x in posData])
     bom = {key: [v for v in val if v in boardReferences] for key, val in bom.items()}
     bom = {key: val for key, val in bom.items() if len(val) > 0}
