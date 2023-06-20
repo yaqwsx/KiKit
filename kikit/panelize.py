@@ -592,7 +592,7 @@ class Panel:
         default
         """
         try:
-            with open(self.getPrlFilepath()) as f:
+            with open(self.getPrlFilepath(), encoding="utf-8") as f:
                 # We use ordered dict, so we preserve the ordering of the keys and
                 # thus, formatting
                 prl = json.load(f, object_pairs_hook=OrderedDict)
@@ -619,14 +619,14 @@ class Panel:
 
         sPath = list(self.sourcePaths)[0]
         try:
-            with open(self.getProFilepath(sPath)) as f:
+            with open(self.getProFilepath(sPath), encoding="utf-8") as f:
                 sourcePro = json.load(f)
         except (IOError, FileNotFoundError):
             # This means there is no original project file. Probably comes from
             # v5, thus there is nothing to transfer
             return
         try:
-            with open(self.getProFilepath()) as f:
+            with open(self.getProFilepath(), encoding="utf-8") as f:
                 currentPro = json.load(f, object_pairs_hook=OrderedDict)
             currentPro["board"]["design_settings"] = sourcePro["board"]["design_settings"]
             currentPro["board"]["design_settings"]["drc_exclusions"] = [
@@ -649,7 +649,7 @@ class Panel:
         """
         proFilename = os.path.splitext(board.GetFileName())[0]+'.kicad_pro'
         try:
-            with open(proFilename) as f:
+            with open(proFilename, encoding="utf-8") as f:
                 project = json.load(f)
         except FileNotFoundError:
             # If the source board doesn't contain project, there's nothing to
