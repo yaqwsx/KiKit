@@ -31,13 +31,13 @@ def test_readQuotedString():
 
 def test_identiy():
     SOURCE = "../resources/conn.kicad_pcb"
-    with open(SOURCE) as f:
+    with open(SOURCE, encoding="utf-8") as f:
         truth = f.read()
 
-    with open(SOURCE) as f:
+    with open(SOURCE, encoding="utf-8") as f:
         ast1 = parseSexprF(f)
     assert str(ast1) == truth
 
-    with open(SOURCE) as f:
+    with open(SOURCE, encoding="utf-8") as f:
         ast2 = parseSexprF(f, limit=3)
     assert str(ast2) == truth
