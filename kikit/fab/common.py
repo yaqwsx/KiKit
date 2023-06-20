@@ -223,7 +223,8 @@ def ensureValidBoard(filename):
         raise RuntimeError(f"The path {filename} is not a valid KiCAD PCB file")
 
 def expandNameTemplate(template: str, filetype: str, board: pcbnew.BOARD) -> str:
-
+    if re.findall(r"\{.*\}", template) == []:
+        raise RuntimeError(f"The filename template '{template} must contain at least one variable name")
     textVars = kikitTextVars(board)
     try:
         return template.format(filetype, **textVars)
