@@ -116,7 +116,7 @@ def readCorrectionPatterns(filename):
     """
     corrections = OrderedDict()
     correctionPatterns = []
-    with open(filename) as csvfile:
+    with open(filename, encoding="utf-8") as csvfile:
         sample = csvfile.read(1024)
         dialect = csv.Sniffer().sniff(sample)
         has_header = csv.Sniffer().has_header(sample)

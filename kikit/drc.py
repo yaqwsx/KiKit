@@ -197,7 +197,7 @@ def runBoardDrc(board: pcbnew.BOARD, strict: bool) -> DrcReport:
                                            pcbnew.EDA_UNITS_MILLIMETRES, strict)
             if not result:
                 raise RuntimeError("Cannot run DRC: Unspecified KiCAD error")
-            with open(tmpFile.name) as f:
+            with open(tmpFile.name, encoding="utf-8") as f:
                 report = readReport(f, board)
         finally:
             tmpFile.close()
@@ -225,7 +225,7 @@ def serializeExclusion(exclusion: DrcExclusion) -> str:
 def readBoardDrcExclusions(board: pcbnew.BOARD) -> List[DrcExclusion]:
     projectFilename = os.path.splitext(board.GetFileName())[0]+'.kicad_pro'
     try:
-        with open(projectFilename) as f:
+        with open(projectFilename, encoding="utf-8") as f:
             project = json.load(f)
     except FileNotFoundError:
         raise FileNotFoundError(f"Board '{board.GetFileName()}' has no project, cannot read DRC exclusions")

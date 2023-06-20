@@ -37,7 +37,7 @@ def readTemplate(path):
         "HtmlTemplate": HtmlTemplate
     }
     path = resolveTemplatePath(path)
-    with open(os.path.join(path, "template.json")) as jsonFile:
+    with open(os.path.join(path, "template.json"), encoding="utf-8") as jsonFile:
         parameters = json.load(jsonFile)
     try:
         tType = parameters["type"]
@@ -59,7 +59,7 @@ def copyRelativeTo(sourceTree, sourceFile, outputDir):
 class Template:
     def __init__(self, directory):
         self.directory = directory
-        with open(os.path.join(directory, "template.json")) as jsonFile:
+        with open(os.path.join(directory, "template.json"), encoding="utf-8") as jsonFile:
             self.parameters = json.load(jsonFile)
         self.extraResources = []
         self.boards = []
@@ -160,7 +160,7 @@ class HtmlTemplate(Template):
         self.description = markdown2.markdown_path(description, extras=["fenced-code-blocks"])
 
     def _renderPage(self, outputDirectory):
-        with open(os.path.join(self.directory, "index.html")) as templateFile:
+        with open(os.path.join(self.directory, "index.html"), encoding="utf-8") as templateFile:
             template = pybars.Compiler().compile(templateFile.read())
         gitRev = self.gitRevision()
         content = template({

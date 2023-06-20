@@ -304,7 +304,7 @@ def cutoutComponents(board, components):
 def setStencilLayerVisibility(boardName):
     prlPath = os.path.splitext(boardName)[0] + ".kicad_prl"
     try:
-        with open(prlPath) as f:
+        with open(prlPath, encoding="utf-8") as f:
             # We use ordered dict, so we preserve the ordering of the keys and
             # thus, formatting
             prl = json.load(f, object_pairs_hook=OrderedDict)

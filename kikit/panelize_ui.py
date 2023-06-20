@@ -217,7 +217,7 @@ def panelize(input, output, preset, plugin, layout, source, tabs, cuts, framing,
         doPanelization(input, output, preset, plugin)
 
         if (dump):
-            with open(dump, "w") as f:
+            with open(dump, "w", encoding="utf-8") as f:
                 f.write(ki.dumpPreset(preset))
     except Exception as e:
         import sys
