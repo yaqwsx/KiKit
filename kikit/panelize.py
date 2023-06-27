@@ -19,6 +19,8 @@ from itertools import product, chain
 import numpy as np
 import os
 import json
+import re
+import fnmatch
 from collections import OrderedDict
 
 from kikit import substrate
@@ -134,8 +136,8 @@ class NetClass():
     Internal representation of a netclass. Work-around for KiCAD 6.0.6 missing
     support for netclasses in API
     """
-    def __init__(self, settings: Any) -> None:
-        self.data = settings
+    def __init__(self, netClassDef: Any) -> None:
+        self.data = netClassDef
         self.nets: Set[str] = set()
 
     @property
@@ -151,8 +153,16 @@ class NetClass():
 
     def serialize(self) -> Any:
         data = deepcopy(self.data)
-        data["nets"] = list(self.nets)
+        if isV6():
+            data["nets"] = list(self.nets)
         return data
+
+    @property
+    def explicitPattern(self) -> str:
+        """
+        Return a pattern
+        """
+        return "|".join(re.escape(x) for x in self.nets)
 
 def getOriginCoord(origin, bBox):
     """Returns real coordinates (VECTOR2I) of the origin for given bounding box"""
@@ -472,6 +482,7 @@ class Panel:
         # At the moment (KiCAD 6.0.6) has broken support for net classes.
         # Therefore we have to handle them separately
         self.newNetClasses: Dict[str, Any] = {}
+        self.netCLassPatterns: List[Dict[str, str]] = []
 
         # KiCAD allows to keep text variables for project. We keep a set of
         # dictionary of variables for each appended board.
@@ -635,6 +646,8 @@ class Panel:
 
             currentPro["net_settings"]["classes"] = sourcePro["net_settings"]["classes"]
             currentPro["net_settings"]["classes"] += [x.serialize() for x in self.newNetClasses.values()]
+            currentPro["net_settings"]["netclass_patterns"] = self.netCLassPatterns
+
             with open(self.getProFilepath(), "w", encoding="utf-8") as f:
                 json.dump(currentPro, f, indent=2)
         except (KeyError, FileNotFoundError):
@@ -642,10 +655,40 @@ class Panel:
             # without attached project
             pass
 
+    def _assignNetToClasses(self, nets: Iterable[str], patterns: Dict[str, str])\
+            -> Dict[str, Set[str]]:
+        def safeCompile(p):
+            try:
+                return re.compile(p)
+            except Exception:
+                return None
+
+        regexes = {
+            netclass: safeCompile(pattern) for netclass, pattern in patterns.items()
+        }
+
+        assignment: Dict[str, Set[str]] = {
+            netclass: set() for netclass in patterns.keys()
+        }
+
+        for net in nets:
+            for netclass, pattern in patterns.items():
+                if fnmatch.fnmatch(net, pattern):
+                    assignment[netclass].add(net)
+            for netclass, regex in regexes.items():
+                if regex is not None and regex.match(net):
+                    assignment[netclass].add(net)
+
+        return assignment
+
     def _inheritNetClasses(self, board, netRenamer):
         """
-        KiCAD 6.0.6 has broken API for net classes. Therefore, we have to load
-        and save the net classes manually in the project file
+        KiCADhas broken API for net classes. Therefore, we have to load and save
+        the net classes manually in the project file.
+
+        KiCAD 6 uses the approach of explicitly listing all nets, KiCAD 7 uses
+        patterns instead. The code below tries to cover both cases in a
+        non-conflicting way.
         """
         proFilename = os.path.splitext(board.GetFileName())[0]+'.kicad_pro'
         try:
@@ -655,19 +698,39 @@ class Panel:
             # If the source board doesn't contain project, there's nothing to
             # inherit.
             return
+
+        boardNetsNames = collectNetNames(board)
+        netClassPatterns = {
+            x["netclass"]: x["pattern"]
+            for x in project["net_settings"].get("netclass_patterns", [])
+        }
+        netAssignment = self._assignNetToClasses(boardNetsNames, netClassPatterns)
+
         seenNets = set()
         for c in project["net_settings"]["classes"]:
+            origName = c["name"]
             c["name"] = netRenamer(c["name"])
             nc = NetClass(c)
-            for net in nc.originalNets:
+            for net in chain(nc.originalNets, netAssignment.get(origName, [])):
                 seenNets.add(net)
                 nc.addNet(netRenamer(net))
             self.newNetClasses[nc.name] = nc
+
         defaultNetClass = self.newNetClasses[netRenamer("Default")]
-        for name in collectNetNames(board):
+        for name in boardNetsNames:
             if name in seenNets:
                 continue
             defaultNetClass.addNet(netRenamer(name))
+
+        self.netCLassPatterns.append({
+            "netclass": defaultNetClass.name,
+            "pattern": defaultNetClass.explicitPattern
+        })
+        for netclass, pattern in netClassPatterns.items():
+            self.netCLassPatterns.append({
+                "netclass": netRenamer(netclass),
+                "pattern": netRenamer(pattern)
+            })
 
 
     def _adjustPageSize(self) -> None:
