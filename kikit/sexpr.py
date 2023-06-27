@@ -189,6 +189,16 @@ def parseSexprF(sourceStream, limit=None):
 def parseSexprS(s, limit=None):
     return parseSexprF(StringIO(s), limit=limit)
 
+def parseSexprListF(sourceStream, limit=None):
+    sexprs = []
+    stream = Stream(sourceStream)
+    while stream.peek() != "":
+        lw = readWhitespace(stream)
+        s = readSexpr(stream, limit=limit)
+        s.leadingWhitespace = lw
+        s.trailingOuterWhitespace = readWhitespace(stream)
+        sexprs.append(s)
+    return sexprs
 
 AstNode = Union[SExpr, Atom]
 

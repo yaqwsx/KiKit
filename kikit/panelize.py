@@ -29,7 +29,7 @@ from kikit.kicadUtil import getPageDimensionsFromAst
 from kikit.substrate import Substrate, linestringToKicad, extractRings
 from kikit.defs import PAPER_DIMENSIONS, STROKE_T, Layer, EDA_TEXT_HJUSTIFY_T, EDA_TEXT_VJUSTIFY_T, PAPER_SIZES
 from kikit.common import *
-from kikit.sexpr import parseSexprF, SExpr, Atom, findNode
+from kikit.sexpr import isElement, parseSexprF, SExpr, Atom, findNode, parseSexprListF
 from kikit.annotations import AnnotationReader, TabAnnotation
 from kikit.drc import DrcExclusion, readBoardDrcExclusions, serializeExclusion
 from kikit.units import mm, deg
@@ -156,13 +156,6 @@ class NetClass():
         if isV6():
             data["nets"] = list(self.nets)
         return data
-
-    @property
-    def explicitPattern(self) -> str:
-        """
-        Return a pattern
-        """
-        return "|".join(re.escape(x) for x in self.nets)
 
 def getOriginCoord(origin, bBox):
     """Returns real coordinates (VECTOR2I) of the origin for given bounding box"""
@@ -483,6 +476,7 @@ class Panel:
         # Therefore we have to handle them separately
         self.newNetClasses: Dict[str, Any] = {}
         self.netCLassPatterns: List[Dict[str, str]] = []
+        self.customDRCRules: List[SExpr] = []
 
         # KiCAD allows to keep text variables for project. We keep a set of
         # dictionary of variables for each appended board.
@@ -528,6 +522,7 @@ class Panel:
 
         self.makeLayersVisible() # as they are not in KiCAD 6
         self.transferProjectSettings()
+        self.writeCustomDrcRules()
 
         # Remove cuts
         for cut, _ in vcuts:
@@ -597,6 +592,13 @@ class Panel:
             p = path
         return os.path.splitext(p)[0]+'.kicad_prl'
 
+    def getDruFilepath(self, path=None):
+        if path == None:
+            p = self.filename
+        else:
+            p = path
+        return os.path.splitext(p)[0]+'.kicad_dru'
+
     def makeLayersVisible(self):
         """
         Modify corresponding *.prl files so all the layers are visible by
@@ -613,6 +615,12 @@ class Panel:
         except IOError:
             # The PRL file is not always created, ignore it
             pass
+
+    def writeCustomDrcRules(self):
+        with open(self.getDruFilepath(), "w", encoding="utf-8") as f:
+            f.write("(version 1)\n\n")
+            for r in self.customDRCRules:
+                f.write(str(r))
 
     def transferProjectSettings(self):
         """
@@ -655,7 +663,7 @@ class Panel:
             # without attached project
             pass
 
-    def _assignNetToClasses(self, nets: Iterable[str], patterns: Dict[str, str])\
+    def _assignNetToClasses(self, nets: Iterable[str], patterns: List[Tuple[str, str]])\
             -> Dict[str, Set[str]]:
         def safeCompile(p):
             try:
@@ -663,19 +671,19 @@ class Panel:
             except Exception:
                 return None
 
-        regexes = {
-            netclass: safeCompile(pattern) for netclass, pattern in patterns.items()
-        }
+        regexes = [
+            (netclass, safeCompile(pattern)) for netclass, pattern in patterns
+        ]
 
         assignment: Dict[str, Set[str]] = {
-            netclass: set() for netclass in patterns.keys()
+            netclass: set() for netclass, _ in patterns
         }
 
         for net in nets:
-            for netclass, pattern in patterns.items():
+            for netclass, pattern in patterns:
                 if fnmatch.fnmatch(net, pattern):
                     assignment[netclass].add(net)
-            for netclass, regex in regexes.items():
+            for netclass, regex in regexes:
                 if regex is not None and regex.match(net):
                     assignment[netclass].add(net)
 
@@ -700,10 +708,10 @@ class Panel:
             return
 
         boardNetsNames = collectNetNames(board)
-        netClassPatterns = {
-            x["netclass"]: x["pattern"]
-            for x in project["net_settings"].get("netclass_patterns", [])
-        }
+        netClassPatterns = [
+            (p["netclass"], p["pattern"])
+            for p in project["net_settings"].get("netclass_patterns", [])
+        ]
         netAssignment = self._assignNetToClasses(boardNetsNames, netClassPatterns)
 
         seenNets = set()
@@ -722,16 +730,52 @@ class Panel:
                 continue
             defaultNetClass.addNet(netRenamer(name))
 
-        self.netCLassPatterns.append({
-            "netclass": defaultNetClass.name,
-            "pattern": defaultNetClass.explicitPattern
-        })
-        for netclass, pattern in netClassPatterns.items():
+        for net in defaultNetClass.nets:
+            self.netCLassPatterns.append({
+                "netclass": defaultNetClass.name,
+                "pattern": net
+            })
+        for netclass, pattern in netClassPatterns:
             self.netCLassPatterns.append({
                 "netclass": netRenamer(netclass),
                 "pattern": netRenamer(pattern)
             })
 
+    def _inheriCustomDrcRules(self, board, netRenamer):
+        """
+        KiCADhas has no API for custom DRC rules, so we read the source files
+        instead.
+
+        The inheritance works as follows:
+        - we rename each rule via net renamer
+        - if the rule contains condition, we identify boolean operations equals
+          and not equals for net names and net classes and rename the nets
+        """
+        proFilename = os.path.splitext(board.GetFileName())[0]+'.kicad_dru'
+        try:
+            with open(proFilename, encoding="utf-8") as f:
+                rules = parseSexprListF(f)
+        except FileNotFoundError:
+            # If the source board doesn't contain DRU files, there's nothing to
+            # inherit.
+            return
+
+        conditionRegex = re.compile(r"((A|B)\.Net(Class|Name)\s*?(==|!=)\s*?)'(.*?)'")
+
+        for rule in rules:
+            if isElement("version")(rule):
+                continue
+            elif isElement("rule")(rule):
+                # Rename rule
+                rule.items[1].value = netRenamer(rule.items[1].value)
+                for clause in rule.items[2:]:
+                    if isElement("condition")(clause):
+                        # Rename net classes and names in the condition
+                        clause.items[1].value = conditionRegex.sub(
+                            lambda m: f"{m.group(1)}'{netRenamer(m.group(5))}'", clause.items[1].value)
+                self.customDRCRules.append(rule)
+            else:
+                raise RuntimeError(f"Unkwnown custom DRC rule {rule}")
 
     def _adjustPageSize(self) -> None:
         """
@@ -936,6 +980,7 @@ class Panel:
         netRenamerFn = lambda x: netRenamer(bId, x)
 
         self._inheritNetClasses(board, netRenamerFn)
+        self._inheriCustomDrcRules(board, netRenamerFn)
 
         renameNets(board, netRenamerFn)
         if refRenamer is not None:
