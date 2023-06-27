@@ -467,6 +467,7 @@ class Panel:
         self.vCutLayer = Layer.Cmts_User
         self.vCutClearance = 0
         self.copperLayerCount = None
+        self.renderedMousebiteCounter = 0
         self.zonesToRefill = pcbnew.ZONES()
         self.pageSize: Union[None, str, Tuple[int, int]] = None
 
@@ -1471,6 +1472,7 @@ class Panel:
             offsetCuts.append(offsetCut)
 
         for cut in listGeometries(shapely.ops.unary_union(offsetCuts).simplify(SHP_EPSILON)):
+            self.renderedMousebiteCounter += 1
             length = cut.length
             count = int(length / spacing) + 1
             for i in range(count):
@@ -1479,7 +1481,8 @@ class Panel:
                 else:
                     hole = cut.interpolate( i * length / (count - 1) )
                 if bloatedSubstrate.intersects(hole):
-                    self.addNPTHole(toKiCADPoint((hole.x, hole.y)), diameter)
+                    self.addNPTHole(toKiCADPoint((hole.x, hole.y)), diameter,
+                                    ref=f"KiKit_MB_{self.renderedMousebiteCounter}_{i+1}")
 
     def makeCutsToLayer(self, cuts, layer=Layer.Cmts_User, prolongation=fromMm(0)):
         """
@@ -1501,7 +1504,8 @@ class Panel:
                 segment.SetWidth(fromMm(0.3))
                 self.board.Add(segment)
 
-    def addNPTHole(self, position: VECTOR2I, diameter: KiLength, paste: bool=False) -> None:
+    def addNPTHole(self, position: VECTOR2I, diameter: KiLength,
+                   paste: bool=False, ref: Optional[str]=None) -> None:
         """
         Add a drilled non-plated hole to the position (`VECTOR2I`) with given
         diameter. The paste option allows to place the hole on the paste layers.
@@ -1516,6 +1520,8 @@ class Panel:
                 layerSet.AddLayer(Layer.F_Paste)
                 layerSet.AddLayer(Layer.B_Paste)
                 pad.SetLayerSet(layerSet)
+        if ref is not None:
+            footprint.SetReference(ref)
         self.board.Add(footprint)
 
     def addFiducial(self, position: VECTOR2I, copperDiameter: KiLength,
@@ -1581,8 +1587,8 @@ class Panel:
 
         The offsets are measured from the outer edges of the substrate.
         """
-        for pos in self.panelCorners(horizontalOffset, verticalOffset)[:holeCount]:
-            self.addNPTHole(pos, diameter, paste)
+        for i, pos in enumerate(self.panelCorners(horizontalOffset, verticalOffset)[:holeCount]):
+            self.addNPTHole(pos, diameter, paste, ref=f"KiKit_TO_{i+1}")
 
     def addMillFillets(self, millRadius):
         """
