@@ -1526,7 +1526,7 @@ class Panel:
 
     def addFiducial(self, position: VECTOR2I, copperDiameter: KiLength,
                     openingDiameter: KiLength, bottom: bool = False,
-                    paste: bool = False) -> None:
+                    paste: bool = False, ref: Optional[str] = None) -> None:
         """
         Add fiducial, i.e round copper pad with solder mask opening to the
         position (`VECTOR2I`), with given copperDiameter and openingDiameter. By
@@ -1540,6 +1540,8 @@ class Panel:
         # and KiCAD crashes.
         self.board.Add(footprint)
         footprint.SetPosition(position)
+        if ref is not None:
+            footprint.SetReference(ref)
         for pad in footprint.Pads():
             pad.SetSize(toKiCADPoint((copperDiameter, copperDiameter)))
             pad.SetLocalSolderMaskMargin(int((openingDiameter - copperDiameter) / 2))
@@ -1574,9 +1576,11 @@ class Panel:
 
         The offsets are measured from the outer edges of the substrate.
         """
-        for pos in self.panelCorners(horizontalOffset, verticalOffset)[:fidCount]:
-            self.addFiducial(pos, copperDiameter, openingDiameter, False, paste)
-            self.addFiducial(pos, copperDiameter, openingDiameter, True, paste)
+        for i, pos in enumerate(self.panelCorners(horizontalOffset, verticalOffset)[:fidCount]):
+            self.addFiducial(pos, copperDiameter, openingDiameter, False,
+                             paste, ref = f"KiKit_FID_T_{i+1}")
+            self.addFiducial(pos, copperDiameter, openingDiameter, True,
+                             paste, ref = f"KiKit_FID_B_{i+1}")
 
     def addCornerTooling(self, holeCount, horizontalOffset, verticalOffset,
                          diameter, paste=False):
