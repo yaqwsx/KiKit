@@ -506,7 +506,7 @@ class PanelizeDialog(wx.Dialog):
         inputFilename = self.sections["Input"].items["Input file"].getValue()
         if len(inputFilename) == 0:
             inputFilename = "<missingInput>"
-        kikitCommand += f"    {inputFilename} panel.kicad_pcb"
+        kikitCommand += f"    '{inputFilename}' panel.kicad_pcb"
         return kikitCommand
 
     def _buildWindowsCommand(self, presetUpdates):
@@ -520,7 +520,7 @@ class PanelizeDialog(wx.Dialog):
         inputFilename = self.sections["Input"].items["Input file"].getValue()
         if len(inputFilename) == 0:
             inputFilename = "<missingInput>"
-        kikitCommand += f"    {inputFilename} panel.kicad_pcb"
+        kikitCommand += f"    \"{inputFilename}\" panel.kicad_pcb"
         return kikitCommand
 
 
