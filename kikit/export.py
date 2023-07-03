@@ -140,7 +140,7 @@ def gerberImpl(boardfile: str, outputdir: str, plot_plan: list[LayerToPlot]=full
         pctl.SetLayer(layer_to_plot.id)
         suffix = "" if settings["NoSuffix"] else layer_to_plot.name
         pctl.OpenPlotfile(suffix, PLOT_FORMAT_GERBER, layer_to_plot.description)
-        jobfile_writer.AddGbrFile(layer_to_plot.id, os.path.basename(popt.GetPlotFileName()))
+        jobfile_writer.AddGbrFile(layer_to_plot.id, os.path.basename(pctl.GetPlotFileName()))
         if pctl.PlotLayer() == False:
             print("plot error")
 

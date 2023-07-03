@@ -1,6 +1,5 @@
 
 from pcbnewTransition import pcbnew
-from pcbnew import wxRect, wxPoint, PCB_SHAPE, BOARD
 import numpy as np
 import json
 from collections import OrderedDict
@@ -34,12 +33,12 @@ class StencilType(Enum):
         self.bottom_layer = bottom_layer
 
 
-def addBottomCounterpart(board: BOARD, item: PCB_SHAPE, stencil_type: StencilType = StencilType.SolderPaste):
+def addBottomCounterpart(board, item, stencil_type: StencilType = StencilType.SolderPaste):
     item = item.Duplicate()
     item.SetLayer(stencil_type.bottom_layer.id)
     board.Add(item)
 
-def addRoundedCorner(board: BOARD, center: wxPoint, start: wxPoint, end: wxPoint, thickness, stencil_type: StencilType = StencilType.SolderPaste):
+def addRoundedCorner(board, center, start, end, thickness, stencil_type: StencilType = StencilType.SolderPaste):
     corner = pcbnew.PCB_SHAPE()
     corner.SetShape(STROKE_T.S_ARC)
     corner.SetCenter(toKiCADPoint((center[0], center[1])))
@@ -54,7 +53,7 @@ def addRoundedCorner(board: BOARD, center: wxPoint, start: wxPoint, end: wxPoint
     board.Add(corner)
     addBottomCounterpart(board, corner, stencil_type)
 
-def addLine(board: BOARD, start: wxPoint, end: wxPoint, thickness: int, stencil_type: StencilType = StencilType.SolderPaste):
+def addLine(board, start, end, thickness: int, stencil_type: StencilType = StencilType.SolderPaste):
     line = pcbnew.PCB_SHAPE()
     line.SetShape(STROKE_T.S_SEGMENT)
     line.SetStart(toKiCADPoint((start[0], start[1])))
@@ -64,7 +63,7 @@ def addLine(board: BOARD, start: wxPoint, end: wxPoint, thickness: int, stencil_
     board.Add(line)
     addBottomCounterpart(board, line, stencil_type)
 
-def addBite(board: BOARD, origin: wxPoint, direction: wxPoint, normal: wxPoint, thickness: int, stencil_type: StencilType = StencilType.SolderPaste):
+def addBite(board, origin, direction, normal, thickness: int, stencil_type: StencilType = StencilType.SolderPaste):
     """
     Adds a bite to the stencil, direction points to the bridge, normal points
     inside the stencil
@@ -86,7 +85,7 @@ def numberOfCuts(length, bridgeWidth, bridgeSpacing):
     return count, cutLength
 
 
-def addFrame(board: BOARD, rect: wxRect, bridgeWidth: int, bridgeSpacing: int, clearance: int, stencil_type: StencilType = StencilType.SolderPaste):
+def addFrame(board, rect, bridgeWidth: int, bridgeSpacing: int, clearance: int, stencil_type: StencilType = StencilType.SolderPaste):
     """
     Add rectangular frame to the board
     """
@@ -136,7 +135,7 @@ def addFrame(board: BOARD, rect: wxRect, bridgeWidth: int, bridgeSpacing: int, c
             addBite(board, toKiCADPoint((x2, end)), toKiCADPoint((0, 1)), toKiCADPoint((-1, 0)), clearance, stencil_type)
 
 
-def addHole(board: BOARD, position: wxPoint, radius: int, stencil_type: StencilType = StencilType.SolderPaste):
+def addHole(board, position, radius: int, stencil_type: StencilType = StencilType.SolderPaste):
     circle = pcbnew.PCB_SHAPE()
     circle.SetShape(STROKE_T.S_CIRCLE)
     circle.SetCenter(toKiCADPoint((position[0], position[1])))
@@ -148,7 +147,7 @@ def addHole(board: BOARD, position: wxPoint, radius: int, stencil_type: StencilT
     board.Add(circle)
     addBottomCounterpart(board, circle, stencil_type)
 
-def addJigFrame(board: BOARD, jigFrameSize: (int, int), bridgeWidth: int=fromMm(2),
+def addJigFrame(board, jigFrameSize: (int, int), bridgeWidth: int=fromMm(2),
                 bridgeSpacing: int=fromMm(10), clearance: int=fromMm(0.5), stencil_type: StencilType = StencilType.SolderPaste):
     """
     Given a Pcbnew board finds the board outline and creates a stencil for
@@ -299,7 +298,7 @@ def shapelyToSHAPE_POLY_SET(polygon):
     p.AddOutline(linestringToKicad(polygon.exterior))
     return p
 
-def cutoutComponents(board: BOARD, components: list[str], stencil_type: StencilType = StencilType.SolderPaste):
+def cutoutComponents(board, components: list[str], stencil_type: StencilType = StencilType.SolderPaste):
     topCutout = extractComponentPolygons(components, pcbnew.F_CrtYd)
     for polygon in topCutout:
         zone = pcbnew.PCB_SHAPE()
