@@ -21,6 +21,9 @@ For Neoden YY1 you must specify `--assembly` option and provide the board
 (top layer component placement) and `bottom_pos.csv` (bottom layer component
 placement). Use these two files to assembly PCB on machine.
 
+On Neoden YY1, the position origin must use the bottom left corner of the board
+edge.
+
 ## Correction of the Footprint Position
 
 It is possible that orientation footprints in your SMD does not match the
