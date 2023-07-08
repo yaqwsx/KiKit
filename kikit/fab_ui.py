@@ -100,17 +100,14 @@ def oshpark(**kwargs):
 
 @click.command()
 @fabCommand
-@click.option("--assembly/--no-assembly", help="Generate files for SMT assembly (schematics is required)")
 @click.option("--schematic", type=click.Path(dir_okay=False), help="Board schematics (required for assembly files)")
 @click.option("--ignore", type=str, default="", help="Comma separated list of designators to exclude from SMT assembly")
-@click.option("--field", type=str, default="LCSC",
-    help="Comma separated list of component fields field with LCSC order code. First existing field is used")
-@click.option("--corrections", type=str, default="JLCPCB_CORRECTION",
+@click.option("--corrections", type=str, default="YY1_CORRECTION",
     help="Comma separated list of component fields with the correction value. First existing field is used")
 @click.option("--correctionpatterns", type=click.Path(dir_okay=False))
 def neodenyy1(**kwargs):
     """
-    Prepare fabrication files for OSH Park
+    Prepare fabrication files for Neoden YY1
     """
     from kikit.fab import neodenyy1
     from kikit.common import fakeKiCADGui

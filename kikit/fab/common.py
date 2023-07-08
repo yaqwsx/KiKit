@@ -148,6 +148,9 @@ def applyCorrectionPattern(correctionPatterns, footprint):
             return (corpat.x_correction, corpat.y_correction, corpat.rotation)
     return (0, 0, 0)
 
+def noFilter(footprint):
+    return True
+
 def collectPosData(board, correctionFields, posFilter=lambda x : True,
                    footprintX=defaultFootprintX, footprintY=defaultFootprintY, bom=None,
                    correctionFile=None):
