@@ -8,7 +8,6 @@ import re
 from pathlib import Path
 from kikit.fab.common import *
 from kikit.common import *
-from kikit.export import gerberImpl
 from kikit.units import mm
 
 FOOTPRIINTREGEX = [
@@ -18,9 +17,6 @@ FOOTPRIINTREGEX = [
     (re.compile(r'Resistor_SMD:R_(\d+)_.*'), 'R_{}'),
     (re.compile(r'Crystal:Crystal_SMD_(.*?)_.*'), 'CRYSTAL_{}')
 ]
-
-def noFilter(footprint):
-    return True
 
 def collectBom(components, ignore):
     bom = {}
