@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Jan Mrázek <email@honzamrazek.cz>
+#
+# SPDX-License-Identifier: MIT
+
 from sys import stderr
 from numpy.core.fromnumeric import std
 from numpy.lib.utils import source

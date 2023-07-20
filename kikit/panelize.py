@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Jan Mrázek <email@honzamrazek.cz>
+#
+# SPDX-License-Identifier: MIT
+
 from copy import deepcopy
 import itertools
 from pcbnewTransition import pcbnew, isV6

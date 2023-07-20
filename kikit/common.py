@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Jan Mrázek <email@honzamrazek.cz>
+#
+# SPDX-License-Identifier: MIT
+
 from __future__ import annotations
 import sys
 from typing import List, Optional, Tuple, Union, Callable
