@@ -211,14 +211,6 @@ def approximateBezier(bezier, endWith):
 
     return outline
 
-def createRectangle(rect):
-    """
-    Take PCB_SHAPE and convert it into outline
-    """
-    tl = rect.GetStart()
-    br = rect.GetEnd()
-    return [tl, (br[0], tl[1]), br, (tl[0], br[1]), tl]
-
 def shapeLinechainToList(l: pcbnew.SHAPE_LINE_CHAIN) -> List[Tuple[int, int]]:
     return [(p.x, p.y) for p in l.CPoints()]
 
@@ -259,7 +251,8 @@ def toShapely(ring, geometryList):
             outline += approximateBezier(geometryList[idxA],
                 commonEndPoint(geometryList[idxA], geometryList[idxB]))
         elif shape in [STROKE_T.S_RECT]:
-            outline += createRectangle(geometryList[idxA])
+            assert idxA == idxB
+            outline += geometryList[idxA].GetRectCorners()
         elif shape in [STROKE_T.S_POLYGON]:
             # Polygons are always closed, so they should appear as stand-alone
             assert len(ring) in [1, 2]
