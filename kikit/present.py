@@ -157,7 +157,7 @@ class HtmlTemplate(Template):
     def addDescriptionFile(self, description):
         if not description.endswith(".md"):
             raise RuntimeError("Only markdown descriptions are supported for now")
-        self.description = markdown2.markdown_path(description, extras=["fenced-code-blocks"])
+        self.description = markdown2.markdown_path(description, extras=["fenced-code-blocks", "tables"])
 
     def _renderPage(self, outputDirectory):
         with open(os.path.join(self.directory, "index.html"), encoding="utf-8") as templateFile:
