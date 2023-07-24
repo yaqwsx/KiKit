@@ -991,7 +991,7 @@ class Panel:
         drawings = collectItems(board.GetDrawings(), enlargedSourceArea)
         footprints = collectFootprints(board.GetFootprints(), enlargedSourceArea)
         tracks = collectItems(board.GetTracks(), enlargedSourceArea)
-        zones = collectItems(board.Zones(), enlargedSourceArea)
+        zones = collectZones(board.Zones(), enlargedSourceArea)
 
         itemMapping: Dict[str, str] = {} # string KIID to string KIID
         def yieldMapping(old: str, new: str) -> None:

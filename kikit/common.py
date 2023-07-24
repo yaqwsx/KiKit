@@ -88,6 +88,19 @@ def collectFootprints(boardCollection, sourceArea):
     """
     return list([x for x in boardCollection if fitsIn(x.GetPosition(), sourceArea)])
 
+def collectZones(boardCollection, sourceArea):
+    """
+    Returns a list of board zones which centroid fits inside the source area.
+    """
+    def zoneCentroid(zone: pcbnew.ZONE) -> pcbnew.VECTOR2I:
+        items = []
+        for outline in [zone.Outline().Outline(i) for i in range(zone.Outline().OutlineCount())]:
+            p = shapely.geometry.Polygon([outline.CPoint(i) for i in range(outline.PointCount())])
+            items.append(p)
+        polygon = shapely.ops.unary_union(items)
+        return pcbnew.VECTOR2I(*[int(x) for x in polygon.centroid.coords[0]])
+    return list([x for x in boardCollection if fitsIn(zoneCentroid(x), sourceArea)])
+
 def getBBoxWithoutContours(edge):
     width = edge.GetWidth()
     edge.SetWidth(0)
