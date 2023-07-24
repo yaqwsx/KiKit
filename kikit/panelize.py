@@ -651,6 +651,7 @@ class Panel:
             currentPro["board"]["design_settings"] = sourcePro["board"]["design_settings"]
             currentPro["board"]["design_settings"]["drc_exclusions"] = [
                 serializeExclusion(e) for e in self.drcExclusions]
+            currentPro["board"]["design_settings"]["rule_severities"] = sourcePro["board"]["design_settings"]["rule_severities"]
             currentPro["text_variables"] = sourcePro.get("text_variables", {})
 
             currentPro["net_settings"]["classes"] = sourcePro["net_settings"]["classes"]
