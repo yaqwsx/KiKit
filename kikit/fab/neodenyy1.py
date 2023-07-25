@@ -10,13 +10,13 @@ from kikit.fab.common import *
 from kikit.common import *
 from kikit.units import mm
 
-FOOTPRIINTREGEX = [
-    (re.compile(r'Capacitor_SMD:C_(\d+)_.*'), 'C_{}'),
-    (re.compile(r'Diode_SMD:D_(\d+)_.*'), 'D_{}'),
-    (re.compile(r'Inductor_SMD:L_(\d+)_.*'), 'L_{}'),
-    (re.compile(r'Resistor_SMD:R_(\d+)_.*'), 'R_{}'),
-    (re.compile(r'Crystal:Crystal_SMD_(.*?)_.*'), 'CRYSTAL_{}')
-]
+FOOTPRIINTREGEX = {
+    re.compile(r'Capacitor_SMD:C_(\d+)_.*'): 'C_{}',
+    re.compile(r'Diode_SMD:D_(\d+)_.*'): 'D_{}',
+    re.compile(r'Inductor_SMD:L_(\d+)_.*'): 'L_{}',
+    re.compile(r'Resistor_SMD:R_(\d+)_.*'): 'R_{}',
+    re.compile(r'Crystal:Crystal_SMD_(.*?)_.*'): 'CRYSTAL_{}'
+}
 
 def collectBom(components, ignore):
     bom = {}
@@ -42,10 +42,10 @@ def collectBom(components, ignore):
     return bom
 
 def transcodeFootprint(footprint):
-    for f in FOOTPRIINTREGEX:
-        matchedFootprint = f[0].match(footprint)
+    for pattern, replacement in FOOTPRIINTREGEX.items():
+        matchedFootprint = pattern.match(footprint)
         if matchedFootprint != None:
-            return f[1].format(matchedFootprint.groups()[0])
+            return replacement.format(matchedFootprint.groups()[0])
     matchedFootprint = footprint.split(':')
     if len(matchedFootprint) > 1:
         return matchedFootprint[1].split('_')[0]
