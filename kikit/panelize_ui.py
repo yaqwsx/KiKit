@@ -51,7 +51,7 @@ class Section(click.ParamType):
             for i, pair in enumerate(splitStr(";", "\\", value)):
                 if len(pair.strip()) == 0:
                     continue
-                s = pair.split(":")
+                s = pair.split(":", 1)
                 if i == 0 and len(s) == 1:
                     values["type"] = s[0].strip()
                     continue
