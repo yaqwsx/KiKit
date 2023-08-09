@@ -18,6 +18,7 @@ class HideReferencesDialog(wx.Dialog):
         self.actionCallback = action
         self.updateStatusCallback = updateState
         self.text = ""
+        self.selectedItemOnly = False
 
         self.Bind(wx.EVT_CLOSE, self.OnCancel, id=self.GetId())
         self.Bind(wx.EVT_SIZE, self.OnSize)
@@ -40,6 +41,16 @@ class HideReferencesDialog(wx.Dialog):
             size=wx.Size(350, -1))
         self.Bind(wx.EVT_TEXT, self.OnPatternChange, id=self.pattern.GetId())
         self.item_grid.Add(self.pattern, 0, wx.EXPAND)
+
+        label = wx.StaticText(panel, label="Only Selected items:",
+            size=wx.Size(200, -1),
+            style=wx.ALIGN_RIGHT)
+        label.Wrap(200)
+        self.item_grid.Add(label, 1, wx.ALIGN_CENTRE_VERTICAL)
+        self.selected_only = wx.CheckBox(panel, style=wx.CHK_2STATE)
+        self.Bind(wx.EVT_CHECKBOX, self.OnselectedItemOnlyChange)
+        self.selected_only.SetValue(self.selectedItemOnly)
+        self.item_grid.Add(self.selected_only, 0, wx.EXPAND)
 
         label = wx.StaticText(panel, label="What to do:",
             size=wx.Size(200, -1),
@@ -191,11 +202,18 @@ class HideReferencesDialog(wx.Dialog):
     def GetActiveLayers(self):
         return set(self.layers.GetCheckedItems())
 
+    def GetSelectedItemOnly(self):
+        return self.selectedItemOnly
+
     def ModifyReferences(self):
         return self.scope.GetSelection() in [0, 2]
 
     def ModifyValues(self):
         return self.scope.GetSelection() in [1, 2]
+
+    def OnselectedItemOnlyChange(self, event):
+        self.selectedItemOnly = not self.selectedItemOnly
+        self.OnPatternChange(None)
 
     def OnPatternChange(self, event):
         try:
@@ -206,6 +224,9 @@ class HideReferencesDialog(wx.Dialog):
             else:
                 refs = []
                 for footprint in self.board.GetFootprints():
+                    if self.selectedItemOnly and not footprint.IsSelected():
+                        continue
+
                     if regex.match(footprint.GetReference()):
                         refs.append(footprint.GetReference())
                 if len(refs) > 0:
@@ -238,10 +259,12 @@ class HideReferencesPlugin(pcbnew.ActionPlugin):
         try:
             if dialog.ModifyReferences():
                 modify.references(dialog.board, dialog.GetShowLabels(),
-                     dialog.GetPattern(), dialog.GetActiveLayers())
+                     dialog.GetPattern(), dialog.GetActiveLayers(),
+                     dialog.GetSelectedItemOnly())
             if dialog.ModifyValues():
                 modify.values(dialog.board, dialog.GetShowLabels(),
-                    dialog.GetPattern(), dialog.GetActiveLayers())
+                    dialog.GetPattern(), dialog.GetActiveLayers(),
+                    dialog.GetSelectedItemOnly())
             pcbnew.Refresh()
         except Exception as e:
             self.error(f"Cannot perform: {e}")
