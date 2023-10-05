@@ -869,9 +869,31 @@ class SubstratePartitionLines:
                 return False
             return idA not in ghosts or idB not in ghosts
         self._partition = BoxPartitionLines(
-            boxes,
+            self._preprocessBoxes(boxes),
             seedFilter,
             safeHorizontalMargin, safeVerticalMargin)
+
+    def _preprocessBoxes(self, boxes):
+        """
+        BoxPartitionLines assumes non-overlapping boxes. However, when we
+        specify zero spacing, the boxes share an edge which violates the initial
+        condition. It is safe to shrink the boxes if they are not the outer-most
+        edges.
+        """
+        minx = min(map(lambda x: x[0], boxes.values()))
+        miny = min(map(lambda x: x[1], boxes.values()))
+        maxx = max(map(lambda x: x[2], boxes.values()))
+        maxy = min(map(lambda x: x[3], boxes.values()))
+
+        newBoxes = {}
+        for i, b in boxes.items():
+            newBoxes[i] = (
+                b[0] + SHP_EPSILON if b[0] != minx else minx,
+                b[1] + SHP_EPSILON if b[1] != miny else miny,
+                b[2] - SHP_EPSILON if b[2] != maxx else maxx,
+                b[3] - SHP_EPSILON if b[3] != maxy else maxy
+            )
+        return newBoxes
 
     @property
     def query(self):
