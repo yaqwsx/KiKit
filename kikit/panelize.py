@@ -1757,7 +1757,7 @@ class Panel:
         faceDistances = [(x, np.around(partitionFace.distance(x), 2)) for x in faceSegments]
         minFaceDistance = min(faceDistances, key=lambda x: x[1])[1]
 
-        cutFaces = [x for x, d in faceDistances if d == minFaceDistance]
+        cutFaces = [x for x, d in faceDistances if abs(d - minFaceDistance) < SHP_EPSILON]
         tabs, cuts = [], []
         for cutLine in listGeometries(shapely.ops.unary_union(cutFaces)):
             if minFaceDistance > 0: # Do not generate degenerated polygons
