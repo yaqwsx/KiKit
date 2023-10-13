@@ -156,7 +156,7 @@ class SHJustify(SChoiceBase):
             return choices[s]
         raise PresetError(f"'{s}' is not valid justification value")
 
-class SHVJustify(SChoiceBase):
+class SVJustify(SChoiceBase):
     def __init__(self, *args, **kwargs):
         super().__init__(["top", "bottom", "center"], *args, **kwargs)
 
@@ -591,7 +591,7 @@ TEXT_SECTION = {
     "hjustify": SHJustify(
         typeIn(["simple"]),
         "Text alignment"),
-    "vjustify": SHJustify(
+    "vjustify": SVJustify(
         typeIn(["simple"]),
         "Text alignment"),
     "layer": SLayer(
