@@ -2,6 +2,7 @@ import csv
 from dataclasses import dataclass
 import re
 from typing import OrderedDict
+from kikit.project import KiCADProject
 from pcbnewTransition import pcbnew, isV6, isV7
 from math import sin, cos, radians
 from kikit.common import *
@@ -228,7 +229,7 @@ def ensureValidBoard(filename):
 def expandNameTemplate(template: str, filetype: str, board: pcbnew.BOARD) -> str:
     if re.findall(r"\{.*\}", template) == []:
         raise RuntimeError(f"The filename template '{template} must contain at least one variable name")
-    textVars = kikitTextVars(board)
+    textVars = kikitTextVars(board, KiCADProject(board.GetFileName()).textVars)
     try:
         return template.format(filetype, **textVars)
     except KeyError as e:
