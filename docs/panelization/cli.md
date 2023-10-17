@@ -450,10 +450,12 @@ Fiducials based on a plugin.
 
 Add text to the panel. Allows you to put a single block of text on panel. You
 can use variables enclosed in `{}`. E.g. `{boardTitle} | {boardDate}`. The list
-of all available variables in listed bellow. In the case you need more
-independent texts on the panel, you can use sections names `text2`, `text3` and
-`text3` to add at most 4 text. All these sections behave the same and accept the
-same options.
+of all available variables in listed bellow. You can also use the variables
+specified in the project. They are prefixed with `user-`. That is, to include
+your variable `revision` in KiKit text, use formatting string `Rev:
+{user-revision}`. In the case you need more independent texts on the panel, you
+can use sections names `text2`, `text3` and `text3` to add at most 4 text. All
+these sections behave the same and accept the same options.
 
 If you need more texts or more sophisticated placing options, see `script`
 option from `postprocess`.

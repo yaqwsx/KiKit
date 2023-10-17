@@ -43,4 +43,7 @@ def kikitTextVars(board: pcbnew.BOARD, vars: Dict[str, str]={}) -> Dict[str, Any
     for i in range(10):
         availableVars[f"boardComment{i + 1}"] = Formatter(lambda: board.GetTitleBlock().GetComment(i), vars)
 
+    for var, value in vars.items():
+        availableVars[f"user-{var}"] = value
+
     return availableVars
