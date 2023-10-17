@@ -1377,8 +1377,10 @@ command for each supported fabrication house.</p>
 <li><code>--nametemplate &lt;str&gt;</code>:  If you want to name your files differently, specify
   this option. This option takes a string that should contain <code>{}</code>. This string
   will be replaced by <code>gerber</code>, <code>pos</code> or <code>bom</code> in the out file names. The
-  extension is appended automatically. <a href="../../panelization/cli/#available-variables-in-text">Variables in text</a>
-  are also supported eg: <code>{boardTitle}_rev{boardRevision}_{date}_{}</code>.</li>
+  extension is appended automatically. <a href="../../panelization/cli/#available-variables-in-text">Variables in
+  text</a> are also supported
+  eg: <code>{boardTitle}_rev{boardRevision}_{date}_{}</code>. The project variables are
+  available with the <code>user-</code> prefix; e.g., `MFR: {user-mfr}```</li>
 </ul>
 <p>Each of the fab command also take additional, manufacturer specific, options.
 See documentation for the individual manufacturer below:</p>
