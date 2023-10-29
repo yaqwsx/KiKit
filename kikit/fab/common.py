@@ -236,5 +236,5 @@ def expandNameTemplate(template: str, filetype: str, board: pcbnew.BOARD) -> str
         raise RuntimeError(f"Unknown variable {e} in --nametemplate: {template}")
 
 def naturalComponentKey(reference: str) -> Tuple[str, int]:
-    text, num = splitOn(reference, lambda x: not x.isdigit())
+    text, num = splitOnReverse(reference, lambda x: x.isdigit())
     return str(text), int(num)

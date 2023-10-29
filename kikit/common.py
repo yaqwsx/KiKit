@@ -325,6 +325,14 @@ def splitOn(input: str, predicate: Callable[[str], bool]) \
             break
     return left, input[i:]
 
+def splitOnReverse(input: str, predicate: Callable[[str], bool]) \
+        -> Tuple[str, str]:
+    """
+    Split a string into a tail fullfilling predicate and the remaning head
+    """
+    tail, head = splitOn(input[::-1], predicate)
+    return head[::-1], tail[::-1]
+
 def indexOf(list, predicate):
     """
     Return the index of the first element that satisfies predicate. If no
