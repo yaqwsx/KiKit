@@ -33,6 +33,7 @@ from kikit.sexpr import isElement, parseSexprF, SExpr, Atom, findNode, parseSexp
 from kikit.annotations import AnnotationReader, TabAnnotation
 from kikit.drc import DrcExclusion, readBoardDrcExclusions, serializeExclusion
 from kikit.units import mm, deg
+from kikit.pcbnew_utils import increaseZonePriorities
 
 class PanelError(RuntimeError):
     pass
@@ -337,10 +338,6 @@ def isBoardEdge(edge):
     The rule is: all drawings on Edge.Cuts layer are edges.
     """
     return isinstance(edge, pcbnew.PCB_SHAPE) and edge.GetLayerName() == "Edge.Cuts"
-
-def increaseZonePriorities(board, amount=1):
-    for zone in board.Zones():
-        zone.SetAssignedPriority(zone.GetAssignedPriority() + amount)
 
 def tabSpacing(width, count):
     """
@@ -1832,6 +1829,8 @@ class Panel:
             strokeWidth: KiLength=fromMm(1), strokeSpacing: KiLength=fromMm(1),
             orientation: KiAngle=fromDegrees(45)) -> None:
         """
+        This function is deprecated, please, use panel features instead.
+
         Fill given layers with copper on unused areas of the panel (frame, rails
         and tabs). You can specify the clearance, if it should be hatched
         (default is solid) or shape the strokes of hatched pattern.
@@ -2220,6 +2219,12 @@ class Panel:
         if self.filletSize is not None:
             vDim.SetExtensionOffset(-self.filletSize)
         self.board.Add(vDim)
+
+    def apply(self, feature: Any) -> None:
+        """
+        Apply given feature to the panel
+        """
+        feature.apply(self)
 
 
 def getFootprintByReference(board, reference):

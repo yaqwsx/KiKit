@@ -161,10 +161,13 @@
     "copperfill": {
         "type": "none",
         "clearance": "0.5mm",
+        "edgeclearance": "0.5mm",
         "layers": "F.Cu,B.Cu",
         "width": "1mm",
+        "diameter": "5mm",
         "spacing": "1mm",
-        "orientation": "45deg"
+        "orientation": "45deg",
+        "threshold": "15%"
     },
     "post": {
         "type": "auto",

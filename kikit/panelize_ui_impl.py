@@ -1,4 +1,5 @@
 from kikit import panelize
+from kikit.panel_features.copperFill import HatchedCopperFill, HexCopperFill, SolidCopperFill
 from kikit.panelize_ui import Section, PresetError
 from kikit.panelize import *
 from kikit.defs import Layer
@@ -579,20 +580,29 @@ def buildCopperfill(preset, panel):
         if type == "none":
             return
         if type == "solid":
-            panel.copperFillNonBoardAreas(
+            panel.apply(SolidCopperFill(
                 clearance=preset["clearance"],
+                edgeclearance=preset["edgeclearance"],
                 layers=preset["layers"],
-                hatched=False
-            )
+            ))
         if type == "hatched":
-            panel.copperFillNonBoardAreas(
-                    clearance=preset["clearance"],
-                    layers=preset["layers"],
-                    hatched=True,
-                    strokeWidth=preset["width"],
-                    strokeSpacing=preset["spacing"],
-                    orientation=preset["orientation"]
-            )
+            panel.apply(HatchedCopperFill(
+                clearance=preset["clearance"],
+                edgeclearance=preset["edgeclearance"],
+                layers=preset["layers"],
+                strokeWidth=preset["width"],
+                strokeSpacing=preset["spacing"],
+                orientation=preset["orientation"]
+            ))
+        if type == "hex":
+            panel.apply(HexCopperFill(
+                clearance=preset["clearance"],
+                edgeclearance=preset["edgeclearance"],
+                layers=preset["layers"],
+                diameter=preset["diameter"],
+                space=preset["spacing"],
+                threshold=preset["threshold"]
+            ))
     except KeyError as e:
         raise PresetError(f"Missing parameter '{e}' in section 'postprocessing'")
 

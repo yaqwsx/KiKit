@@ -31,6 +31,16 @@ class SLength(SectionBase):
     def validate(self, x):
         return readLength(x)
 
+class SPercent(SectionBase):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def validate(self, x):
+        x = x.strip()
+        if not x.endswith("%"):
+            raise PresetError("Percentage error has to end with %")
+        return readPercents(x)
+
 class SLengthOrPercent(SectionBase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -618,14 +628,17 @@ def ppText(section):
 
 COPPERFILL_SECTION = {
     "type": SChoice(
-        ["none", "solid", "hatched"],
+        ["none", "solid", "hatched", "hex"],
         always(),
         "Fill non board areas with copper"),
     "clearance": SLength(
-        typeIn(["solid", "hatched"]),
+        typeIn(["solid", "hatched", "hex"]),
+        "Clearance between the fill and boards"),
+    "edgeclearance": SLength(
+        typeIn(["solid", "hatched", "hex"]),
         "Clearance between the fill and boards"),
     "layers": SLayerList(
-        typeIn(["solid", "hatched"]),
+        typeIn(["solid", "hatched", "hex"]),
         "Specify which layer to fill with copper",
         {
             "all": Layer.allCu()
@@ -634,11 +647,18 @@ COPPERFILL_SECTION = {
         typeIn(["hatched"]),
         "Width of hatch strokes"),
     "spacing": SLength(
-        typeIn(["hatched"]),
-        "Spacing of hatch strokes"),
+        typeIn(["hatched", "hex"]),
+        "Spacing of hatch strokes or hexagons"),
     "orientation": SAngle(
         typeIn(["hatched"]),
-        "Orientation of the strokes"
+        "Orientation of the strokes"),
+    "diameter": SLength(
+        typeIn(["hex"]),
+        "Diameter of hexagons"
+    ),
+    "threshold": SPercent(
+        typeIn(["hex"]),
+        "Remove fragments smaller than threshold"
     )
 }
 

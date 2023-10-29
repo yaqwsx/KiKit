@@ -525,12 +525,13 @@ via `width` and `height`.
 
 Fill non-board areas of the panel with copper.
 
-**Types**: none, solid, hatched
+**Types**: none, solid, hatched, hex
 
 **Common options**:
 
 - `clearance` - optional extra clearance from the board perimeters. Suitable
   for, e.g., not filling the tabs with copper.
+- `edgeclearance` - specifies clearance between the fill and panel perimeter.
 - `layers` - comma-separated list of layer to fill. Default top and bottom. You
   can specify a shortcut `all` to fill all layers.
 
@@ -546,6 +547,14 @@ Use hatch pattern for the fill.
 - `spacing` - the space between the strokes
 - `orientation` - the orientation of the strokes
 
+#### Hex
+
+Use hexagon pattern for the fill.
+
+- `diameter` – diameter of the hexagons
+- `spacing` – space between the hexagons
+- `threshold` – a percentage value that will discard fragments smaller than
+  given threshold
 
 ### Post
 
