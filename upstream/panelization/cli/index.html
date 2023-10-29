@@ -1183,6 +1183,13 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#hex" class="md-nav__link">
+    Hex
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1974,6 +1981,13 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#hex" class="md-nav__link">
+    Hex
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2451,11 +2465,12 @@ size from the source board. This feature is not supported on KiCAD 5</p>
 via <code>width</code> and <code>height</code>.</p>
 <h3 id="copperfill">Copperfill</h3>
 <p>Fill non-board areas of the panel with copper.</p>
-<p><strong>Types</strong>: none, solid, hatched</p>
+<p><strong>Types</strong>: none, solid, hatched, hex</p>
 <p><strong>Common options</strong>:</p>
 <ul>
 <li><code>clearance</code> - optional extra clearance from the board perimeters. Suitable
   for, e.g., not filling the tabs with copper.</li>
+<li><code>edgeclearance</code> - specifies clearance between the fill and panel perimeter.</li>
 <li><code>layers</code> - comma-separated list of layer to fill. Default top and bottom. You
   can specify a shortcut <code>all</code> to fill all layers.</li>
 </ul>
@@ -2467,6 +2482,14 @@ via <code>width</code> and <code>height</code>.</p>
 <li><code>width</code> - the width of the strokes</li>
 <li><code>spacing</code> - the space between the strokes</li>
 <li><code>orientation</code> - the orientation of the strokes</li>
+</ul>
+<h4 id="hex">Hex</h4>
+<p>Use hexagon pattern for the fill.</p>
+<ul>
+<li><code>diameter</code> – diameter of the hexagons</li>
+<li><code>spacing</code> – space between the hexagons</li>
+<li><code>threshold</code> – a percentage value that will discard fragments smaller than
+  given threshold</li>
 </ul>
 <h3 id="post">Post</h3>
 <p>Finishing touches to the panel.</p>
