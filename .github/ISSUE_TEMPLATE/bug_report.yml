@@ -34,9 +34,10 @@ body:
       A description of the bug. If applicable please specify what behavior do
       you expect and what behavior did you observe.
 
-      If you run into KiKit crashing, please rerun the command with `--debug:
-      'trace: true'` and include the output in the error log. Please, enclose
-      the log into a code block.
+      If you run into KiKit crashing, please rerun the command with `--debug
+      'trace: true'` (when using the panelize command) or with `--debug` (when
+      using any other command) and include the output in the error log. Please,
+      enclose the log into a code block.
 
       If applicable, add screenshots to explain your problem. Note that if file
       type is not supported by GitHub, you can put them in a ZIP archive.
