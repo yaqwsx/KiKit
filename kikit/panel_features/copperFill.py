@@ -94,9 +94,9 @@ class HexCopperFill(PanelFeature):
     clearance: KiLength = field(default_factory=lambda: fromMm(1))
     edgeclearance: KiLength = field(default_factory=lambda: fromMm(1))
     layers: List[Layer] = field(default_factory=lambda: [Layer.F_Cu, Layer.B_Cu])
-    diameter: KiLength = field(default_factory=lambda: fromMm(5))
+    diameter: KiLength = field(default_factory=lambda: fromMm(7))
     space: KiLength = field(default_factory=lambda: fromMm(0.5))
-    threshold: float = field(default_factory=lambda: 0.15)
+    threshold: float = field(default_factory=lambda: 0.25)
 
     def _buildHexagonsPolygon(self, area: Tuple[float, float, float, float]) -> MultiPolygon:
         horizontalSpacing = self.space + np.sqrt(3) / 2 * self.diameter

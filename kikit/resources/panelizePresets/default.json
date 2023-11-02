@@ -164,8 +164,8 @@
         "edgeclearance": "0.5mm",
         "layers": "F.Cu,B.Cu",
         "width": "1mm",
-        "diameter": "5mm",
-        "spacing": "1mm",
+        "diameter": "7mm",
+        "spacing": "0.5mm",
         "orientation": "45deg",
         "threshold": "15%"
     },
