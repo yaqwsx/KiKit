@@ -141,6 +141,18 @@ def readWhitespace(stream):
         c = stream.peek()
     return "".join(w)
 
+def readWhitespaceWithComments(stream):
+    w = []
+    c = stream.peek()
+    while c.isspace() or c == "#":
+        w.append(stream.read())
+        if c == "#":
+            while stream.peek() != "\n":
+                w.append(stream.read())
+            w.append(stream.read())
+        c = stream.peek()
+    return "".join(w)
+
 def readSexpr(stream, limit=None):
     """
     Reads SExpression from the stream. You can optionally try to parse only the
@@ -193,10 +205,10 @@ def parseSexprListF(sourceStream, limit=None):
     sexprs = []
     stream = Stream(sourceStream)
     while stream.peek() != "":
-        lw = readWhitespace(stream)
+        lw = readWhitespaceWithComments(stream)
         s = readSexpr(stream, limit=limit)
         s.leadingWhitespace = lw
-        s.trailingOuterWhitespace = readWhitespace(stream)
+        s.trailingOuterWhitespace = readWhitespaceWithComments(stream)
         sexprs.append(s)
     return sexprs
 

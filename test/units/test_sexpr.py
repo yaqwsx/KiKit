@@ -28,7 +28,6 @@ def test_readQuotedString():
     res = str(a)
     assert res == SOURCE
 
-
 def test_identiy():
     SOURCE = "../resources/conn.kicad_pcb"
     with open(SOURCE, encoding="utf-8") as f:
@@ -41,3 +40,10 @@ def test_identiy():
     with open(SOURCE, encoding="utf-8") as f:
         ast2 = parseSexprF(f, limit=3)
     assert str(ast2) == truth
+
+def test_readwhitespace_with_comments():
+    stream = Stream(StringIO("  \n\n# Aloha\n("))
+    assert readWhitespaceWithComments(stream) == "  \n\n# Aloha\n"
+
+    stream = Stream(StringIO("  \n\n \t# Aloha\n("))
+    assert readWhitespaceWithComments(stream) == "  \n\n \t# Aloha\n"
