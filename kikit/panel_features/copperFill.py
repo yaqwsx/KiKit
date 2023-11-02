@@ -11,6 +11,7 @@ import numpy as np
 from shapely.geometry import (
     Polygon,
     MultiPolygon)
+from shapely.ops import unary_union
 
 class KiCADCopperFillMixin(PanelFeature):
     """
@@ -32,7 +33,7 @@ class KiCADCopperFillMixin(PanelFeature):
         increaseZonePriorities(panel.board)
 
         zoneArea = panel.boardSubstrate.substrates.buffer(-self.edgeclearance)
-        zoneArea = zoneArea.difference(MultiPolygon(
+        zoneArea = zoneArea.difference(unary_union(
             [substrate.exterior().buffer(self.clearance) for substrate in panel.substrates]
         ))
 
@@ -135,7 +136,7 @@ class HexCopperFill(PanelFeature):
 
         zoneArea = panel.boardSubstrate.substrates.buffer(-self.edgeclearance)
         zoneArea = zoneArea.intersection(panel.boardSubstrate.substrates)
-        zoneArea = zoneArea.difference(MultiPolygon(
+        zoneArea = zoneArea.difference(unary_union(
             [substrate.exterior().buffer(self.clearance) for substrate in panel.substrates]
         ))
 
