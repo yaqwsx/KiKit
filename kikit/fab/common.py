@@ -89,10 +89,14 @@ def footprintOrientation(footprint, compensation):
     return (footprint.GetOrientation().AsDegrees() + compensation[2]) % 360
 
 def parseCompensation(compensation):
-    comps = [float(x) for x in compensation.split(";")]
-    if len(comps) != 3:
-        raise FormatError(f"Invalid format of compensation '{compensation}'")
-    return comps
+    compParts = compensation.split(";")
+    if len(compParts) != 3:
+        raise FormatError(f"Invalid format of compensation '{compensation}' – there should be 3 parts, got {len(compParts)}")
+    try:
+        comps = [float(x) for x in compParts]
+        return comps
+    except Exception:
+        raise FormatError(f"Invalid format of compensation '{compensation}' – items are not numbers") from None
 
 def defaultFootprintX(footprint, placeOffset, compensation):
     # Overwrite when footprint requires mirrored X when components are on the bottom side
