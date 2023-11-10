@@ -376,6 +376,9 @@ def fakeKiCADGui():
     import wx
     import os
 
+    if hasattr(wx, "DisableAsserts"):
+        wx.DisableAsserts()
+
     if os.name != "nt" and os.environ.get("DISPLAY", "").strip() == "":
         return None
 
