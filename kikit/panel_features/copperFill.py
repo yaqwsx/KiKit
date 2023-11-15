@@ -24,10 +24,6 @@ class KiCADCopperFillMixin(PanelFeature):
         pass  # solid infill does nothing
 
     def apply(self, panel: Any) -> None:
-        if not panel.boardSubstrate.isSinglePiece():
-            raise RuntimeError(
-                "The substrate has to be a single piece to fill unused areas"
-            )
         if not len(self.layers) > 0:
             raise RuntimeError("No layers to add copper to")
         increaseZonePriorities(panel.board)
@@ -125,10 +121,6 @@ class HexCopperFill(PanelFeature):
         return MultiPolygon(hexagons)
 
     def apply(self, panel: Panel) -> None:
-        if not panel.boardSubstrate.isSinglePiece():
-            raise RuntimeError(
-                "The substrate has to be a single piece to fill unused areas"
-            )
         if not len(self.layers) > 0:
             raise RuntimeError("No layers to add copper to")
 
