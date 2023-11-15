@@ -187,12 +187,15 @@ class SLayer(SChoiceBase):
                 for item in Layer], *args, **kwargs)
 
     def validate(self, s):
-        if isinstance(s, int):
-            if s in tuple(item.value for item in Layer):
-                return Layer(s)
+        if isinstance(s, int) or s.isdigit():
+            if int(s) in tuple(item.value for item in Layer):
+                return Layer(int(s))
             raise PresetError(f"{s} is not a valid layer number")
         if isinstance(s, str):
-            return Layer[s.replace(".", "_")]
+            try:
+                return Layer[s.replace(".", "_")]
+            except Exception:
+                pass
         raise PresetError(f"Got {s}, expected layer name or number")
 
 class SList(SectionBase):
@@ -210,12 +213,15 @@ class SLayerList(SList):
         return [self.readLayer(x) for x in super().validate(x)]
 
     def readLayer(self, s: str) -> Layer:
-        if isinstance(s, int):
-            if s in tuple(item.value for item in Layer):
-                return Layer(s)
+        if isinstance(s, int) or s.isdigit():
+            if int(s) in tuple(item.value for item in Layer):
+                return Layer(int(s))
             raise PresetError(f"{s} is not a valid layer number")
         if isinstance(s, str):
-            return Layer[s.replace(".", "_")]
+            try:
+                return Layer[s.replace(".", "_")]
+            except Exception:
+                pass
         raise PresetError(f"Got {s}, expected layer name or number")
 
 class SFootprintList(SList):
