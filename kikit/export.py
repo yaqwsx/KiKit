@@ -1,23 +1,44 @@
 # Based on https://github.com/KiCad/kicad-source-mirror/blob/master/demos/python_scripts_examples/gen_gerber_and_drill_files_board.py
-import sys
 import os
+from dataclasses import dataclass
+
 from pcbnewTransition import pcbnew
 from pcbnewTransition.pcbnew import *
 
 from kikit.defs import Layer
 
+
+@dataclass
+class LayerToPlot:
+    name: str
+    id: int
+    description: str
+
+
+CuTop = LayerToPlot("CuTop", pcbnew.F_Cu, "Top layer")
+CuBottom = LayerToPlot("CuBottom", pcbnew.B_Cu, "Bottom layer")
+PasteBottom = LayerToPlot("PasteBottom", pcbnew.B_Paste, "Paste Bottom")
+PasteTop = LayerToPlot("PasteTop", pcbnew.F_Paste, "Paste top")
+SilkTop = LayerToPlot("SilkTop", pcbnew.F_SilkS, "Silk top")
+SilkBottom = LayerToPlot("SilkBottom", pcbnew.B_SilkS, "Silk top")
+MaskBottom = LayerToPlot("MaskBottom", pcbnew.B_Mask, "Mask bottom")
+MaskTop = LayerToPlot("MaskTop", pcbnew.F_Mask, "Mask top")
+EdgeCuts = LayerToPlot("EdgeCuts", pcbnew.Edge_Cuts, "Edges")
+CmtUser = LayerToPlot("CmtUser", pcbnew.Cmts_User, "V-CUT")
+AdhesiveTop = LayerToPlot("AdhesiveTop", pcbnew.F_Adhes, "Adhesive top")
+AdhesiveBottom = LayerToPlot("AdhesiveBottom", pcbnew.B_Adhes, "Adhesive bottom")
+
 fullGerberPlotPlan = [
-    # name, id, comment
-    ("CuTop", F_Cu, "Top layer"),
-    ("CuBottom", B_Cu, "Bottom layer"),
-    ("PasteBottom", B_Paste, "Paste Bottom"),
-    ("PasteTop", F_Paste, "Paste top"),
-    ("SilkTop", F_SilkS, "Silk top"),
-    ("SilkBottom", B_SilkS, "Silk top"),
-    ("MaskBottom", B_Mask, "Mask bottom"),
-    ("MaskTop", F_Mask, "Mask top"),
-    ("EdgeCuts", Edge_Cuts, "Edges"),
-    ("CmtUser", Cmts_User, "V-CUT")
+    CuTop,
+    CuBottom,
+    PasteBottom,
+    PasteTop,
+    SilkTop,
+    SilkBottom,
+    MaskBottom,
+    MaskTop,
+    EdgeCuts,
+    CmtUser
 ]
 
 exportSettingsJlcpcb = {
@@ -52,11 +73,12 @@ exportSettingsOSHPark = {
 }
 
 
-def hasCopper(plotPlan):
-    for _, layer, _ in plotPlan:
-        if layer in [F_Cu, B_Cu]:
+def hasCopper(plotPlan: list[LayerToPlot]):
+    for layer_to_plot in plotPlan:
+        if layer_to_plot.id in [F_Cu, B_Cu]:
             return True
     return False
+
 
 def setExcludeEdgeLayer(plotOptions, excludeEdge):
     try:
@@ -67,7 +89,7 @@ def setExcludeEdgeLayer(plotOptions, excludeEdge):
         else:
             plotOptions.SetLayerSelection(LSET(Layer.Edge_Cuts))
 
-def gerberImpl(boardfile, outputdir, plot_plan=fullGerberPlotPlan, drilling=True, settings=exportSettingsJlcpcb):
+def gerberImpl(boardfile: str, outputdir: str, plot_plan: list[LayerToPlot]=fullGerberPlotPlan, drilling=True, settings=exportSettingsJlcpcb):
     """
     Export board to gerbers.
 
@@ -109,16 +131,16 @@ def gerberImpl(boardfile, outputdir, plot_plan=fullGerberPlotPlan, drilling=True
     # prepare the gerber job file
     jobfile_writer = GERBER_JOBFILE_WRITER(board)
 
-    for name, id, comment in plot_plan:
-        if id <= B_Cu:
+    for layer_to_plot in plot_plan:
+        if layer_to_plot.id <= B_Cu:
             popt.SetSkipPlotNPTH_Pads(True)
         else:
             popt.SetSkipPlotNPTH_Pads(False)
 
-        pctl.SetLayer(id)
-        suffix = "" if settings["NoSuffix"] else name
-        pctl.OpenPlotfile(suffix, PLOT_FORMAT_GERBER, comment)
-        jobfile_writer.AddGbrFile(id, os.path.basename(pctl.GetPlotFileName()))
+        pctl.SetLayer(layer_to_plot.id)
+        suffix = "" if settings["NoSuffix"] else layer_to_plot.name
+        pctl.OpenPlotfile(suffix, PLOT_FORMAT_GERBER, layer_to_plot.description)
+        jobfile_writer.AddGbrFile(layer_to_plot.id, os.path.basename(pctl.GetPlotFileName()))
         if pctl.PlotLayer() == False:
             print("plot error")
 
@@ -186,16 +208,15 @@ def pasteDxfExport(board, plotDir):
     popt.SetDXFPlotPolygonMode(False)
 
     plot_plan = [
-        # name, id, comment
-        ("PasteBottom", B_Paste, "Paste Bottom"),
-        ("PasteTop", F_Paste, "Paste top"),
-        ("EdgeCuts", Edge_Cuts, "Edges"),
+        PasteBottom,
+        PasteTop,
+        EdgeCuts
     ]
 
     output = []
-    for name, id, comment in plot_plan:
-        pctl.SetLayer(id)
-        pctl.OpenPlotfile(name, PLOT_FORMAT_DXF, comment)
+    for layer_to_plot in plot_plan:
+        pctl.SetLayer(layer_to_plot.id)
+        pctl.OpenPlotfile(layer_to_plot.name, PLOT_FORMAT_DXF, layer_to_plot.description)
         output.append(pctl.GetPlotFileName())
         if pctl.PlotLayer() == False:
             print("plot error")
