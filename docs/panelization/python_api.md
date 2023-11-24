@@ -78,7 +78,7 @@ include components sticking out of the board outline, you can specify tolerance
 #### `appendBoard`
 ```
 appendBoard(self, filename, destination, sourceArea=None, origin=Origin.Center, 
-            rotationAngle=<pcbnew.EDA_ANGLE; proxy of <Swig Object of type 'EDA_ANGLE *' at 0x7f7a1f7f94a0> >, 
+            rotationAngle=<pcbnew.EDA_ANGLE; proxy of <Swig Object of type 'EDA_ANGLE *' at 0x7f4b833f3120> >, 
             shrink=False, tolerance=0, bufferOutline=1000, netRenamer=None, 
             refRenamer=None, inheritDrc=True, interpretAnnotations=True, 
             bakeText=False)
@@ -135,7 +135,7 @@ The offsets are measured from the outer edges of the substrate.
 #### `addFiducial`
 ```
 addFiducial(self, position, copperDiameter, openingDiameter, bottom=False, 
-            paste=False)
+            paste=False, ref=None)
 ```
 Add fiducial, i.e round copper pad with solder mask opening to the
 position (`VECTOR2I`), with given copperDiameter and openingDiameter. By
@@ -165,7 +165,8 @@ given radius. This operation simulares milling.
 
 #### `addNPTHole`
 ```
-addNPTHole(self, position, diameter, paste=False)
+addNPTHole(self, position, diameter, paste=False, ref=None, 
+           excludedFromPos=False)
 ```
 Add a drilled non-plated hole to the position (`VECTOR2I`) with given
 diameter. The paste option allows to place the hole on the paste layers.
@@ -186,8 +187,10 @@ internal features of the board are not affected.
 
 #### `addText`
 ```
-addText(self, text, position, orientation=0, width=1500000, height=1500000, 
-        thickness=300000, hJustify=EDA_TEXT_HJUSTIFY_T.GR_TEXT_HJUSTIFY_CENTER, 
+addText(self, text, position, 
+        orientation=<pcbnew.EDA_ANGLE; proxy of <Swig Object of type 'EDA_ANGLE *' at 0x7f4b833f37b0> >, 
+        width=1500000, height=1500000, thickness=300000, 
+        hJustify=EDA_TEXT_HJUSTIFY_T.GR_TEXT_HJUSTIFY_CENTER, 
         vJustify=EDA_TEXT_VJUSTIFY_T.GR_TEXT_VJUSTIFY_CENTER, 
         layer=Layer.F_SilkS)
 ```
@@ -209,7 +212,7 @@ Adds a horizontal V-CUT at pos (integer in KiCAD units).
 #### `appendBoard`
 ```
 appendBoard(self, filename, destination, sourceArea=None, origin=Origin.Center, 
-            rotationAngle=<pcbnew.EDA_ANGLE; proxy of <Swig Object of type 'EDA_ANGLE *' at 0x7f7a1f7f94a0> >, 
+            rotationAngle=<pcbnew.EDA_ANGLE; proxy of <Swig Object of type 'EDA_ANGLE *' at 0x7f4b833f3120> >, 
             shrink=False, tolerance=0, bufferOutline=1000, netRenamer=None, 
             refRenamer=None, inheritDrc=True, interpretAnnotations=True, 
             bakeText=False)
@@ -247,6 +250,12 @@ appendSubstrate(self, substrate)
 Append a piece of substrate or a list of pieces to the panel. Substrate
 can be either BOX2I or Shapely polygon. Newly appended corners can be
 rounded by specifying non-zero filletRadius.
+
+#### `apply`
+```
+apply(self, feature)
+```
+Apply given feature to the panel
 
 #### `boardsBBox`
 ```
@@ -323,8 +332,10 @@ copperFillNonBoardAreas(self, clearance=1000000,
                         layers=[<Layer.F_Cu: 0>, <Layer.B_Cu: 31>], 
                         hatched=False, strokeWidth=1000000, 
                         strokeSpacing=1000000, 
-                        orientation=<pcbnew.EDA_ANGLE; proxy of <Swig Object of type 'EDA_ANGLE *' at 0x7f7a1f7f99b0> >)
+                        orientation=<pcbnew.EDA_ANGLE; proxy of <Swig Object of type 'EDA_ANGLE *' at 0x7f4b833f3510> >)
 ```
+This function is deprecated, please, use panel features instead.
+
 Fill given layers with copper on unused areas of the panel (frame, rails
 and tabs). You can specify the clearance, if it should be hatched
 (default is solid) or shape the strokes of hatched pattern.
@@ -355,6 +366,12 @@ Pcbnew.
 #### `getAuxiliaryOrigin`
 ```
 getAuxiliaryOrigin(self)
+```
+None
+
+#### `getDruFilepath`
+```
+getDruFilepath(self, path=None)
 ```
 None
 
@@ -480,7 +497,7 @@ Generate vertical cuts for the frame corners and return them
 #### `makeGrid`
 ```
 makeGrid(self, boardfile, sourceArea, rows, cols, destination, placer, 
-         rotation=<pcbnew.EDA_ANGLE; proxy of <Swig Object of type 'EDA_ANGLE *' at 0x7f7a1f7f9320> >, 
+         rotation=<pcbnew.EDA_ANGLE; proxy of <Swig Object of type 'EDA_ANGLE *' at 0x7f4b833f3f00> >, 
          netRenamePattern=Board_{n}-{orig}, refRenamePattern=Board_{n}-{orig}, 
          tolerance=0, bakeText=False)
 ```
@@ -502,7 +519,7 @@ rows - the number of boards to place in the vertical direction
 cols - the number of boards to place in the horizontal direction
 
 destination - the center coordinates of the first board in the grid (for
-example, VECTOR2I(100 * mm,50 * mm))
+example, VECTOR2I(100 * mm, 50 * mm))
 
 rotation - the rotation angle to be applied to the source board before
 placing it
@@ -713,6 +730,12 @@ translate(self, vec)
 Translates the whole panel by vec. Such a feature can be useful to
 specify the panel placement in the sheet. When we translate panel as the
 last operation, none of the operations have to be placement-aware.
+
+#### `writeCustomDrcRules`
+```
+writeCustomDrcRules(self)
+```
+None
 
 ## Substrate class
 

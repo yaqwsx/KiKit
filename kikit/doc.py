@@ -118,10 +118,10 @@ def runBoardExample(name, args):
     print("        ```\n")
     print("    ![{0}](../resources/{0}.png)".format(name))
 
-    # t = threading.Thread(target=lambda: panelizeAndDraw(name, realArgs))
-    # t.start()
-    # global runExampleThreads
-    # runExampleThreads.append(t)
+    t = threading.Thread(target=lambda: panelizeAndDraw(name, realArgs))
+    t.start()
+    global runExampleThreads
+    runExampleThreads.append(t)
 
 def runScriptingExample(name, args):
     """
