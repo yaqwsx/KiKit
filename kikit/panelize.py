@@ -1480,7 +1480,8 @@ class Panel:
                     hole = cut.interpolate( i * length / (count - 1) )
                 if bloatedSubstrate.intersects(hole):
                     self.addNPTHole(toKiCADPoint((hole.x, hole.y)), diameter,
-                                    ref=f"KiKit_MB_{self.renderedMousebiteCounter}_{i+1}")
+                                    ref=f"KiKit_MB_{self.renderedMousebiteCounter}_{i+1}",
+                                    excludedFromPos=True)
 
     def makeCutsToLayer(self, cuts, layer=Layer.Cmts_User, prolongation=fromMm(0)):
         """
@@ -1503,7 +1504,8 @@ class Panel:
                 self.board.Add(segment)
 
     def addNPTHole(self, position: VECTOR2I, diameter: KiLength,
-                   paste: bool=False, ref: Optional[str]=None) -> None:
+                   paste: bool=False, ref: Optional[str]=None,
+                   excludedFromPos: bool=False) -> None:
         """
         Add a drilled non-plated hole to the position (`VECTOR2I`) with given
         diameter. The paste option allows to place the hole on the paste layers.
@@ -1520,6 +1522,10 @@ class Panel:
                 pad.SetLayerSet(layerSet)
         if ref is not None:
             footprint.SetReference(ref)
+        if hasattr(footprint, "SetExcludedFromPosFiles"): # KiCAD 6 doesn't support this attribute
+            footprint.SetExcludedFromPosFiles(excludedFromPos)
+        if hasattr(footprint, "SetBoardOnly"):
+            footprint.SetBoardOnly(True)
         self.board.Add(footprint)
 
     def addFiducial(self, position: VECTOR2I, copperDiameter: KiLength,
@@ -1590,7 +1596,7 @@ class Panel:
         The offsets are measured from the outer edges of the substrate.
         """
         for i, pos in enumerate(self.panelCorners(horizontalOffset, verticalOffset)[:holeCount]):
-            self.addNPTHole(pos, diameter, paste, ref=f"KiKit_TO_{i+1}")
+            self.addNPTHole(pos, diameter, paste, ref=f"KiKit_TO_{i+1}", excludedFromPos=False)
 
     def addMillFillets(self, millRadius):
         """
