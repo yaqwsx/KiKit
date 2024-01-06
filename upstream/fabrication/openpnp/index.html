@@ -9,10 +9,6 @@
       
       
       
-        <link rel="prev" href="../../panelization/tabs/">
-      
-      
-        <link rel="next" href="../jlcpcb/">
       
       
       <link rel="icon" href="../../assets/logo.png">
@@ -20,7 +16,7 @@
     
     
       
-        <title>Introduction - KiKit — Automation for KiCAD</title>
+        <title>Fabrication: OpenPNP - KiKit — Automation for KiCAD</title>
       
     
     
@@ -70,7 +66,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#fabrication" class="md-skip">
+        <a href="#fabrication-openpnp" class="md-skip">
           Skip to content
         </a>
       
@@ -109,7 +105,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Introduction
+              Fabrication: OpenPNP
             
           </span>
         </div>
@@ -256,13 +252,11 @@
         
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="./" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../intro/" class="md-tabs__link">
           
   
     
@@ -975,10 +969,8 @@
       
   
   
-    
   
   
-  
     
     
       
@@ -993,12 +985,14 @@
       
       
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
         
           
           <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
@@ -1012,7 +1006,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             Fabrication
@@ -1023,30 +1017,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    Introduction
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../intro/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1055,53 +1029,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#common-options" class="md-nav__link">
-    <span class="md-ellipsis">
-      Common Options
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#currently-supported" class="md-nav__link">
-    <span class="md-ellipsis">
-      Currently Supported:
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#adding-new-fabrication-houses" class="md-nav__link">
-    <span class="md-ellipsis">
-      Adding New Fabrication Houses
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1352,41 +1279,6 @@
     
   
   
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#common-options" class="md-nav__link">
-    <span class="md-ellipsis">
-      Common Options
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#currently-supported" class="md-nav__link">
-    <span class="md-ellipsis">
-      Currently Supported:
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#adding-new-fabrication-houses" class="md-nav__link">
-    <span class="md-ellipsis">
-      Adding New Fabrication Houses
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
 </nav>
                   </div>
                 </div>
@@ -1403,49 +1295,13 @@
   
 
 
-<h1 id="fabrication">Fabrication</h1>
-<p>KiKit offers fully automatic export of all data required for fabrication of your
-designs. Since every fabrication house has different requirements on the design
-files (e.g., special names of gerber files, different requirements for assembly
-files) there is no "universal exporter" in KiKit. Instead, KiKit offers special
-command for each supported fabrication house.</p>
-<h2 id="common-options">Common Options</h2>
-<p>All fab subcommands has a common invocation structure:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>kikit fab &lt;fabhouse&gt; &lt;options&gt; &lt;sourceDir&gt; &lt;outputDir&gt;
-</code></pre></div>
-<p>All commands also support the following options:</p>
-<ul>
-<li><code>--drc\--no-drc</code> (default <code>--drc</code>). Check for DRC violations before exporting
-  the files. With this options, you won't send a board that fails DRC to your
-  manufacturer.</li>
-<li><code>--nametemplate &lt;str&gt;</code>:  If you want to name your files differently, specify
-  this option. This option takes a string that should contain <code>{}</code>. This string
-  will be replaced by <code>gerber</code>, <code>pos</code> or <code>bom</code> in the out file names. The
-  extension is appended automatically. <a href="../../panelization/cli/#available-variables-in-text">Variables in
-  text</a> are also supported
-  eg: <code>{boardTitle}_rev{boardRevision}_{date}_{}</code>. The project variables are
-  available with the <code>user-</code> prefix; e.g., `MFR: {user-mfr}```</li>
-</ul>
-<p>Each of the fab command also take additional, manufacturer specific, options.
-See documentation for the individual manufacturer below:</p>
-<h2 id="currently-supported">Currently Supported:</h2>
-<p>Note: click on the name of the manufacturer to see corresponding documentation:</p>
-<ul>
-<li><a href="../jlcpcb/">JLC PCB</a>: board manufacturing, SMD assembly. <a href="https://jlcpcb.com/">https://jlcpcb.com/</a></li>
-<li><a href="../pcbway/">PCBWay</a>: board manufacturing, assembly. <a href="https://www.pcbway.com/">https://www.pcbway.com/</a></li>
-<li><a href="../oshpark/">OSH Park</a>: board manufacturing. <a href="https://oshpark.com/">https://oshpark.com/</a></li>
-<li><a href="../neodenyy1/">Neoden YY1</a>: desktop PCB assembly. <a href="https://neodenusa.com/neoden-yy1-pick-place-machine">https://neodenusa.com/neoden-yy1-pick-place-machine</a></li>
-<li><a href="openpn.md">OpenPNP</a>: Open system for pick'n'place machines. <a href="https://openpnp.org/">https://openpnp.org/</a></li>
-</ul>
-<h2 id="adding-new-fabrication-houses">Adding New Fabrication Houses</h2>
-<p>To add a new fabrication command you have to extend KiKit's source code. A
-rather basic knowledge of python is required to do so.</p>
-<p>Create a new file <code>kikit/fab/fabhousename.py</code> and implement a new command with
-the same name as the file. Then add the command to <code>kikit/fab/__init__.py</code>. The
-common functionality for all fabrication houses should be located in
-<code>kikit/fab/common.py</code>. You can use <code>kikit/fab/jlcpcb.py</code> for inspiration.</p>
-<p>Once you implement a support for new fabrication house, open a pull request on
-KiKit's GitHub page.</p>
+<h1 id="fabrication-openpnp">Fabrication: OpenPNP</h1>
+<p>The basic usage of this exporter is:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>kikit fab openpn [OPTIONS] BOARD OUTPUTDIR
+</code></pre></div></p>
+<p>This exporter creates a single file <code>components.pos</code> that mimics KiCAD native
+<code>.pos</code> output. However, unlike KiCAD, it adds a unique identifier to component
+references to ensure they are unique (in the case of panels).</p>
 
 
 
