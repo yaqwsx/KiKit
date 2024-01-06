@@ -1444,7 +1444,12 @@ class Panel:
         """
         for cut in cuts:
             if len(cut.simplify(SHP_EPSILON).coords) > 2 and not boundCurves:
-                raise RuntimeError("Cannot V-Cut a curve")
+                message = "Cannot V-Cut a curve or a line that is either not horizontal or vertical.\n"
+                message += "Possible cause might be:\n"
+                message += "- your tabs hit a curved boundary of your PCB,\n"
+                message += "- your vertical or horizontal PCB edges are not precisely vertical or horizontal.\n"
+                message += "Modify the design or accept curve approximation via V-cuts."
+                raise RuntimeError(message)
             cut = cut.simplify(1).parallel_offset(offset, "left")
             start = roundPoint(cut.coords[0])
             end = roundPoint(cut.coords[-1])
