@@ -114,6 +114,17 @@ def neodenyy1(**kwargs):
     app = fakeKiCADGui()
     return execute(neodenyy1.exportNeodenYY1, kwargs)
 
+@click.command()
+@fabCommand
+def openpnp(**kwargs):
+    """
+    Prepare fabrication files for OpenPnP
+    """
+    from kikit.fab import openpnp
+    from kikit.common import fakeKiCADGui
+    app = fakeKiCADGui()
+    return execute(openpnp.exportOpenPnp, kwargs)
+
 @click.group()
 def fab():
     """
@@ -125,3 +136,4 @@ fab.add_command(jlcpcb)
 fab.add_command(pcbway)
 fab.add_command(oshpark)
 fab.add_command(neodenyy1)
+fab.add_command(openpnp)
