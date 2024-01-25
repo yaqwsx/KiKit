@@ -68,7 +68,7 @@ kikit separate --source 'annotation; ref: B1' \
 After that, `board_a.kicad_pcb` will contain only a board A. Note that the `\`
 is there for shell as we split our command into two lines.
 
-## About panlization
+## About panelization
 
 Note that if panelize your boards, you don't have to separate your boards first;
 just use the `--source` with the panelization command.
