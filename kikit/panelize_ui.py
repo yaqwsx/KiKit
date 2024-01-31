@@ -258,6 +258,7 @@ def doPanelization(input, output, preset, plugins=[]):
     panel.inheritDesignSettings(board)
     panel.inheritProperties(board)
     panel.inheritTitleBlock(board)
+    panel.inheritLayerNames(board)
 
     useHookPlugins(lambda x: x.afterPanelSetup(panel))
 
@@ -344,6 +345,7 @@ def separate(input, output, source, page, debug, keepannotations, preservearcs):
         panel.inheritDesignSettings(board)
         panel.inheritProperties(board)
         panel.inheritTitleBlock(board)
+        panel.inheritLayerNames(board)
 
         destination = VECTOR2I(150 * mm, 100 * mm)
         panel.appendBoard(input, destination, sourceArea,

@@ -1815,6 +1815,10 @@ class Panel:
 
         return cuts
 
+    def inheritLayerNames(self, board):
+        for layer in pcbnew.LSET.AllLayersMask().Seq():
+            name = board.GetLayerName(layer)
+            self.board.SetLayerName(layer, name)
 
     def inheritCopperLayers(self, board):
         """
