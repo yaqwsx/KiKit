@@ -11,12 +11,12 @@ KString = Union[str, pcbnew.UTF8]
 def readKiKitProps(footprint):
     """
     Given a footprint, returns a string containing KiKit annotations.
-    Annotations are in FP_TEXT starting with prefix `KIKIT:`.
+    Annotations are in fields starting with prefix `KIKIT:`.
 
     Returns a dictionary of key-value pairs.
     """
     for x in footprint.GraphicalItems():
-        if not isinstance(x, pcbnew.FP_TEXT):
+        if not isinstance(x, pcbnew.FIELD_TYPE):
             continue
         text = x.GetText()
         if text.startswith("KIKIT:"):

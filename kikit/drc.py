@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, Iterable, List, TextIO, Tuple, Union
 from pathlib import Path
 
-from pcbnewTransition import isV7, pcbnew
+from pcbnewTransition import isV7, isV8, pcbnew
 
 from kikit.common import fromMm, toMm
 from kikit.drc_ui import ReportLevel
@@ -21,7 +21,7 @@ def roundCoord(x: int) -> int:
     return round(x - 50, -4)
 
 def getItemDescription(item: pcbnew.BOARD_ITEM, units: pcbnew.EDA_UNITS = pcbnew.EDA_UNITS_MILLIMETRES):
-    if isV7():
+    if isV7() or isV8():
         uProvider = pcbnew.UNITS_PROVIDER(pcbnew.pcbIUScale, units)
         return item.GetItemDescription(uProvider)
     else:
@@ -93,7 +93,7 @@ class Violation:
         if len(self.objects) == 0: # E.g., copper sliver has no related objects
             return (self.type, self.description)
         if len(self.objects) == 1:
-            return (self.type, self.objects[0])
+            return (self.type, self.objects[0].m_Uuid.AsString())
         if len(self.objects) == 2:
             return (self.type, tuple(str(x.m_Uuid.AsString()) for x in self.objects))
         raise RuntimeError("Unsupported violation object count")
@@ -151,14 +151,14 @@ def readViolations(reportFile: TextIO,
         if headerMatch is None:
             break
         line = reportFile.readline()
-        bodyMatch = re.match(r'\s*(.*); Severity: (.*)', line)
+        bodyMatch = re.match(r'\s*(.*); (Severity: )?(.*)', line)
         if bodyMatch is None:
             break
         v = Violation(
             type = headerMatch.group(1),
             description = headerMatch.group(2),
             rule = bodyMatch.group(1),
-            severity = bodyMatch.group(2))
+            severity = bodyMatch.group(3))
         line = reportFile.readline()
         while line.startswith("    "):
             v.objects.append(readBoardItem(line, fingerprints))

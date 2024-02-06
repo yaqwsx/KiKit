@@ -1,5 +1,5 @@
 
-from pcbnewTransition import KICAD_VERSION, isV6, isV7
+from pcbnewTransition import KICAD_VERSION, isV6, isV7, isV8
 from kikit.common import KIKIT_LIB
 import sys
 import click
@@ -16,7 +16,7 @@ def drcapi():
     """
     Return version of the DRC API
     """
-    if isV6() or isV7():
+    if isV6() or isV7() or isV8():
         print("1")
     else:
         print("0")

@@ -433,7 +433,10 @@ def bakeTextVars(board: pcbnew.BOARD) -> None:
     for drawing in board.GetDrawings():
         if not isinstance(drawing, pcbnew.PCB_TEXT):
             continue
-        drawing.SetText(drawing.GetShownText())
+        if isV8():
+            drawing.SetText(drawing.GetShownText(True))
+        else:
+            drawing.SetText(drawing.GetShownText())
 
 class Panel:
     """
@@ -1003,7 +1006,7 @@ class Panel:
             # the attribute must be first removed without changing the
             # orientation of the text.
             for item in (*footprint.GraphicalItems(), footprint.Value(), footprint.Reference()):
-                if isinstance(item, pcbnew.FP_TEXT) and item.IsKeepUpright():
+                if isinstance(item, pcbnew.FIELD_TYPE) and item.IsKeepUpright():
                     actualOrientation = item.GetDrawRotation()
                     item.SetKeepUpright(False)
                     item.SetTextAngle(actualOrientation - footprint.GetOrientation())

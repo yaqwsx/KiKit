@@ -15,7 +15,7 @@ def references(board: pcbnew.BOARD, show: bool, pattern: str,
         if re.match(pattern, footprint.GetReference()) and footprint.Reference().GetLayer() in allowedLayers:
             footprint.Reference().SetVisible(show)
         for x in footprint.GraphicalItems():
-            if not isinstance(x, pcbnew.FP_TEXT):
+            if not isinstance(x, pcbnew.FIELD_TYPE):
                 continue
             if x.GetText().strip() in ["${REFERENCE}", "REF**"] and x.GetLayer() in allowedLayers:
                 x.SetVisible(show)
@@ -33,7 +33,7 @@ def values(board: pcbnew.BOARD, show: bool, pattern: str,
         if re.match(pattern, footprint.GetReference()) and footprint.Value().GetLayer() in allowedLayers:
             footprint.Value().SetVisible(show)
         for x in footprint.GraphicalItems():
-            if not isinstance(x, pcbnew.FP_TEXT):
+            if not isinstance(x, pcbnew.FIELD_TYPE):
                 continue
             if x.GetText().strip() in ["${VALUE}", "VAL**"] and x.GetLayer() in allowedLayers:
                 x.SetVisible(show)
