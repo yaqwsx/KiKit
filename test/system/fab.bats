@@ -25,8 +25,8 @@ load common
     cmp -s pos.test.csv pos.truth.csv
 }
 
-@test "Fab: JLCPCB with assembly - v7" {
-    if [ $(kikit-info kicadversion) != "7.0" ]; then
+@test "Fab: JLCPCB with assembly - v7/v8" {
+    if [ $(kikit-info kicadversion) != "7.0" && $(kikit-info kicadversion) != "8.0"  ]; then
         skip "This test is not supported on older versions"
     fi
 
