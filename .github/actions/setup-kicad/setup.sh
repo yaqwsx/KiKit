@@ -41,7 +41,7 @@ case $1 in
     sudo add-apt-repository --yes ppa:kicad/kicad-dev-nightly
     sudo apt-get update
     sudo apt-get install --yes --no-install-recommends kicad-nightly
-    echo "PYTHONPATH=/usr/lib/kicad-nightly/lib/python3/dist-packages/" >> $GITHUB_ENV
+    echo "PYTHONPATH=/usr/lib/kicad-nightly/lib/python3/dist-packages/:/usr/lib/kicad-nightly/local/lib/python3.10/dist-packages:/usr/lib/kicad-nightly/local/lib/python3.11/dist-packages:/usr/lib/kicad-nightly/local/lib/python3.12/dist-packages" >> $GITHUB_ENV
     echo "LD_LIBRARY_PATH=/usr/lib/kicad-nightly/lib/x86_64-linux-gnu:/usr/lib/kicad-nightly/lib/" >> $GITHUB_ENV
     for bin in kicad pcbnew eeschema kicad-cli; do
         sudo ln -s /usr/bin/${bin}-nightly /usr/bin/${bin}
