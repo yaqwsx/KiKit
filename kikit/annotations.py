@@ -16,7 +16,7 @@ def readKiKitProps(footprint):
     Returns a dictionary of key-value pairs.
     """
     for x in footprint.GraphicalItems():
-        if not isinstance(x, pcbnew.FIELD_TYPE):
+        if not isinstance(x, pcbnew.FIELD_TYPE) and not isinstance(x, pcbnew.PCB_TEXT):
             continue
         text = x.GetText()
         if text.startswith("KIKIT:"):
