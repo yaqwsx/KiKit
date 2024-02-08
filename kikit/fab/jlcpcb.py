@@ -9,24 +9,9 @@ from kikit.fab.common import *
 from kikit.common import *
 from kikit.export import gerberImpl
 
-def collectBom(components, lscsFields, ignore):
+def collectBom(components, lscsFields):
     bom = {}
     for c in components:
-        if getUnit(c) != 1:
-            continue
-        reference = getReference(c)
-        if reference.startswith("#PWR") or reference.startswith("#FL"):
-            continue
-        if reference in ignore:
-            continue
-        if getField(c, "JLCPCB_IGNORE") is not None and getField(c, "JLCPCB_IGNORE") != "":
-            continue
-        if hasattr(c, "in_bom") and not c.in_bom:
-            continue
-        if hasattr(c, "on_board") and not c.on_board:
-            continue
-        if hasattr(c, "dnp") and c.dnp:
-            continue
         orderCode = None
         for fieldName in lscsFields:
             orderCode = getField(c, fieldName)
@@ -37,7 +22,7 @@ def collectBom(components, lscsFields, ignore):
             getField(c, "Footprint"),
             orderCode
         )
-        bom[cType] = bom.get(cType, []) + [reference]
+        bom[cType] = bom.get(cType, []) + [getReference(c)]
     return bom
 
 def bomToCsv(bomData, filename):
@@ -85,9 +70,9 @@ def exportJlcpcb(board, outputdir, assembly, schematic, ignore, field,
     ensureValidSch(schematic)
 
     correctionFields = [x.strip() for x in corrections.split(",")]
-    components = extractComponents(schematic)
+    components = extractComponents(schematic, refsToIgnore, "JLCPCB_IGNORE")
     ordercodeFields = [x.strip() for x in field.split(",")]
-    bom = collectBom(components, ordercodeFields, refsToIgnore)
+    bom = collectBom(components, ordercodeFields)
 
     posData = collectPosData(loadedBoard, correctionFields,
         bom=components, posFilter=noFilter, correctionFile=correctionpatterns)
