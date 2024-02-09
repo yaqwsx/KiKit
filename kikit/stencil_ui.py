@@ -1,6 +1,8 @@
 import click
 import sys
 
+from .common import execute_with_debug
+
 
 @click.command()
 @click.argument("inputBoard", type=click.Path(dir_okay=False))
@@ -19,15 +21,16 @@ import sys
     help="Clearance for the stencil register in milimeters")
 @click.option("--enlargeholes", type=float, default=0,
     help="Enlarge pad holes by x mm")
+@click.option("--debug", is_flag=True, default=False,
+        help="Print extra debugging information")
 def createPrinted(**kwargs):
     """
     Create a 3D printed self-registering stencil.
     """
     from kikit import stencil
-    try:
-        return stencil.createPrinted(**kwargs)
-    except Exception as e:
-        sys.stderr.write(f"{e}\n")
+
+    return execute_with_debug(stencil.createPrinted, kwargs)
+
 
 @click.command()
 @click.argument("inputBoard", type=click.Path(dir_okay=False))
@@ -46,6 +49,8 @@ def createPrinted(**kwargs):
     help="Comma separated list of components references to exclude from the stencil")
 @click.option("--cutout", type=str, default="",
     help="Comma separated list of components references to cutout from the stencil based on the courtyard")
+@click.option("--debug", is_flag=True, default=False,
+        help="Print extra debugging information")
 def create(**kwargs):
     """
     Create stencil and register elements for manual paste dispensing jig.
@@ -55,10 +60,7 @@ def create(**kwargs):
     from kikit.common import fakeKiCADGui
     app = fakeKiCADGui()
 
-    try:
-        return stencil.create(**kwargs)
-    except Exception as e:
-            sys.stderr.write(f"{e}\n")
+    return execute_with_debug(stencil.create, kwargs)
 
 
 @click.group()
