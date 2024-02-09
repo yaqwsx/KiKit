@@ -33,7 +33,7 @@ class NoIntersectionError(RuntimeError):
 class TabFilletError(RuntimeError):
     pass
 
-def roundPoint(point, precision=-4):
+def roundPoint(point, precision=-2):
     return (round(point[0], precision), round(point[1], precision))
 
 def getStartPoint(geom):
