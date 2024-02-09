@@ -2,6 +2,8 @@ import traceback
 import sys
 import click
 
+from .common import execute_with_debug
+
 def fabCommand(f):
     """
     A decorator to add the same functionality to all fab commands
@@ -17,22 +19,6 @@ def fabCommand(f):
     f = click.option("--debug", is_flag=True, default=False,
         help="Print extra debugging information")(f)
     return f
-
-def execute(fab, kwargs):
-    debug = kwargs["debug"]
-    del kwargs["debug"]
-
-    if debug:
-        traceback.print_exc(file=sys.stderr)
-
-    try:
-        return fab(**kwargs)
-    except Exception as e:
-        sys.stderr.write(f"An error occurred: {e}\n")
-        sys.stderr.write("No output files produced\n")
-        if debug:
-            raise e from None
-        sys.exit(1)
 
 @click.command()
 @fabCommand
@@ -52,7 +38,7 @@ def jlcpcb(**kwargs):
     from kikit.fab import jlcpcb
     from kikit.common import fakeKiCADGui
     app = fakeKiCADGui()
-    return execute(jlcpcb.exportJlcpcb, kwargs)
+    return execute_with_debug(jlcpcb.exportJlcpcb, kwargs)
 
 @click.command()
 @fabCommand
@@ -84,7 +70,7 @@ def pcbway(**kwargs):
     from kikit.fab import pcbway
     from kikit.common import fakeKiCADGui
     app = fakeKiCADGui()
-    return execute(pcbway.exportPcbway, kwargs)
+    return execute_with_debug(pcbway.exportPcbway, kwargs)
 
 
 @click.command()
@@ -96,7 +82,7 @@ def oshpark(**kwargs):
     from kikit.fab import oshpark
     from kikit.common import fakeKiCADGui
     app = fakeKiCADGui()
-    return execute(oshpark.exportOSHPark, kwargs)
+    return execute_with_debug(oshpark.exportOSHPark, kwargs)
 
 @click.command()
 @fabCommand
@@ -112,7 +98,7 @@ def neodenyy1(**kwargs):
     from kikit.fab import neodenyy1
     from kikit.common import fakeKiCADGui
     app = fakeKiCADGui()
-    return execute(neodenyy1.exportNeodenYY1, kwargs)
+    return execute_with_debug(neodenyy1.exportNeodenYY1, kwargs)
 
 @click.command()
 @fabCommand
@@ -123,7 +109,7 @@ def openpnp(**kwargs):
     from kikit.fab import openpnp
     from kikit.common import fakeKiCADGui
     app = fakeKiCADGui()
-    return execute(openpnp.exportOpenPnp, kwargs)
+    return execute_with_debug(openpnp.exportOpenPnp, kwargs)
 
 @click.group()
 def fab():

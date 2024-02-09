@@ -1,5 +1,6 @@
 from __future__ import annotations
 import sys
+import traceback
 from typing import List, Optional, Tuple, Union, Callable
 from kikit.defs import Layer
 from kikit.typing import Box
@@ -399,3 +400,19 @@ def fakeKiCADGui():
     os.dup2(os.open(os.devnull,os.O_RDWR), 2)
 
     return None
+
+def execute_with_debug(procedure, kwargs):
+    debug = kwargs["debug"]
+    del kwargs["debug"]
+
+    if debug:
+        traceback.print_exc(file=sys.stderr)
+
+    try:
+        return procedure(**kwargs)
+    except Exception as e:
+        sys.stderr.write(f"An error occurred: {e}\n")
+        sys.stderr.write("No output files produced\n")
+        if debug:
+            raise e from None
+        sys.exit(1)
