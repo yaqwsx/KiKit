@@ -540,6 +540,9 @@ TOOLING_SECTION = {
     "paste": SBool(
         typeIn(["3hole", "4hole", "plugin"]),
         "Include holes on the paste layer"),
+    "soldermaskmargin": SLength(
+        typeIn(["3hole", "4hole", "plugin"]),
+        "Solder mask expansion/margin"),
     "code": SPlugin(
         plugin.ToolingPlugin,
         typeIn(["plugin"]),
