@@ -2,6 +2,7 @@
     "tooling": {
         "style": "3hole",
         "size": "1.152mm",
-        "paste": false
+        "paste": false,
+        "soldermaskmargin": "1.3mm"
     }
 }

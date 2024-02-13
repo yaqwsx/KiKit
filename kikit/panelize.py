@@ -1513,7 +1513,9 @@ class Panel:
 
     def addNPTHole(self, position: VECTOR2I, diameter: KiLength,
                    paste: bool=False, ref: Optional[str]=None,
-                   excludedFromPos: bool=False) -> None:
+                   excludedFromPos: bool=False,
+                   solderMaskMargin: Optional[KiLength] = None,
+    ) -> None:
         """
         Add a drilled non-plated hole to the position (`VECTOR2I`) with given
         diameter. The paste option allows to place the hole on the paste layers.
@@ -1523,6 +1525,8 @@ class Panel:
         for pad in footprint.Pads():
             pad.SetDrillSize(toKiCADPoint((diameter, diameter)))
             pad.SetSize(toKiCADPoint((diameter, diameter)))
+            if solderMaskMargin is not None:
+                footprint.SetLocalSolderMaskMargin(solderMaskMargin)
             if paste:
                 layerSet = pad.GetLayerSet()
                 layerSet.AddLayer(Layer.F_Paste)
@@ -1595,7 +1599,7 @@ class Panel:
                              paste, ref = f"KiKit_FID_B_{i+1}")
 
     def addCornerTooling(self, holeCount, horizontalOffset, verticalOffset,
-                         diameter, paste=False):
+                         diameter, paste=False, solderMaskMargin: Optional[KiLength]=None):
         """
         Add up to 4 tooling holes to the top-left, top-right, bottom-left and
         bottom-right corner of the board (in this order). This function expects
@@ -1604,7 +1608,8 @@ class Panel:
         The offsets are measured from the outer edges of the substrate.
         """
         for i, pos in enumerate(self.panelCorners(horizontalOffset, verticalOffset)[:holeCount]):
-            self.addNPTHole(pos, diameter, paste, ref=f"KiKit_TO_{i+1}", excludedFromPos=False)
+            self.addNPTHole(pos, diameter, paste, ref=f"KiKit_TO_{i+1}", excludedFromPos=False,
+                            solderMaskMargin=solderMaskMargin)
 
     def addMillFillets(self, millRadius):
         """

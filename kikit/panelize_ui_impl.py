@@ -501,11 +501,12 @@ def buildTooling(preset, panel):
         hoffset, voffset = toolingPreset["hoffset"], toolingPreset["voffset"]
         diameter = toolingPreset["size"]
         paste = toolingPreset["paste"]
+        soldermaskmargin = toolingPreset["soldermaskmargin"]
         if type == "3hole":
-            panel.addCornerTooling(3, hoffset, voffset, diameter, paste)
+            panel.addCornerTooling(3, hoffset, voffset, diameter, paste, soldermaskmargin)
             return
         if type == "4hole":
-            panel.addCornerTooling(4, hoffset, voffset, diameter, paste)
+            panel.addCornerTooling(4, hoffset, voffset, diameter, paste, soldermaskmargin)
             return
         raise PresetError(f"Unknown type '{type}' of tooling specification.")
     except KeyError as e:

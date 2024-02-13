@@ -85,6 +85,7 @@
         "voffset": "0mm",
         "size": "2mm",
         "paste": false,
+        "soldermaskmargin": "0mm",
         "code": "none",
         "arg": ""
     },
