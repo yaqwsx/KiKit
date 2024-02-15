@@ -1,7 +1,7 @@
 from sys import stderr
 from numpy.core.fromnumeric import std
 from numpy.lib.utils import source
-from pcbnewTransition import pcbnew, isV6
+from pcbnewTransition import pcbnew, isV8
 from kikit.panelize_ui_impl import loadPresetChain, obtainPreset, mergePresets
 from kikit import panelize_ui
 from kikit.panelize import appendItem
@@ -58,7 +58,8 @@ def transplateBoard(source, target):
         target.Remove(x)
 
     targetNetinfo = target.GetNetInfo()
-    targetNetinfo.RemoveUnusedNets()
+    if not isV8():
+        targetNetinfo.RemoveUnusedNets()
 
     for x in source.GetDrawings():
         appendItem(target, x)
