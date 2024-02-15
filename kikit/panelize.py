@@ -1606,6 +1606,8 @@ class Panel:
         there is enough space on the board/frame/rail to place the feature.
 
         The offsets are measured from the outer edges of the substrate.
+
+        Optionally, a solder mask margin (diameter) can also be specified.
         """
         for i, pos in enumerate(self.panelCorners(horizontalOffset, verticalOffset)[:holeCount]):
             self.addNPTHole(pos, diameter, paste, ref=f"KiKit_TO_{i+1}", excludedFromPos=False,

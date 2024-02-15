@@ -124,13 +124,15 @@ None
 #### `addCornerTooling`
 ```
 addCornerTooling(self, holeCount, horizontalOffset, verticalOffset, diameter, 
-                 paste=False)
+                 paste=False, solderMaskMargin=None)
 ```
 Add up to 4 tooling holes to the top-left, top-right, bottom-left and
 bottom-right corner of the board (in this order). This function expects
 there is enough space on the board/frame/rail to place the feature.
 
 The offsets are measured from the outer edges of the substrate.
+
+Optionally, a solder mask margin (diameter) can also be specified.
 
 #### `addFiducial`
 ```
