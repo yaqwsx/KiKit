@@ -69,8 +69,9 @@ def transplateBoard(source, target):
         appendItem(target, x)
     for x in source.Zones():
         appendItem(target, x)
-    for n in [n for _, n in source.GetNetInfo().NetsByNetcode().items()]:
-        targetNetinfo.AppendNet(n)
+    if not isV8():
+        for n in [n for _, n in source.GetNetInfo().NetsByNetcode().items()]:
+            targetNetinfo.AppendNet(n)
 
     d = target.GetDesignSettings()
     d.CloneFrom(source.GetDesignSettings())
