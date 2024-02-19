@@ -416,6 +416,7 @@ by
 - `size` - diameter of the holes
 - `paste` - if true, the holes are included in the paste layer (therefore they
   appear on the stencil).
+- `solderMaskMargin` - diameter of solder mask (optional)
 
 #### Plugin
 
