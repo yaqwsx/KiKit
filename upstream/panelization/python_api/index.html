@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../../assets/logo.png">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.9">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.10">
     
     
       
@@ -24,7 +24,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.f2e4d321.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.7e359304.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
@@ -3130,12 +3130,13 @@ there is enough space on the board/frame/rail to place the feature.</p>
 None</p>
 <h4 id="addcornertooling"><code>addCornerTooling</code></h4>
 <p><div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>addCornerTooling(self, holeCount, horizontalOffset, verticalOffset, diameter, 
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>                 paste=False)
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>                 paste=False, solderMaskMargin=None)
 </code></pre></div>
 Add up to 4 tooling holes to the top-left, top-right, bottom-left and
 bottom-right corner of the board (in this order). This function expects
 there is enough space on the board/frame/rail to place the feature.</p>
 <p>The offsets are measured from the outer edges of the substrate.</p>
+<p>Optionally, a solder mask margin (diameter) can also be specified.</p>
 <h4 id="addfiducial"><code>addFiducial</code></h4>
 <p><div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>addFiducial(self, position, copperDiameter, openingDiameter, bottom=False, 
 <a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>            paste=False, ref=None)
