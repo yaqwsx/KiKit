@@ -1461,11 +1461,12 @@ class Panel:
             elif start.y == end.y or (abs(start.y - end.y) <= fromMm(0.5) and boundCurves):
                 self.addVCutH((start.y + end.y) / 2)
             else:
-                message = "Cannot perform V-Cut which is not horizontal or vertical\n"
+                description = f"[{toMm(start.x)}, {toMm(start.y)}] -> [{toMm(end.x)}, {toMm(end.y)}]"
+                message = f"Cannot perform V-Cut which is not horizontal or vertical ({description}).\n"
                 message += "Possible cause might be:\n"
                 message += "- check that intended edges are truly horizonal or vertical\n"
                 message += "- check your tab placement if it as expected\n"
-                message += "You can use layer style of cuts to see them and validate them"
+                message += "You can use layer style of cuts to see them and validate them."
                 raise RuntimeError(message)
 
     def makeMouseBites(self, cuts, diameter, spacing, offset=fromMm(0.25),
