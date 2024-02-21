@@ -988,6 +988,18 @@ class Panel:
         if refRenamer is not None:
             renameRefs(board, lambda x: refRenamer(len(self.substrates), x))
 
+        for footprint in board.GetFootprints():
+            value = footprint.GetValue()
+            if '*' in value:
+                ref = footprint.Reference().GetText()
+
+                cnt = value.split('*')[1]
+                mod = len(self.substrates) % int(cnt)
+
+                if mod > 0:
+                    new_ref = "{}_{}".format(ref, mod + 1)
+                    footprint.Reference().SetText(new_ref)
+
         drawings = collectItems(board.GetDrawings(), enlargedSourceArea)
         footprints = collectFootprints(board.GetFootprints(), enlargedSourceArea)
         tracks = collectItems(board.GetTracks(), enlargedSourceArea)

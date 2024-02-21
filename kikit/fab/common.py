@@ -170,8 +170,6 @@ def collectPosData(board, correctionFields, posFilter=lambda x : True,
     """
     if bom is None:
         bom = {}
-    else:
-        bom = { getReference(comp): comp for comp in bom }
 
     correctionPatterns = []
     if correctionFile is not None:
