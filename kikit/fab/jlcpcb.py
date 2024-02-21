@@ -89,8 +89,11 @@ def exportJlcpcb(board, outputdir, assembly, schematic, ignore, field,
     ordercodeFields = [x.strip() for x in field.split(",")]
     bom = collectBom(components, ordercodeFields, refsToIgnore)
 
+    bom_refs = set(x for xs in bom.values() for x in xs)
+    bom_components = [c for c in components if getReference(c) in bom_refs]
+
     posData = collectPosData(loadedBoard, correctionFields,
-        bom=components, posFilter=noFilter, correctionFile=correctionpatterns)
+        bom=bom_components, posFilter=noFilter, correctionFile=correctionpatterns)
     boardReferences = set([x[0] for x in posData])
     bom = {key: [v for v in val if v in boardReferences] for key, val in bom.items()}
     bom = {key: val for key, val in bom.items() if len(val) > 0}
