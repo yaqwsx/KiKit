@@ -79,7 +79,8 @@ def transplateBoard(source, target):
     target.SetProperties(source.GetProperties())
     target.SetPageSettings(source.GetPageSettings())
     target.SetTitleBlock(source.GetTitleBlock())
-    target.SetZoneSettings(source.GetZoneSettings())
+    if not isV8():
+        target.SetZoneSettings(source.GetZoneSettings())
 
 
 class SFile():
