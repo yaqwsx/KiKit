@@ -4,7 +4,7 @@ author: 'Jan "yaqwsx" Mrázek'
 inputs:
   kicad-version:
     description: "Version of KiCAD, currently supported v5, v6, and nightly"
-    default: 'v6'
+    default: 'v8'
 runs:
   using: 'composite'
   steps:
