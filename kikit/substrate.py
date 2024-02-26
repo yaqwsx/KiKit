@@ -554,7 +554,8 @@ class Substrate:
                 # Yield a line
                 a = coords[i]
                 b = coords[(i + 1) % len(coords)]
-                segments.append(self._constructEdgeSegment(a, b))
+                if a != b:
+                    segments.append(self._constructEdgeSegment(a, b))
                 i += 1
         return segments
 
