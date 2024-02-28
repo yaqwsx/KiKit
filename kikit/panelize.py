@@ -618,7 +618,7 @@ class Panel:
             pass
 
     def writeCustomDrcRules(self):
-        with open(self.getDruFilepath(), "w", encoding="utf-8") as f:
+        with open(self.getDruFilepath(), "w+", encoding="utf-8") as f:
             f.write("(version 1)\n\n")
             for r in self.customDRCRules:
                 f.write(str(r))
