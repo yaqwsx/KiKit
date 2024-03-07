@@ -1372,7 +1372,7 @@ class Panel:
         boardSlot = GeometryCollection()
         for s in self.substrates:
             boardSlot = boardSlot.union(s.exterior())
-        boardSlot = boardSlot.buffer(slotwidth)
+        boardSlot = boardSlot.buffer(slotwidth, join_style="mitre")
         frameBody = box(*self.boardSubstrate.bounds()).difference(boardSlot)
         self.appendSubstrate(frameBody)
 
