@@ -764,7 +764,10 @@ class Substrate:
         circle.SetShape(STROKE_T.S_CIRCLE)
         circle.SetLayer(Layer.Edge_Cuts)
         circle.SetCenter(toKiCADPoint(c))
-        circle.SetRadius(int(r))
+        if isV8():
+            circle.SetRadius(int(r))
+        else:
+            circle.SetEnd(toKiCADPoint(c + np.array([r, 0])))
         return circle
 
     def boundingBox(self):
