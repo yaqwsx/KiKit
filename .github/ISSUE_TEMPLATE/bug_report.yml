@@ -7,7 +7,9 @@ body:
     options:
     - label: I have read [FAQ](https://yaqwsx.github.io/KiKit/latest/faq/)
       required: true
-    - label: I use KiKit at least version 1.4.0 (older version are not supported)
+    - label: I have searched existing issues (including closed ones)
+      required: true
+    - label: I use KiKit at least version 1.5.0 (older version are not supported)
       required: true
 - type: input
   attributes:
