@@ -18,7 +18,7 @@ def test_grid_place_base_rotation():
 
 
 def test_basic_grid_position_rotation():
-    placer = GridPlacerBase()
+    placer = BasicGridPosition(0, 0)
     for (i, j) in ((0, 0), (0, 1), (1, 0), (1, 1), (2, 0), (2, 1)):
         rotation = placer.rotation(i, j)
         assert isinstance(rotation, KiAngle)
