@@ -36,6 +36,9 @@ class KiCADCopperFillMixin(PanelFeature):
         geoms = [zoneArea] if isinstance(zoneArea, Polygon) else zoneArea.geoms
 
         for g in geoms:
+            if len(g.exterior.coords) == 0:
+                # Skip empty geometries
+                continue
             zoneContainer = pcbnew.ZONE(panel.board)
             self._adjustZoneParameters(zoneContainer)
             zoneContainer.Outline().AddOutline(linestringToKicad(g.exterior))
