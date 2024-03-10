@@ -56,11 +56,11 @@ class GridPlacerBase:
         """
         raise NotImplementedError("GridPlacerBase.position has to be overridden")
 
-    def rotation(self, i: int, j: int) -> int:
+    def rotation(self, i: int, j: int) -> KiAngle:
         """
         Given row and col coords of a board, return the orientation of the board
         """
-        return 0
+        return EDA_ANGLE(0, pcbnew.DEGREES_T)
 
 class BasicGridPosition(GridPlacerBase):
     """
@@ -93,8 +93,6 @@ class BasicGridPosition(GridPlacerBase):
                hbonecount * (self.hbonewidth + self.verSpace)
         return toKiCADPoint((xPos, yPos))
 
-    def rotation(self, i: int, j: int) -> KiAngle:
-        return EDA_ANGLE(0, pcbnew.DEGREES_T)
 
 class OddEvenRowsPosition(BasicGridPosition):
     """
@@ -120,7 +118,7 @@ class OddEvenRowsColumnsPosition(BasicGridPosition):
     """
     def rotation(self, i: int, j: int) -> KiAngle:
         if (i % 2) == (j % 2):
-            return 0
+            return EDA_ANGLE(0, pcbnew.DEGREES_T)
         return EDA_ANGLE(180, pcbnew.DEGREES_T)
 
 
