@@ -39,7 +39,8 @@ body:
       If you run into KiKit crashing, please rerun the command with `--debug
       'trace: true'` (when using the panelize command) or with `--debug` (when
       using any other command) and include the output in the error log. Please,
-      enclose the log into a code block.
+      enclose the log into a code block. Not including the log might
+      significantly increase time for handling the issue.
 
       If applicable, add screenshots to explain your problem. Note that if file
       type is not supported by GitHub, you can put them in a ZIP archive.
@@ -50,8 +51,9 @@ body:
     label: Steps to Reproduce
     description: >
       Please specify the steps to reproduce the issue. Do not forget to include
-      the KiKit command and also, please include any input boards you use. If
-      the boards are confidential, please reach out to me via e-mail to discuss
-      details.
+      the KiKit command and also, please include any input boards you use. Not
+      including files for reproduction might significantly increase time for
+      handling the issue. If the boards are confidential, you can send them to
+      e-mail@honzamrazek.cz with subject "KiKit issue files for #123".
   validations:
     required: true
