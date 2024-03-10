@@ -62,7 +62,8 @@ class DrcExclusion:
 
     def eqRepr(self) -> Tuple[str, Union[Tuple[str, str], str]]:
         if len(self.objects) == 1:
-            return (self.type, self.objects[0])
+            objRepr = str(self.objects[0].m_Uuid.AsString()) if isinstance(self.objects[0], pcbnew.BOARD_ITEM) else self.objects[0]
+            return (self.type, objRepr)
         if len(self.objects) == 2 or self.type in ["starved_thermal"]:
             return (self.type, tuple(str(x.m_Uuid.AsString()) for x in self.objects))
         raise RuntimeError("Unsupported exclusion object count")
