@@ -53,7 +53,6 @@
       },
       "diff_pair_dimensions": [],
       "drc_exclusions": [
-        "clearance|125500000|66599946|67972d01-f981-423f-b08f-4b2e992f6e6b|d604c93f-14fa-4d2f-8d1d-18b42cf97829",
         "solder_mask_bridge|118200000|64562000|ee1c604f-3d0f-4478-a263-6395373308b6|d1a4fe0d-ee99-4f84-abe3-44be9e1b75da",
         "solder_mask_bridge|118200000|67962000|ef4a6011-3da5-405d-bafa-0e7e1e6d8578|ed47ef2a-c373-490d-94e3-38d8847f43f8",
         "solder_mask_bridge|118600000|64562000|ac4940c0-9082-4894-ab08-825e94d4368a|ee1c604f-3d0f-4478-a263-6395373308b6",
