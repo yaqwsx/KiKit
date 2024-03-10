@@ -48,12 +48,19 @@
         "silk_text_thickness": 0.15,
         "silk_text_upright": false,
         "zones": {
-          "45_degree_only": false,
           "min_clearance": 0.508
         }
       },
       "diff_pair_dimensions": [],
-      "drc_exclusions": [],
+      "drc_exclusions": [
+        "clearance|125500000|66599946|67972d01-f981-423f-b08f-4b2e992f6e6b|d604c93f-14fa-4d2f-8d1d-18b42cf97829",
+        "solder_mask_bridge|118200000|64562000|ee1c604f-3d0f-4478-a263-6395373308b6|d1a4fe0d-ee99-4f84-abe3-44be9e1b75da",
+        "solder_mask_bridge|118200000|67962000|ef4a6011-3da5-405d-bafa-0e7e1e6d8578|ed47ef2a-c373-490d-94e3-38d8847f43f8",
+        "solder_mask_bridge|118600000|64562000|ac4940c0-9082-4894-ab08-825e94d4368a|ee1c604f-3d0f-4478-a263-6395373308b6",
+        "solder_mask_bridge|118600000|67962000|321b178c-ef52-40a2-bc3b-cec6184f3809|ef4a6011-3da5-405d-bafa-0e7e1e6d8578",
+        "solder_mask_bridge|119025000|64562000|9b9cae17-f7c2-4677-9ebc-d04a38d30f2c|ac4940c0-9082-4894-ab08-825e94d4368a",
+        "solder_mask_bridge|119025000|67962000|87a2690f-35c4-40ad-861d-60c2a9f93c64|321b178c-ef52-40a2-bc3b-cec6184f3809"
+      ],
       "meta": {
         "filename": "board_design_settings.json",
         "version": 2
@@ -107,12 +114,9 @@
         "unconnected_items": "error",
         "unresolved_variable": "error",
         "via_dangling": "warning",
-        "zone_has_empty_net": "error",
         "zones_intersect": "error"
       },
       "rules": {
-        "allow_blind_buried_vias": false,
-        "allow_microvias": false,
         "max_error": 0.005,
         "min_clearance": 0.0,
         "min_connection": 0.0,
@@ -244,7 +248,7 @@
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "conn-fail.kicad_pro",
+    "filename": "conn-fail-ignored-v8.kicad_pro",
     "version": 1
   },
   "net_settings": {

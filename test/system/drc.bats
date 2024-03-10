@@ -12,4 +12,12 @@ load common
 
     run kikit drc run $RES/conn-fail.kicad_pcb
     [ "$status" -eq 1 ]
+
+    SUFFIX=""
+    if [ $(kikit-info kicadversion) = "8.0"  ]; then
+        SUFFIX="-v8"
+    fi
+
+    run kikit drc run $RES/conn-fail-ignored${SUFFIX}.kicad_pcb
+    [ "$status" -eq 0 ]
 }
