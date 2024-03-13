@@ -1007,7 +1007,8 @@ class Panel:
                 if isinstance(item, pcbnew.FIELD_TYPE) and item.IsKeepUpright():
                     actualOrientation = item.GetDrawRotation()
                     item.SetKeepUpright(False)
-                    item.SetTextAngle(actualOrientation - footprint.GetOrientation())
+                    alteredOrientation = item.GetDrawRotation()
+                    item.SetTextAngle(item.GetTextAngle() + (alteredOrientation - actualOrientation))
             footprint.Rotate(originPoint, rotationAngle)
             footprint.Move(translation)
             edges += removeCutsFromFootprint(footprint)
