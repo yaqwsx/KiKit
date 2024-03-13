@@ -398,7 +398,7 @@ it:
             --framing 'railstb; width: 5mm; space: 3mm;' \
             --tooling '3hole; hoffset: 2.5mm; voffset: 2.5mm; size: 1.5mm' \
             --fiducials '3fid; hoffset: 5mm; voffset: 2.5mm; coppersize: 2mm; opening: 1mm;' \
-            --text 'simple; text: yaqwsx's panel; anchor: mt; voffset: 2.5mm; hjustify: center; vjustify: center;' \
+            --text 'simple; text: yaqwsxs panel; anchor: mt; voffset: 2.5mm; hjustify: center; vjustify: center;' \
             --post 'millradius: 1mm' \
             docs/resources/conn.kicad_pcb panel.kicad_pcb
         ```
@@ -412,7 +412,7 @@ it:
             --framing "railstb; width: 5mm; space: 3mm;" ^
             --tooling "3hole; hoffset: 2.5mm; voffset: 2.5mm; size: 1.5mm" ^
             --fiducials "3fid; hoffset: 5mm; voffset: 2.5mm; coppersize: 2mm; opening: 1mm;" ^
-            --text "simple; text: yaqwsx's panel; anchor: mt; voffset: 2.5mm; hjustify: center; vjustify: center;" ^
+            --text "simple; text: yaqwsxs panel; anchor: mt; voffset: 2.5mm; hjustify: center; vjustify: center;" ^
             --post "millradius: 1mm" ^
             docs/resources/conn.kicad_pcb panel.kicad_pcb
         ```
@@ -435,7 +435,7 @@ introduce new variables.
             --framing 'railstb; width: 5mm; space: 3mm;' \
             --tooling '3hole; hoffset: 2.5mm; voffset: 2.5mm; size: 1.5mm' \
             --fiducials '3fid; hoffset: 5mm; voffset: 2.5mm; coppersize: 2mm; opening: 1mm;' \
-            --text 'simple; text: yaqwsx's panel; anchor: mt; voffset: 2.5mm; hjustify: center; vjustify: center;' \
+            --text 'simple; text: yaqwsxs panel; anchor: mt; voffset: 2.5mm; hjustify: center; vjustify: center;' \
             --text2 'simple; text: Created on {date}; anchor: mb; voffset: -2.5mm; hjustify: center; vjustify: center;' \
             --post 'millradius: 1mm' \
             docs/resources/conn.kicad_pcb panel.kicad_pcb
@@ -450,7 +450,7 @@ introduce new variables.
             --framing "railstb; width: 5mm; space: 3mm;" ^
             --tooling "3hole; hoffset: 2.5mm; voffset: 2.5mm; size: 1.5mm" ^
             --fiducials "3fid; hoffset: 5mm; voffset: 2.5mm; coppersize: 2mm; opening: 1mm;" ^
-            --text "simple; text: yaqwsx's panel; anchor: mt; voffset: 2.5mm; hjustify: center; vjustify: center;" ^
+            --text "simple; text: yaqwsxs panel; anchor: mt; voffset: 2.5mm; hjustify: center; vjustify: center;" ^
             --text2 "simple; text: Created on {date}; anchor: mb; voffset: -2.5mm; hjustify: center; vjustify: center;" ^
             --post "millradius: 1mm" ^
             docs/resources/conn.kicad_pcb panel.kicad_pcb
@@ -538,7 +538,7 @@ of the panel. Let's see an example:
             --framing 'frame; width: 5mm; space: 3mm; mintotalheight: 100mm; mintotalwidth: 100mm' \
             --tooling '3hole; hoffset: 2.5mm; voffset: 2.5mm; size: 1.5mm' \
             --fiducials '3fid; hoffset: 5mm; voffset: 2.5mm; coppersize: 2mm; opening: 1mm;' \
-            --text 'simple; text: yaqwsx's panel with minimal dimensions; anchor: mt; voffset: 2.5mm; hjustify: center; vjustify: center;' \
+            --text 'simple; text: yaqwsxs panel with minimal dimensions; anchor: mt; voffset: 2.5mm; hjustify: center; vjustify: center;' \
             --post 'millradius: 1mm' \
             docs/resources/conn.kicad_pcb panel.kicad_pcb
         ```
@@ -552,7 +552,7 @@ of the panel. Let's see an example:
             --framing "frame; width: 5mm; space: 3mm; mintotalheight: 100mm; mintotalwidth: 100mm" ^
             --tooling "3hole; hoffset: 2.5mm; voffset: 2.5mm; size: 1.5mm" ^
             --fiducials "3fid; hoffset: 5mm; voffset: 2.5mm; coppersize: 2mm; opening: 1mm;" ^
-            --text "simple; text: yaqwsx's panel with minimal dimensions; anchor: mt; voffset: 2.5mm; hjustify: center; vjustify: center;" ^
+            --text "simple; text: yaqwsxs panel with minimal dimensions; anchor: mt; voffset: 2.5mm; hjustify: center; vjustify: center;" ^
             --post "millradius: 1mm" ^
             docs/resources/conn.kicad_pcb panel.kicad_pcb
         ```
