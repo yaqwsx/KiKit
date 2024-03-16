@@ -51,6 +51,17 @@ down and run that for you instead:
 docker run -v $(pwd):/kikit yaqwsx/kikit:nightly --version
 ```
 
+We provide the following containers:
+
+- **latests**: The latest stable version of KiKit with the newest stable KiCAD.
+- **vX.Y.Z-KiCADvA**: A container with particular version of KiKit backed by
+  given version of KiCAD.
+- **nightly**, **nightly-m1**: Daily build of KiKit from the upstream version
+  with the newest KiCAD. The m1 flavour supports mac M1.
+
+A full list is available on
+[Dockerhub](https://hub.docker.com/r/yaqwsx/kikit/tags).
+
 ## Mac M1 containers
 
 There are also nightly containers of Mac M1 available with tag `nightly-m1`.
