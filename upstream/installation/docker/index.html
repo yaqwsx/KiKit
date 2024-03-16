@@ -1438,6 +1438,16 @@ the image name (e.g., <code>yaqwsx/kikit:nightly</code>), and Docker will pull t
 down and run that for you instead:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>docker run -v $(pwd):/kikit yaqwsx/kikit:nightly --version
 </code></pre></div>
+<p>We provide the following containers:</p>
+<ul>
+<li><strong>latests</strong>: The latest stable version of KiKit with the newest stable KiCAD.</li>
+<li><strong>vX.Y.Z-KiCADvA</strong>: A container with particular version of KiKit backed by
+  given version of KiCAD.</li>
+<li><strong>nightly</strong>, <strong>nightly-m1</strong>: Daily build of KiKit from the upstream version
+  with the newest KiCAD. The m1 flavour supports mac M1.</li>
+</ul>
+<p>A full list is available on
+<a href="https://hub.docker.com/r/yaqwsx/kikit/tags">Dockerhub</a>.</p>
 <h2 id="mac-m1-containers">Mac M1 containers</h2>
 <p>There are also nightly containers of Mac M1 available with tag <code>nightly-m1</code>.</p>
 <p>If you want to use Makefile for your projects, the preferable way is to invoke
