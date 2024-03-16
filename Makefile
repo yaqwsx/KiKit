@@ -8,7 +8,7 @@ PCM_LIB_RESOURCES :=  $(shell find pcm/kikit-lib -type f -print) \
 	$(shell find kikit/resources/kikit.kicad_sym -type f -print) \
 	$(shell find kikit/resources/kikit.pretty -type f -print)
 
-.PHONY: doc clean package release test test-system test-unit
+.PHONY: doc clean package release test test-system test-unit docker-release
 
 all: doc package test pcm
 
@@ -84,6 +84,11 @@ pcm-lib: $(PCM_LIB_RESOURCES)
 		-s versions.-1.download_size=$$( du -sb build/pcm-kikit-lib.zip | cut -f1) \
 		-s versions.-1.download_url=\"TBA\" \
 		build/pcm-kikit-lib-metadata.json build/pcm-kikit-lib-metadata.json
+
+docker-release:
+	docker build -t yaqwsx/kikit:$(shell git describe --tags --always)-KiCAD8 --build-arg="KICAD_VERSION=8.0" .
+	docker build -t yaqwsx/kikit:latest --build-arg="KICAD_VERSION=8.0" .
+	docker build -t yaqwsx/kikit:$(shell git describe --tags --always)-KiCAD7 --build-arg="KICAD_VERSION=7.0" .
 
 clean:
 	rm -rf dist build
