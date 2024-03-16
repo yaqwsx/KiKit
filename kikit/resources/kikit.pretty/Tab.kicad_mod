@@ -1,7 +1,7 @@
 (footprint "Tab" (version 20221018) (generator pcbnew)
   (layer "F.Cu")
   (descr "A symbol representing annotation for tab placement")
-  (attr exclude_from_pos_files exclude_from_bom)
+  (attr board_only exclude_from_pos_files exclude_from_bom allow_missing_courtyard)
   (fp_text reference "REF**" (at -0.25 -2) (layer "F.SilkS") hide
       (effects (font (size 1 1) (thickness 0.15)))
     (tstamp 4b0d90d9-4a87-4663-bf4c-5132f4fbc9d4)
