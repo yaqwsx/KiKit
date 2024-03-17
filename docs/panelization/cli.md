@@ -591,5 +591,7 @@ Finishing touches to the panel.
   be one of `tl`, `tr`, `bl`, `br` (corners), `mt`, `mb`, `ml`, `mr` (middle of
   sides), `c` (center). Empty string does not changes the origin.
 - `dimensions` - `true` or `false`. Draw dimensions with the panel size.
+- `edgewidth` ­– width of the line for panel edges (that is the lines in the
+  `Edge.Cuts` layer).
 
 

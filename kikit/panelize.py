@@ -529,13 +529,19 @@ class Panel:
         """
         return len(self.errors) > 0
 
-    def save(self, reconstructArcs: bool=False, refillAllZones: bool=False):
+    def save(self, reconstructArcs: bool=False, refillAllZones: bool=False,
+             edgeWidth: KiLength=fromMm(0.1)):
         """
         Saves the panel to a file and makes the requested changes to the prl and
         pro files.
         """
         panelEdges = self.boardSubstrate.serialize(reconstructArcs)
         boardsEdges = self._getRefillEdges(reconstructArcs)
+
+        for e in panelEdges:
+            e.SetWidth(edgeWidth)
+        for e in boardsEdges:
+            e.SetWidth(edgeWidth)
 
         vcuts = self._renderVCutH() + self._renderVCutV()
         keepouts = []

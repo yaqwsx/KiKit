@@ -707,6 +707,10 @@ POST_SECTION = {
     "dimensions": SBool(
         always(),
         "Add dimensions markings to the finished panel"
+    ),
+    "edgewidth": SLength(
+        always(),
+        "Specify line width for the Edge.Cuts of the panel"
     )
 }
 

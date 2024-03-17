@@ -180,7 +180,8 @@
         "scriptarg": "",
         "origin": "tl",
         "refillzones": false,
-        "dimensions": false
+        "dimensions": false,
+        "edgewidth": "0.1mm"
     },
     "page": {
         "type": "inherit",

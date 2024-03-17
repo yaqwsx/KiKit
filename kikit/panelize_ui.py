@@ -303,7 +303,8 @@ def doPanelization(input, output, preset, plugins=[]):
     ki.buildDebugAnnotation(preset["debug"], panel)
 
     panel.save(reconstructArcs=preset["post"]["reconstructarcs"],
-               refillAllZones=preset["post"]["refillzones"])
+               refillAllZones=preset["post"]["refillzones"],
+               edgeWidth=preset["post"]["edgewidth"])
 
     if panel.hasErrors():
         raise NonFatalErrors(panel.errors)
