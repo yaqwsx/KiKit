@@ -260,6 +260,18 @@ def isLinestringCyclic(line):
     c = line.coords
     return c[0] == c[-1] or isinstance(line, LinearRing)
 
+def constructArrow(origin, direction, distance: float, tipSize: float) -> shapely.LineString:
+    origin = np.array(origin)
+    direction = np.array(direction)
+
+    endpoint = origin + direction * distance
+
+    tipEndpoint1 = endpoint + tipSize / 2 * (-direction - np.array([-direction[1], direction[0]]))
+    tipEndpoint2 = endpoint + tipSize / 2 * (-direction + np.array([-direction[1], direction[0]]))
+
+    arrow = shapely.LineString([origin, endpoint, tipEndpoint1, tipEndpoint2, endpoint])
+    return arrow
+
 def fromOpt(object, default):
     """
     Given an object, return it if not None. Otherwise return default

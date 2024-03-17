@@ -30,6 +30,15 @@ class NoIntersectionError(RuntimeError):
         super().__init__(message)
         self.point = point
 
+class TabError(RuntimeError):
+    def __init__(self, origin, direction, hints):
+        self.origin = origin
+        self.direction = direction
+        message = "Cannot create tab; possible causes:\n"
+        for hint in hints:
+            message += f"- {hint}\n"
+        super().__init__(message)
+
 class TabFilletError(RuntimeError):
     pass
 
@@ -823,9 +832,9 @@ class Substrate:
         self.orient()
 
         origin = np.array(origin)
+        direction = np.around(normalize(direction), 4)
         for geom in listGeometries(self.substrates):
             try:
-                direction = np.around(normalize(direction), 4)
                 sideOriginA = origin + makePerpendicular(direction) * width / 2
                 sideOriginB = origin - makePerpendicular(direction) * width / 2
                 boundary = geom.exterior
@@ -874,19 +883,13 @@ class Substrate:
             except NoIntersectionError as e:
                 continue
             except TabFilletError as e:
-                message = f"Cannot create fillet for tab: {e}\n"
-                message += f"  Annotation position {self._strPosition(origin)}\n"
-                message += "This is a bug. Please open an issue and provide the board on which the fillet failed."
-                raise RuntimeError(message) from None
+                raise TabError(origin, direction, ["This is a bug. Please open an issue and provide the board on which the fillet failed."])
 
-        message = "Cannot create tab:\n"
-        message += f"  Annotation position {self._strPosition(origin)}\n"
-        message += f"  Tab ray origin that failed: {self._strPosition(origin)}\n"
-        message += "Possible causes:\n"
-        message += "- too wide tab so it does not hit the board,\n"
-        message += "- annotation is placed inside the board,\n"
-        message += "- ray length is not sufficient,\n"
-        raise RuntimeError(message) from None
+        raise TabError(origin, direction, [
+            "too wide tab so it does not hit the board",
+            "annotation is placed inside the board",
+            "ray length is not sufficient"
+        ])
 
     def _makeTabFillet(self, tab: Polygon, tabFace: LineString, fillet: KiLength) \
             -> Tuple[Polygon, LineString]:

@@ -221,8 +221,12 @@ def panelize(input, output, preset, plugin, layout, source, tabs, cuts, framing,
                 f.write(ki.dumpPreset(preset))
     except Exception as e:
         import sys
-        sys.stderr.write("An error occurred: " + str(e) + "\n")
-        sys.stderr.write("No output files produced\n")
+        from kikit.panelize import NonFatalErrors
+        if isinstance(e, NonFatalErrors):
+            sys.stderr.write(str(e) + "\n")
+        else:
+            sys.stderr.write("An error occurred: " + str(e) + "\n")
+            sys.stderr.write("No output files produced\n")
         if isinstance(preset, dict) and preset["debug"]["trace"]:
             traceback.print_exc(file=sys.stderr)
         sys.exit(1)
@@ -233,7 +237,7 @@ def doPanelization(input, output, preset, plugins=[]):
     handle errors based on the context; e.g., CLI vs GUI
     """
     from kikit import panelize_ui_impl as ki
-    from kikit.panelize import Panel
+    from kikit.panelize import Panel, NonFatalErrors
     from pcbnewTransition.transition import pcbnew
     from pcbnewTransition.pcbnew import LoadBoard
     from itertools import chain
@@ -301,6 +305,9 @@ def doPanelization(input, output, preset, plugins=[]):
     panel.save(reconstructArcs=preset["post"]["reconstructarcs"],
                refillAllZones=preset["post"]["refillzones"])
 
+    if panel.hasErrors():
+        raise NonFatalErrors(panel.errors)
+
 
 @click.command()
 @click.argument("input", type=click.Path(dir_okay=False))
@@ -326,7 +333,7 @@ def separate(input, output, source, page, debug, keepannotations, preservearcs):
     """
     try:
         from kikit import panelize_ui_impl as ki
-        from kikit.panelize import Panel
+        from kikit.panelize import Panel, NonFatalErrors
         from kikit.units import mm
         from pcbnewTransition import pcbnew
         from pcbnewTransition.pcbnew import LoadBoard, VECTOR2I
@@ -355,6 +362,9 @@ def separate(input, output, source, page, debug, keepannotations, preservearcs):
         ki.positionPanel(preset["page"], panel)
 
         panel.save(reconstructArcs=preservearcs)
+
+        if panel.hasErrors():
+            raise NonFatalErrors(panel.errors)
     except Exception as e:
         import sys
         sys.stderr.write("An error occurred: " + str(e) + "\n")

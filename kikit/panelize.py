@@ -1,5 +1,6 @@
 from copy import deepcopy
 import itertools
+import textwrap
 from pcbnewTransition import pcbnew, isV6
 from kikit import sexpr
 from kikit.common import normalize
@@ -40,6 +41,17 @@ class PanelError(RuntimeError):
 
 class TooLargeError(PanelError):
     pass
+
+class NonFatalErrors(PanelError):
+    def __init__(self, errors: List[Tuple[KiPoint, str]]) -> None:
+        multiple = len(errors) > 1
+
+        message = f"There {'are' if multiple else 'is'} {len(errors)} error{'s' if multiple else ''} in the panel. The panel with error markers was saved for inspection.\n\n"
+        message += "The following errors occurred:\n"
+        for pos, err in errors:
+            message += f"- Location [{toMm(pos[0])}, {toMm(pos[1])}]\n"
+            message += textwrap.indent(err, "  ")
+        super().__init__(message)
 
 def identity(x):
     return x
@@ -366,7 +378,7 @@ def polygonToZone(polygon, board):
         zone.Outline().AddHole(linestringToKicad(boundary))
     return zone
 
-def buildTabs(substrate: Substrate,
+def buildTabs(panel: "Panel", substrate: Substrate,
               partitionLines: Union[GeometryCollection, LineString],
               tabAnnotations: Iterable[TabAnnotation], fillet: KiLength = 0) -> \
                 Tuple[List[Polygon], List[LineString]]:
@@ -379,11 +391,17 @@ def buildTabs(substrate: Substrate,
     """
     tabs, cuts = [], []
     for annotation in tabAnnotations:
-        t, c = substrate.tab(annotation.origin, annotation.direction,
-            annotation.width, partitionLines, annotation.maxLength, fillet)
-        if t is not None:
-            tabs.append(t)
-            cuts.append(c)
+        try:
+            t, c = substrate.tab(annotation.origin, annotation.direction,
+                annotation.width, partitionLines, annotation.maxLength, fillet)
+            if t is not None:
+                tabs.append(t)
+                cuts.append(c)
+        except TabError as e:
+            panel._renderLines(
+                [constructArrow(annotation.origin, annotation.direction, fromMm(3), fromMm(1))],
+                Layer.Margin)
+            panel.reportError(toKiCADPoint(e.origin), str(e))
     return tabs, cuts
 
 def normalizePartitionLineOrientation(line):
@@ -453,6 +471,8 @@ class Panel:
         when boards are always associated with a project, you have to pass a
         name of the resulting file.
         """
+        self.errors: List[Tuple[KiPoint, str]] = []
+
         self.filename = panelFilename
         self.board = pcbnew.NewBoard(panelFilename)
         self.sourcePaths = set() # A set of all board files that were appended to the panel
@@ -486,6 +506,28 @@ class Panel:
         self.filletSize: Optional[KiLength] = None
         self.chamferWidth: Optional[KiLength] = None
         self.chamferHeight: Optional[KiLength] = None
+
+    def reportError(self, position: KiPoint, message: str) -> None:
+        """
+        Reports a non-fatal error. The error is marked and rendered to the panel
+        """
+        footprint = pcbnew.FootprintLoad(KIKIT_LIB, "Error")
+        footprint.SetPosition(position)
+        for x in footprint.GraphicalItems():
+            if not isinstance(x, pcbnew.PCB_TEXTBOX):
+                continue
+            text = x.GetText()
+            if text == "MESSAGE":
+                x.SetText(message)
+        self.board.Add(footprint)
+
+        self.errors.append((position, message))
+
+    def hasErrors(self) -> bool:
+        """
+        Report if panel has any non-fatal errors presents
+        """
+        return len(self.errors) > 0
 
     def save(self, reconstructArcs: bool=False, refillAllZones: bool=False):
         """
@@ -1306,9 +1348,9 @@ class Panel:
 
         minHeight - if the panel doesn't meet this height, it is extended
 
-        maxWidth - if the panel doesn't meet this width, TooLargeError is raised
+        maxWidth - if the panel doesn't meet this width, error is set and marked
 
-        maxHeight - if the panel doesn't meet this height, TooLargeHeight is raised
+        maxHeight - if the panel doesn't meet this height, error is set and marked
         """
         frameInnerRect = expandRect(shpBoxToRect(self.boardsBBox()), hspace, vspace)
         frameOuterRect = expandRect(frameInnerRect, width)
@@ -1319,7 +1361,8 @@ class Panel:
         if maxHeight is not None and frameOuterRect.GetHeight() > maxHeight:
             sizeErrors.append(f"Panel height {frameOuterRect.GetHeight() / units.mm} mm exceeds the limit {maxHeight / units.mm} mm")
         if len(sizeErrors) > 0:
-            raise TooLargeError(f"Panel doesn't meet size constraints:\n" + "\n".join(f"- {x}" for x in sizeErrors))
+            self.reportError(toKiCADPoint(frameOuterRect.GetEnd()),
+                             "Panel doesn't meet size constraints:\n" + "\n".join(f"- {x}" for x in sizeErrors))
 
         if frameOuterRect.GetWidth() < minWidth:
             diff = minWidth - frameOuterRect.GetWidth()
@@ -1363,9 +1406,9 @@ class Panel:
 
         minHeight - if the panel doesn't meet this height, it is extended
 
-        maxWidth - if the panel doesn't meet this width, TooLargeError is raised
+        maxWidth - if the panel doesn't meet this width, error is set
 
-        maxHeight - if the panel doesn't meet this height, TooLargeHeight is raised
+        maxHeight - if the panel doesn't meet this height, error is set
         """
         self.makeFrame(width, hspace, vspace, minWidth, minHeight, maxWidth, maxHeight)
         boardSlot = GeometryCollection()
@@ -1380,12 +1423,12 @@ class Panel:
         """
         Adds a rail to top and bottom. You can specify minimal height the panel
         has to feature. You can also specify maximal height of the panel. If the
-        height would be exceeded, TooLargeError is raised.
+        height would be exceeded, error is set.
         """
         minx, miny, maxx, maxy = self.panelBBox()
         height = maxy - miny + 2 * thickness
         if maxHeight is not None and height > maxHeight:
-            raise TooLargeError(f"Panel height {height / units.mm} mm exceeds the limit {maxHeight / units.mm} mm")
+            self.reportError(toKiCADPoint((maxx, maxy)), f"Panel height {height / units.mm} mm exceeds the limit {maxHeight / units.mm} mm")
         if height < minHeight:
             thickness = (minHeight - maxy + miny) // 2
         topRail = box(minx, maxy, maxx, maxy + thickness)
@@ -1402,7 +1445,7 @@ class Panel:
         minx, miny, maxx, maxy = self.panelBBox()
         width = maxx - minx + 2 * thickness
         if maxWidth is not None and width > maxWidth:
-            raise TooLargeError(f"Panel width {width / units.mm} mm exceeds the limit {maxWidth / units.mm} mm")
+            self.reportError(toKiCADPoint((maxx, maxy)), f"Panel width {width / units.mm} mm exceeds the limit {maxWidth / units.mm} mm")
         if width < minWidth:
             thickness = (minWidth - maxx + minx) // 2
         leftRail = box(minx - thickness, miny, minx, maxy)
@@ -1442,7 +1485,7 @@ class Panel:
         """
         Take a list of lines to cut and performs V-CUTS. When boundCurves is
         set, approximate curved cuts by a line from the first and last point.
-        Otherwise, raise an exception.
+        Otherwise, make an approximate cut and report error.
         """
         for cut in cuts:
             if len(cut.simplify(SHP_EPSILON).coords) > 2 and not boundCurves:
@@ -1451,7 +1494,9 @@ class Panel:
                 message += "- your tabs hit a curved boundary of your PCB,\n"
                 message += "- your vertical or horizontal PCB edges are not precisely vertical or horizontal.\n"
                 message += "Modify the design or accept curve approximation via V-cuts."
-                raise RuntimeError(message)
+                self._renderLines([cut], Layer.Margin)
+                self.reportError(toKiCADPoint(cut[0]), message)
+                continue
             cut = cut.simplify(1).parallel_offset(offset, "left")
             start = roundPoint(cut.coords[0])
             end = roundPoint(cut.coords[-1])
@@ -1466,7 +1511,9 @@ class Panel:
                 message += "- check that intended edges are truly horizonal or vertical\n"
                 message += "- check your tab placement if it as expected\n"
                 message += "You can use layer style of cuts to see them and validate them."
-                raise RuntimeError(message)
+                self._renderLines([cut], Layer.Margin)
+                self.reportError(toKiCADPoint(cut[0]), message)
+                continue
 
     def makeMouseBites(self, cuts, diameter, spacing, offset=fromMm(0.25),
         prolongation=fromMm(0.5)):
@@ -1655,7 +1702,7 @@ class Panel:
         """
         tabs, cuts = [], []
         for s in self.substrates:
-            t, c = buildTabs(s, s.partitionLine, s.annotations, fillet)
+            t, c = buildTabs(self, s, s.partitionLine, s.annotations, fillet)
             tabs.extend(t)
             cuts.extend(c)
         self.boardSubstrate.union(tabs)
@@ -1868,10 +1915,11 @@ class Panel:
         By default, fills top and bottom layer, but you can specify any other
         copper layer that is enabled.
         """
+        _, _, maxx, maxy = self.panelBBox()
         if not self.boardSubstrate.isSinglePiece():
-            raise RuntimeError("The substrate has to be a single piece to fill unused areas")
-        if not len(layers)>0:
-            raise RuntimeError("No layers to add copper to")
+            self.reportError(toKiCADPoint((maxx, maxy)), "The substrate has to be a single piece to fill unused areas")
+        if len(layers) == 0:
+            self.reportError(toKiCADPoint((maxx, maxy)), "No layers to add copper to")
         increaseZonePriorities(self.board)
 
         zoneArea = self.boardSubstrate.exterior()
@@ -2213,6 +2261,8 @@ class Panel:
             c += vec[1]
         self.setAuxiliaryOrigin(self.getAuxiliaryOrigin() + vec)
         self.setGridOrigin(self.getGridOrigin() + vec)
+        for error in self.errors:
+            error = (error[0] + vec, error[1])
         for drcE in self.drcExclusions:
             drcE.position += vec
 
