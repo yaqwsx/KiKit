@@ -2504,6 +2504,17 @@ field of the component as <code>KIKIT:&lt;propertyname&gt;</code>:</p>
 <li><code>offset</code> - specify the offset, positive offset puts the cuts into the board,
   negative puts the cuts into the tabs</li>
 <li><code>layer</code> - specify the layer to render V-cuts on.</li>
+<li><code>linewidth</code> - specify linewidth</li>
+<li><code>endprolongation</code> - prolongation of the cut line from the board line on the
+  side without text.</li>
+<li><code>textprolongation</code> - the same as above, just on the text side</li>
+<li><code>textoffset</code> - offset of the text from the cut line</li>
+<li><code>template</code> - a string template for text to render. Can contain variables
+  listed below, e.g., <code>V-CUT {pos_mm}</code>.<ul>
+<li><code>pos_mm</code>, <code>pos_inch</code> – position of the V-cut from the panel origin</li>
+<li><code>pos_inv_mm</code>, <code>pos_inv_inch</code> – inverted position of the V-cut from the panel origin</li>
+</ul>
+</li>
 </ul>
 <h4 id="layer">Layer</h4>
 <p>When KiKit reports it cannot perform cuts, you can render the cuts into a layer
@@ -2513,6 +2524,7 @@ design.</p>
 <li><code>layer</code> - specify the layer to render the cuts on.</li>
 <li><code>prolong</code> - distance for tangential prolongation of the cuts. It has the same
   meaning as mousebites.</li>
+<li><code>linewidth</code> - width of line to render</li>
 </ul>
 <h4 id="plugin_2">Plugin</h4>
 <p>Cuts based on a plugin.</p>
