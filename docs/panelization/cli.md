@@ -339,6 +339,15 @@ Use mousebites to
 - `offset` - specify the offset, positive offset puts the cuts into the board,
   negative puts the cuts into the tabs
 - `layer` - specify the layer to render V-cuts on.
+- `linewidth` - specify linewidth
+- `endprolongation` - prolongation of the cut line from the board line on the
+  side without text.
+- `textprolongation` - the same as above, just on the text side
+- `textoffset` - offset of the text from the cut line
+- `template` - a string template for text to render. Can contain variables
+  listed below, e.g., `V-CUT {pos_mm}`.
+    - `pos_mm`, `pos_inch` – position of the V-cut from the panel origin
+    - `pos_inv_mm`, `pos_inv_inch` – inverted position of the V-cut from the panel origin
 
 #### Layer
 
@@ -349,6 +358,7 @@ design.
 - `layer` - specify the layer to render the cuts on.
 - `prolong` - distance for tangential prolongation of the cuts. It has the same
   meaning as mousebites.
+- `linewidth` - width of line to render
 
 #### Plugin
 

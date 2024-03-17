@@ -439,6 +439,27 @@ CUTS_SECTION = {
     "cutcurves": SBool(
         typeIn(["vcuts", "plugin"]),
         "Approximate curves with straight cut"),
+    "linewidth": SLength(
+        typeIn(["vcuts", "layer", "plugin"]),
+        "Line width to plot cuts with"),
+    "textthickness": SLength(
+        typeIn(["vcuts", "plugin"]),
+        "Text thickness for width"),
+    "textsize": SLength(
+        typeIn(["vcuts", "plugin"]),
+        "Text size for vcuts"),
+    "endprolongation": SLength(
+        typeIn(["vcuts", "plugin"]),
+        "Prolongation on the end of V-CUT without text"),
+    "textprolongation": SLength(
+        typeIn(["vcuts", "plugin"]),
+        "Prolongation of the text size of V-CUT"),
+    "textoffset": SLength(
+        typeIn(["vcuts", "plugin"]),
+        "Text offset from the V-CUT"),
+    "template": SStr(
+        typeIn(["vcuts", "plugin"]),
+        "Text template for the V-CUT"),
     "layer": SLayer(
         typeIn(["vcuts", "layer", "plugin"]),
         "Specify layer for the drawings"),

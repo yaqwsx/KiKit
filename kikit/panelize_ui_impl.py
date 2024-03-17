@@ -367,14 +367,16 @@ def makeCuts(properties, panel, cuts, ignoreOffset):
             return
         if type == "vcuts":
             panel.makeVCuts(cuts, properties["cutcurves"], offset)
-            panel.setVCutLayer(properties["layer"])
-            panel.setVCutClearance(properties["clearance"])
+            panel.vCutSettings.layer = properties["layer"]
+            panel.vCutSettings.clerance = properties["clearance"]
+            panel.vCutSettings.lineThickness = properties["linewidth"]
         elif type == "mousebites":
             panel.makeMouseBites(cuts, properties["drill"],
                 properties["spacing"], offset, properties["prolong"])
         elif type == "layer":
             panel.makeCutsToLayer(cuts,
-                layer=properties["layer"], prolongation=properties["prolong"])
+                layer=properties["layer"], prolongation=properties["prolong"],
+                width=properties["linewidth"])
         else:
             raise PresetError(f"Unknown type '{type}' of cuts specification.")
     except KeyError as e:

@@ -23,6 +23,7 @@ import json
 import re
 import fnmatch
 from collections import OrderedDict
+from dataclasses import dataclass
 
 from kikit import substrate
 from kikit import units
@@ -33,7 +34,7 @@ from kikit.common import *
 from kikit.sexpr import isElement, parseSexprF, SExpr, Atom, findNode, parseSexprListF
 from kikit.annotations import AnnotationReader, TabAnnotation
 from kikit.drc import DrcExclusion, readBoardDrcExclusions, serializeExclusion
-from kikit.units import mm, deg
+from kikit.units import mm, deg, inch
 from kikit.pcbnew_utils import increaseZonePriorities
 
 class PanelError(RuntimeError):
@@ -454,6 +455,19 @@ def bakeTextVars(board: pcbnew.BOARD) -> None:
         else:
             drawing.SetText(drawing.GetShownText())
 
+@dataclass
+class VCutSettings:
+    lineWidth: KiLength = fromMm(0.4)
+    textThickness: KiLength = fromMm(0.4)
+    textSize: KiLength = fromMm(2)
+    endProlongation: KiLength = fromMm(3)
+    textProlongation: KiLength = fromMm(3)
+    layer: Layer = Layer.Cmts_User
+    textTemplate: str = "V-CUT {pos_mm}"
+    textOffset: KiLength = fromMm(3)
+    clearance: KiLength = 0
+
+
 class Panel:
     """
     Basic interface for panel building. Instance of this class represents a
@@ -482,8 +496,7 @@ class Panel:
         self.backboneLines = []
         self.hVCuts = set() # Keep V-cuts as numbers and append them just before saving
         self.vVCuts = set() # to make them truly span the whole panel
-        self.vCutLayer = Layer.Cmts_User
-        self.vCutClearance = 0
+        self.vCutSettings = VCutSettings()
         self.copperLayerCount = None
         self.renderedMousebiteCounter = 0
         self.zonesToRefill = pcbnew.ZONES()
@@ -591,7 +604,7 @@ class Panel:
             fillBoard.Remove(edge)
         for edge in panelEdges:
             fillBoard.Add(edge)
-        if self.vCutLayer == Layer.Edge_Cuts:
+        if self.vCutSettings.layer == Layer.Edge_Cuts:
             vcuts = self._renderVCutH() + self._renderVCutV()
             for cut, _ in vcuts:
                 fillBoard.Add(cut)
@@ -1170,53 +1183,47 @@ class Panel:
         """
         self.vVCuts.add(pos)
 
-    def setVCutLayer(self, layer):
-        """
-        Set layer on which the V-Cuts will be rendered
-        """
-        self.vCutLayer = layer
-
-    def setVCutClearance(self, clearance):
-        """
-        Set V-cut clearance
-        """
-        self.vCutClearance = clearance
-
-    def _setVCutSegmentStyle(self, segment, layer):
+    def _setVCutSegmentStyle(self, segment):
         segment.SetShape(STROKE_T.S_SEGMENT)
-        segment.SetLayer(layer)
-        segment.SetWidth(int(0.4 * mm))
+        segment.SetLayer(self.vCutSettings.layer)
+        segment.SetWidth(self.vCutSettings.lineWidth)
 
-    def _setVCutLabelStyle(self, label, layer):
-        label.SetText("V-CUT")
-        label.SetLayer(layer)
-        label.SetTextThickness(int(0.4 * mm))
-        label.SetTextSize(toKiCADPoint((2 * mm, 2 * mm)))
+    def _setVCutLabelStyle(self, label, origin, position):
+        variables = {
+            "pos_mm": f"{(position - origin) / mm:.2f} mm",
+            "pos_inv_mm": f"{(origin - position) / mm:.2f} mm",
+            "pos_inch": f"{(position - origin) / inch:.3f} mm",
+            "pos_inv_inch": f"{(origin - position) / inch:.3f} mm",
+        }
+        label.SetText(self.vCutSettings.textTemplate.format(**variables))
+        label.SetLayer(self.vCutSettings.layer)
+        label.SetTextThickness(self.vCutSettings.textThickness)
+        label.SetTextSize(toKiCADPoint((self.vCutSettings.textSize, self.vCutSettings.textSize)))
         label.SetHorizJustify(EDA_TEXT_HJUSTIFY_T.GR_TEXT_HJUSTIFY_LEFT)
 
     def _renderVCutV(self):
         """ return list of PCB_SHAPE V-Cuts """
         bBox = self.boardSubstrate.boundingBox()
-        minY, maxY = bBox.GetY() - fromMm(3), bBox.GetY() + bBox.GetHeight() + fromMm(3)
+        minY, maxY = bBox.GetY() - self.vCutSettings.textProlongation, bBox.GetY() + bBox.GetHeight() + self.vCutSettings.endProlongation
         segments = []
         for cut in self.vVCuts:
             segment = pcbnew.PCB_SHAPE()
-            self._setVCutSegmentStyle(segment, self.vCutLayer)
+            self._setVCutSegmentStyle(segment)
             segment.SetStart(toKiCADPoint((cut, minY)))
             segment.SetEnd(toKiCADPoint((cut, maxY)))
 
             keepout = None
-            if self.vCutClearance != 0:
+            if self.vCutSettings.clearance != 0:
                 keepout = shapely.geometry.box(
-                    cut - self.vCutClearance / 2,
+                    cut - self.vCutSettings.clearance / 2,
                     bBox.GetY(),
-                    cut + self.vCutClearance / 2,
+                    cut + self.vCutSettings.clearance / 2,
                     bBox.GetY() + bBox.GetHeight())
             segments.append((segment, keepout))
 
             label = pcbnew.PCB_TEXT(segment)
-            self._setVCutLabelStyle(label, self.vCutLayer)
-            label.SetPosition(toKiCADPoint((cut, minY - fromMm(3))))
+            self._setVCutLabelStyle(label, self.getAuxiliaryOrigin()[0], cut)
+            label.SetPosition(toKiCADPoint((cut, minY - self.vCutSettings.textOffset)))
             label.SetTextAngle(fromDegrees(90))
             segments.append((label, None))
         return segments
@@ -1224,27 +1231,27 @@ class Panel:
     def _renderVCutH(self):
         """ return list of PCB_SHAPE V-Cuts """
         bBox = self.boardSubstrate.boundingBox()
-        minX, maxX = bBox.GetX() - fromMm(3), bBox.GetX() + bBox.GetWidth() + fromMm(3)
+        minX, maxX = bBox.GetX() - self.vCutSettings.endProlongation, bBox.GetX() + bBox.GetWidth() + self.vCutSettings.textProlongation
         segments = []
         for cut in self.hVCuts:
             segment = pcbnew.PCB_SHAPE()
-            self._setVCutSegmentStyle(segment, self.vCutLayer)
+            self._setVCutSegmentStyle(segment)
             segment.SetStart(toKiCADPoint((minX, cut)))
             segment.SetEnd(toKiCADPoint((maxX, cut)))
 
             keepout = None
-            if self.vCutClearance != 0:
+            if self.vCutSettings.clearance != 0:
                 keepout = shapely.geometry.box(
                     bBox.GetX(),
-                    cut - self.vCutClearance / 2,
+                    cut - self.vCutSettings.clearance / 2,
                     bBox.GetX() + bBox.GetWidth(),
-                    cut + self.vCutClearance / 2)
+                    cut + self.vCutSettings.clearance / 2)
             segments.append((segment, keepout))
 
 
             label = pcbnew.PCB_TEXT(segment)
-            self._setVCutLabelStyle(label, self.vCutLayer)
-            label.SetPosition(toKiCADPoint((maxX + fromMm(3), cut)))
+            self._setVCutLabelStyle(label, self.getAuxiliaryOrigin()[1], cut)
+            label.SetPosition(toKiCADPoint((maxX + self.vCutSettings.textOffset, cut)))
             segments.append((label, None))
         return segments
 
@@ -1549,7 +1556,7 @@ class Panel:
                                     ref=f"KiKit_MB_{self.renderedMousebiteCounter}_{i+1}",
                                     excludedFromPos=True)
 
-    def makeCutsToLayer(self, cuts, layer=Layer.Cmts_User, prolongation=fromMm(0)):
+    def makeCutsToLayer(self, cuts, layer=Layer.Cmts_User, prolongation=fromMm(0), width=fromMm(0.3)):
         """
         Take a list of cuts and render them as lines on given layer. The cuts
         can be prolonged just like with mousebites.
@@ -1566,7 +1573,7 @@ class Panel:
                 segment.SetLayer(layer)
                 segment.SetStart(toKiCADPoint(a))
                 segment.SetEnd(toKiCADPoint(b))
-                segment.SetWidth(fromMm(0.3))
+                segment.SetWidth(width)
                 self.board.Add(segment)
 
     def addNPTHole(self, position: VECTOR2I, diameter: KiLength,
