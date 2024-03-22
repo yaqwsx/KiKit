@@ -1,11 +1,12 @@
 from sys import stderr
 from numpy.core.fromnumeric import std
 from numpy.lib.utils import source
+from kikit.defs import EDA_TEXT_HJUSTIFY_T, EDA_TEXT_VJUSTIFY_T
 from pcbnewTransition import pcbnew, isV8
 from kikit.panelize_ui_impl import loadPresetChain, obtainPreset, mergePresets
 from kikit import panelize_ui
 from kikit.panelize import NonFatalErrors, appendItem
-from kikit.common import PKG_BASE
+from kikit.common import PKG_BASE, findBoardBoundingBox, fromMm
 from .common import initDialog, destroyDialog
 import kikit.panelize_ui_sections
 import wx
@@ -81,6 +82,19 @@ def transplateBoard(source, target):
     if not isV8():
         target.SetZoneSettings(source.GetZoneSettings())
 
+def drawTemporaryNotification(board, sourceFilename):
+    bbox = findBoardBoundingBox(board)
+
+    text = pcbnew.PCB_TEXT(board)
+    text.SetLayer(pcbnew.Margin)
+    text.SetText(f"PREVIEW ONLY. PANEL SAVED IN {sourceFilename}")
+    text.SetPosition(pcbnew.VECTOR2I(bbox.GetX() + bbox.GetWidth() // 2, bbox.GetY() + bbox.GetHeight()) + pcbnew.VECTOR2I(0, fromMm(2)))
+    text.SetTextThickness(fromMm(0.4))
+    text.SetTextSize(pcbnew.VECTOR2I(fromMm(3), fromMm(3)))
+    text.SetVertJustify(EDA_TEXT_VJUSTIFY_T.GR_TEXT_VJUSTIFY_TOP)
+    text.SetHorizJustify(EDA_TEXT_HJUSTIFY_T.GR_TEXT_HJUSTIFY_CENTER)
+    board.Add(text)
+
 
 class SFile():
     def __init__(self, nameFilter):
@@ -91,6 +105,17 @@ class SFile():
     def validate(self, x):
         return x
 
+class SInputFile(SFile):
+    def __init__(self, nameFilter):
+        super().__init__(nameFilter)
+        self.description = "Input file"
+        self.isGuiRelevant = lambda section: True
+
+class SOuputFile(SFile):
+    def __init__(self, nameFilter):
+        super().__init__(nameFilter)
+        self.description = "Output file"
+        self.isGuiRelevant = lambda section: True
 
 class ParameterWidgetBase:
     def __init__(self, parent, name, parameter):
@@ -150,7 +175,8 @@ class InputFileWidget(ParameterWidgetBase):
         super().__init__(parent, name, parameter)
         self.widget = wx.FilePickerCtrl(
             parent, wx.ID_ANY, wx.EmptyString, name,
-            parameter.nameFilter, wx.DefaultPosition, wx.DefaultSize, wx.FLP_DEFAULT_STYLE)
+            parameter.nameFilter, wx.DefaultPosition, wx.DefaultSize,
+            wx.FLP_OPEN | wx.FLP_FILE_MUST_EXIST)
         self.widget.Bind(wx.EVT_FILEPICKER_CHANGED, onChange)
 
     def getValue(self):
@@ -159,12 +185,28 @@ class InputFileWidget(ParameterWidgetBase):
     def setValue(self, value):
         self.widget.SetPath(value)
 
+class OutputFileWidget(ParameterWidgetBase):
+    def __init__(self, parent, name, parameter, onChange):
+        super().__init__(parent, name, parameter)
+        self.widget = wx.FilePickerCtrl(
+            parent, wx.ID_ANY, wx.EmptyString, name,
+            parameter.nameFilter, wx.DefaultPosition, wx.DefaultSize,
+            wx.FLP_SAVE | wx.FLP_OVERWRITE_PROMPT)
+        self.widget.Bind(wx.EVT_FILEPICKER_CHANGED, onChange)
+
+    def getValue(self):
+        return self.widget.GetPath()
+
+    def setValue(self, value):
+        self.widget.SetPath(value)
 
 def obtainParameterWidget(parameter):
     if isinstance(parameter, kikit.panelize_ui_sections.SChoiceBase):
         return ChoiceWidget
-    if isinstance(parameter, SFile):
+    if isinstance(parameter, SInputFile):
         return InputFileWidget
+    if isinstance(parameter, SOuputFile):
+        return OutputFileWidget
     return TextWidget
 
 
@@ -345,7 +387,10 @@ class PanelizeDialog(wx.Dialog):
 
         sections = {
             "Input": {
-                "Input file": SFile("*.kicad_pcb")
+                "Input file": SInputFile("*.kicad_pcb")
+            },
+            "Output": {
+                "Output file": SOuputFile("*.kicad_pcb")
             }
         }
         sections.update(kikit.panelize_ui_sections.availableSections)
@@ -385,8 +430,6 @@ class PanelizeDialog(wx.Dialog):
     def OnPanelize(self, event):
         with tempfile.TemporaryDirectory(prefix="kikit") as dirname:
             try:
-                panelFile = os.path.join(dirname, "panel.kicad_pcb")
-
                 progressDlg = wx.ProgressDialog(
                     "Running kikit", "Running kikit, please wait",
                     parent=self)
@@ -399,6 +442,13 @@ class PanelizeDialog(wx.Dialog):
                 if len(input) == 0:
                     dlg = wx.MessageDialog(
                         None, f"No input file specified", "Error", wx.OK)
+                    dlg.ShowModal()
+                    dlg.Destroy()
+                    return
+                panelFile = self.sections["Output"].items["Output file"].getValue()
+                if len(input) == 0:
+                    dlg = wx.MessageDialog(
+                        None, f"No output file specified", "Error", wx.OK)
                     dlg.ShowModal()
                     dlg.Destroy()
                     return
@@ -435,6 +485,7 @@ class PanelizeDialog(wx.Dialog):
                     pass
                 panel = pcbnew.LoadBoard(copyPanelName)
                 transplateBoard(panel, self.board)
+                drawTemporaryNotification(self.board, panelFile)
                 self.dirty = True
                 if thread.exception:
                     raise thread.exception
@@ -480,6 +531,7 @@ class PanelizeDialog(wx.Dialog):
         for name, section in self.sections.items():
             preset[name.lower()] = section.collectReleventPreset()
         del preset["input"]
+        del preset["output"]
         return preset
 
     def OnChange(self):
@@ -507,10 +559,17 @@ class PanelizeDialog(wx.Dialog):
             attrs = "; ".join(
                 [f"{key}: {value}" for key, value in values.items()])
             kikitCommand += f"    --{section} '{attrs}' \\\n"
+
         inputFilename = self.sections["Input"].items["Input file"].getValue()
         if len(inputFilename) == 0:
             inputFilename = "<missingInput>"
-        kikitCommand += f"    '{inputFilename}' panel.kicad_pcb"
+
+        outputFilename = self.sections["Output"].items["Output file"].getValue()
+        if len(outputFilename) == 0:
+            outputFilename = "<missingOutput>"
+
+        kikitCommand += f"    '{inputFilename}' '{outputFilename}'"
+
         return kikitCommand
 
     def _buildWindowsCommand(self, presetUpdates):
@@ -521,10 +580,16 @@ class PanelizeDialog(wx.Dialog):
             attrs = "; ".join(
                 [f"{key}: {value}" for key, value in values.items()])
             kikitCommand += f"    --{section} \"{attrs}\" ^\n"
+
         inputFilename = self.sections["Input"].items["Input file"].getValue()
         if len(inputFilename) == 0:
             inputFilename = "<missingInput>"
-        kikitCommand += f"    \"{inputFilename}\" panel.kicad_pcb"
+
+        outputFilename = self.sections["Output"].items["Output file"].getValue()
+        if len(outputFilename) == 0:
+            outputFilename = "<missingOutput>"
+
+        kikitCommand += f"    \"{inputFilename}\" \"{outputFilename}\""
         return kikitCommand
 
 

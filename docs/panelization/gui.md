@@ -30,4 +30,6 @@ is the same with the default, built-in, preset.
 
 Once you are happy with the parameters, you can click the "Panelize" button and
 the panel will appear in the Pcbnew work area. You can then edit the parameters
-and regenerate the panel.
+and regenerate the panel. The panel you see in the Pcbnew window is only a
+preview. The panel is automatically saved to the specified location upon
+creation.
