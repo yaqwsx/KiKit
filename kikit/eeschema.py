@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Jan Mrázek <email@honzamrazek.cz>
+#
+# SPDX-License-Identifier: MIT
+
 # Simple, rather hacky parser for eeshema files (.sch). This is a mid-term
 # workaround before proper support for scripting is introduced into Eeschema
 

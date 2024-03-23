@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Jan Mrázek <email@honzamrazek.cz>
+#
+# SPDX-License-Identifier: MIT
+
 from dataclasses import dataclass, field
 from kikit.sexpr import Atom, parseSexprF
 from itertools import islice

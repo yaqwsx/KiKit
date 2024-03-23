@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Jan Mrázek <email@honzamrazek.cz>
+#
+# SPDX-License-Identifier: MIT
+
 import datetime as dt
 from string import Template
 from typing import Callable, Optional, Dict, Any

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Jan Mrázek <email@honzamrazek.cz>
+#
+# SPDX-License-Identifier: CC0-1.0
+
 # Ignore python files
 __pycache__
 

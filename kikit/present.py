@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Jan Mrázek <email@honzamrazek.cz>
+#
+# SPDX-License-Identifier: MIT
+
 import click
 from pathlib import Path
 import sys

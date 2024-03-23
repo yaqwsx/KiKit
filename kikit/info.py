@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2023 Jan Mrázek <email@honzamrazek.cz>
+#
+# SPDX-License-Identifier: MIT
 
 from pcbnewTransition import KICAD_VERSION, isV6, isV7, isV8
 from kikit.common import KIKIT_LIB

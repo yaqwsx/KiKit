@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Jan Mrázek <email@honzamrazek.cz>
+#
+# SPDX-License-Identifier: MIT
+
 # This has nothing to do with KiKit plugins, instead, it is the registration
 # routine for Action plugins. However, the original implementation used the name
 # 'plugin'. In order not to break the existing PCM installations we import this
