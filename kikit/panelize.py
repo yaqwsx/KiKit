@@ -1620,7 +1620,6 @@ class Panel:
         # then we can change its properties. Otherwise, it misses parent pointer
         # and KiCAD crashes.
         self.board.Add(footprint)
-        footprint.SetPosition(position)
         if ref is not None:
             footprint.SetReference(ref)
         for pad in footprint.Pads():
@@ -1631,6 +1630,17 @@ class Panel:
                 layerSet = pad.GetLayerSet()
                 layerSet.AddLayer(Layer.F_Paste)
                 pad.SetLayerSet(layerSet)
+
+        for drawing in footprint.GraphicalItems():
+            if drawing.GetShape() != pcbnew.SHAPE_T_CIRCLE:
+                continue
+            if drawing.GetLayer() == Layer.F_Fab:
+                drawing.SetEnd(toKiCADPoint((openingDiameter / 2, 0)))
+            if drawing.GetLayer() == Layer.F_CrtYd:
+                drawing.SetEnd(toKiCADPoint((openingDiameter / 2 + fromMm(0.1), 0)))
+
+        footprint.SetPosition(position)
+
         if bottom:
             footprint.Flip(position, False)
 

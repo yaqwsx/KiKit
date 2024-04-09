@@ -1,13 +1,20 @@
-(module Fiducial:Fiducial (layer F.Cu) (tedit 5EA93A7C)
+(footprint "Fiducial" (version 20221018) (generator pcbnew)
+  (layer "F.Cu")
   (descr "Circular Fiducial")
-  (tags fiducial)
+  (tags "fiducial")
   (attr smd)
-  (fp_text reference REF** (at 0 -1.5) (layer F.SilkS) hide
-    (effects (font (size 1 1) (thickness 0.15)))
+  (fp_text reference "REF**" (at 0 -1.5) (layer "F.SilkS") hide
+      (effects (font (size 1 1) (thickness 0.15)))
+    (tstamp d48dbad1-8ccd-4dd1-9016-4eb104ae2f43)
   )
-  (fp_text value Fiducial (at 0 1.5) (layer F.Fab) hide
-    (effects (font (size 1 1) (thickness 0.15)))
+  (fp_text value "Fiducial" (at 0 1.5) (layer "F.Fab") hide
+      (effects (font (size 1 1) (thickness 0.15)))
+    (tstamp 064c3459-3eaf-4104-80b9-674620fd664b)
   )
-  (pad "" smd circle (at 0 0) (size 0.5 0.5) (layers F.Cu F.Mask)
-    (solder_mask_margin 0.25) (clearance 0.25))
+  (fp_circle (center 0 0) (end 0.6 0)
+    (stroke (width 0.05) (type default)) (fill none) (layer "F.CrtYd") (tstamp 08aac366-ed33-4cab-bf8b-47c99a62d2d5))
+  (fp_circle (center 0 0) (end 0.5 0)
+    (stroke (width 0.05) (type default)) (fill none) (layer "F.Fab") (tstamp f499e98d-c14e-42a9-a324-d2729d4943c3))
+  (pad "" smd circle (at 0 0) (size 0.5 0.5) (layers "F.Cu" "F.Mask")
+    (solder_mask_margin 0.25) (clearance 0.25) (tstamp 7e4eab51-70c2-4227-b951-f2e0fbf0bde3))
 )
