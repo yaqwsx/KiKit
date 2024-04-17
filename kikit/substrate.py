@@ -703,7 +703,7 @@ class Substrate:
                     if not candidateCircle.addPoint(coords[j]):
                         break
 
-            if candidateCircle.foundCircle is not None:
+            if candidateCircle.foundCircle is not None and candidateCircle.foundCircle[1] > fromMm(0.25):
                 center, radius = candidateCircle.foundCircle
                 start, end, mid = candidateCircle.start, candidateCircle.end, candidateCircle.mid
 
