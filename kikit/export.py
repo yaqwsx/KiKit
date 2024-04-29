@@ -26,7 +26,8 @@ exportSettingsJlcpcb = {
     "ExcludeEdgeLayer": True,
     "MinimalHeader": False,
     "NoSuffix": False,
-    "MergeNPTH": True,
+    "MergeNPTH": False,
+    "MapFileFormat": PLOT_FORMAT_GERBER,
     "ZerosFormat": GENDRILL_WRITER_BASE.DECIMAL_FORMAT,
     "SubstractMaskFromSilk": True
 }
@@ -38,6 +39,7 @@ exportSettingsPcbway = {
     "MinimalHeader": True,
     "NoSuffix": True,
     "MergeNPTH": False,
+    "MapFileFormat": PLOT_FORMAT_PDF,
     "ZerosFormat": GENDRILL_WRITER_BASE.SUPPRESS_LEADING,
 }
 
@@ -48,6 +50,7 @@ exportSettingsOSHPark = {
     "MinimalHeader": False,
     "NoSuffix": False,
     "MergeNPTH": True,
+    "MapFileFormat": PLOT_FORMAT_PDF,
     "ZerosFormat": GENDRILL_WRITER_BASE.DECIMAL_FORMAT,
 }
 
@@ -142,7 +145,8 @@ def gerberImpl(boardfile, outputdir, plot_plan=fullGerberPlotPlan, drilling=True
         # Fabricators need drill files.
         # sometimes a drill map file is asked (for verification purpose)
         drlwriter = EXCELLON_WRITER(board)
-        drlwriter.SetMapFileFormat(PLOT_FORMAT_PDF)
+        mapFmt = settings['MapFileFormat']
+        drlwriter.SetMapFileFormat(mapFmt)
 
         mirror = False
         minimalHeader = settings["MinimalHeader"]
