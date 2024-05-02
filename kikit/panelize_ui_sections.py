@@ -183,7 +183,7 @@ class SVJustify(SChoiceBase):
 class SLayer(SChoiceBase):
     def __init__(self, *args, **kwargs):
         super().__init__(
-            [str(item).replace("Layer.", "").replace("_", ".")
+            [item.name.replace("Layer.", "").replace("_", ".")
                 for item in Layer], *args, **kwargs)
 
     def validate(self, s):
