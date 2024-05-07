@@ -28,7 +28,7 @@ from dataclasses import dataclass
 from kikit import substrate
 from kikit import units
 from kikit.kicadUtil import getPageDimensionsFromAst
-from kikit.substrate import Substrate, linestringToKicad, extractRings
+from kikit.substrate import Substrate, linestringToKicad, extractRings, TabError
 from kikit.defs import PAPER_DIMENSIONS, STROKE_T, Layer, EDA_TEXT_HJUSTIFY_T, EDA_TEXT_VJUSTIFY_T, PAPER_SIZES
 from kikit.common import *
 from kikit.sexpr import isElement, parseSexprF, SExpr, Atom, findNode, parseSexprListF
@@ -399,6 +399,7 @@ def buildTabs(panel: "Panel", substrate: Substrate,
                 tabs.append(t)
                 cuts.append(c)
         except TabError as e:
+            print("Caught")
             panel._renderLines(
                 [constructArrow(annotation.origin, annotation.direction, fromMm(3), fromMm(1))],
                 Layer.Margin)

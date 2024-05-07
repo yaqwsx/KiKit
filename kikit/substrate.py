@@ -831,6 +831,9 @@ class Substrate:
         """
         self.orient()
 
+        if self.substrates.contains(Point(origin)) and not self.substrates.boundary.contains(Point(origin)):
+            raise TabError(origin, direction, ["Tab annotation is placed inside the board. It has to be on edge or outside the board."])
+
         origin = np.array(origin)
         direction = np.around(normalize(direction), 4)
         for geom in listGeometries(self.substrates):
@@ -936,7 +939,7 @@ class Substrate:
         Add fillets to inner corners which will be produced by a mill with
         given radius.
         """
-        EPS = 1 # This number is intentionally near KiCAD's resolution of 1nm to not enclose narrow slots, but to preserve radius
+        EPS = 50 # This number is intentionally near KiCAD's resolution of 1nm to not enclose narrow slots, but to preserve radius
         RES = 32
         if millRadius < EPS:
             return
