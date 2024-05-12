@@ -102,7 +102,7 @@ def isValidPcbShape(g):
     with zero length. Unfortunately, KiCAD does not discard such lines when
     saving. Therefore, we have to check it.
     """
-    return g.GetShape() != pcbnew.S_SEGMENT or g.GetLength() > 0
+    return g.GetShape() != pcbnew.S_SEGMENT or g.GetLength() >= fromMm(0.001)
 
 def extractRings(geometryList):
     """
