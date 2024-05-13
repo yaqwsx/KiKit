@@ -9,7 +9,7 @@ body:
       required: true
     - label: I have searched existing issues (including closed ones)
       required: true
-    - label: I use KiKit at least version 1.5.0 (older version are not supported)
+    - label: I use KiKit at least version 1.5.1 (older version are not supported)
       required: true
 - type: input
   attributes:
@@ -51,9 +51,12 @@ body:
     label: Steps to Reproduce
     description: >
       Please specify the steps to reproduce the issue. Do not forget to include
-      the KiKit command and also, please include any input boards you use. Not
-      including files for reproduction might significantly increase time for
-      handling the issue. If the boards are confidential, you can send them to
-      e-mail@honzamrazek.cz with subject "KiKit issue files for #123".
+      the KiKit command and also, please include any input boards you use. If
+      the boards are confidential, you can send them to email@honzamrazek.cz
+      with subject "KiKit issue files for #123".
+
+      Issues without included PCB will be probably ignored. Having to came up
+      with a specific inputs that reproduce the issue is a significant time
+      overhead and I prefer to spend this time on implementing new features.
   validations:
     required: true
