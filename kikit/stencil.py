@@ -229,11 +229,15 @@ def makeRegister(board, jigFrameSize, jigThickness, pcbThickness,
     body = solid.linear_extrude(height=top, convexity=10)(solid.polygon(
         outerRing))
 
-    innerRing = createOffsetPolygon(board, - innerBorder).exterior.coords
+    innerRings = [x.exterior.coords for x in listGeometries(createOffsetPolygon(board, - innerBorder))]
     if topSide:
-        innerRing = mirrorX(innerRing, centerpoint[0])
+        innerRings = [mirrorX(innerRing, centerpoint[0]) for innerRing in innerRings]
+
     innerCutout = solid.utils.down(jigThickness)(
-        solid.linear_extrude(height=3 * jigThickness, convexity=10)(solid.polygon(innerRing)))
+        solid.linear_extrude(height=3 * jigThickness, convexity=10)(solid.polygon(innerRings[0])))
+    for innerRing in innerRings[1:]:
+        innerCutout = innerCutout + solid.utils.down(jigThickness)(
+            solid.linear_extrude(height=3 * jigThickness, convexity=10)(solid.polygon(innerRing)))
     registerRing = createOffsetPolygon(board, tolerance).exterior.coords
     if topSide:
         registerRing = mirrorX(registerRing, centerpoint[0])
