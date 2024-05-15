@@ -2346,7 +2346,10 @@ def extractSourceAreaByAnnotation(board, reference):
     `kikit:Board`, extract the source area. The source area is a bounding box of
     continuous lines in the Edge.Cuts on which the arrow in reference point.
     """
-    annotation = getFootprintByReference(board, reference)
+    try:
+        annotation = getFootprintByReference(board, reference)
+    except Exception:
+        raise RuntimeError(f"Cannot extract board - boards is specified via footprint with reference '{reference}' which was not found")
     tip = annotation.GetPosition()
     edges = collectEdges(board, Layer.Edge_Cuts)
     # KiCAD 6 will need an adjustment - method Collide was introduced with
