@@ -38,7 +38,7 @@ Note: click on the name of the manufacturer to see corresponding documentation:
 - [PCBWay](pcbway.md): board manufacturing, assembly. [https://www.pcbway.com/](https://www.pcbway.com/)
 - [OSH Park](oshpark.md): board manufacturing. [https://oshpark.com/](https://oshpark.com/)
 - [Neoden YY1](neodenyy1.md): desktop PCB assembly. [https://neodenusa.com/neoden-yy1-pick-place-machine](https://neodenusa.com/neoden-yy1-pick-place-machine)
-- [OpenPNP](openpn.md): Open system for pick'n'place machines. [https://openpnp.org/](https://openpnp.org/)
+- [OpenPNP](openpnp.md): Open system for pick'n'place machines. [https://openpnp.org/](https://openpnp.org/)
 
 ## Adding New Fabrication Houses
 
