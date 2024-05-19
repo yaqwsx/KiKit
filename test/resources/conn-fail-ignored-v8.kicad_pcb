@@ -109,7 +109,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "rofi:pogo_pads_4_3"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -226,7 +226,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "MountingHole:MountingHole_2mm"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -334,7 +334,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "MountingHole:MountingHole_2mm"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -442,7 +442,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_PinSocket_2.00mm:PinSocket_1x09_P2.00mm_Vertical"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -763,7 +763,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_PinSocket_2.00mm:PinSocket_1x09_P2.00mm_Vertical"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -1082,7 +1082,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "rofi:molex-505004-0812"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -1297,6 +1297,142 @@
 			(layers "F.Cu" "F.Paste" "F.Mask")
 			(net 1 "1")
 			(uuid "d1a4fe0d-ee99-4f84-abe3-44be9e1b75da")
+		)
+	)
+	(footprint "Symbol:Symbol_Barrel_Polarity"
+		(layer "B.Cu")
+		(uuid "aafcafb4-506a-4e1a-ae6a-f875d460a1e7")
+		(at 118.7 63.5 180)
+		(descr "Barrel connector polarity indicator")
+		(tags "barrel polarity")
+		(property "Reference" "REF**"
+			(at 0 2 180)
+			(layer "B.SilkS")
+			(hide yes)
+			(uuid "4f05405f-34fb-4988-b879-5f8d624297aa")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+				(justify mirror)
+			)
+		)
+		(property "Value" "Symbol_Barrel_Polarity"
+			(at 0 -2 180)
+			(layer "B.Fab")
+			(uuid "7462c3e8-5823-4dd6-aa8f-3288921e20ea")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+				(justify mirror)
+			)
+		)
+		(property "Footprint" "Symbol:Symbol_Barrel_Polarity"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "B.Fab")
+			(hide yes)
+			(uuid "cf54eb09-97c8-4fc3-ad5d-3a9cc0ac1784")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify mirror)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "B.Fab")
+			(hide yes)
+			(uuid "88754f06-7737-429d-8b2c-f9007c6ba6eb")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify mirror)
+			)
+		)
+		(property "Description" ""
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "B.Fab")
+			(hide yes)
+			(uuid "4696aa09-bc17-4dc7-b985-855e716a50db")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify mirror)
+			)
+		)
+		(attr exclude_from_pos_files exclude_from_bom allow_missing_courtyard)
+		(fp_line
+			(start 2 -0.075)
+			(end 0 -0.075)
+			(stroke
+				(width 0.15)
+				(type solid)
+			)
+			(layer "B.SilkS")
+			(uuid "d5a7bf16-6ddd-47ff-9f1b-0e6ee8fc6076")
+		)
+		(fp_line
+			(start -1.1 -0.075)
+			(end -2 -0.075)
+			(stroke
+				(width 0.15)
+				(type solid)
+			)
+			(layer "B.SilkS")
+			(uuid "98307d17-703e-40c1-af46-e29753ef0fee")
+		)
+		(fp_arc
+			(start 0.675 0.675)
+			(mid -1.007627 -0.128033)
+			(end 0.75 -0.75)
+			(stroke
+				(width 0.15)
+				(type solid)
+			)
+			(layer "B.SilkS")
+			(uuid "4d589adb-aeb6-4fab-987d-f23807b4747b")
+		)
+		(fp_circle
+			(center 3 -0.075)
+			(end 3 -1)
+			(stroke
+				(width 0.15)
+				(type solid)
+			)
+			(fill none)
+			(layer "B.SilkS")
+			(uuid "ef5597d7-c552-4ef9-9d37-1a172efdabc9")
+		)
+		(fp_circle
+			(center 0 -0.075)
+			(end 0 -0.25)
+			(stroke
+				(width 0.5)
+				(type solid)
+			)
+			(fill none)
+			(layer "B.SilkS")
+			(uuid "2c7ab1ab-3c2a-4c37-8d8f-fea7dc64dc86")
+		)
+		(fp_circle
+			(center -3 -0.075)
+			(end -3 -1)
+			(stroke
+				(width 0.15)
+				(type solid)
+			)
+			(fill none)
+			(layer "B.SilkS")
+			(uuid "9fb935de-7aa5-4317-8323-92c01ab42207")
 		)
 	)
 	(gr_line
