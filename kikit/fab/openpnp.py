@@ -17,7 +17,8 @@ def exportOpenPnp(board, outputdir, drc, nametemplate):
     Path(outputdir).mkdir(parents=True, exist_ok=True)
     posname = expandNameTemplate(nametemplate, "components", loadedBoard) + ".pos"
 
-    footprints= sorted(loadedBoard.GetFootprints(), key=lambda f: naturalComponentKey(f.GetReference()))
+    footprints_in_pos_file = filter(lambda x: not x.IsExcludedFromPosFiles(), loadedBoard.GetFootprints())
+    footprints= sorted(footprints_in_pos_file, key=lambda f: naturalComponentKey(f.GetReference()))
 
     if len(footprints) == 0:
         raise  RuntimeError("No components in board, nothing to do")
@@ -54,4 +55,3 @@ def exportOpenPnp(board, outputdir, drc, nametemplate):
         outfile.write(f"## Side : All\n")
         for row in footprint_texts:
             format_row(outfile, row)
-

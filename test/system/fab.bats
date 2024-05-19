@@ -59,3 +59,14 @@ load common
 @test "Fab: OSHPark" {
     kikit fab oshpark $RES/conn.kicad_pcb oshpark.noassembly
 }
+
+@test "Fab: OpenPNP - v8" {
+    if [ $(kikit-info kicadversion) != "8.0"  ]; then
+        skip "This test is not supported on older versions"
+    fi
+
+    kikit fab openpnp --debug \
+    --no-drc \
+    $RES/conn-fail-ignored-v8.kicad_pcb \
+    openpnp
+}
