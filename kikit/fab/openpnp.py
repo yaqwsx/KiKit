@@ -18,7 +18,7 @@ def exportOpenPnp(board, outputdir, drc, nametemplate):
     posname = expandNameTemplate(nametemplate, "components", loadedBoard) + ".pos"
 
     footprints_in_pos_file = filter(lambda x: not x.IsExcludedFromPosFiles(), loadedBoard.GetFootprints())
-    footprints= sorted(footprints_in_pos_file, key=lambda f: naturalComponentKey(f.GetReference()))
+    footprints = sorted(footprints_in_pos_file, key=lambda f: naturalComponentKey(f.GetReference()))
 
     if len(footprints) == 0:
         raise  RuntimeError("No components in board, nothing to do")
