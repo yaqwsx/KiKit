@@ -78,7 +78,7 @@ manufacturing data and board presentation pages.
 Start with reading the [panelization
 documentation](https://yaqwsx.github.io/KiKit/latest/panelization/intro/). This
 page will you guide through CLI, GUI and scripting usage. Also don't miss the
-[examples](https://yaqwsx.github.io/KiKit/examples/panelization/examples/).
+[examples](https://yaqwsx.github.io/KiKit/latest/panelization/examples/).
 There is also a quick not on how to use [panelization action
 plugin](https://yaqwsx.github.io/KiKit/latest/panelization/gui/). If you are
 interested in generating solder paste stencils, see [Stencil
