@@ -56,6 +56,8 @@ class Atom:
     def __eq__(self, o):
         if isinstance(o, str):
             return self.value == o
+        if not isinstance(o, Atom):
+            return False
         return self.value == o.value and self.leadingWhitespace == o.leadingWhitespace
 
 class SExpr:
@@ -83,6 +85,8 @@ class SExpr:
         return f"Expr([{', '.join(val)}], '{self.leadingWhitespace}', '{self.trailingWhitespace}')"
 
     def __eq__(self, o):
+        if not isinstance(o, SExpr):
+            return False
         return (self.items == o.items and
                 self.leadingWhitespace == o.leadingWhitespace and
                 self.trailingWhitespace == o.trailingWhitespace and
