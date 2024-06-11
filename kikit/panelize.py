@@ -399,7 +399,6 @@ def buildTabs(panel: "Panel", substrate: Substrate,
                 tabs.append(t)
                 cuts.append(c)
         except TabError as e:
-            print("Caught")
             panel._renderLines(
                 [constructArrow(annotation.origin, annotation.direction, fromMm(3), fromMm(1))],
                 Layer.Margin)
