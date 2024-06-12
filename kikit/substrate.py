@@ -939,7 +939,7 @@ class Substrate:
         Add fillets to inner corners which will be produced by a mill with
         given radius.
         """
-        EPS = 50 # This number is intentionally near KiCAD's resolution of 1nm to not enclose narrow slots, but to preserve radius
+        EPS = 1000 # This number is intentionally near KiCAD's resolution of 1nm to not enclose narrow slots, but to preserve radius
         RES = 32
         if millRadius < EPS:
             return
