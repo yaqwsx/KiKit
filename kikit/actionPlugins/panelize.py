@@ -446,7 +446,7 @@ class PanelizeDialog(wx.Dialog):
                     dlg.Destroy()
                     return
                 panelFile = self.sections["Output"].items["Output file"].getValue()
-                if len(input) == 0:
+                if len(panelFile) == 0:
                     dlg = wx.MessageDialog(
                         None, f"No output file specified", "Error", wx.OK)
                     dlg.ShowModal()
