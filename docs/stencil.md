@@ -63,12 +63,12 @@ Many fabhouses offer you to create a custom stencil. However, it is pain to
 align them. Therefore, KiKit offers a functionality to automatically generate
 stencils which fit a simple 3D printed or lasercut alignment jig.
 
-You can find Fusion 360 model of the alignment jig here:
-[https://a360.co/3iiFXKp](https://a360.co/3iiFXKp). It it designed to be cut
-from 3mm thick acrylic. You need 4 2mm pins, 8 M2 screws and that's it. The
-frame can be customized - there two parameters of the model, `frameWidth` and
-`frameHeight` which define the largest PCB it can accept. I usually use
-100x100mm and 60x60mm.
+The jig is available as [Fusion 360 model](resources/jig.f3d),
+[STEP](resources/jig.step) or [3MF](resources/jig.3mf).It it designed to be cut
+from 3mm thick acrylic but you can also print it. You need 4 2mm pins, 8 M2
+screws and that's it. The frame can be customized - there two parameters of the
+model, `frameWidth` and `frameHeight` which define the largest PCB it can
+accept. I usually use 100x100mm and 60x60mm.
 
 Then you issue the following command within KiKit:
 ```
