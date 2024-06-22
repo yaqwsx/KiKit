@@ -187,6 +187,8 @@ def readSourceArea(specification, board):
             return expandRect(findBoardBoundingBox(board), tolerance)
         if type == "annotation":
             ref = specification["ref"]
+            if ref.strip() == "":
+                raise PresetError("When using source 'annotation' reference cannot be empty.")
             return expandRect(extractSourceAreaByAnnotation(board, ref), tolerance)
         if type == "rectangle":
             tl = VECTOR2I(specification["tlx"], specification["tly"])
