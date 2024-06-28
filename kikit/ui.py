@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Jan Mrázek <email@honzamrazek.cz>
+#
+# SPDX-License-Identifier: MIT
+
 import click
 from kikit import (panelize_ui, export_ui, present_ui, stencil_ui,
     modify_ui, fab_ui, drc_ui)

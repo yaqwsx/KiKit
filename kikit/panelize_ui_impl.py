@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Jan Mrázek <email@honzamrazek.cz>
+#
+# SPDX-License-Identifier: MIT
+
 from kikit import panelize
 from kikit.panel_features.copperFill import HatchedCopperFill, HexCopperFill, SolidCopperFill
 from kikit.panelize_ui import Section, PresetError

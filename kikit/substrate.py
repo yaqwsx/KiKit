@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Jan Mrázek <email@honzamrazek.cz>
+#
+# SPDX-License-Identifier: MIT
+
 from shapely import geometry
 from shapely.geometry import (Polygon, MultiPolygon, LineString,
     MultiLineString, LinearRing, Point)
