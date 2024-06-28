@@ -79,10 +79,7 @@ def layerToSide(layer):
 
 def footprintPosition(footprint, placeOffset, compensation):
     pos = footprint.GetPosition() - placeOffset
-    angle = -footprint.GetOrientation().AsRadians()
-    x = compensation[0] * cos(angle) - compensation[1] * sin(angle)
-    y = compensation[0] * sin(angle) + compensation[1] * cos(angle)
-    pos += VECTOR2I(fromMm(x), fromMm(y))
+    pos += VECTOR2I(fromMm(compensation[0]), fromMm(compensation[1]))
     return pos
 
 def footprintOrientation(footprint, compensation):
