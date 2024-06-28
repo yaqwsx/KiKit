@@ -1,6 +1,3 @@
-from sys import stderr
-from numpy.core.fromnumeric import std
-from numpy.lib.utils import source
 from kikit.defs import EDA_TEXT_HJUSTIFY_T, EDA_TEXT_VJUSTIFY_T
 from pcbnewTransition import pcbnew, isV8
 from kikit.panelize_ui_impl import loadPresetChain, obtainPreset, mergePresets
