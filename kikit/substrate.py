@@ -836,6 +836,7 @@ class Substrate:
 
         origin = np.array(origin)
         direction = np.around(normalize(direction), 4)
+        origin -= direction * SHP_EPSILON
         for geom in listGeometries(self.substrates):
             try:
                 sideOriginA = origin + makePerpendicular(direction) * width / 2
@@ -856,9 +857,9 @@ class Substrate:
                 direction = -direction
                 for p in listGeometries(partitionLine):
                     try:
-                        partitionSplitPointA = closestIntersectionPoint(splitPointA.coords[0],
+                        partitionSplitPointA = closestIntersectionPoint(splitPointA.coords[0] - direction * SHP_EPSILON,
                                 direction, p, maxHeight)
-                        partitionSplitPointB = closestIntersectionPoint(splitPointB.coords[0],
+                        partitionSplitPointB = closestIntersectionPoint(splitPointB.coords[0] - direction * SHP_EPSILON,
                                 direction, p, maxHeight)
                     except NoIntersectionError: # We cannot span towards the partition line
                         continue
