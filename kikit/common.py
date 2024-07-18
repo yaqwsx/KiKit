@@ -282,7 +282,7 @@ def isBottomLayer(layer):
     """
     Decide if layer is a bottom layer
     """
-    return str(layer).startswith("Layer.B_")
+    return layer.name.startswith("B_")
 
 def commonPoints(lines):
     """
