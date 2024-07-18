@@ -834,9 +834,9 @@ class Substrate:
         if self.substrates.contains(Point(origin)) and not self.substrates.boundary.contains(Point(origin)):
             raise TabError(origin, direction, ["Tab annotation is placed inside the board. It has to be on edge or outside the board."])
 
-        origin = np.array(origin)
+        origin = np.array(origin, dtype=np.float64)
         direction = np.around(normalize(direction), 4)
-        origin -= direction * SHP_EPSILON
+        origin -= direction * float(SHP_EPSILON)
         for geom in listGeometries(self.substrates):
             try:
                 sideOriginA = origin + makePerpendicular(direction) * width / 2
@@ -857,9 +857,9 @@ class Substrate:
                 direction = -direction
                 for p in listGeometries(partitionLine):
                     try:
-                        partitionSplitPointA = closestIntersectionPoint(splitPointA.coords[0] - direction * SHP_EPSILON,
+                        partitionSplitPointA = closestIntersectionPoint(splitPointA.coords[0] - direction * float(SHP_EPSILON),
                                 direction, p, maxHeight)
-                        partitionSplitPointB = closestIntersectionPoint(splitPointB.coords[0] - direction * SHP_EPSILON,
+                        partitionSplitPointB = closestIntersectionPoint(splitPointB.coords[0] - direction * float(SHP_EPSILON),
                                 direction, p, maxHeight)
                     except NoIntersectionError: # We cannot span towards the partition line
                         continue
@@ -879,8 +879,8 @@ class Substrate:
                         # penetrate the board substrate. Otherwise, there is a
                         # numerical instability on small slopes that yields
                         # artifacts on substrate union
-                        offsetTabFace = [(p[0] - SHP_EPSILON * direction[0], p[1] - SHP_EPSILON * direction[1]) for p in tabFace.coords]
-                        partitionFaceCoord = [(p[0] + SHP_EPSILON * direction[0], p[1] + SHP_EPSILON * direction[1]) for p in partitionFaceCoord]
+                        offsetTabFace = [(p[0] - float(SHP_EPSILON) * direction[0], p[1] - float(SHP_EPSILON) * direction[1]) for p in tabFace.coords]
+                        partitionFaceCoord = [(p[0] + float(SHP_EPSILON) * direction[0], p[1] + float(SHP_EPSILON) * direction[1]) for p in partitionFaceCoord]
                         tab = Polygon(offsetTabFace + partitionFaceCoord)
                         return self._makeTabFillet(tab, tabFace, fillet)
                 return None, None
