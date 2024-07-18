@@ -17,9 +17,9 @@ version), you can install it directly from git. The command for that is:
 
 ```.bash
 # The master branch (also called the upstream version) - the most up-to-date KiKit there is (but might me unstable)
-pip install git+https://github.com/yaqwsx/KiKit@master
+pip install https://github.com/yaqwsx/KiKit/archive/master.zip
 # A concrete branch, e.g., from a pull request
-pip3 install git+https://github.com/yaqwsx/KiKit@someBranchName
+pip3 install https://github.com/yaqwsx/KiKit/archive/someBranchName.zip
 ```
 
 
