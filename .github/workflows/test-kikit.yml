@@ -62,7 +62,7 @@ jobs:
       matrix:
         build-config:
           - name: x64
-            suffix: ""
+            suffix: "-v7"
             platform: linux/amd64
             repo: ubuntu
             kicad_version: "7.0"
