@@ -210,6 +210,8 @@ def approximateBezier(bezier, endWith):
                      3 * t ** 2 * (1 - t) * bc2 + \
                      t ** 3 * end
             outline.append(vertex)
+    else:
+        outline += [start, end]
     outline.append(end)
 
     endWith = np.array(endWith)
