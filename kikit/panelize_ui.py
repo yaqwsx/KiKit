@@ -357,7 +357,9 @@ def separate(input, output, source, page, debug, keepannotations, preservearcs):
 
         destination = VECTOR2I(150 * mm, 100 * mm)
         panel.appendBoard(input, destination, sourceArea,
-            interpretAnnotations=(not keepannotations))
+            interpretAnnotations=(not keepannotations),
+            netRenamer=lambda i, x: x,
+            refRenamer=lambda i, x: x)
         ki.setStackup(preset["source"], panel)
         ki.setPageSize(preset["page"], panel, board)
         ki.positionPanel(preset["page"], panel)
