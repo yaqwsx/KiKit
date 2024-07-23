@@ -63,7 +63,7 @@ def getEndPoint(geom):
         # Rectangle is closed, so it starts at the same point as it ends
         point = geom.GetStart()
     else:
-        point = geom.GetEnd()
+        point = geom.GetStart() if geom.IsClosed() else geom.GetEnd()
     return point
 
 class CoincidenceList(list):
