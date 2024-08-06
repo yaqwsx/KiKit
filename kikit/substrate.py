@@ -349,8 +349,9 @@ def substratesFrom(polygons):
     return substrates
 
 class CircleFitCandidates:
-    def __init__(self, tolerance: int = fromMm(0.01)):
+    def __init__(self, tolerance: int = fromMm(0.005), radius_limit: int = fromMm(1000)):
         self.tolerance = tolerance
+        self.radius_limit = radius_limit
 
         self._xs = []
         self._xSum: float = 0
@@ -392,7 +393,7 @@ class CircleFitCandidates:
         else:
             toRevalidate = [(np.array([self._xs[-2], self._ys[-2]]), np.array([self._xs[-1], self._ys[-1]]))]
 
-        if self._doLinesFitCircle(toRevalidate, newCenter, newRadius):
+        if self._doLinesFitCircle(toRevalidate, newCenter, newRadius) and newRadius < self.radius_limit:
             self.foundCircle = newCenter, newRadius
             return True
 
