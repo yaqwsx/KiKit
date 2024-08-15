@@ -9,7 +9,7 @@ body:
       required: true
     - label: I have searched existing issues (including closed ones)
       required: true
-    - label: I use KiKit at least version 1.5.1 (older version are not supported)
+    - label: I use KiKit at least version 1.6.0 (older version are not supported)
       required: true
 - type: input
   attributes:
