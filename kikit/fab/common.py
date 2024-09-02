@@ -17,13 +17,59 @@ if isV6() or isV7() or isV8():
     from kikit import eeschema_v6 # import getField, getUnit, getReference
 from kikit import eeschema #import getField, getUnit, getReference
 
+def filterComponents(components, refsToIgnore, ignoreField):
+    filtered = []
+    for c in components:
+        if getUnit(c) != 1:
+            continue
+        reference = getReference(c)
+        if reference.startswith("#PWR") or reference.startswith("#FL"):
+            continue
+        if reference in refsToIgnore:
+            continue
+        if getField(c, ignoreField) is not None and getField(c, ignoreField) != "":
+            continue
+        if hasattr(c, "in_bom") and not c.in_bom:
+            continue
+        if hasattr(c, "on_board") and not c.on_board:
+            continue
+        if hasattr(c, "dnp") and c.dnp:
+            continue
+        filtered.append(c)
+    return filtered
+
 # A user can still supply v5 schematics even when we run v6, therefore,
 # we have to load the correct schematics and provide the right getters
-def extractComponents(filename):
+def extractComponents(filename, refsToIgnore, ignoreField):
+    if isinstance(filename, (list, tuple)):
+        mergedComponents = []
+        seenRefs = dict()
+
+        for f in filename:
+            components = extractComponents(f, refsToIgnore, ignoreField)
+            for c in components:
+                ref = getReference(c)
+
+                seen = seenRefs.get(ref)
+                if seen == f:
+                    raise RuntimeError(
+                        f"Duplicate reference designator: '{f}' defines reference '{ref}' more than once."
+                    )
+                elif seen:
+                    raise RuntimeError(
+                        f"Duplicate reference designator: both '{f}' and '{seen}' define reference '{ref}'. "
+                        + "When using multiple schematics, component references must be unique across all schematics."
+                    )
+
+                seenRefs[ref] = f
+                mergedComponents.append(c)
+
+        return mergedComponents
+
     if filename.endswith(".kicad_sch"):
-        return eeschema_v6.extractComponents(filename)
+        return filterComponents(eeschema_v6.extractComponents(filename), refsToIgnore, ignoreField)
     if filename.endswith(".sch"):
-        return eeschema.extractComponents(filename)
+        return filterComponents(eeschema.extractComponents(filename), refsToIgnore, ignoreField)
     raise RuntimeError(f"Unknown schematic file type specified: {filename}")
 
 def getUnit(component):
@@ -223,8 +269,12 @@ def isValidBoardPath(filename):
     return os.path.splitext(filename)[1] in [".kicad_pcb"]
 
 def ensureValidSch(filename):
-    if not isValidSchPath(filename):
-        raise RuntimeError(f"The path {filename} is not a valid KiCAD schema file")
+    if isinstance(filename, (list, tuple)):
+        for f in filename:
+            ensureValidSch(f)
+    else:
+        if not isValidSchPath(filename):
+            raise RuntimeError(f"The path {filename} is not a valid KiCAD schema file")
 
 def ensureValidBoard(filename):
     if not isValidBoardPath(filename):
