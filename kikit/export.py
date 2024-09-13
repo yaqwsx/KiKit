@@ -184,6 +184,7 @@ def pasteDxfExport(board, plotDir):
     popt.SetScale(1)
     popt.SetDXFPlotUnits(DXF_UNITS_MILLIMETERS)
     popt.SetDXFPlotPolygonMode(False)
+    popt.SetDrillMarksType(DRILL_MARKS_NO_DRILL_SHAPE)
 
     plot_plan = [
         # name, id, comment
