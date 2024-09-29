@@ -61,6 +61,8 @@ class DrcExclusion:
     objects: List[pcbnew.BOARD_ITEM] = field(default_factory=list)
 
     def eqRepr(self) -> Tuple[str, Union[Tuple[str, str], str]]:
+        if len(self.objects) == 0:
+            return (self.type, ())
         if len(self.objects) == 1:
             objRepr = str(self.objects[0].m_Uuid.AsString()) if isinstance(self.objects[0], pcbnew.BOARD_ITEM) else self.objects[0]
             return (self.type, objRepr)
