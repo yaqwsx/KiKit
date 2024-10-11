@@ -348,7 +348,7 @@ def isBoardEdge(edge):
 
     The rule is: all drawings on Edge.Cuts layer are edges.
     """
-    return isinstance(edge, pcbnew.PCB_SHAPE) and edge.GetLayerName() == "Edge.Cuts"
+    return isinstance(edge, pcbnew.PCB_SHAPE) and edge.GetLayer() == pcbnew.Edge_Cuts
 
 def tabSpacing(width, count):
     """
