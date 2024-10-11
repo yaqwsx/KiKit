@@ -51,6 +51,10 @@ def getStartPoint(geom):
         point = geom.GetStart() + pcbnew.VECTOR2I(geom.GetRadius(), 0)
     elif geom.GetShape() == STROKE_T.S_RECT:
         point = geom.GetStart()
+    elif geom.GetShape() == STROKE_T.S_POLYGON:
+        # Polygons don't use the properties for start point, look into the
+        # geometry
+        point = geom.GetPolyShape().Outline(0).CPoints()[0]
     else:
         point = geom.GetStart()
     return point
@@ -62,6 +66,14 @@ def getEndPoint(geom):
     elif geom.GetShape() == STROKE_T.S_RECT:
         # Rectangle is closed, so it starts at the same point as it ends
         point = geom.GetStart()
+    elif geom.GetShape() == STROKE_T.S_POLYGON:
+        # Polygons don't use the properties for start point, look into the
+        # geometry
+        outline = geom.GetPolyShape().Outline(0)
+        if outline.IsClosed():
+            point = outline.CPoints()[0]
+        else:
+            point = outline.CPoints()[-1]
     else:
         point = geom.GetStart() if geom.IsClosed() else geom.GetEnd()
     return point
