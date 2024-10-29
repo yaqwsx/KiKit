@@ -80,7 +80,11 @@ def transplateBoard(source, target):
         target.SetZoneSettings(source.GetZoneSettings())
 
 def drawTemporaryNotification(board, sourceFilename):
-    bbox = findBoardBoundingBox(board)
+    try:
+        bbox = findBoardBoundingBox(board)
+    except Exception:
+        # If the output is empty...
+        bbox = pcbnew.BOX2I(pcbnew.VECTOR2I(0, 0), pcbnew.VECTOR2I(0, 0))
 
     text = pcbnew.PCB_TEXT(board)
     text.SetLayer(pcbnew.Margin)
