@@ -615,7 +615,10 @@ class Panel:
             if zName.startswith("KIKIT_zone_"):
                 zonesToRefill.append(zone)
                 zone.SetZoneName(originalZoneNames[zName])
-        fillerTool.Fill(zonesToRefill)
+        if len(zonesToRefill) > 0:
+            # Even if there are no zones to refill, the refill algorithm takes
+            # non-trivial time to compute, hence, skip it.
+            fillerTool.Fill(zonesToRefill)
 
         fillBoard.Save(self.filename)
         self._adjustPageSize()
