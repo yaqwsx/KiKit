@@ -1,3 +1,5 @@
+import time
+import traceback
 from kikit.defs import EDA_TEXT_HJUSTIFY_T, EDA_TEXT_VJUSTIFY_T
 from pcbnewTransition import pcbnew, isV8
 from kikit.panelize_ui_impl import loadPresetChain, obtainPreset, mergePresets
@@ -23,6 +25,7 @@ class ExceptionThread(Thread):
             super().run()
         except Exception as e:
             self.exception = e
+            self.traceback = traceback.format_exc()
 
 def replaceExt(file, ext):
     return os.path.splitext(file)[0] + ext
@@ -46,38 +49,54 @@ def presetDifferential(source, target):
     return result
 
 
-def transplateBoard(source, target):
+def transplateBoard(source, target, update=lambda x: None):
+    CLEAR_MSG = "Clearing the old board in UI"
+    RENDER_MSG = "Rendering the new board in UI"
     items = chain(
         list(target.GetDrawings()),
         list(target.GetFootprints()),
         list(target.GetTracks()),
         list(target.Zones()))
     for x in items:
+        update(CLEAR_MSG)
         target.Remove(x)
 
     for x in list(target.GetNetInfo().NetsByNetcode().values()):
+        update(CLEAR_MSG)
         target.Remove(x)
 
+    update(RENDER_MSG)
+    target.SetProperties(source.GetProperties())
+    update(RENDER_MSG)
+    target.SetPageSettings(source.GetPageSettings())
+    update(RENDER_MSG)
+    target.SetTitleBlock(source.GetTitleBlock())
+    if not isV8():
+        update(RENDER_MSG)
+        target.SetZoneSettings(source.GetZoneSettings())
+
     for x in source.GetDrawings():
+        update(RENDER_MSG)
         appendItem(target, x)
     for x in source.GetFootprints():
+        update(RENDER_MSG)
         appendItem(target, x)
     for x in source.GetTracks():
+        update(RENDER_MSG)
         appendItem(target, x)
     for x in source.Zones():
+        update(RENDER_MSG)
         appendItem(target, x)
 
     for n in [n for _, n in source.GetNetInfo().NetsByNetcode().items()]:
+        update(RENDER_MSG)
         target.Add(n)
 
+    update(RENDER_MSG)
     d = target.GetDesignSettings()
     d.CloneFrom(source.GetDesignSettings())
 
-    target.SetProperties(source.GetProperties())
-    target.SetPageSettings(source.GetPageSettings())
-    target.SetTitleBlock(source.GetTitleBlock())
-    if not isV8():
-        target.SetZoneSettings(source.GetZoneSettings())
+
 
 def drawTemporaryNotification(board, sourceFilename):
     try:
@@ -282,6 +301,8 @@ class PanelizeDialog(wx.Dialog):
 
         self.board = board
         self.dirty = False
+        self.progressDlg = None
+        self.lastPulse = time.time()
 
         topMostBoxSizer = wx.BoxSizer(wx.VERTICAL)
 
@@ -428,14 +449,49 @@ class PanelizeDialog(wx.Dialog):
     def OnClose(self, event):
         self.EndModal(0)
 
+    def _updatePanelizationProgress(self, message, force=False):
+        self.phase = message
+        now = time.time()
+
+        if now - self.lastPulse > 1 / 50 or force:
+            self.lastPulse = now
+            if self.progressDlg is not None:
+                self.progressDlg.Pulse(newmsg=f"Running KiKit: {self.phase}")
+            if force:
+                self.progressDlg.Refresh()
+            wx.GetApp().Yield()
+
+    def _panelizationRoutine(self, tempdir, input, panelFile, preset):
+        panelize_ui.doPanelization(input, panelFile, preset)
+
+        # KiCAD 6 does something strange here, so we will load an empty
+        # file if we read it directly, but we can always make a copy and
+        # read that. Copying a file can be lengthy, so we will copy the
+        # file in a thread.
+        copyPanelName = os.path.join(tempdir, "panel-copy.kicad_pcb")
+        shutil.copy(panelFile, copyPanelName)
+        try:
+            shutil.copy(replaceExt(panelFile, ".kicad_pro"), replaceExt(copyPanelName, "kicad_pro"))
+            shutil.copy(replaceExt(panelFile, ".kicad_prl"), replaceExt(copyPanelName, "kicad_prl"))
+        except FileNotFoundError:
+            # We don't care if we didn't manage to copy the files
+            pass
+        self.temporary_panel = pcbnew.LoadBoard(copyPanelName)
+
+    def _pulseWhilePcbnewRefresh(self):
+        while not self.refreshDone:
+            time.sleep(1/50)
+            self._updatePanelizationProgress("Pcbnew is updating the preview")
+
+
     def OnPanelize(self, event):
         with tempfile.TemporaryDirectory(prefix="kikit") as dirname:
             try:
-                progressDlg = wx.ProgressDialog(
-                    "Running kikit", "Running kikit, please wait",
+                self.progressDlg = wx.ProgressDialog(
+                    "Running kikit", f"Running KiKit:",
                     parent=self)
-                progressDlg.Show()
-                progressDlg.Pulse()
+                self._updatePanelizationProgress("Starting up")
+                self.progressDlg.Show()
 
                 args = self.kikitArgs()
                 preset = obtainPreset([], **args)
@@ -462,43 +518,38 @@ class PanelizeDialog(wx.Dialog):
                     dlg.ShowModal()
                     dlg.Destroy()
                     return
-                thread = ExceptionThread(target=panelize_ui.doPanelization,
-                                         args=(input, panelFile, preset))
+
+                # We run as much as possible in a separate thread to not stall
+                # the UI...
+                thread = ExceptionThread(target=self._panelizationRoutine,
+                                         args=(dirname, input, panelFile, preset))
                 thread.daemon = True
                 thread.start()
                 while True:
-                    progressDlg.Pulse()
-                    thread.join(timeout=1)
+                    self._updatePanelizationProgress("Panelization")
+                    thread.join(timeout=1 / 50)
                     if not thread.is_alive():
                         break
-                if thread.exception and not isinstance(thread.exception, NonFatalErrors):
-                    raise thread.exception
-                # KiCAD 6 does something strange here, so we will load
-                # an empty file if we read it directly, but we can always make
-                # a copy and read that:
-                copyPanelName = os.path.join(dirname, "panel-copy.kicad_pcb")
-                shutil.copy(panelFile, copyPanelName)
-                try:
-                    shutil.copy(replaceExt(panelFile, ".kicad_pro"), replaceExt(copyPanelName, "kicad_pro"))
-                    shutil.copy(replaceExt(panelFile, ".kicad_prl"), replaceExt(copyPanelName, "kicad_prl"))
-                except FileNotFoundError:
-                    # We don't care if we didn't manage to copy the files
-                    pass
-                panel = pcbnew.LoadBoard(copyPanelName)
-                transplateBoard(panel, self.board)
-                drawTemporaryNotification(self.board, panelFile)
-                self.dirty = True
                 if thread.exception:
                     raise thread.exception
+
+                # ...however, transplate board and pcbnew.Refresh has to happen
+                # in the main thread
+                transplateBoard(self.temporary_panel, self.board, self._updatePanelizationProgress)
+                drawTemporaryNotification(self.board, panelFile)
+                self._updatePanelizationProgress("Pcbnew will now refresh panel, the UI might freeze", force=True)
+                pcbnew.Refresh()
+                self._updatePanelizationProgress("Done", force=True)
+                self.dirty = True
             except Exception as e:
                 dlg = wx.MessageDialog(
                     None, f"Cannot perform:\n\n{e}", "Error", wx.OK)
                 dlg.ShowModal()
                 dlg.Destroy()
             finally:
-                progressDlg.Hide()
-                progressDlg.Destroy()
-        pcbnew.Refresh()
+                self.progressDlg.Hide()
+                self.progressDlg.Destroy()
+                self.progressDlg = None
 
     def populateInitialValue(self, initialPreset=None):
         preset = loadPresetChain([":default"])
