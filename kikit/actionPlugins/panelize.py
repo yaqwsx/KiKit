@@ -52,6 +52,10 @@ def presetDifferential(source, target):
 def transplateBoard(source, target, update=lambda x: None):
     CLEAR_MSG = "Clearing the old board in UI"
     RENDER_MSG = "Rendering the new board in UI"
+
+    target.ClearProject()
+    target.DeleteAllFootprints()
+    
     items = chain(
         list(target.GetDrawings()),
         list(target.GetFootprints()),
@@ -59,11 +63,11 @@ def transplateBoard(source, target, update=lambda x: None):
         list(target.Zones()))
     for x in items:
         update(CLEAR_MSG)
-        target.Remove(x)
+        target.RemoveNative(x)
 
     for x in list(target.GetNetInfo().NetsByNetcode().values()):
         update(CLEAR_MSG)
-        target.Remove(x)
+        target.RemoveNative(x)
 
     update(RENDER_MSG)
     target.SetProperties(source.GetProperties())

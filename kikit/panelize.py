@@ -197,7 +197,7 @@ def appendItem(board: pcbnew.BOARD, item: pcbnew.BOARD_ITEM,
         newItem = item.Duplicate()
     except TypeError: # Footprint has overridden the method, cannot be called directly
         newItem = pcbnew.Cast_to_BOARD_ITEM(item).Duplicate().Cast()
-    board.Add(newItem)
+    board.AddNative(newItem)
     if not yieldMapping:
         return
     if isinstance(item, pcbnew.FOOTPRINT):
