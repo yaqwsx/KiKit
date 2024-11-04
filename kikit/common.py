@@ -75,6 +75,8 @@ def collectEdges(board, layerId, sourceArea=None):
             continue
         if isinstance(edge, pcbnew.PCB_DIMENSION_BASE):
             continue
+        if isinstance(edge, pcbnew.PCB_TEXT):
+            continue
         if not sourceArea or fitsIn(edge.GetBoundingBox(), sourceArea):
             edges.append(edge)
     return edges
