@@ -57,6 +57,7 @@
         "textprolongation": "3mm",
         "textoffset": "3mm",
         "template": "V-CUT",
+        "textLayer": "Cmts.User",
         "layer": "Cmts.User",
         "offset": "0mm",
         "prolong": "0mm",
