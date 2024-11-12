@@ -52,6 +52,9 @@ class NonFatalErrors(PanelError):
         for pos, err in errors:
             message += f"- Location [{toMm(pos[0])}, {toMm(pos[1])}]\n"
             message += textwrap.indent(err, "  ")
+            if not message.endswith("\n"):
+                message += "\n"
+        message = message[:-1]
         super().__init__(message)
 
 def identity(x):
