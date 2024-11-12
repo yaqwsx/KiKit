@@ -559,6 +559,7 @@ class Panel:
         for e in boardsEdges:
             e.SetWidth(edgeWidth)
 
+        self._validateVCuts()
         vcuts = self._renderVCutH() + self._renderVCutV()
         keepouts = []
         for cut, clearanceArea in vcuts:
@@ -1206,6 +1207,32 @@ class Panel:
         label.SetTextThickness(self.vCutSettings.textThickness)
         label.SetTextSize(toKiCADPoint((self.vCutSettings.textSize, self.vCutSettings.textSize)))
         label.SetHorizJustify(EDA_TEXT_HJUSTIFY_T.GR_TEXT_HJUSTIFY_LEFT)
+
+    def _validateVCuts(self, tolerance=fromMm(1)):
+        """
+        Validates V-cuts for cuttitng the PCBs. Renders the violations into the
+        PCB as a side effect.
+        """
+        if len(self.hVCuts) == 0 and len(self.vVCuts) == 0:
+            return
+
+        collisionPolygons = shapely.ops.unary_union([x.substrates.buffer(-tolerance) for x in self.substrates])
+        minx, miny, maxx, maxy = self.panelBBox()
+
+        lines = \
+            [LineString([(minx, y), (maxx, y)]) for y in self.hVCuts] + \
+            [LineString([(x, miny), (x, maxy)]) for x in self.vVCuts]
+
+        error_message = "V-Cut cuts the original PCBs. You should:\n"
+        error_message += "- either reconsider your tab placement,\n"
+        error_message += "- or use different cut type – e.g., mouse bites."
+        for line in lines:
+            for geom in listGeometries(collisionPolygons.intersection(line)):
+                if geom.is_empty:
+                    continue
+                annotationPos = sorted(geom.coords, key=lambda p: -p[1])[0]
+                self._renderLines([geom], Layer.Margin)
+                self.reportError(toKiCADPoint(annotationPos), error_message)
 
     def _renderVCutV(self):
         """ return list of PCB_SHAPE V-Cuts """
