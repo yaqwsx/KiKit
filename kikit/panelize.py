@@ -1511,7 +1511,7 @@ class Panel:
                 message += "- your vertical or horizontal PCB edges are not precisely vertical or horizontal.\n"
                 message += "Modify the design or accept curve approximation via V-cuts."
                 self._renderLines([cut], Layer.Margin)
-                self.reportError(toKiCADPoint(cut[0]), message)
+                self.reportError(toKiCADPoint(cut.coords[0]), message)
                 continue
             cut = cut.simplify(1).parallel_offset(offset, "left")
             start = roundPoint(cut.coords[0])
