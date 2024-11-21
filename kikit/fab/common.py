@@ -85,8 +85,12 @@ def footprintPosition(footprint, placeOffset, compensation):
     pos += VECTOR2I(fromMm(x), fromMm(y))
     return pos
 
-def footprintOrientation(footprint, compensation):
-    return (footprint.GetOrientation().AsDegrees() + compensation[2]) % 360
+def footprintOrientation(footprint, compensation, flipBottomOrientation=False):
+    if flipBottomOrientation and layerToSide(footprint.GetLayer()) == "B":
+        angle = 180 - footprint.GetOrientation().AsDegrees()
+    else:
+        angle = footprint.GetOrientation().AsDegrees()
+    return (angle + compensation[2]) % 360
 
 def parseCompensation(compensation):
     compParts = compensation.split(";")
@@ -158,7 +162,7 @@ def noFilter(footprint):
 
 def collectPosData(board, correctionFields, posFilter=lambda x : True,
                    footprintX=defaultFootprintX, footprintY=defaultFootprintY, bom=None,
-                   correctionFile=None):
+                   correctionFile=None, flipBottomOrientation=False):
     """
     Extract position data of the footprints.
 
@@ -204,7 +208,7 @@ def collectPosData(board, correctionFields, posFilter=lambda x : True,
              footprintX(footprint, placeOffset, getCompensation(footprint)),
              footprintY(footprint, placeOffset, getCompensation(footprint)),
              layerToSide(footprint.GetLayer()),
-             footprintOrientation(footprint, getCompensation(footprint))) for footprint in footprints]
+             footprintOrientation(footprint, getCompensation(footprint), flipBottomOrientation)) for footprint in footprints]
 
 def posDataToFile(posData, filename):
     with open(filename, "w", newline="", encoding="utf-8") as csvfile:
