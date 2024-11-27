@@ -315,7 +315,7 @@ def resolveAnchor(anchor):
     a VECTOR2I
     """
     choices = {
-        "tl": lambda x: x.GetPosition(),
+        "tl": lambda x: x.GetPosition() + toKiCADPoint((0, 0)),
         "tr": lambda x: x.GetPosition() + toKiCADPoint((x.GetWidth(), 0)),
         "bl": lambda x: x.GetPosition() + toKiCADPoint((0, x.GetHeight())),
         "br": lambda x: x.GetPosition() + toKiCADPoint((x.GetWidth(), x.GetHeight())),
