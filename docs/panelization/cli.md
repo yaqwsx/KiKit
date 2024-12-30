@@ -398,7 +398,7 @@ Add a frame around the board.
 - `cuts` - one of `none`, `both`, `v`, `h` - specify whether to add cuts to the
   corners of the frame for easy removal. Default `both`.
 
-#### Tighframe
+#### Tightframe
 
 Add a frame around the board which fills the whole area of the panel - the
 boards have just a milled slot around their perimeter.
