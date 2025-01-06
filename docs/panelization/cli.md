@@ -206,7 +206,7 @@ are present. You can read more about multi-board project [here](../multiboard.md
 
 - `stack`: specify the number of layers of the panel. Valid options are
   `2layer`, `4layer`, `6layer` or `inehrit` (default). The use case for this
-  option is when you design a multiple boards in a single desing and you
+  option is when you design a multiple boards in a single design and you
   separate them, however, one boards is e.g., 4 layer and one 2 layer. Then you
   design both of them as 4 layer and you specify `stack: 2layer` for the 2 layer
   one when panelizing or separating.
@@ -398,7 +398,7 @@ Add a frame around the board.
 - `cuts` - one of `none`, `both`, `v`, `h` - specify whether to add cuts to the
   corners of the frame for easy removal. Default `both`.
 
-#### Tighframe
+#### Tightframe
 
 Add a frame around the board which fills the whole area of the panel - the
 boards have just a milled slot around their perimeter.
@@ -511,7 +511,7 @@ the `plugin` field.
 
 Sets page size on the resulting panel and position the panel in the page. The
 type of style dictates paper size. The default `inherit` option inherits paper
-size from the source board. This feature is not supported on KiCAD 5
+size from the source board. This feature is not supported on KiCAD 5.
 
 **Types**: `inherit`, `custom`, `A0`, `A1`, `A2`, `A3`, `A4`, `A5`, `A`, `B`,
 `C`, `D`, `E`, `USLetter`, `USLegal`, `USLedger`, `A0-portrait`, `A1-portrait`,
