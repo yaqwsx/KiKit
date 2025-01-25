@@ -2120,6 +2120,102 @@ class Panel:
         these extra substrates no partition line would be generated on the side
         where the boundary is, therefore, there won't be any tabs.
         """
+
+        from .partition_line import polygon_to_staircase, cover_polygon_with_boxes, plot_shapely_polygon
+        import matplotlib.pyplot as plt
+
+
+        s = self.substrates[0].substrates
+
+        staircase = polygon_to_staircase(s, fromMm(0.5))
+        boxes = cover_polygon_with_boxes(s)
+
+        fig, ax = plt.subplots(figsize=(6, 6))
+
+        # Plot original polygon outline in bold black
+        plot_shapely_polygon(ax, s, edgecolor="black", facecolor="none", linewidth=2)
+
+        # Plot each rectangle in a semi-transparent color
+        for rect in boxes:
+            plot_shapely_polygon(ax, shapely.geometry.box(*rect), edgecolor="blue", facecolor="cyan", alpha=0.3)
+
+        # Adjust plot range to fit polygon
+        minx, miny, maxx, maxy = s.bounds
+        ax.set_xlim(minx - 1, maxx + 1)
+        ax.set_ylim(miny - 1, maxy + 1)
+        ax.set_aspect("equal", adjustable="box")
+        ax.set_title("Sweep-Line Partition of an Orthogonal Polygon")
+
+        plt.show()
+
+
+
+        from trimesh.path.polygons import medial_axis
+
+        # Compute a polygon that is a bounding box of all substrates
+        minx, miny, maxx, maxy = self.substrates[0].substrates.bounds
+        for s in self.substrates[1:]:
+            x0, y0, x1, y1 = s.substrates.bounds
+            minx, miny = min(minx, x0), min(miny, y0)
+            maxx, maxy = max(maxx, x1), max(maxy, y1)
+        bb = box(minx, miny, maxx, maxy)
+
+        for s in self.substrates:
+            bb = bb.difference(s.exterior())
+
+        for g in listGeometries(bb):
+            # Draw the polygons to the B.Court layer
+            for start, end in zip(g.exterior.coords, g.exterior.coords[1:]):
+                self.addLine(start, end, fromMm(0.5), Layer.Cmts_User)
+            # Draw holes
+            for hole in g.interiors:
+                for start, end in zip(hole.coords, hole.coords[1:]):
+                    self.addLine(start, end, fromMm(0.5), Layer.Cmts_User)
+
+        # # Compute the medial axis of the bounding box
+        # for g in listGeometries(bb):
+        #     edges, vertices = medial_axis(g, resolution=fromMm(0.1))
+        #     for start_idx, end_idx in edges:
+        #         start = vertices[start_idx]
+        #         end = vertices[end_idx]
+        #         self.addLine(start, end, fromMm(0.5), Layer.Margin)
+
+        from ground.base import get_context
+        from sect.triangulation import Triangulation
+
+        # Extract the largest polygon form bb
+        shapely_polygon = max(listGeometries(bb), key=lambda p: p.area)
+
+        context = get_context()
+        Point = context.point_cls
+        Contour = context.contour_cls
+        Polygon = context.polygon_cls
+        Segment = context.segment_cls
+
+        # Convert exterior and holes to sect's Contour
+        exterior = Contour([Point(x, y) for x, y in shapely_polygon.exterior.coords[:-1]])
+        holes = [Contour([Point(x, y) for x, y in hole.coords[:-1]]) for hole in shapely_polygon.interiors]
+
+        # Create sect's Polygon
+        sect_polygon = Polygon(exterior, holes)
+
+        buffered_polygon = shapely_polygon.buffer(fromMm(0.5))
+        triangulation = Triangulation.constrained_delaunay(sect_polygon, context=context)
+
+        # Retrieve the triangles
+        triangles = triangulation.triangles()
+        for t in triangles:
+            vertices = t.vertices
+            for start, end in zip(vertices, vertices[1:] + vertices[:1]):
+                self.addLine((start.x, start.y), (end.x, end.y), fromMm(0.01), Layer.Margin)
+
+        # # Draw a circle in the center of each tringle
+        # for t in triangles:
+        #     vertices = t.vertices
+        #     for line_start, line_end in zip(t.vertices, t.vertices[1:] + t.vertices[:1]):
+        #         center = (line_start.x + line_end.x) / 2, (line_start.y + line_end.y) / 2
+        #         self.addLine(center, center, fromMm(0.2), Layer.Cmts_User)
+
         partition = substrate.SubstratePartitionLines(
             self.substrates, boundarySubstrates,
             safeMargin, safeMargin)
@@ -2151,7 +2247,7 @@ class Panel:
         Pcbnew.
         """
         lines = [s.partitionLine for s in self.substrates]
-        self._renderLines(lines, Layer.Eco1_User, fromMm(0.5))
+        self._renderLines(lines, Layer.Margin, fromMm(0.5))
 
     def debugRenderBackboneLines(self):
         """
