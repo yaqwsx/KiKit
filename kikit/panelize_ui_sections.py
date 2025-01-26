@@ -372,7 +372,7 @@ TABS_SECTION = {
         "Specify width of vertical tabs"),
     "hwidth": SLength(
         typeIn(["fixed", "spacing", "plugin"]),
-        "Specify width of vertical tabs"),
+        "Specify width of horizontal tabs"),
     "width": SLength(
         typeIn(["corner", "plugin"]),
         "Specify tab width"),
@@ -586,7 +586,7 @@ FIDUCIALS_SECTION = {
         "Horizontal offset for the fiducial"),
     "voffset": SLength(
         typeIn(["3fid", "4fid", "plugin"]),
-        "Horizontal offset for the fiducial"),
+        "Vertical offset for the fiducial"),
     "coppersize": SLength(
         typeIn(["3fid", "4fid", "plugin"]),
         "Diameter of the copper part"),
