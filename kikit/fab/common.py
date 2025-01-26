@@ -1,5 +1,6 @@
 import csv
 from dataclasses import dataclass
+from enum import Enum
 import re
 from typing import OrderedDict
 from kikit.project import KiCADProject
@@ -61,6 +62,10 @@ def hasNonSMDPins(footprint):
 class FormatError(Exception):
     pass
 
+class FootprintOrientationHandling(Enum):
+    KiCad = 0
+    MirrorBottom = 1
+
 @dataclass
 class CorrectionPattern:
     """Single correction pattern to match a component against."""
@@ -85,8 +90,16 @@ def footprintPosition(footprint, placeOffset, compensation):
     pos += VECTOR2I(fromMm(x), fromMm(y))
     return pos
 
-def footprintOrientation(footprint, compensation):
-    return (footprint.GetOrientation().AsDegrees() + compensation[2]) % 360
+def footprintOrientation(footprint, compensation, orientation: FootprintOrientationHandling = FootprintOrientationHandling.KiCad):
+    if orientation == FootprintOrientationHandling.KiCad:
+        return (footprint.GetOrientation().AsDegrees() + compensation[2]) % 360
+    if orientation == FootprintOrientationHandling.MirrorBottom:
+        if layerToSide(footprint.GetLayer()) == "B":
+            return (180 - footprint.GetOrientation().AsDegrees() + compensation[2]) % 360
+        else:
+            return (footprint.GetOrientation().AsDegrees() + compensation[2]) % 360
+
+    raise AssertionError("Invalid orientation handling")
 
 def parseCompensation(compensation):
     compParts = compensation.split(";")
@@ -158,7 +171,7 @@ def noFilter(footprint):
 
 def collectPosData(board, correctionFields, posFilter=lambda x : True,
                    footprintX=defaultFootprintX, footprintY=defaultFootprintY, bom=None,
-                   correctionFile=None):
+                   correctionFile=None, orientationHandling: FootprintOrientationHandling = FootprintOrientationHandling.KiCad):
     """
     Extract position data of the footprints.
 
@@ -204,7 +217,7 @@ def collectPosData(board, correctionFields, posFilter=lambda x : True,
              footprintX(footprint, placeOffset, getCompensation(footprint)),
              footprintY(footprint, placeOffset, getCompensation(footprint)),
              layerToSide(footprint.GetLayer()),
-             footprintOrientation(footprint, getCompensation(footprint))) for footprint in footprints]
+             footprintOrientation(footprint, getCompensation(footprint), orientationHandling)) for footprint in footprints]
 
 def posDataToFile(posData, filename):
     with open(filename, "w", newline="", encoding="utf-8") as csvfile:
