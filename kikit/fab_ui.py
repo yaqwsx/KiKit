@@ -31,7 +31,7 @@ def fabCommand(f):
     help="Comma separated list of component fields with the correction value. First existing field is used")
 @click.option("--correctionpatterns", type=click.Path(dir_okay=False))
 @click.option("--missingError/--missingWarn", help="If a non-ignored component misses LCSC field, fail")
-@click.option("--autoname", is_flag=True, help="Automatically name the output files based on the board name")
+@click.option("--autoname/--no-autoname", is_flag=True, help="Automatically name the output files based on the board name")
 def jlcpcb(**kwargs):
     """
     Prepare fabrication files for JLCPCB including their assembly service
