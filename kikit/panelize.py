@@ -1,7 +1,7 @@
 from copy import deepcopy
 import itertools
 import textwrap
-from pcbnewTransition import pcbnew, isV6
+from pcbnewTransition import pcbnew, isV6, kicad_major
 from kikit import sexpr
 from kikit.common import normalize
 
@@ -453,7 +453,7 @@ def bakeTextVars(board: pcbnew.BOARD) -> None:
     for drawing in board.GetDrawings():
         if not isinstance(drawing, pcbnew.PCB_TEXT):
             continue
-        if isV8():
+        if kicad_major() >= 8:
             drawing.SetText(drawing.GetShownText(True))
         else:
             drawing.SetText(drawing.GetShownText())

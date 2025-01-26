@@ -21,6 +21,9 @@ load common
     if [ $(kikit-info kicadversion) = "8.0"  ]; then
         SUFFIX="-v8"
     fi
+    if [ $(kikit-info kicadversion) = "9.0"  ]; then
+        SUFFIX="-v9"
+    fi
 
     run kikit drc run $RES/conn-fail-ignored${SUFFIX}.kicad_pcb
     echo "Report of fail-ignored\n: $output"

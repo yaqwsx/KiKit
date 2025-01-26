@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, Iterable, List, TextIO, Tuple, Union
 from pathlib import Path
 
-from pcbnewTransition import isV7, isV8, pcbnew
+from pcbnewTransition import isV7, isV8, isV9, pcbnew
 
 from kikit.common import fromMm, toMm
 from kikit.drc_ui import ReportLevel
@@ -21,6 +21,9 @@ def roundCoord(x: int) -> int:
     return round(x - 50, -4)
 
 def getItemDescription(item: pcbnew.BOARD_ITEM, units: pcbnew.EDA_UNITS = pcbnew.EDA_UNITS_MILLIMETRES):
+    if isV9():
+        uProvider = pcbnew.UNITS_PROVIDER(pcbnew.pcbIUScale, units)
+        return item.GetItemDescription(uProvider, True)
     if isV7() or isV8():
         uProvider = pcbnew.UNITS_PROVIDER(pcbnew.pcbIUScale, units)
         return item.GetItemDescription(uProvider)
@@ -236,6 +239,8 @@ def readBoardDrcExclusions(board: pcbnew.BOARD) -> List[DrcExclusion]:
         exclusions = project["board"]["design_settings"]["drc_exclusions"]
     except KeyError:
         return [] # There are no exclusions
+    if isV9() and len(exclusions) > 0 and isinstance(exclusions[0], list):
+        exclusions = [x[0] for x in exclusions]
     return [deserializeExclusion(e, board) for e in exclusions]
 
 def runImpl(board, useMm, ignoreExcluded, strict, level, yieldViolation):

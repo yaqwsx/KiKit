@@ -7,7 +7,7 @@ import shapely
 import json
 import numpy as np
 from kikit.intervals import Interval, BoxNeighbors, BoxPartitionLines
-from pcbnewTransition import pcbnew
+from pcbnewTransition import pcbnew, isV8
 from enum import IntEnum
 from itertools import product
 

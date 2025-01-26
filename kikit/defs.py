@@ -1,9 +1,10 @@
 from enum import Enum, IntEnum
 from .units import mm, inch
+from pcbnewTransition import kicad_major
 
 # These classes miss in the exported interface
 
-class Layer(IntEnum):
+class LayerV1(IntEnum):
     F_Cu = 0
     B_Cu = 31
     In1_Cu = 1
@@ -66,19 +67,112 @@ class Layer(IntEnum):
 
     @staticmethod
     def allCu():
-        return list(range(Layer.F_Cu, Layer.B_Cu + 1))
+        return list(range(LayerV1.F_Cu, LayerV1.B_Cu + 1))
 
     @staticmethod
     def all():
-        return list(range(Layer.F_Cu, Layer.User_4 + 1))
+        return list(range(LayerV1.F_Cu, LayerV1.User_4 + 1))
 
     @staticmethod
     def allTech():
-        return list(x for x in range(Layer.Dwgs_User, Layer.User_4 + 1))
+        return list(x for x in range(LayerV1.Dwgs_User, LayerV1.User_4 + 1))
 
     @staticmethod
     def allSilk():
-        return [Layer.F_SilkS, Layer.B_SilkS]
+        return [LayerV1.F_SilkS, LayerV1.B_SilkS]
+
+class LayerV2(IntEnum):
+    F_Cu = 0
+    B_Cu = 2
+    In1_Cu = 4
+    In2_Cu = 6
+    In3_Cu = 8
+    In4_Cu = 10
+    In5_Cu = 12
+    In6_Cu = 14
+    In7_Cu = 16
+    In8_Cu = 18
+    In9_Cu = 20
+    In10_Cu = 22
+    In11_Cu = 24
+    In12_Cu = 26
+    In13_Cu = 28
+    In14_Cu = 30
+    In15_Cu = 32
+    In16_Cu = 34
+    In17_Cu = 36
+    In18_Cu = 38
+    In19_Cu = 40
+    In20_Cu = 42
+    In21_Cu = 44
+    In22_Cu = 46
+    In23_Cu = 48
+    In24_Cu = 50
+    In25_Cu = 52
+    In26_Cu = 54
+    In27_Cu = 56
+    In28_Cu = 58
+    In29_Cu = 60
+    In30_Cu = 62
+
+    B_Adhes = 11
+    F_Adhes = 9
+    B_Paste = 15
+    F_Paste = 13
+    B_SilkS = 7
+    F_SilkS = 5
+    B_Mask = 3
+    F_Mask = 1
+
+    Dwgs_User = 17
+    Cmts_User = 19
+    Eco1_User = 21
+    Eco2_User = 23
+    Edge_Cuts = 25
+    Margin = 27
+
+    B_CrtYd = 29
+    F_CrtYd = 31
+    B_Fab = 33
+    F_Fab = 35
+
+    User_1 = 39
+    User_2 = 41
+    User_3 = 43
+    User_4 = 45
+    User_5 = 47
+    User_6 = 49
+    User_7 = 51
+    User_8 = 53
+    User_9 = 55
+
+    @staticmethod
+    def allCu():
+        return list(range(LayerV2.F_Cu, LayerV2.In30_Cu + 2, 2))
+
+    @staticmethod
+    def all():
+        return list(range(64))
+
+    @staticmethod
+    def allTech():
+        return [
+            LayerV2.Dwgs_User,
+            LayerV2.Cmts_User,
+            LayerV2.Eco1_User,
+            LayerV2.Eco2_User,
+            LayerV2.Edge_Cuts,
+            LayerV2.Margin,
+            LayerV2.B_CrtYd,
+            LayerV2.F_CrtYd,
+            LayerV2.B_Fab,
+            LayerV2.F_Fab
+        ] + list(range(LayerV2.User_1, LayerV2.User_9 + 2, 2))
+
+if kicad_major() >= 9:
+    Layer = LayerV2
+else:
+    Layer = LayerV1
 
 class STROKE_T(IntEnum):
     S_SEGMENT = 0
