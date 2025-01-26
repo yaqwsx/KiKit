@@ -1408,7 +1408,8 @@
 </code></pre></div></p>
 <p>When you run this command, you will find file <code>gerbers.zip</code> in <code>OUTPUTDIR</code>. This
 file can be directly uploaded to JLC PCB site. KiKit automatically detects the
-number of layers.</p>
+number of layers. If you would like to include the project name in the archive
+name, you can supply <code>--autoname</code></p>
 <p>If you want to name your files differently, you can specify <code>--nametemplate</code>.
 This option takes a string that should contain <code>{}</code>. This string will be
 replaced by <code>gerber</code>, <code>pos</code> or <code>bom</code> in the out file names. The extension is
