@@ -7,7 +7,8 @@ kikit fab jlcpcb [OPTIONS] BOARD OUTPUTDIR
 
 When you run this command, you will find file `gerbers.zip` in `OUTPUTDIR`. This
 file can be directly uploaded to JLC PCB site. KiKit automatically detects the
-number of layers.
+number of layers. If you would like to include the project name in the archive
+name, you can supply `--autoname`
 
 If you want to name your files differently, you can specify `--nametemplate`.
 This option takes a string that should contain `{}`. This string will be

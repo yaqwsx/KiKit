@@ -56,7 +56,8 @@ def bomToCsv(bomData, filename):
                 writer.writerow([value, ",".join(refChunk), footprint, lcsc])
 
 def exportJlcpcb(board, outputdir, assembly, schematic, ignore, field,
-           corrections, correctionpatterns, missingerror, nametemplate, drc):
+           corrections, correctionpatterns, missingerror, nametemplate, drc,
+           autoname):
     """
     Prepare fabrication files for JLCPCB including their assembly service
     """
@@ -74,7 +75,11 @@ def exportJlcpcb(board, outputdir, assembly, schematic, ignore, field,
     shutil.rmtree(gerberdir, ignore_errors=True)
     gerberImpl(board, gerberdir)
 
-    archiveName = expandNameTemplate(nametemplate, "gerbers", loadedBoard)
+    if autoname:
+        boardName = os.path.basename(board.replace(".kicad_pcb", ""))
+        archiveName = expandNameTemplate(nametemplate, boardName + "-gerbers", loadedBoard)
+    else:
+        archiveName = expandNameTemplate(nametemplate, "gerbers", loadedBoard)
     shutil.make_archive(os.path.join(outputdir, archiveName), "zip", outputdir, "gerber")
 
     if not assembly:
