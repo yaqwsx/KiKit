@@ -1,0 +1,6 @@
+{
+    "cuts": {
+        "type": "vcuts",
+        "layer": "Edge.Cuts"
+    }
+}
