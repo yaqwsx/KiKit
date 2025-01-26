@@ -584,10 +584,6 @@ class Panel:
             zone.SetZoneName(newName)
         self.board.Save(self.filename)
 
-        self.makeLayersVisible() # as they are not in KiCAD 6
-        self.transferProjectSettings()
-        self.writeCustomDrcRules()
-
         # Remove cuts
         for cut, _ in vcuts:
             self.board.Remove(cut)
@@ -625,7 +621,15 @@ class Panel:
             fillerTool.Fill(zonesToRefill)
 
         fillBoard.Save(self.filename)
+
+        # There are some properties of the board inaccessible from the Python
+        # API. Let's modify the project files directly. Note that this has to be
+        # done after the board is saved
         self._adjustPageSize()
+        self.makeLayersVisible() # as they are not in KiCAD 6
+        self.transferProjectSettings()
+        self.writeCustomDrcRules()
+
 
     def _getRefillEdges(self, reconstructArcs: bool):
         """
