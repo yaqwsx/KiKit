@@ -1375,8 +1375,8 @@ class Panel:
 
         return self.substrates[substrateCount:]
 
-    def makeFrame(self, width: KiLength, hspace: KiLength, vspace: KiLength,
-                  minWidth: KiLength = 0, minHeight: KiLength = 0,
+    def makeFrame(self, widthH: KiLength, widthV: KiLength, hspace: KiLength,
+                  vspace: KiLength, minWidth: KiLength = 0, minHeight: KiLength = 0,
                   maxWidth: Optional[KiLength] = None, maxHeight: Optional[KiLength] = None) \
                      -> Tuple[Iterable[LineString], Iterable[LineString]]:
         """
@@ -1386,7 +1386,8 @@ class Panel:
 
         Parameters:
 
-        width - width of substrate around board outlines
+        widthH, WidthV - width of substrate around board outlines - horizontal
+        and vertial direction
 
         slotwidth - width of milled-out perimeter around board outline
 
@@ -1400,10 +1401,11 @@ class Panel:
 
         maxWidth - if the panel doesn't meet this width, error is set and marked
 
-        maxHeight - if the panel doesn't meet this height, error is set and marked
+        maxHeight - if the panel doesn't meet this height, error is set and
+        marked
         """
         frameInnerRect = expandRect(shpBoxToRect(self.boardsBBox()), hspace, vspace)
-        frameOuterRect = expandRect(frameInnerRect, width)
+        frameOuterRect = expandRect(frameInnerRect, widthH, widthV)
 
         sizeErrors = []
         if maxWidth is not None and frameOuterRect.GetWidth() > maxWidth:
@@ -1434,17 +1436,18 @@ class Panel:
         frameCutsH = self.makeFrameCutsH(innerArea, frameInnerRect, frameOuterRect)
         return frameCutsV, frameCutsH
 
-    def makeTightFrame(self, width: KiLength, slotwidth: KiLength,
+    def makeTightFrame(self, widthH: KiLength, widthV: KiLength, slotwidth: KiLength,
                       hspace: KiLength, vspace: KiLength,  minWidth: KiLength=0,
                       minHeight: KiLength=0, maxWidth: Optional[KiLength] = None,
                       maxHeight: Optional[KiLength] = None) -> None:
         """
-        Build a full frame with board perimeter milled out.
-        Add your boards to the panel first using appendBoard or makeGrid.
+        Build a full frame with board perimeter milled out. Add your boards to
+        the panel first using appendBoard or makeGrid.
 
         Parameters:
 
-        width - width of substrate around board outlines
+        widthH, widthV - width of substrate around board outlines - horizontal
+        and verital size.
 
         slotwidth - width of milled-out perimeter around board outline
 
@@ -1460,7 +1463,7 @@ class Panel:
 
         maxHeight - if the panel doesn't meet this height, error is set
         """
-        self.makeFrame(width, hspace, vspace, minWidth, minHeight, maxWidth, maxHeight)
+        self.makeFrame(widthH, widthV, hspace, vspace, minWidth, minHeight, maxWidth, maxHeight)
         boardSlot = GeometryCollection()
         for s in self.substrates:
             boardSlot = boardSlot.union(s.exterior())

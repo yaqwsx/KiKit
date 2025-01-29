@@ -469,7 +469,7 @@ def buildFraming(preset, panel):
             addFilletAndChamfer(framingPreset, panel)
             return []
         if type == "frame":
-            cuts = panel.makeFrame(framingPreset["width"],
+            cuts = panel.makeFrame(framingPreset["width"], framingPreset["width"],
                 framingPreset["hspace"], framingPreset["vspace"],
                 framingPreset["mintotalwidth"], framingPreset["mintotalheight"],
                 framingPreset["maxtotalwidth"], framingPreset["maxtotalheight"])
@@ -482,10 +482,11 @@ def buildFraming(preset, panel):
                 return cuts[1]
             return []
         if type == "tightframe":
-            panel.makeTightFrame(framingPreset["width"], framingPreset["slotwidth"],
-                framingPreset["hspace"], framingPreset["vspace"],
-                framingPreset["mintotalwidth"], framingPreset["mintotalheight"],
-                framingPreset["maxtotalwidth"], framingPreset["maxtotalheight"])
+            panel.makeTightFrame(framingPreset["width"], framingPreset["width"],
+                framingPreset["slotwidth"],  framingPreset["hspace"],
+                framingPreset["vspace"], framingPreset["mintotalwidth"],
+                framingPreset["mintotalheight"], framingPreset["maxtotalwidth"],
+                framingPreset["maxtotalheight"])
             panel.boardSubstrate.removeIslands()
             addFilletAndChamfer(framingPreset, panel)
             return []
