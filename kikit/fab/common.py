@@ -69,11 +69,13 @@ class FootprintOrientationHandling(Enum):
 @dataclass
 class CorrectionPattern:
     """Single correction pattern to match a component against."""
-    footprint: re.Pattern
-    part_id: re.Pattern
+    pattern: re.Pattern
     x_correction: float
     y_correction: float
     rotation: float
+
+class CorrectionPatternError(Exception):
+    pass
 
 def layerToSide(layer):
     if layer == pcbnew.F_Cu:
@@ -130,7 +132,7 @@ def readCorrectionPatterns(filename):
     - Regexp to match to the part id (ignored at the moment)
     - X correction
     - Y correction
-    - Rotation
+    - Rotation (positive is counterclockwise)
     """
     corrections = OrderedDict()
     correctionPatterns = []
@@ -142,27 +144,31 @@ def readCorrectionPatterns(filename):
         reader = csv.reader(csvfile, dialect)
         first = True
         for row in reader:
+            if len(row) != 4:
+                raise CorrectionPatternError(f"Invalid number of fields in {row}")
             if has_header and first:
                 first = False
                 continue
             correctionPatterns.append(
                 CorrectionPattern(
                     re.compile(row[0]),
-                    re.compile(row[1]),
+                    float(row[1]),
                     float(row[2]),
                     float(row[3]),
-                    float(row[4]),
                 )
             )
     return correctionPatterns
 
 def applyCorrectionPattern(correctionPatterns, footprint):
-    # FIXME: part ID is currently ignored
-    # GetUniStringLibId returns the full footprint name including the
+    footprintReference = footprint.GetReference()
+    footprintValue = footprint.GetValue()
+    # GetFPIDAsString returns the full footprint name including the
     # library in the form of "Resistor_SMD:R_0402_1005Metric"
-    footprintName = str(footprint.GetFPID().GetUniStringLibId())
+    footprintName = footprint.GetFPIDAsString()
+    cps = lambda x: corpat.pattern.search(x)
     for corpat in correctionPatterns:
-        if corpat.footprint.match(footprintName):
+        # try to match reference, value or footprint
+        if cps(footprintReference) or cps(footprintValue) or cps(footprintName):
             return (corpat.x_correction, corpat.y_correction, corpat.rotation)
     return (0, 0, 0)
 
