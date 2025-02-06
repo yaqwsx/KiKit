@@ -336,7 +336,7 @@ def renameNets(board, renamer):
         if name != "" and name not in newNames:
             board.RemoveNative(netinfo.GetNetItem(name))
 
-def renameRefs(board, renamer):
+def renameRefs(board, renamer, bakeRefText = False):
     """
     Given a board and renaming function (taking original name, returning new
     name) renames the references
@@ -344,6 +344,25 @@ def renameRefs(board, renamer):
     for footprint in board.GetFootprints():
         ref = footprint.Reference().GetText()
         footprint.Reference().SetText(renamer(ref))
+      
+        if (bakeRefText):
+            PhantomRefText = None
+            if hasattr(pcbnew, "FP_TEXT"):
+                PhantomRefText = pcbnew.FP_TEXT(footprint.Reference())
+            elif hasattr(pcbnew, "PCB_TEXT"):
+                PhantomRefText = pcbnew.PCB_TEXT(footprint.Reference())
+            else:
+                raise RuntimeError(
+                    "bakeRefText Error: FP_TEXT or PCB_TEXT class not located, likely a KiCad version incompatibility error"
+                )
+
+            PhantomRefText.SetAttributes(footprint.Reference().GetAttributes())
+            PhantomRefText.SetPosition(footprint.Reference().GetPosition())
+            PhantomRefText.SetTextAngle(footprint.Reference().GetTextAngle())
+            PhantomRefText.SetLayer(footprint.Reference().GetLayer())
+            PhantomRefText.SetText(ref)
+            footprint.Add(PhantomRefText)
+            footprint.Reference().SetVisible(False)
 
 def isBoardEdge(edge):
     """
@@ -985,7 +1004,7 @@ class Panel:
                     netRenamer: Optional[Callable[[int, str], str]] = None,
                     refRenamer: Optional[Callable[[int, str], str]] = None,
                     inheritDrc: bool = True, interpretAnnotations: bool=True,
-                    bakeText: bool = False):
+                    bakeText: bool = False, bakeRefText: bool = False):
         """
         Appends a board to the panel.
 
@@ -1009,6 +1028,7 @@ class Panel:
         this boards or not.
 
         Similarly, you can substitute variables in the text via bakeText.
+        You can also ensure the ref text of each footprint remains unchanged via bakeRefText.
 
         Returns bounding box (BOX2I) of the extracted area placed at the
         destination and the extracted substrate of the board.
@@ -1056,7 +1076,7 @@ class Panel:
 
         renameNets(board, netRenamerFn)
         if refRenamer is not None:
-            renameRefs(board, lambda x: refRenamer(len(self.substrates), x))
+            renameRefs(board, lambda x: refRenamer(len(self.substrates), x), bakeRefText)
 
         drawings = collectItems(board.GetDrawings(), enlargedSourceArea)
         footprints = collectFootprints(board.GetFootprints(), enlargedSourceArea)
