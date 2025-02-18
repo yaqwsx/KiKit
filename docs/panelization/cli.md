@@ -344,6 +344,7 @@ Use mousebites to
   side without text.
 - `textprolongation` - the same as above, just on the text side
 - `textoffset` - offset of the text from the cut line
+- `textLayer` - layer for the text to appear (default Edge.Cuts)
 - `template` - a string template for text to render. Can contain variables
   listed below, e.g., `V-CUT {pos_mm}`.
     - `pos_mm`, `pos_inch` – position of the V-cut from the panel origin
