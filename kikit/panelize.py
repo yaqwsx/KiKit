@@ -823,9 +823,13 @@ class Panel:
         - if the rule contains condition, we identify boolean operations equals
           and not equals for net names and net classes and rename the nets
         """
-        proFilename = os.path.splitext(board.GetFileName())[0]+'.kicad_dru'
+        druFilename = os.path.splitext(board.GetFileName())[0]+'.kicad_dru'
         try:
-            with open(proFilename, encoding="utf-8") as f:
+            if os.stat(druFilename).st_size == 0:
+                # If the source board doesn't contain DRU files, there's nothing to
+                # inherit.
+                return
+            with open(druFilename, encoding="utf-8") as f:
                 rules = parseSexprListF(f)
         except FileNotFoundError:
             # If the source board doesn't contain DRU files, there's nothing to
