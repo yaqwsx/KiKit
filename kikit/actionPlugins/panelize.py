@@ -1,7 +1,7 @@
 import time
 import traceback
 from kikit.defs import EDA_TEXT_HJUSTIFY_T, EDA_TEXT_VJUSTIFY_T
-from pcbnewTransition import pcbnew, isV8
+from pcbnewTransition import pcbnew, kicad_major
 from kikit.panelize_ui_impl import loadPresetChain, obtainPreset, mergePresets
 from kikit import panelize_ui
 from kikit.panelize import NonFatalErrors, appendItem
@@ -75,7 +75,7 @@ def transplateBoard(source, target, update=lambda x: None):
     target.SetPageSettings(source.GetPageSettings())
     update(RENDER_MSG)
     target.SetTitleBlock(source.GetTitleBlock())
-    if not isV8():
+    if kicad_major() < 8:
         update(RENDER_MSG)
         target.SetZoneSettings(source.GetZoneSettings())
 

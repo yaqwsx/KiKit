@@ -7,7 +7,7 @@ import shapely
 import json
 import numpy as np
 from kikit.intervals import Interval, BoxNeighbors, BoxPartitionLines
-from pcbnewTransition import pcbnew, isV8
+from pcbnewTransition import pcbnew, kicad_major
 from enum import IntEnum
 from itertools import product
 
@@ -788,7 +788,7 @@ class Substrate:
         circle.SetShape(STROKE_T.S_CIRCLE)
         circle.SetLayer(Layer.Edge_Cuts)
         circle.SetCenter(toKiCADPoint(c))
-        if isV8():
+        if kicad_major() >= 8:
             circle.SetRadius(int(r))
         else:
             circle.SetEnd(toKiCADPoint(c + np.array([r, 0])))

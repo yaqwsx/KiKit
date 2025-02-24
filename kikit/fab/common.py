@@ -4,7 +4,7 @@ from enum import Enum
 import re
 from typing import OrderedDict
 from kikit.project import KiCADProject
-from pcbnewTransition import pcbnew, isV6, isV7, isV8
+from pcbnewTransition import pcbnew, kicad_major
 from math import sin, cos, radians
 from kikit.common import *
 from kikit.defs import MODULE_ATTR_T
@@ -14,7 +14,7 @@ from kikit import eeschema, eeschema_v6
 from kikit.text import kikitTextVars
 import sys
 
-if isV6() or isV7() or isV8():
+if kicad_major() >= 6:
     from kikit import eeschema_v6 # import getField, getUnit, getReference
 from kikit import eeschema #import getField, getUnit, getReference
 
