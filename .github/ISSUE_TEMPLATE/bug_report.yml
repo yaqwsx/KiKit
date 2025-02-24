@@ -9,7 +9,7 @@ body:
       required: true
     - label: I have searched existing issues (including closed ones)
       required: true
-    - label: I use KiKit at least version 1.7.0 (older version are not supported)
+    - label: I use KiKit at least version 1.7.1 (older version are not supported)
       required: true
 - type: input
   attributes:
@@ -19,7 +19,7 @@ body:
     required: true
 - type: input
   attributes:
-    label: KiCAD version
+    label: KiCAD version (only KiCAD 8 and 9 are supported)
     description: available in KiCAD under Help -> About KiCAD
   validations:
     required: true
