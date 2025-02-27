@@ -8,16 +8,16 @@ from kikit.defs import Layer
 
 fullGerberPlotPlan = [
     # name, id, comment
-    ("CuTop", F_Cu, "Top layer"),
-    ("CuBottom", B_Cu, "Bottom layer"),
-    ("PasteBottom", B_Paste, "Paste Bottom"),
-    ("PasteTop", F_Paste, "Paste top"),
-    ("SilkTop", F_SilkS, "Silk top"),
-    ("SilkBottom", B_SilkS, "Silk top"),
-    ("MaskBottom", B_Mask, "Mask bottom"),
-    ("MaskTop", F_Mask, "Mask top"),
-    ("EdgeCuts", Edge_Cuts, "Edges"),
-    ("CmtUser", Cmts_User, "V-CUT")
+    ("CuTop", Layer.F_Cu, "Top layer"),
+    ("CuBottom", Layer.B_Cu, "Bottom layer"),
+    ("PasteBottom", Layer.B_Paste, "Paste Bottom"),
+    ("PasteTop", Layer.F_Paste, "Paste top"),
+    ("SilkTop", Layer.F_SilkS, "Silk top"),
+    ("SilkBottom", Layer.B_SilkS, "Silk top"),
+    ("MaskBottom", Layer.B_Mask, "Mask bottom"),
+    ("MaskTop", Layer.F_Mask, "Mask top"),
+    ("EdgeCuts", Layer.Edge_Cuts, "Edges"),
+    ("CmtUser", Layer.Cmts_User, "V-CUT")
 ]
 
 exportSettingsJlcpcb = {
@@ -57,7 +57,7 @@ exportSettingsOSHPark = {
 
 def hasCopper(plotPlan):
     for _, layer, _ in plotPlan:
-        if layer in [F_Cu, B_Cu]:
+        if layer in [Layer.F_Cu, Layer.B_Cu]:
             return True
     return False
 
@@ -123,19 +123,18 @@ def gerberImpl(boardfile, outputdir, plot_plan=fullGerberPlotPlan, drilling=True
         pctl.OpenPlotfile(suffix, PLOT_FORMAT_GERBER, comment)
         jobfile_writer.AddGbrFile(id, os.path.basename(pctl.GetPlotFileName()))
         if pctl.PlotLayer() == False:
-            print("plot error")
+            raise RuntimeError("KiCAD plot error")
 
     if hasCopper(plot_plan):
         #generate internal copper layers, if any
-        lyrcnt = board.GetCopperLayerCount()
-        for innerlyr in range (1, lyrcnt - 1):
+        for i, layer in enumerate(Layer.innerCu(board.GetCopperLayerCount())):
             popt.SetSkipPlotNPTH_Pads(True)
-            pctl.SetLayer(innerlyr)
-            lyrname = "" if settings["NoSuffix"] else 'inner{}'.format(innerlyr)
-            pctl.OpenPlotfile(lyrname, PLOT_FORMAT_GERBER, "inner")
-            jobfile_writer.AddGbrFile(innerlyr, os.path.basename(pctl.GetPlotFileName()))
+            pctl.SetLayer(layer)
+            layerName = "" if settings["NoSuffix"] else f"inner{i + 1}"
+            pctl.OpenPlotfile(layerName, PLOT_FORMAT_GERBER, "inner")
+            jobfile_writer.AddGbrFile(layer, os.path.basename(pctl.GetPlotFileName()))
             if pctl.PlotLayer() == False:
-                print("plot error")
+                raise RuntimeError("KiCAD plot error")
 
     # At the end you have to close the last plot, otherwise you don't know when
     # the object will be recycled!
