@@ -490,6 +490,9 @@ class Panel:
         """
         self.errors: List[Tuple[KiPoint, str]] = []
 
+        if not panelFilename.endswith(".kicad_pcb"):
+            raise PanelError("Panel filename has to have .kicad_pcb suffix")
+
         self.filename = panelFilename
         self.board = pcbnew.NewBoard(panelFilename)
         self.sourcePaths = set() # A set of all board files that were appended to the panel
