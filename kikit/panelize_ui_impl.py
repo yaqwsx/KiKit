@@ -420,13 +420,13 @@ def dummyFramingSubstrate(substrates, preset):
     # algorithm (as there is no distinguishion between left and right side)
     width = fromMm(1)
     if vSpace is not None:
-        top = box(minx, miny - 2 * vSpace - width, maxx, miny - 2 * vSpace)
-        bottom = box(minx, maxy + 2 * vSpace, maxx, maxy + 2 * vSpace + width)
+        top = box(minx, miny - vSpace - width, maxx, miny - vSpace)
+        bottom = box(minx, maxy + vSpace, maxx, maxy + vSpace + width)
         dummy.append(polygonToSubstrate(top))
         dummy.append(polygonToSubstrate(bottom))
     if hSpace is not None:
-        left = box(minx - 2 * hSpace - width, miny, minx - 2 * hSpace, maxy)
-        right = box(maxx + 2 * hSpace, miny, maxx + 2 * hSpace + width, maxy)
+        left = box(minx - hSpace - width, miny, minx - hSpace, maxy)
+        right = box(maxx + hSpace, miny, maxx + hSpace + width, maxy)
         dummy.append(polygonToSubstrate(left))
         dummy.append(polygonToSubstrate(right))
     return dummy
