@@ -160,7 +160,13 @@ class LayerV2(IntEnum):
 
     @staticmethod
     def all():
-        return list(range(64))
+        return (
+            list(range(LayerV2.F_Cu, LayerV2.In30_Cu + 2, 2))
+            + list(range(LayerV2.F_Mask, LayerV2.B_Paste + 2, 2))
+            + list(range(LayerV2.Dwgs_User, LayerV2.Margin + 2, 2))
+            + list(range(LayerV2.B_CrtYd, LayerV2.F_Fab + 2, 2))
+            + list(range(LayerV2.User_1, LayerV2.User_9 + 2, 2))
+        )
 
     @staticmethod
     def allTech():
