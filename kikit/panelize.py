@@ -1648,6 +1648,8 @@ class Panel:
             footprint.SetReference(ref)
         if hasattr(footprint, "SetExcludedFromPosFiles"): # KiCAD 6 doesn't support this attribute
             footprint.SetExcludedFromPosFiles(excludedFromPos)
+        if hasattr(footprint, "SetExcludedFromBOM"):
+            footprint.SetExcludedFromBOM(True)
         if hasattr(footprint, "SetBoardOnly"):
             footprint.SetBoardOnly(True)
         self.board.Add(footprint)
@@ -1669,6 +1671,10 @@ class Panel:
         self.board.Add(footprint)
         if ref is not None:
             footprint.SetReference(ref)
+        if hasattr(footprint, "SetExcludedFromBOM"):
+            footprint.SetExcludedFromBOM(True)
+        if hasattr(footprint, "SetBoardOnly"):
+            footprint.SetBoardOnly(True)
         for pad in footprint.Pads():
             pad.SetSize(toKiCADPoint((copperDiameter, copperDiameter)))
             pad.SetLocalSolderMaskMargin(int((openingDiameter - copperDiameter) / 2))
