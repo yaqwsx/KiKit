@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        kicad-version: [v8, v9, v9-testing]
+        kicad-version: [v8, v9]
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-kicad
