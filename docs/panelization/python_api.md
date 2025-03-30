@@ -78,7 +78,7 @@ include components sticking out of the board outline, you can specify tolerance
 #### `appendBoard`
 ```
 appendBoard(self, filename, destination, sourceArea=None, origin=Origin.Center, 
-            rotationAngle=<pcbnew.EDA_ANGLE; proxy of <Swig Object of type 'EDA_ANGLE *' at 0x7f4b833f3120> >, 
+            rotationAngle=<pcbnew.EDA_ANGLE; proxy of <Swig Object of type 'EDA_ANGLE *' at 0x7f7695aaa610> >, 
             shrink=False, tolerance=0, bufferOutline=1000, netRenamer=None, 
             refRenamer=None, inheritDrc=True, interpretAnnotations=True, 
             bakeText=False)
@@ -168,7 +168,7 @@ given radius. This operation simulares milling.
 #### `addNPTHole`
 ```
 addNPTHole(self, position, diameter, paste=False, ref=None, 
-           excludedFromPos=False)
+           excludedFromPos=False, solderMaskMargin=None)
 ```
 Add a drilled non-plated hole to the position (`VECTOR2I`) with given
 diameter. The paste option allows to place the hole on the paste layers.
@@ -190,7 +190,7 @@ internal features of the board are not affected.
 #### `addText`
 ```
 addText(self, text, position, 
-        orientation=<pcbnew.EDA_ANGLE; proxy of <Swig Object of type 'EDA_ANGLE *' at 0x7f4b833f37b0> >, 
+        orientation=<pcbnew.EDA_ANGLE; proxy of <Swig Object of type 'EDA_ANGLE *' at 0x7f7695aab360> >, 
         width=1500000, height=1500000, thickness=300000, 
         hJustify=EDA_TEXT_HJUSTIFY_T.GR_TEXT_HJUSTIFY_CENTER, 
         vJustify=EDA_TEXT_VJUSTIFY_T.GR_TEXT_VJUSTIFY_CENTER, 
@@ -214,7 +214,7 @@ Adds a horizontal V-CUT at pos (integer in KiCAD units).
 #### `appendBoard`
 ```
 appendBoard(self, filename, destination, sourceArea=None, origin=Origin.Center, 
-            rotationAngle=<pcbnew.EDA_ANGLE; proxy of <Swig Object of type 'EDA_ANGLE *' at 0x7f4b833f3120> >, 
+            rotationAngle=<pcbnew.EDA_ANGLE; proxy of <Swig Object of type 'EDA_ANGLE *' at 0x7f7695aaa610> >, 
             shrink=False, tolerance=0, bufferOutline=1000, netRenamer=None, 
             refRenamer=None, inheritDrc=True, interpretAnnotations=True, 
             bakeText=False)
@@ -334,7 +334,7 @@ copperFillNonBoardAreas(self, clearance=1000000,
                         layers=[<Layer.F_Cu: 0>, <Layer.B_Cu: 31>], 
                         hatched=False, strokeWidth=1000000, 
                         strokeSpacing=1000000, 
-                        orientation=<pcbnew.EDA_ANGLE; proxy of <Swig Object of type 'EDA_ANGLE *' at 0x7f4b833f3510> >)
+                        orientation=<pcbnew.EDA_ANGLE; proxy of <Swig Object of type 'EDA_ANGLE *' at 0x7f7695aab450> >)
 ```
 This function is deprecated, please, use panel features instead.
 
@@ -401,6 +401,12 @@ getProFilepath(self, path=None)
 ```
 None
 
+#### `hasErrors`
+```
+hasErrors(self)
+```
+Report if panel has any non-fatal errors presents
+
 #### `inheritCopperLayers`
 ```
 inheritCopperLayers(self, board)
@@ -415,6 +421,12 @@ inheritDesignSettings(self, board)
 ```
 Inherit design settings from the given board specified by a filename or
 a board
+
+#### `inheritLayerNames`
+```
+inheritLayerNames(self, board)
+```
+None
 
 #### `inheritPageSize`
 ```
@@ -448,7 +460,7 @@ expandDist - the distance by which to expand the board outline in each direction
 
 #### `makeCutsToLayer`
 ```
-makeCutsToLayer(self, cuts, layer=Layer.Cmts_User, prolongation=0)
+makeCutsToLayer(self, cuts, layer=Layer.Cmts_User, prolongation=0, width=300000)
 ```
 Take a list of cuts and render them as lines on given layer. The cuts
 can be prolonged just like with mousebites.
@@ -480,9 +492,9 @@ minWidth - if the panel doesn't meet this width, it is extended
 
 minHeight - if the panel doesn't meet this height, it is extended
 
-maxWidth - if the panel doesn't meet this width, TooLargeError is raised
+maxWidth - if the panel doesn't meet this width, error is set and marked
 
-maxHeight - if the panel doesn't meet this height, TooLargeHeight is raised
+maxHeight - if the panel doesn't meet this height, error is set and marked
 
 #### `makeFrameCutsH`
 ```
@@ -499,7 +511,7 @@ Generate vertical cuts for the frame corners and return them
 #### `makeGrid`
 ```
 makeGrid(self, boardfile, sourceArea, rows, cols, destination, placer, 
-         rotation=<pcbnew.EDA_ANGLE; proxy of <Swig Object of type 'EDA_ANGLE *' at 0x7f4b833f3f00> >, 
+         rotation=<pcbnew.EDA_ANGLE; proxy of <Swig Object of type 'EDA_ANGLE *' at 0x7f7695aabb70> >, 
          netRenamePattern=Board_{n}-{orig}, refRenamePattern=Board_{n}-{orig}, 
          tolerance=0, bakeText=False)
 ```
@@ -585,7 +597,7 @@ makeRailsTb(self, thickness, minHeight=0, maxHeight=None)
 ```
 Adds a rail to top and bottom. You can specify minimal height the panel
 has to feature. You can also specify maximal height of the panel. If the
-height would be exceeded, TooLargeError is raised.
+height would be exceeded, error is set.
 
 #### `makeTightFrame`
 ```
@@ -609,9 +621,9 @@ minWidth - if the panel doesn't meet this width, it is extended
 
 minHeight - if the panel doesn't meet this height, it is extended
 
-maxWidth - if the panel doesn't meet this width, TooLargeError is raised
+maxWidth - if the panel doesn't meet this width, error is set
 
-maxHeight - if the panel doesn't meet this height, TooLargeHeight is raised
+maxHeight - if the panel doesn't meet this height, error is set
 
 #### `makeVCuts`
 ```
@@ -619,7 +631,7 @@ makeVCuts(self, cuts, boundCurves=False, offset=0)
 ```
 Take a list of lines to cut and performs V-CUTS. When boundCurves is
 set, approximate curved cuts by a line from the first and last point.
-Otherwise, raise an exception.
+Otherwise, make an approximate cut and report error.
 
 #### `panelBBox`
 ```
@@ -653,9 +665,15 @@ vfirst and hfirst are indices of the first backbone to render. They are
 
 Return a list of cuts
 
+#### `reportError`
+```
+reportError(self, position, message)
+```
+Reports a non-fatal error. The error is marked and rendered to the panel
+
 #### `save`
 ```
-save(self, reconstructArcs=False, refillAllZones=False)
+save(self, reconstructArcs=False, refillAllZones=False, edgeWidth=100000)
 ```
 Saves the panel to a file and makes the requested changes to the prl and
 pro files.
@@ -701,18 +719,6 @@ Set text properties cached in the board
 setTitleBlock(self, titleBlock)
 ```
 Set panel title block
-
-#### `setVCutClearance`
-```
-setVCutClearance(self, clearance)
-```
-Set V-cut clearance
-
-#### `setVCutLayer`
-```
-setVCutLayer(self, layer)
-```
-Set layer on which the V-Cuts will be rendered
 
 #### `transferProjectSettings`
 ```

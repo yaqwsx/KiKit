@@ -463,6 +463,9 @@ CUTS_SECTION = {
     "layer": SLayer(
         typeIn(["vcuts", "layer", "plugin"]),
         "Specify layer for the drawings"),
+    "textLayer": SLayer(
+        typeIn(["vcuts", "textLayer", "plugin"]),
+        "Specify layer for the text comments for the vcuts"),
     "code": SPlugin(
         plugin.CutsPlugin,
         typeIn(["plugin"]),
