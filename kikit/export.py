@@ -185,7 +185,7 @@ def pasteDxfExport(board, plotDir):
     popt.SetMirror(False)
     setExcludeEdgeLayer(popt, True)
     popt.SetScale(1)
-    popt.SetDXFPlotUnits(DXF_UNITS_MILLIMETERS)
+    popt.SetDXFPlotUnits(DXF_UNITS_MM)
     popt.SetDXFPlotPolygonMode(False)
     popt.SetDrillMarksType(DRILL_MARKS_NO_DRILL_SHAPE)
 

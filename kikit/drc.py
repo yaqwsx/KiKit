@@ -20,7 +20,7 @@ def roundCoord(x: int) -> int:
     # emulate that
     return round(x - 50, -4)
 
-def getItemDescription(item: pcbnew.BOARD_ITEM, units: pcbnew.EDA_UNITS = pcbnew.EDA_UNITS_MILLIMETRES):
+def getItemDescription(item: pcbnew.BOARD_ITEM, units: pcbnew.EDA_UNITS = pcbnew.EDA_UNITS_MM):
     if isV9():
         uProvider = pcbnew.UNITS_PROVIDER(pcbnew.pcbIUScale, units)
         return item.GetItemDescription(uProvider, True)
@@ -89,9 +89,9 @@ class Violation:
     def _formatObject(self, obj: pcbnew.BOARD_ITEM, units: Any) -> str:
         p = obj.GetPosition()
         pos = "unknown"
-        if units == pcbnew.EDA_UNITS_MILLIMETRES:
+        if units == pcbnew.EDA_UNITS_MM:
             pos = f"{toMm(p[0]):.4f} mm, {toMm(p[1]):.4f} mm"
-        if units == pcbnew.EDA_UNITS_INCHES:
+        if units == pcbnew.EDA_UNITS_INCH:
             pos = f"{pcbnew.ToMils(p[0]):.1f} mil, {pcbnew.ToMils(p[1]):.1f} mil"
         return f"@({pos}): {getItemDescription(obj, units)}"
 
@@ -200,7 +200,7 @@ def runBoardDrc(board: pcbnew.BOARD, strict: bool) -> DrcReport:
         try:
             tmpFile.close()
             result = pcbnew.WriteDRCReport(board, tmpFile.name,
-                                           pcbnew.EDA_UNITS_MILLIMETRES, strict)
+                                           pcbnew.EDA_UNITS_MM, strict)
             if not result:
                 raise RuntimeError("Cannot run DRC: Unspecified KiCAD error")
             with open(tmpFile.name, encoding="utf-8") as f:
@@ -248,7 +248,7 @@ def runImpl(board, useMm, ignoreExcluded, strict, level, yieldViolation):
     import sys
     faulthandler.enable(sys.stderr)
 
-    units = pcbnew.EDA_UNITS_MILLIMETRES if useMm else EDA_UNITS_INCHES
+    units = pcbnew.EDA_UNITS_MM if useMm else pcbnew.EDA_UNITS_INCH
     report = runBoardDrc(board, strict)
     if ignoreExcluded:
         report.pruneExclusions(readBoardDrcExclusions(board))

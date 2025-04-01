@@ -2354,7 +2354,7 @@ class Panel:
         hDim.SetStart(toKiCADPoint((minx, miny)))
         hDim.SetEnd(toKiCADPoint((maxx, miny)))
         hDim.SetLayer(layer)
-        hDim.SetUnitsMode(pcbnew.DIM_UNITS_MODE_MILLIMETRES)
+        hDim.SetUnitsMode(pcbnew.DIM_UNITS_MODE_MM)
         hDim.SetSuppressZeroes(True)
         if self.chamferHeight is not None:
             hDim.SetExtensionOffset(-self.chamferHeight)
@@ -2368,7 +2368,7 @@ class Panel:
         vDim.SetStart(toKiCADPoint((minx, miny)))
         vDim.SetEnd(toKiCADPoint((minx, maxy)))
         vDim.SetLayer(layer)
-        vDim.SetUnitsMode(pcbnew.DIM_UNITS_MODE_MILLIMETRES)
+        vDim.SetUnitsMode(pcbnew.DIM_UNITS_MODE_MM)
         vDim.SetSuppressZeroes(True)
         if self.chamferWidth is not None:
             vDim.SetExtensionOffset(-self.chamferWidth)
