@@ -8,38 +8,103 @@ from typing import Callable, Dict, Iterable, Optional, Union
 class ParseError(RuntimeError):
     pass
 
-# Python 3 does not support peeking on text files, so let's implement a stream
-# wrapper that supports it.
+# We want the parser to be able to operate on a stream of data, so we define a
+# chunked reader that allows us to go back and extract parts of the string.
 class Stream:
-    def __init__(self, stream):
+    def __init__(self, stream, buffer_size=4096):
         self.stream = stream
-        self.pending = None
+        self.buffer_size = buffer_size
+        self.buffer = ""
+        self.position = 0
+        self.mark_start = -1
+        self._fill_buffer()
+
+    def _fill_buffer(self):
+        """Fill the buffer with more data from the stream"""
+        # If there's marked content we need to keep, preserve it
+        if self.mark_start >= 0:
+            marked_content = self.buffer[self.mark_start:self.position]
+            remaining_content = self.buffer[self.position:]
+            new_data = self.stream.read(self.buffer_size)
+            self.buffer = marked_content + remaining_content + new_data
+            self.position = len(marked_content)
+            self.mark_start = 0  # Marked content now starts at beginning of buffer
+        else:
+            # No marked content, just read more data
+            remaining = self.buffer[self.position:]
+            new_data = self.stream.read(self.buffer_size)
+            self.buffer = remaining + new_data
+            self.position = 0
 
     def read(self):
-        if self.pending:
-            c = self.pending
-            self.pending = None
-            return c
-        return self.stream.read(1)
+        """Read a single character from the stream"""
+        try:
+            result = self.buffer[self.position]
+            self.position += 1
+        except:
+            self._fill_buffer()
+            if self.position >= len(self.buffer):  # Still empty after refill
+                return ''
+            result = self.buffer[self.position]
+            self.position += 1
+        return result
 
-    def peek(self):
-        if not self.pending:
-            self.pending = self.stream.read(1)
-        return self.pending
+    def back(self):
+        """Move back one character in the stream"""
+        if self.position > 0:
+            self.position -= 1
+        else:
+            raise ParseError("Cannot move back")
 
     def shift(self, expected):
+        """Read the next character and verify it matches the expected value"""
         c = self.read()
         if c != expected:
             raise ParseError(f"Expected '{expected}', got {repr(c)}")
         return c
 
     def readAll(self):
-        x = self.pending
-        self.pending = None
-        return x + self.stream.read()
+        """Read all remaining content from the stream"""
+        result = self.buffer[self.position:]
+        self.position = len(self.buffer)
+        self.mark_start = -1  # Reset any mark when reading all
+        additional = self.stream.read()
+        return result + additional
+
+    def markStart(self):
+        """Mark the start position of interesting content"""
+        self.mark_start = self.position
+
+    def markEnd(self):
+        """Mark the end position of interesting content"""
+        # We don't need an explicit end marker since position is our current point
+        pass
+
+    def getMarkedContent(self):
+        """Get the content between the start and current position"""
+        if self.mark_start < 0:
+            return ""
+
+        if self.mark_start >= len(self.buffer):
+            # This shouldn't happen with proper buffer management
+            self.mark_start = -1
+            return ""
+
+        result = self.buffer[self.mark_start:self.position]
+        self.mark_start = -1  # Reset marker
+        return result
+
+    def isEOF(self):
+        """Check if we've reached the end of the file"""
+        if self.position < len(self.buffer):
+            return False
+        self._fill_buffer()
+        return self.position >= len(self.buffer)
 
 
 class Atom:
+    __slots__ = ['value', 'quoted', 'leadingWhitespace']
+
     def __init__(self, value, leadingWhitespace="", quoted=False):
         self.value = value
         self.quoted = quoted
@@ -60,7 +125,10 @@ class Atom:
             return False
         return self.value == o.value and self.leadingWhitespace == o.leadingWhitespace
 
+
 class SExpr:
+    __slots__ = ['items', 'leadingWhitespace', 'trailingWhitespace', 'complete', 'trailingOuterWhitespace']
+
     def __init__(self, items=None, leadingWhitespace="", trailingWhitespace="", complete=True):
         if items is None:
             self.items = []
@@ -103,59 +171,90 @@ class SExpr:
 
 
 def atomEnd(c):
-    return c.isspace() or c in set("()")
+    return c.isspace() or c == "(" or c == ")"
 
 def readQuotedString(stream):
     stream.shift('"')
-    s = []
+    stream.markStart()
+
     escaped = False
-    c = stream.peek()
-    while c != '"' or escaped:
+    while True:
+        c = stream.read()
+        if not c:  # Handle EOF
+            raise ParseError("Unexpected end of file in quoted string")
+
+        if c == '"' and not escaped:
+            # Back up to exclude the closing quote from the marked content
+            stream.back()
+            break
+
         if c == "\\" and not escaped:
             escaped = True
         else:
             escaped = False
-        s.append(stream.read())
-        c = stream.peek()
-    stream.shift('"')
-    return "".join(s)
+
+    value = stream.getMarkedContent()
+    stream.shift('"')  # Consume the closing quote
+    return value
 
 def readString(stream):
-    s = []
-    c = stream.peek()
-    while not atomEnd(c):
-        s.append(stream.read())
-        c = stream.peek()
-    return "".join(s)
+    stream.markStart()
+
+    while True:
+        c = stream.read()
+        if not c or c.isspace() or c == "(" or c == ")":
+            if c:
+                stream.back()
+            break
+
+    return stream.getMarkedContent()
 
 def readAtom(stream):
-    c = stream.peek()
+    whitespace = readWhitespace(stream)
+
+    c = stream.read()
+    stream.back()  # Put it back so we can process it
+
     quoted = c == '"'
     if quoted:
         value = readQuotedString(stream)
     else:
         value = readString(stream)
-    return Atom(value, quoted=quoted)
+
+    return Atom(value, leadingWhitespace=whitespace, quoted=quoted)
 
 def readWhitespace(stream):
-    w = []
-    c = stream.peek()
-    while c.isspace():
-        w.append(stream.read())
-        c = stream.peek()
-    return "".join(w)
+    stream.markStart()
+
+    while True:
+        c = stream.read()
+        if not c or not c.isspace():
+            if c:  # If not EOF, back up to leave the non-whitespace unread
+                stream.back()
+            break
+
+    return stream.getMarkedContent()
 
 def readWhitespaceWithComments(stream):
-    w = []
-    c = stream.peek()
-    while c.isspace() or c == "#":
-        w.append(stream.read())
+    stream.markStart()
+
+    while True:
+        c = stream.read()
+        if not c:  # EOF
+            break
+
+        if not c.isspace() and c != "#":
+            stream.back()  # Put back non-whitespace, non-comment
+            break
+
         if c == "#":
-            while stream.peek() != "\n":
-                w.append(stream.read())
-            w.append(stream.read())
-        c = stream.peek()
-    return "".join(w)
+            # Read until end of line
+            while True:
+                c = stream.read()
+                if not c or c == "\n":
+                    break
+
+    return stream.getMarkedContent()
 
 def readSexpr(stream, limit=None):
     """
@@ -165,9 +264,27 @@ def readSexpr(stream, limit=None):
     stream.shift("(")
 
     expr = SExpr()
-    c = stream.peek()
     whitespace = ""
-    while c != ")" and (limit is None or limit > 0):
+
+    while True:
+        c = stream.read()
+        if not c:  # EOF
+            raise ParseError("Unexpected end of file within expression")
+
+        if c == ")" and (limit is None or limit > 0):
+            expr.trailingWhitespace = whitespace
+            expr.complete = True
+            break
+
+        # Put the character back to be processed by the appropriate reader
+        stream.back()
+
+        if limit is not None and limit <= 0:
+            # We've read enough nodes, capture the rest
+            expr.trailingWhitespace = whitespace + stream.readAll()
+            expr.complete = False
+            break
+
         if c.isspace():
             whitespace = readWhitespace(stream)
         elif c == "(":
@@ -184,36 +301,36 @@ def readSexpr(stream, limit=None):
             if limit is not None:
                 limit -= 1
             whitespace = ""
-        c = stream.peek()
-    if limit != 0:
-        stream.shift(")")
-        expr.trailingWhitespace = whitespace
-        expr.complete = True
-    else:
-        expr.trailingWhitespace = whitespace + stream.readAll()
-        expr.complete = False
+
     return expr
 
-def parseSexprF(sourceStream, limit=None):
-    stream = Stream(sourceStream)
+def parseSexprF(sourceStream, limit=None, buffer_size=4096):
+    stream = Stream(sourceStream, buffer_size=buffer_size)
     lw = readWhitespace(stream)
     s = readSexpr(stream, limit=limit)
     s.leadingWhitespace = lw
     s.trailingOuterWhitespace = readWhitespace(stream)
     return s
 
-def parseSexprS(s, limit=None):
-    return parseSexprF(StringIO(s), limit=limit)
+def parseSexprS(s, limit=None, buffer_size=4096):
+    return parseSexprF(StringIO(s), limit=limit, buffer_size=buffer_size)
 
-def parseSexprListF(sourceStream, limit=None):
+def parseSexprListF(sourceStream, limit=None, buffer_size=4096):
     sexprs = []
-    stream = Stream(sourceStream)
-    while stream.peek() != "":
+    stream = Stream(sourceStream, buffer_size=buffer_size)
+
+    while not stream.isEOF():
         lw = readWhitespaceWithComments(stream)
+
+        # Check if we've reached EOF after reading whitespace
+        if stream.isEOF():
+            break
+
         s = readSexpr(stream, limit=limit)
         s.leadingWhitespace = lw
         s.trailingOuterWhitespace = readWhitespaceWithComments(stream)
         sexprs.append(s)
+
     return sexprs
 
 AstNode = Union[SExpr, Atom]
