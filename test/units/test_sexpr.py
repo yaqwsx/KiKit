@@ -23,7 +23,7 @@ def test_readQuotedString():
     SOURCE = r'"ABC\nvDEF\n\"GHI\""'
 
     stream = Stream(StringIO(SOURCE))
-    string = readQuotedString(stream)
+    string = stream.readUntilEndOfQuotedString()
     a = Atom(string, quoted=True)
     res = str(a)
     assert res == SOURCE

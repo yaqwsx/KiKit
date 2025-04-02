@@ -22,10 +22,13 @@ class Stream:
     def _fill_buffer(self):
         """Fill the buffer with more data from the stream"""
         # If there's marked content we need to keep, preserve it
+        has_grown = True
         if self.mark_start >= 0:
             marked_content = self.buffer[self.mark_start:self.position]
             remaining_content = self.buffer[self.position:]
             new_data = self.stream.read(self.buffer_size)
+            if len(new_data) == 0:
+                has_grown = False
             self.buffer = marked_content + remaining_content + new_data
             self.position = len(marked_content)
             self.mark_start = 0  # Marked content now starts at beginning of buffer
@@ -33,8 +36,11 @@ class Stream:
             # No marked content, just read more data
             remaining = self.buffer[self.position:]
             new_data = self.stream.read(self.buffer_size)
+            if len(new_data) == 0:
+                has_grown = False
             self.buffer = remaining + new_data
             self.position = 0
+        return has_grown
 
     def read(self):
         """Read a single character from the stream"""
@@ -42,12 +48,107 @@ class Stream:
             result = self.buffer[self.position]
             self.position += 1
         except:
-            self._fill_buffer()
-            if self.position >= len(self.buffer):  # Still empty after refill
+            if not self._fill_buffer():
                 return ''
             result = self.buffer[self.position]
             self.position += 1
         return result
+
+    def readUntilEndOfWhitespace(self):
+        whitespace = ""
+
+        while True:
+            # Skip to the first non-whitespace character in the current buffer
+            pos = self.position
+            l = len(self.buffer)
+            while pos < l and self.buffer[pos].isspace():
+                pos += 1
+            whitespace += self.buffer[self.position:pos]
+            self.position = pos
+
+            # If we've reached the end of the buffer, try to fill it
+            if pos >= l:
+                if not self._fill_buffer():
+                    return whitespace
+            else:
+                break
+        return whitespace
+
+    def readUntilEndOfString(self):
+        result = ""
+
+        while True:
+            # Read until we find a space, parenthesis, or end of buffer
+            pos = self.position
+            l = len(self.buffer)
+            while pos < l:
+                c = self.buffer[pos]
+                if c.isspace() or c == "(" or c == ")":
+                    break
+                pos += 1
+
+            # Add what we've read to our result
+            result += self.buffer[self.position:pos]
+            self.position = pos
+
+            # If we've reached the end of the buffer, try to fill it
+            if self.position >= l:
+                if not self._fill_buffer():
+                    return result
+            else:
+                break
+        return result
+
+    def readUntilEndOfQuotedString(self):
+        escaped = False
+        result = ""
+
+        self.shift('"')  # Consume the opening quote
+
+        while True:
+            pos = self.position
+            l = len(self.buffer)
+            terminated = False
+            while pos < l:
+                c = self.buffer[pos]
+
+                if c == '"' and not escaped:
+                    terminated = True
+                    break
+
+                pos += 1
+                if c == "\\" and not escaped:
+                    escaped = True
+                else:
+                    escaped = False
+
+            result += self.buffer[self.position:pos]
+            self.position = pos
+            if terminated:
+                self.shift('"') # Consume the closing quote
+
+            # If we've reached the end of the buffer, try to fill it
+            if self.position >= len(self.buffer):
+                if not self._fill_buffer() and not terminated:
+                    raise ParseError("Unexpected end of file in quoted string")
+            if terminated:
+                break
+
+        return result
+
+    def readAtom(self):
+        whitespace = self.readUntilEndOfWhitespace()
+
+        # We know that there is a next whitespace as readUntilEndOfWhitespace
+        # ensures it
+        c = self.buffer[self.position]
+        quoted = c == '"'
+        if quoted:
+            value = self.readUntilEndOfQuotedString()
+        else:
+            value = self.readUntilEndOfString()
+        return Atom(value, leadingWhitespace=whitespace, quoted=quoted)
+
 
     def back(self):
         """Move back one character in the stream"""
@@ -98,8 +199,7 @@ class Stream:
         """Check if we've reached the end of the file"""
         if self.position < len(self.buffer):
             return False
-        self._fill_buffer()
-        return self.position >= len(self.buffer)
+        return not self._fill_buffer()
 
 
 class Atom:
@@ -169,72 +269,6 @@ class SExpr:
     def __len__(self):
         return self.items.__len__()
 
-
-def atomEnd(c):
-    return c.isspace() or c == "(" or c == ")"
-
-def readQuotedString(stream):
-    stream.shift('"')
-    stream.markStart()
-
-    escaped = False
-    while True:
-        c = stream.read()
-        if not c:  # Handle EOF
-            raise ParseError("Unexpected end of file in quoted string")
-
-        if c == '"' and not escaped:
-            # Back up to exclude the closing quote from the marked content
-            stream.back()
-            break
-
-        if c == "\\" and not escaped:
-            escaped = True
-        else:
-            escaped = False
-
-    value = stream.getMarkedContent()
-    stream.shift('"')  # Consume the closing quote
-    return value
-
-def readString(stream):
-    stream.markStart()
-
-    while True:
-        c = stream.read()
-        if not c or c.isspace() or c == "(" or c == ")":
-            if c:
-                stream.back()
-            break
-
-    return stream.getMarkedContent()
-
-def readAtom(stream):
-    whitespace = readWhitespace(stream)
-
-    c = stream.read()
-    stream.back()  # Put it back so we can process it
-
-    quoted = c == '"'
-    if quoted:
-        value = readQuotedString(stream)
-    else:
-        value = readString(stream)
-
-    return Atom(value, leadingWhitespace=whitespace, quoted=quoted)
-
-def readWhitespace(stream):
-    stream.markStart()
-
-    while True:
-        c = stream.read()
-        if not c or not c.isspace():
-            if c:  # If not EOF, back up to leave the non-whitespace unread
-                stream.back()
-            break
-
-    return stream.getMarkedContent()
-
 def readWhitespaceWithComments(stream):
     stream.markStart()
 
@@ -286,7 +320,7 @@ def readSexpr(stream, limit=None):
             break
 
         if c.isspace():
-            whitespace = readWhitespace(stream)
+            whitespace = stream.readUntilEndOfWhitespace()
         elif c == "(":
             s = readSexpr(stream)
             s.leadingWhitespace = whitespace
@@ -295,7 +329,7 @@ def readSexpr(stream, limit=None):
                 limit -= 1
             whitespace = ""
         else:
-            a = readAtom(stream)
+            a = stream.readAtom()
             a.leadingWhitespace = whitespace
             expr.items.append(a)
             if limit is not None:
@@ -306,10 +340,10 @@ def readSexpr(stream, limit=None):
 
 def parseSexprF(sourceStream, limit=None, buffer_size=4096):
     stream = Stream(sourceStream, buffer_size=buffer_size)
-    lw = readWhitespace(stream)
+    lw = stream.readUntilEndOfWhitespace()
     s = readSexpr(stream, limit=limit)
     s.leadingWhitespace = lw
-    s.trailingOuterWhitespace = readWhitespace(stream)
+    s.trailingOuterWhitespace = stream.readUntilEndOfWhitespace()
     return s
 
 def parseSexprS(s, limit=None, buffer_size=4096):
