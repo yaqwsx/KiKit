@@ -1,9 +1,11 @@
 from dataclasses import dataclass
 import os
 from typing import Any, List
+
 from kikit import plugin
 from kikit.units import readLength, readAngle, readPercents
 from kikit.defs import Layer, EDA_TEXT_HJUSTIFY_T, EDA_TEXT_VJUSTIFY_T, PAPER_SIZES
+import json
 
 class PresetError(RuntimeError):
     pass
@@ -256,7 +258,7 @@ def never():
 
 LAYOUT_SECTION = {
     "type": SChoice(
-        ["grid", "plugin"],
+        ["grid", "plugin", "manual"],
         always(),
         "Layout type"),
     "alternation": SChoice(
@@ -313,8 +315,7 @@ LAYOUT_SECTION = {
         "Reference renaming pattern"),
     "baketext": SBool(
         always(),
-        "Substitute variables in text elements"
-    ),
+        "Substitute variables in text elements"),
     "code": SPlugin(
         plugin.LayoutPlugin,
         typeIn(["plugin"]),
@@ -810,3 +811,16 @@ availableSections = {
     "Post": POST_SECTION,
     "Debug": DEBUG_SECTION,
 }
+
+class Board:
+    def __init__(self, path, pos, source={}):
+        self.path = path
+        self.pos = [readLength(p) for p in pos]
+        ppSource(source)
+        self.source = source
+
+    def mergeSource(self, source):
+        merged = {}
+        for key, value in source.items():
+            merged[key] = self.source.get(key, value)
+        return merged

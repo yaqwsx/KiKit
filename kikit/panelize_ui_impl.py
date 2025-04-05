@@ -232,7 +232,7 @@ def obtainPreset(presetPaths, validate=True, **kwargs):
     postProcessPreset(preset)
     return preset
 
-def buildLayout(preset, panel, sourceBoard, sourceArea):
+def buildLayout(preset, panel, boardList, sourceArea):
     """
     Build layout for the boards - e.g., make a grid out of them.
 
@@ -255,7 +255,7 @@ def buildLayout(preset, panel, sourceBoard, sourceArea):
                 hbonefirst=layout["hbonefirst"],
                 vbonefirst=layout["vbonefirst"])
             substrates = panel.makeGrid(
-                boardfile=sourceBoard, sourceArea=sourceArea,
+                boardfile=boardList[0].path, sourceArea=sourceArea,
                 rows=layout["rows"], cols=layout["cols"], destination=VECTOR2I(0, 0),
                 rotation=layout["rotation"], placer=placer,
                 netRenamePattern=layout["renamenet"], refRenamePattern=layout["renameref"],
@@ -264,11 +264,22 @@ def buildLayout(preset, panel, sourceBoard, sourceArea):
             panel.buildPartitionLineFromBB(framingSubstrates)
             backboneCuts = buildBackBone(layout, panel, substrates, framing)
             return substrates, framingSubstrates, backboneCuts
+        if type == "manual":
+            for current in boardList:
+                board = LoadBoard(current.path)
+                sourceArea = readSourceArea(current.mergeSource(preset["source"]), board)
+                panel.appendBoard(current.path, VECTOR2I(*current.pos), sourceArea, inheritDrc=False)
+            substrates = panel.substrates
+            framingSubstrates = dummyFramingSubstrate(substrates, preset)
+            panel.buildPartitionLineFromBB(framingSubstrates)
+            backboneCuts = buildBackBone(layout, panel, substrates, framing)
+            return substrates, framingSubstrates, backboneCuts
+
         if type == "plugin":
             lPlugin = layout["code"](preset, layout["arg"], layout["renamenet"],
                                      layout["renameref"], layout["vspace"],
                                      layout["hspace"], layout["rotation"])
-            substrates = lPlugin.buildLayout(panel, sourceBoard, sourceArea)
+            substrates = lPlugin.buildLayout(panel, boardList, sourceArea)
             framingSubstrates = dummyFramingSubstrate(substrates, preset)
             lPlugin.buildPartitionLine(panel, framingSubstrates)
             backboneCuts = lPlugin.buildExtraCuts(panel)
