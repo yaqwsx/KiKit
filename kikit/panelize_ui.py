@@ -237,7 +237,7 @@ def doPanelization(input, output, preset, plugins=[]):
     handle errors based on the context; e.g., CLI vs GUI
     """
     from kikit import panelize_ui_impl as ki
-    from kikit.panelize import Panel, NonFatalErrors
+    from kikit.panelize import Panel, NonFatalErrors, PanelError
     from pcbnewTransition.transition import pcbnew
     from pcbnewTransition.pcbnew import LoadBoard
     from itertools import chain
@@ -249,6 +249,8 @@ def doPanelization(input, output, preset, plugins=[]):
         kikit.substrate.TABFAIL_VISUAL = True
 
     board = LoadBoard(input)
+    if board is None:
+        raise PanelError(f"Cannot load board {input}. Check if the path is correct or if you have permissions to read it.")
     panel = Panel(output)
 
     useHookPlugins = ki.loadHookPlugins(plugins, board, preset)
