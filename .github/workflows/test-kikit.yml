@@ -32,13 +32,13 @@ jobs:
       - run: sudo env PYTHONPATH=$PYTHONPATH LD_LIBRARY_PATH=$LD_LIBRARY_PATH make package
   build-pcm:
     name: Build PCM packages
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     needs: test
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-kicad
         with:
-          kicad-version: v6
+          kicad-version: v8
       - name: Build PCM package
         run: make pcm
       - name: Upload kikit-pcm package artifact
@@ -55,7 +55,7 @@ jobs:
           retention-days: 7
   deploy-docker:
     name: "Deploy nightly Docker"
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: test
     if: github.ref == 'refs/heads/master' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
     strategy:
