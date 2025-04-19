@@ -19,6 +19,14 @@ load common
         --debug 'trace: true; deterministic: true' \
         $RES/conn.kicad_pcb panel_t1.kicad_pcb
 }
+@test "Simple grid, no space, vcuts, text template" {
+    kikit panelize \
+        --layout 'grid; rows: 2; cols: 2;' \
+        --tabs full \
+        --cuts 'vcuts; template: TEST-V-CUT {pos_mm}; templateLayer: F.Fab' \
+        --debug 'trace: true; deterministic: true' \
+        $RES/conn.kicad_pcb panel-vcut-template.kicad_pcb
+}
 
 @test "Simple grid, spacing, vcuts" {
     kikit panelize \
