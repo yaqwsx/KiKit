@@ -46,5 +46,17 @@ Commands:
   stencil   Create solder paste stencils
 ```
 
+If you get an error message like the following:
+
+```
+> kikit --help
+'kikit' is not recognized as an internal or external command
+operable program or batch file.
+```
+
+... then you may need to close the terminal and re-open a new "KiCAD Command Prompt"
+so that it adds the plugin directory to the `%PATH%` variable. Then run `kikit --help`
+again, and you should see the help message shown above.
+
 Now you are done with the basic installation. Don't forget to get the GUI
 frontend and libraries via PCM.
