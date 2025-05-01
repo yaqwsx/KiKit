@@ -38,7 +38,7 @@ def test_odd_even_rows_position_rotation():
         assert rotation.AsDegrees() == expected_rot.AsDegrees()
 
 
-def test_odd_even_column_position_rotation():
+def test_odd_even_columns_position_rotation():
     placer = OddEvenColumnPosition(0, 0)
     for (i, j, expected_rot) in ((0, 0, EDA_ANGLE(0, DEGREES_T)),
                                  (0, 1, EDA_ANGLE(180, DEGREES_T)),
@@ -51,7 +51,7 @@ def test_odd_even_column_position_rotation():
         assert rotation.AsDegrees() == expected_rot.AsDegrees()
 
 
-def test_odd_even_column_position_rotation():
+def test_odd_even_rows_columns_position_rotation():
     placer = OddEvenRowsColumnsPosition(0, 0)
     for (i, j, expected_rot) in ((0, 0, EDA_ANGLE(0, DEGREES_T)),
                                  (0, 1, EDA_ANGLE(180, DEGREES_T)),
