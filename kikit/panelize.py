@@ -81,11 +81,13 @@ class GridPlacerBase:
 class BasicGridPosition(GridPlacerBase):
     """
     Specify board position in the grid.
+    Supports optional odd-row/odd-column spacing offsets.
     """
     def __init__(self, horSpace: int, verSpace: int,
-                 hbonewidth: int=0, vbonewidth: int=0,
-                 hboneskip: int=0, vboneskip: int=0,
-                 hbonefirst: int=0, vbonefirst: int=0) -> None:
+                 hbonewidth: int = 0, vbonewidth: int = 0,
+                 hboneskip: int = 0, vboneskip: int = 0,
+                 hbonefirst: int = 0, vbonefirst: int = 0,
+                 hevendiff: int = 0, vevendiff: int = 0) -> None:
         self.horSpace = horSpace
         self.verSpace = verSpace
         self.hbonewidth = hbonewidth
@@ -94,21 +96,37 @@ class BasicGridPosition(GridPlacerBase):
         self.vboneskip = vboneskip
         self.hbonefirst = hbonefirst
         self.vbonefirst = vbonefirst
+        self.hevendiff = hevendiff
+        self.vevendiff = vevendiff
 
     def position(self, i: int, j: int, boardSize: Optional[BOX2I]) -> VECTOR2I:
         if boardSize is None:
             assert i == 0 and j == 0
             boardSize = BOX2I(VECTOR2I(0, 0), VECTOR2I(0, 0))
-        hbonecount = 0 if self.hbonewidth == 0 \
-                       else max((i + self.hbonefirst)  // (self.hboneskip + 1), 0)
-        vbonecount = 0 if self.vbonewidth == 0 \
-                       else max((j + self.vbonefirst) // (self.vboneskip + 1), 0)
-        xPos = j * (boardSize.GetWidth() + self.horSpace) + \
-               vbonecount * (self.vbonewidth + self.horSpace)
-        yPos = i * (boardSize.GetHeight() + self.verSpace) + \
-               hbonecount * (self.hbonewidth + self.verSpace)
-        return toKiCADPoint((xPos, yPos))
+        w = boardSize.GetWidth()
+        h = boardSize.GetHeight()
 
+        # Accumulate horizontal offset
+        x = 0
+        for col in range(j):
+            delta = self.horSpace + (self.hevendiff if col % 2 == 1 else 0)
+            x += w + delta
+
+        vbonecount = 0 if self.vbonewidth == 0 \
+            else max((j + self.vbonefirst) // (self.vboneskip + 1), 0)
+        x += vbonecount * (self.vbonewidth + self.horSpace)
+
+        # Accumulate vertical offset
+        y = 0
+        for row in range(i):
+            delta = self.verSpace + (self.vevendiff if row % 2 == 1 else 0)
+            y += h + delta
+
+        hbonecount = 0 if self.hbonewidth == 0 \
+            else max((i + self.hbonefirst) // (self.hboneskip + 1), 0)
+        y += hbonecount * (self.hbonewidth + self.verSpace)
+
+        return toKiCADPoint((x, y))
 
 class OddEvenRowsPosition(BasicGridPosition):
     """

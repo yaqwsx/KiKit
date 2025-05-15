@@ -5,6 +5,8 @@
         "cols": 1,
         "hspace": "0mm",
         "vspace": "0mm",
+        "hevendiff": "0mm",
+        "vevendiff": "0mm",
         "rotation": "0deg",
         "alternation": "none",
         "renamenet": "Board_{n}-{orig}",

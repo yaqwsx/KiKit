@@ -159,6 +159,8 @@ the CLI by specifying it first and omitting the `type` word; e.g., `--cuts
   specify separately vertical and horizontal spacing or you can specify `space`
   to make them the same (it has higher priority).
 - `rotation`: Rotate the boards before placing them in the panel
+- `hevendiff`, `vevendiff`: Add/remove space from even rows/cols spaces. Allows
+  to adjust the spacing when alternation is used.
 - `renamenet`, `renameref`: A pattern by which to rename the nets and
   references. You can use `{n}` and `{orig}` to get the board number and
   original name. Default values are `Board_{n}-{orig}` for nets and `{orig}` for

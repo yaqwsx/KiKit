@@ -272,6 +272,12 @@ LAYOUT_SECTION = {
     "space": SLength(
         never(),
         "Specify the gap between the boards in both direction"),
+    "hevendiff": SLength(
+        always(),
+        "Extra spacing added to even spaces between boards columns"),
+    "vevendiff": SLength(
+        always(),
+        "Extra spacing added to even spaces between boards rows"),
     "hbackbone": SLength(
         typeIn(["grid", "plugin"]),
         "The width of horizontal backbone (0 means no backbone)"),

@@ -246,14 +246,16 @@ def buildLayout(preset, panel, sourceBoard, sourceArea):
         if type == "grid":
             placementClass = getPlacementClass(layout["alternation"])
             placer = placementClass(
-                verSpace=layout["vspace"],
                 horSpace=layout["hspace"],
+                verSpace=layout["vspace"],
                 hbonewidth=layout["hbackbone"],
                 vbonewidth=layout["vbackbone"],
                 hboneskip=layout["hboneskip"],
                 vboneskip=layout["vboneskip"],
                 hbonefirst=layout["hbonefirst"],
-                vbonefirst=layout["vbonefirst"])
+                vbonefirst=layout["vbonefirst"],
+                hevendiff=layout["hevendiff"],
+                vevendiff=layout["vevendiff"])
             substrates = panel.makeGrid(
                 boardfile=sourceBoard, sourceArea=sourceArea,
                 rows=layout["rows"], cols=layout["cols"], destination=VECTOR2I(0, 0),
