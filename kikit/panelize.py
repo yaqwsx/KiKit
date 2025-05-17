@@ -2429,7 +2429,7 @@ def extractSourceAreaByAnnotation(board, reference):
     rings = extractRings(edges)
     ringPointedAt = indexOf(rings, lambda x: pointedAt in x)
     if ringPointedAt == -1:
-        raise RuntimeError("Annotation symbol '{reference}' does not point to a board edge")
+        raise RuntimeError(f"Annotation symbol '{reference}' does not point to a board edge")
     return findBoundingBox([edges[i] for i in rings[ringPointedAt]])
 
 
