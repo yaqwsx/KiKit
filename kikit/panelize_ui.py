@@ -169,7 +169,7 @@ def completeSection(section):
 @click.option("--fiducials", "-f", type=Section(),
     help="Override fiducials settings.",
     **addCompatibleShellCompletion(completeSection(FIDUCIALS_SECTION)))
-@click.option("--text", "-t", type=Section(),
+@click.option("--text", type=Section(),
     help="Override text settings.",
     **addCompatibleShellCompletion(completeSection(TEXT_SECTION)))
 @click.option("--text2", type=Section(),
