@@ -40,6 +40,8 @@ class TabAnnotation(KiKitAnnotation):
         radOrientation = footprint.GetOrientation().AsRadians()
         direction = (np.cos(radOrientation), -np.sin(radOrientation))
         props = readKiKitProps(footprint)
+        if "width" not in props:
+            raise ValueError("Tab annotation must a KiKit annotation text with 'width' property defined")
         width = units.readLength(props["width"])
         return TabAnnotation(footprint.GetReference(), origin, direction, width)
 
