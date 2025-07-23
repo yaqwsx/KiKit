@@ -1610,7 +1610,7 @@ class Panel:
                 message += "- check your tab placement if it as expected\n"
                 message += "You can use layer style of cuts to see them and validate them."
                 self._renderLines([cut], Layer.Margin)
-                self.reportError(toKiCADPoint(cut[0]), message)
+                self.reportError(toKiCADPoint(cut.coords[0]), message)
                 continue
 
     def makeMouseBites(self, cuts, diameter, spacing, offset=fromMm(0.25),
