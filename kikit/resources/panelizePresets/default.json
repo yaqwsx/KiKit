@@ -20,6 +20,7 @@
         "vbonecut": true,
         "hbonecut": true,
         "baketext": true,
+        "bakeref": true,
         "code": "none",
         "arg": ""
     },
