@@ -167,6 +167,8 @@ the CLI by specifying it first and omitting the `type` word; e.g., `--cuts
   references.
 - `baketext`: A flag that indicates if text variables should be substituted or
   not.
+- `bakeref`: A flag that indicates if references should be baked before being
+  renamed.
 
 #### Grid
 

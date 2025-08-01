@@ -321,6 +321,10 @@ LAYOUT_SECTION = {
         always(),
         "Substitute variables in text elements"
     ),
+    "bakeref": SBool(
+        always(),
+        "Bake old references before renaming"
+    ),
     "code": SPlugin(
         plugin.LayoutPlugin,
         typeIn(["plugin"]),
