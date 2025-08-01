@@ -261,7 +261,7 @@ def buildLayout(preset, panel, sourceBoard, sourceArea):
                 rows=layout["rows"], cols=layout["cols"], destination=VECTOR2I(0, 0),
                 rotation=layout["rotation"], placer=placer,
                 netRenamePattern=layout["renamenet"], refRenamePattern=layout["renameref"],
-                bakeText=layout["baketext"])
+                bakeText=layout["baketext"], bakeRef=layout["bakeref"])
             framingSubstrates = dummyFramingSubstrate(substrates, preset)
             panel.buildPartitionLineFromBB(framingSubstrates)
             backboneCuts = buildBackBone(layout, panel, substrates, framing)
