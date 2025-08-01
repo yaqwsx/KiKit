@@ -354,14 +354,28 @@ def renameNets(board, renamer):
         if name != "" and name not in newNames:
             board.RemoveNative(netinfo.GetNetItem(name))
 
-def renameRefs(board, renamer):
+def renameRefs(board, renamer, bakeRef):
     """
     Given a board and renaming function (taking original name, returning new
     name) renames the references
     """
     for footprint in board.GetFootprints():
-        ref = footprint.Reference().GetText()
-        footprint.Reference().SetText(renamer(ref))
+        ref = footprint.Reference()
+        if bakeRef:
+            textObject = pcbnew.PCB_TEXT(board)
+            textObject.SetText(ref.GetText())
+            textObject.SetTextX(ref.GetTextPos()[0])
+            textObject.SetTextY(ref.GetTextPos()[1])
+            textObject.SetTextThickness(ref.GetTextThickness())
+            textObject.SetTextSize(ref.GetTextSize())
+            textObject.SetHorizJustify(ref.GetHorizJustify())
+            textObject.SetVertJustify(ref.GetVertJustify())
+            textObject.SetTextAngle(ref.GetTextAngle())
+            textObject.SetLayer(ref.GetLayer())
+            textObject.SetMirrored(ref.IsMirrored())
+            board.Add(textObject)
+            ref.SetVisible(False)
+        ref.SetText(renamer(ref.GetText()))
 
 def isBoardEdge(edge):
     """
@@ -1014,7 +1028,7 @@ class Panel:
                     netRenamer: Optional[Callable[[int, str], str]] = None,
                     refRenamer: Optional[Callable[[int, str], str]] = None,
                     inheritDrc: bool = True, interpretAnnotations: bool=True,
-                    bakeText: bool = False):
+                    bakeText: bool = False, bakeRef: bool = False):
         """
         Appends a board to the panel.
 
@@ -1032,7 +1046,9 @@ class Panel:
 
         You can also specify functions which will rename the net and ref names.
         By default, nets are renamed to "Board_{n}-{orig}", refs are unchanged.
-        The renamers are given board seq number and original name.
+        The renamers are given board seq number and original name. The bakeRef
+        flag allows you to keep the old references on the silkscreen when
+        renaming them.
 
         You can also decide whether you would like to inherit design rules from
         this boards or not.
@@ -1085,7 +1101,7 @@ class Panel:
 
         renameNets(board, netRenamerFn)
         if refRenamer is not None:
-            renameRefs(board, lambda x: refRenamer(len(self.substrates), x))
+            renameRefs(board, lambda x: refRenamer(len(self.substrates), x), bakeRef)
 
         drawings = collectItems(board.GetDrawings(), enlargedSourceArea)
         footprints = collectFootprints(board.GetFootprints(), enlargedSourceArea)
@@ -1325,7 +1341,7 @@ class Panel:
                  destination: VECTOR2I, placer: GridPlacerBase,
                  rotation: KiAngle=fromDegrees(0), netRenamePattern: str="Board_{n}-{orig}",
                  refRenamePattern: str="Board_{n}-{orig}", tolerance: KiLength=0,
-                 bakeText: bool=False) \
+                 bakeText: bool=False, bakeRef: bool=False) \
                      -> List[Substrate]:
         """
         Place the given board in a grid pattern with given spacing. The board
@@ -1398,7 +1414,7 @@ class Panel:
                 boardfile, dest, sourceArea=sourceArea,
                 tolerance=tolerance, origin=Origin.Center,
                 rotationAngle=boardRotation, netRenamer=netRenamer,
-                refRenamer=refRenamer, bakeText=bakeText)
+                refRenamer=refRenamer, bakeText=bakeText, bakeRef=bakeRef)
             if not topLeftSize:
                 topLeftSize = boardSize
 

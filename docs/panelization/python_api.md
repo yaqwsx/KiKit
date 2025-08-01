@@ -81,7 +81,7 @@ appendBoard(self, filename, destination, sourceArea=None, origin=Origin.Center,
             rotationAngle=<pcbnew.EDA_ANGLE; proxy of <Swig Object of type 'EDA_ANGLE *' at 0x7f4b833f3120> >, 
             shrink=False, tolerance=0, bufferOutline=1000, netRenamer=None, 
             refRenamer=None, inheritDrc=True, interpretAnnotations=True, 
-            bakeText=False)
+            bakeText=False, bakeRef=False)
 ```
 
 ## Panel class
@@ -217,7 +217,7 @@ appendBoard(self, filename, destination, sourceArea=None, origin=Origin.Center,
             rotationAngle=<pcbnew.EDA_ANGLE; proxy of <Swig Object of type 'EDA_ANGLE *' at 0x7f4b833f3120> >, 
             shrink=False, tolerance=0, bufferOutline=1000, netRenamer=None, 
             refRenamer=None, inheritDrc=True, interpretAnnotations=True, 
-            bakeText=False)
+            bakeText=False, bakeRef=False)
 ```
 Appends a board to the panel.
 
@@ -235,7 +235,9 @@ extend outside the board outline, like connectors.
 
 You can also specify functions which will rename the net and ref names.
 By default, nets are renamed to "Board_{n}-{orig}", refs are unchanged.
-The renamers are given board seq number and original name.
+The renamers are given board seq number and original name. The bakeRef
+flag allows you to keep the old references on the silkscreen when
+renaming them.
 
 You can also decide whether you would like to inherit design rules from
 this boards or not.
@@ -501,7 +503,7 @@ Generate vertical cuts for the frame corners and return them
 makeGrid(self, boardfile, sourceArea, rows, cols, destination, placer, 
          rotation=<pcbnew.EDA_ANGLE; proxy of <Swig Object of type 'EDA_ANGLE *' at 0x7f4b833f3f00> >, 
          netRenamePattern=Board_{n}-{orig}, refRenamePattern=Board_{n}-{orig}, 
-         tolerance=0, bakeText=False)
+         tolerance=0, bakeText=False, bakeRef=False)
 ```
 Place the given board in a grid pattern with given spacing. The board
 position of the gride is guided via placer. The nets and references are
@@ -554,6 +556,8 @@ selection
     and connectors.
 
 bakeText - substitute variables in text elements
+
+bakeRef - bake old references before renaming
 
 Returns a list of the placed substrates. You can use these to generate
 tabs, frames, backbones, etc.
