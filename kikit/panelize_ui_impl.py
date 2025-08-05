@@ -189,7 +189,8 @@ def readSourceArea(specification, board):
             ref = specification["ref"]
             if ref.strip() == "":
                 raise PresetError("When using source 'annotation' reference cannot be empty.")
-            return expandRect(extractSourceAreaByAnnotation(board, ref), tolerance)
+            layer = specification.get("layer", Layer.Edge_Cuts)
+            return expandRect(extractSourceAreaByAnnotation(board, ref, layer), tolerance)
         if type == "rectangle":
             tl = VECTOR2I(specification["tlx"], specification["tly"])
             br = VECTOR2I(specification["brx"], specification["bry"])

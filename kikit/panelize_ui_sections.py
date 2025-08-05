@@ -363,6 +363,9 @@ SOURCE_SECTION = {
     "ref": SStr(
         typeIn(["annotation"]),
         "Specify reference of KiKit annotation symbol"),
+    "layer": SLayer(
+        typeIn(["annotation"]),
+        "Specify layer for annotation lines (default: Edge.Cuts)"),
     "stack": SChoice(
         ["inherit", "2layer", "4layer", "6layer"],
         always(),
