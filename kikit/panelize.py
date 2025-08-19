@@ -485,6 +485,7 @@ class VCutSettings:
     textProlongation: KiLength = fromMm(3)
     layer: Layer = Layer.Cmts_User
     textTemplate: str = "V-CUT {pos_mm}"
+    textLayer: Layer = Layer.Cmts_User
     textOffset: KiLength = fromMm(3)
     clearance: KiLength = 0
 
@@ -1236,7 +1237,7 @@ class Panel:
             "pos_inv_inch": f"{(origin - position) / inch:.3f} mm",
         }
         label.SetText(self.vCutSettings.textTemplate.format(**variables))
-        label.SetLayer(self.vCutSettings.layer)
+        label.SetLayer(self.vCutSettings.textLayer)
         label.SetTextThickness(self.vCutSettings.textThickness)
         label.SetTextSize(toKiCADPoint((self.vCutSettings.textSize, self.vCutSettings.textSize)))
         label.SetHorizJustify(EDA_TEXT_HJUSTIFY_T.GR_TEXT_HJUSTIFY_LEFT)
@@ -1287,10 +1288,11 @@ class Panel:
                     bBox.GetY() + bBox.GetHeight())
             segments.append((segment, keepout))
 
-            label = pcbnew.PCB_TEXT(segment)
+            label = pcbnew.PCB_TEXT(self.board)
             self._setVCutLabelStyle(label, self.getAuxiliaryOrigin()[0], cut)
             label.SetPosition(toKiCADPoint((cut, minY - self.vCutSettings.textOffset)))
             label.SetTextAngle(fromDegrees(90))
+            #label.SetLayer(self.vCutSettings.textLayer)
             segments.append((label, None))
         return segments
 
@@ -1314,10 +1316,10 @@ class Panel:
                     cut + self.vCutSettings.clearance / 2)
             segments.append((segment, keepout))
 
-
-            label = pcbnew.PCB_TEXT(segment)
+            label = pcbnew.PCB_TEXT(self.board)
             self._setVCutLabelStyle(label, self.getAuxiliaryOrigin()[1], cut)
             label.SetPosition(toKiCADPoint((maxX + self.vCutSettings.textOffset, cut)))
+            #label.SetLayer(self.vCutSettings.textLayer)
             segments.append((label, None))
         return segments
 
