@@ -18,27 +18,14 @@ FOOTPRIINTREGEX = {
     re.compile(r'Crystal:Crystal_SMD_(.*?)_.*'): 'CRYSTAL_{}'
 }
 
-def collectBom(components, ignore):
+def collectBom(components):
     bom = {}
     for c in components:
-        if getUnit(c) != 1:
-            continue
-        reference = getReference(c)
-        if reference.startswith("#PWR") or reference.startswith("#FL"):
-            continue
-        if reference in ignore:
-            continue
-        if hasattr(c, "in_bom") and not c.in_bom:
-            continue
-        if hasattr(c, "on_board") and not c.on_board:
-            continue
-        if hasattr(c, "dnp") and c.dnp:
-            continue
         cType = (
             getField(c, "Value"),
             getField(c, "Footprint")
         )
-        bom[cType] = bom.get(cType, []) + [reference]
+        bom[cType] = bom.get(cType, []) + [getReference(c)]
     return bom
 
 def transcodeFootprint(footprint):
@@ -146,8 +133,8 @@ def exportNeodenYY1(board, outputdir, schematic, ignore,
     ensureValidSch(schematic)
 
     correctionFields = [x.strip() for x in corrections.split(",")]
-    components = extractComponents(schematic)
-    bom = collectBom(components, refsToIgnore)
+    components = extractComponents(schematic, refsToIgnore, "NEODENYY1_IGNORE")
+    bom = collectBom(components)
 
     posData = collectPosData(loadedBoard, correctionFields,
         bom=components, posFilter=noFilter, correctionFile=correctionpatterns)
