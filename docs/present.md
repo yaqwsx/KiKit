@@ -7,8 +7,11 @@ automatically generated panels.
 
 ## Requirements
 
-In order to include PCB drawings in presentations you will need to install
-[PcbDraw](https://github.com/yaqwsx/PcbDraw).
+In order to include PCB drawings in presentations you need one of the following:
+* Install[PcbDraw](https://github.com/yaqwsx/PcbDraw).
+* Install `kicad-cli` for KiCAD >= 9.0 and ImageMagick.
+
+To use `kicad-cli` for rendering, invoke `kikit present` with `--renderer kicad-cli`.
 
 ## Template name/path resolution
 
