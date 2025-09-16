@@ -688,8 +688,9 @@ class Substrate:
             raise RuntimeError("Uknown type '{}' of substrate geometry".format(type(self.substrates)))
         items = []
         for polygon in geoms:
-            items += self._serializeRing(polygon.exterior, reconstructArcs)
-            for interior in polygon.interiors:
+            simplified_polygon = shapely.simplify(polygon, SHP_EPSILON)
+            items += self._serializeRing(simplified_polygon.exterior, reconstructArcs)
+            for interior in simplified_polygon.interiors:
                 items += self._serializeRing(interior, reconstructArcs)
         return items
 
