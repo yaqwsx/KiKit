@@ -1490,6 +1490,14 @@ to the way KiCAD is packaged on Windows.</p>
 <a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>  separate  Separate a single board out of a multi-board design.
 <a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>  stencil   Create solder paste stencils
 </code></pre></div>
+<p>If you get an error message like the following:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>&gt; kikit --help
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>&#39;kikit&#39; is not recognized as an internal or external command
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>operable program or batch file.
+</code></pre></div>
+<p>... then you may need to close the terminal and re-open a new "KiCAD Command Prompt"
+so that it adds the plugin directory to the <code>%PATH%</code> variable. Then run <code>kikit --help</code>
+again, and you should see the help message shown above.</p>
 <p>Now you are done with the basic installation. Don't forget to get the GUI
 frontend and libraries via PCM.</p>
 
