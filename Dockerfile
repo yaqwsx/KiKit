@@ -43,7 +43,7 @@ FROM base AS build
 
 COPY . /src/kikit
 WORKDIR /src/kikit
-RUN python3 setup.py install
+RUN python3 -m pip install .
 
 # the final stage only takes the installed packages from dist-packages
 # and ignores the src directories

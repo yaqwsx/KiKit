@@ -17,10 +17,10 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/yaqwsx/KiKit",
-    packages=setuptools.find_packages(),
+    packages=setuptools.find_namespace_packages(include=["kikit"]),
+    license = "MIT",
     classifiers=[
         "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
     install_requires=[
@@ -39,6 +39,7 @@ setuptools.setup(
     extras_require={
         "dev": [
             "pytest",
+            "build",
             "wheel",
         ],
     },

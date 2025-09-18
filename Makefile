@@ -26,7 +26,7 @@ docs/panelization/examples.md: scripts/exampleDoc.py docs/resources/conn.png
 
 package:
 	rm -f dist/*
-	python3 setup.py sdist bdist_wheel
+	python3 -m build
 
 install: package
 	pip3 install --no-deps --force dist/*.whl
