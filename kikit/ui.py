@@ -25,7 +25,7 @@ except ImportError:
 except AttributeError:
     raise RuntimeError("KiCAD v5 is no longer supported for KiKit. Version v1.0.x is the last one that supports KiCAD 5.")
 
-@click.group()
+@click.group(context_settings={"help_option_names": ["-h", "--help"]})
 @click.version_option(__version__)
 def cli():
     pass
