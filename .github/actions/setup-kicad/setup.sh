@@ -101,7 +101,7 @@ case $1 in
     ;;
 
   *)
-    echo "Invalid version '$1' passed. Only 'v5', 'v6', 'v7', 'v7-testing', 'v8', 'v8-testing' and 'nightly' supported" >&2
+    echo "Invalid version '$1' passed. Only 'v5', 'v6', 'v7', 'v7-testing', 'v8', 'v8-testing', 'v9', 'v9-testing' and 'nightly' supported" >&2
     exit 1
     ;;
 esac
