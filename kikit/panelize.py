@@ -414,6 +414,22 @@ def polygonToZone(polygon, board):
         zone.Outline().AddHole(linestringToKicad(boundary))
     return zone
 
+def cropZoneByPolygon(zone: pcbnew.ZONE, polygon: Polygon) -> None:
+    """
+    Modify the zone so it is cropped by the polygon. If the zone is split into
+    multiple zones, return all of them. Handles holes in both the original zone
+    and the cropping polygon.
+    """
+    zoneGeom = substrate.shapePolyToShapely(zone.Outline())
+    intersection = zoneGeom.intersection(polygon)
+
+    zone.Outline().RemoveAllContours()
+    geoms = [intersection] if isinstance(intersection, Polygon) else intersection.geoms
+    for geom in geoms:
+        zone.Outline().AddOutline(linestringToKicad(geom.exterior))
+        for hole in geom.interiors:
+            zone.Outline().AddHole(linestringToKicad(hole))
+
 def buildTabs(panel: "Panel", substrate: Substrate,
               partitionLines: Union[GeometryCollection, LineString],
               tabAnnotations: Iterable[TabAnnotation], fillet: KiLength = 0) -> \
@@ -1137,10 +1153,6 @@ class Panel:
             track.Rotate(originPoint, rotationAngle)
             track.Move(translation)
             appendItem(self.board, track, yieldMapping)
-        for zone in zones:
-            zone.Rotate(originPoint, rotationAngle)
-            zone.Move(translation)
-            appendItem(self.board, zone, yieldMapping)
         for netId in board.GetNetInfo().NetsByNetcode():
             self.board.Add(board.GetNetInfo().GetNetItem(netId))
 
@@ -1168,6 +1180,11 @@ class Panel:
             raise substrate.PositionError(f"{filename}: {e.origMessage}", point)
         for drawing in otherDrawings:
             appendItem(self.board, drawing, yieldMapping)
+        for zone in zones:
+            zone.Rotate(originPoint, rotationAngle)
+            zone.Move(translation)
+            cropZoneByPolygon(zone, s.exterior())
+            appendItem(self.board, zone, yieldMapping)
 
         try:
             exclusions = readBoardDrcExclusions(board)
