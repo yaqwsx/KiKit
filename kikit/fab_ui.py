@@ -23,7 +23,8 @@ def fabCommand(f):
 @click.command()
 @fabCommand
 @click.option("--assembly/--no-assembly", help="Generate files for SMT assembly (schematics is required)")
-@click.option("--schematic", type=click.Path(dir_okay=False), help="Board schematics (required for assembly files)")
+@click.option("--schematic", type=click.Path(dir_okay=False), multiple=True,
+    help="Board schematics (required for assembly files, can be specified more than once to merge components from multiple schematics)")
 @click.option("--ignore", type=str, default="", help="Comma separated list of designators to exclude from SMT assembly")
 @click.option("--field", type=str, default="LCSC",
     help="Comma separated list of component fields field with LCSC order code. First existing field is used")
@@ -44,7 +45,8 @@ def jlcpcb(**kwargs):
 @click.command()
 @fabCommand
 @click.option("--assembly/--no-assembly", help="Generate files for SMT assembly (schematics is required)")
-@click.option("--schematic", type=click.Path(dir_okay=False), help="Board schematics (required for assembly files)")
+@click.option("--schematic", type=click.Path(dir_okay=False), multiple=True,
+    help="Board schematics (required for assembly files, can be specified more than once to merge components from multiple schematics)")
 @click.option("--ignore", type=str, default="", help="Comma separated list of designators to exclude from SMT assembly")
 @click.option("--corrections", type=str, default="PCBWAY_CORRECTION",
     help="Comma separated list of component fields with the correction value. First existing field is used")
@@ -87,7 +89,8 @@ def oshpark(**kwargs):
 
 @click.command()
 @fabCommand
-@click.option("--schematic", type=click.Path(dir_okay=False), help="Board schematics (required for assembly files)")
+@click.option("--schematic", type=click.Path(dir_okay=False), multiple=True,
+    help="Board schematics (required for assembly files, can be specified more than once to merge components from multiple schematics)")
 @click.option("--ignore", type=str, default="", help="Comma separated list of designators to exclude from SMT assembly")
 @click.option("--corrections", type=str, default="YY1_CORRECTION",
     help="Comma separated list of component fields with the correction value. First existing field is used")
