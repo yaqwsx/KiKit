@@ -1087,9 +1087,8 @@ class SubstratePartitionLines:
                 return False
             return idA not in ghosts or idB not in ghosts
         self._partition = BoxPartitionLines(
-            self._preprocessBoxes(boxes),
-            seedFilter,
-            safeHorizontalMargin, safeVerticalMargin)
+            self._preprocessBoxes(boxes), seedFilter,
+            safeHorizontalMargin, safeVerticalMargin, ghosts)
 
     def _preprocessBoxes(self, boxes):
         """
