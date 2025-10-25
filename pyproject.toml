@@ -1,0 +1,10 @@
+[build-system]
+requires = ["setuptools", "versioneer[toml]"]
+build-backend = "setuptools.build_meta"
+
+[tool.versioneer]
+VCS = "git"
+style = "pep440"
+versionfile_source = "kikit/_version.py"
+versionfile_build = "kikit/_version.py"
+tag_prefix = "v"
