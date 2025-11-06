@@ -421,6 +421,11 @@ def cropZoneByPolygon(zone: pcbnew.ZONE, polygon: Polygon) -> None:
     and the cropping polygon.
     """
     zoneGeom = substrate.shapePolyToShapely(zone.Outline())
+    if not zoneGeom.is_valid:
+        # The zones might be self-intersecting.
+        zoneGeom = zoneGeom.buffer(0)
+        if not zoneGeom.is_valid:
+            raise PanelError("Zone geometry is invalid")
     intersection = zoneGeom.intersection(polygon)
 
     zone.Outline().RemoveAllContours()
