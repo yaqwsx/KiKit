@@ -249,8 +249,7 @@ def shapePolyToShapely(p: pcbnew.SHAPE_POLY_SET) \
         outline = shapeLinechainToList(kOutline)
         holes = []
         for hIdx in range(p.HoleCount(pIdx)):
-            kHole = p.Hole(hIdx)
-            assert kHole.isClosed()
+            kHole = p.Hole(pIdx, hIdx)
             holes.append(shapeLinechainToList(kHole))
         polygons.append(Polygon(outline, holes=holes))
     if len(polygons) == 1:
