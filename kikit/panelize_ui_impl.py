@@ -378,6 +378,7 @@ def makeCuts(properties, panel, cuts, ignoreOffset):
             panel.vCutSettings.textProlongation = properties["textprolongation"]
             panel.vCutSettings.endProlongation = properties["endprolongation"]
             panel.vCutSettings.textTemplate = properties["template"]
+            panel.vCutSettings.textLayer = properties["textLayer"]
             panel.vCutSettings.textOffset = properties["textoffset"]
 
         elif type == "mousebites":
