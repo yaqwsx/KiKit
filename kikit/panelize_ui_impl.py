@@ -255,7 +255,9 @@ def buildLayout(preset, panel, sourceBoard, sourceArea):
                 hbonefirst=layout["hbonefirst"],
                 vbonefirst=layout["vbonefirst"],
                 hevendiff=layout["hevendiff"],
-                vevendiff=layout["vevendiff"])
+                vevendiff=layout["vevendiff"],
+                hevenoffset=layout["hevenoffset"],
+                vevenoffset=layout["vevenoffset"])
             substrates = panel.makeGrid(
                 boardfile=sourceBoard, sourceArea=sourceArea,
                 rows=layout["rows"], cols=layout["cols"], destination=VECTOR2I(0, 0),
