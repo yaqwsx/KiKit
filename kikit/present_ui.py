@@ -12,6 +12,7 @@ import click
     help="Path to a template directory or a name of built-in one. See doc/present.md for template specification.")
 @click.option("--repository", type=str, help="URL of the repository")
 @click.option("--name", type=str, help="Name of the board (used e.g., for title)", required=True)
+@click.option("--renderer", type=str, default="pcbdraw", help="Choice of PCB image renderer (PcbDraw or kicad-cli)")
 def boardpage(**kwargs):
     """
     Build a board presentation page based on markdown description and include
