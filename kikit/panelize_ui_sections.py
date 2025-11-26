@@ -278,6 +278,12 @@ LAYOUT_SECTION = {
     "vevendiff": SLength(
         always(),
         "Extra spacing added to even spaces between boards rows"),
+    "hevenoffset": SLength(
+        always(),
+        "Extra horizontal offset added to boards in odd columns"),
+    "vevenoffset": SLength(
+        always(),
+        "Extra vertical offset added to boards in odd rows"),
     "hbackbone": SLength(
         typeIn(["grid", "plugin"]),
         "The width of horizontal backbone (0 means no backbone)"),
