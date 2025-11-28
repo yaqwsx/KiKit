@@ -4,6 +4,8 @@ import textwrap
 from pcbnewTransition import pcbnew, isV6, kicad_major
 from kikit import sexpr
 from kikit.common import normalize
+import geopandas as gpd
+from longsgis import densify_polygon, voronoiDiagram4plg
 
 from pathlib import Path
 
@@ -2193,18 +2195,39 @@ class Panel:
         vBLines = [LineString([(l.x, l.min), (l.x, l.max)]) for l in vBoneLines]
         self.backboneLines = list(chain(hBLines, vBLines))
 
-    def buildPartitionLineFromBB(self, boundarySubstrates=[], safeMargin=0):
+    def buildPartitionLineFromBB_old(self, boundarySubstrates=[], safeMargin=0):
         """
         Builds partition & backbone line from bounding boxes of the substrates.
         You can optionally pass extra substrates (e.g., for frame). Without
         these extra substrates no partition line would be generated on the side
         where the boundary is, therefore, there won't be any tabs.
         """
+        #boop
+        Polygon.normalize
         partition = substrate.SubstratePartitionLines(
             self.substrates, boundarySubstrates,
             safeMargin, safeMargin)
         self._buildPartitionLineFromBB(partition)
         self._buildBackboneLineFromBB(partition, boundarySubstrates)
+
+    def buildPartitionLineFromBB(self, boundarySubstrates: List[Substrate], safeMargin=0):
+        """
+        Builds partition & backbone line from the voronoi partion of the substrates.
+        You can optionally pass extra substrates (e.g., for frame). Without
+        these extra substrates no partition line would be generated on the side
+        where the boundary is, therefore, there won't be any tabs.
+        """
+        substrates = map(lambda b: b.substrates.normalize(), self.substrates)
+        gdf = gpd.GeoDataFrame({ "geometry": substrates })
+
+        bb = Polygon.from_bounds(*self.boardsBBox())
+        boundary = gpd.GeoDataFrame({ "geometry": [bb] })
+        result_gdf = voronoiDiagram4plg(gdf, boundary, densify=True, spacing="auto")
+
+        result = result_gdf["geometry"]
+        for partitionLine, substrate in zip(result, self.substrates):
+            substrate.partitionLine = partitionLine.boundary
+
 
     def addLine(self, start, end, thickness, layer):
         """
