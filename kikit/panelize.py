@@ -1496,11 +1496,12 @@ class Panel:
         polygon = Polygon(outerRing, [innerRing])
         self.appendSubstrate(polygon)
 
-        innerArea = self.substrates[0].boundingBox()
+        frameCutsV = set()
+        frameCutsH = set()
         for s in self.substrates:
-            innerArea = combineBoundingBoxes(innerArea, s.boundingBox())
-        frameCutsV = self.makeFrameCutsV(innerArea, frameInnerRect, frameOuterRect)
-        frameCutsH = self.makeFrameCutsH(innerArea, frameInnerRect, frameOuterRect)
+            frameCutsV.update(self.makeFrameCutsV(s.boundingBox(), frameInnerRect, frameOuterRect))
+            frameCutsH.update(self.makeFrameCutsH(s.boundingBox(), frameInnerRect, frameOuterRect))
+
         return frameCutsV, frameCutsH
 
     def makeTightFrame(self, widthH: KiLength, widthV: KiLength, slotwidth: KiLength,
