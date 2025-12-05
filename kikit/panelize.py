@@ -162,6 +162,7 @@ class Origin(Enum):
     TopRight = 2
     BottomLeft = 3
     BottomRight = 4
+    FromSource = 5
 
 
 class NetClass():
@@ -203,6 +204,8 @@ def getOriginCoord(origin, bBox):
         return VECTOR2I(bBox.GetX(), bBox.GetY() + bBox.GetHeight())
     if origin == Origin.BottomRight:
         return VECTOR2I(bBox.GetX() + bBox.GetWidth(), bBox.GetY() + bBox.GetHeight())
+    if origin == Origin.AsSource:
+        return VECTOR2I(0,0)
 
 def appendItem(board: pcbnew.BOARD, item: pcbnew.BOARD_ITEM,
                yieldMapping: Optional[Callable[[str, str], None]]=None) -> None:
