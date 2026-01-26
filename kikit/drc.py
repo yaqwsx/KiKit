@@ -212,7 +212,7 @@ def runBoardDrc(board: pcbnew.BOARD, strict: bool) -> DrcReport:
 
 def deserializeExclusion(exclusionText: str, board: pcbnew.BOARD) -> DrcExclusion:
     items = exclusionText.split("|")
-    objects = [board.GetItem(pcbnew.KIID(x)) for x in items[3:]]
+    objects = [board.ResolveItem(pcbnew.KIID(x)) for x in items[3:]]
     objects = [x for x in objects if x is not None]
     return DrcExclusion(items[0],
                         pcbnew.VECTOR2I(int(items[1]), int(items[2])),

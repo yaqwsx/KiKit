@@ -1195,7 +1195,7 @@ class Panel:
             exclusions = readBoardDrcExclusions(board)
             for drcE in exclusions:
                 try:
-                    newObjects = [self.board.GetItem(pcbnew.KIID(itemMapping[x.m_Uuid.AsString()])) for x in drcE.objects]
+                    newObjects = [self.board.ResolveItem(pcbnew.KIID(itemMapping[x.m_Uuid.AsString()])) for x in drcE.objects]
                     assert all(x is not None for x in newObjects)
                     newPosition = doTransformation(drcE.position, rotationAngle, originPoint, translation)
                     self.drcExclusions.append(DrcExclusion(
@@ -2109,7 +2109,7 @@ class Panel:
         zone.SetIsRuleArea(True)
         zone.SetDoNotAllowTracks(noTracks)
         zone.SetDoNotAllowVias(noVias)
-        zone.SetDoNotAllowCopperPour(noCopper)
+        zone.SetDoNotAllowZoneFills(noCopper)
 
         zone.SetLayerSet(pcbnew.LSET.AllCuMask(self.copperLayerCount))
 

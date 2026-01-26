@@ -807,7 +807,7 @@ class Substrate:
         """
         Return a geometry representing the substrate with no holes
         """
-        if isinstance(self.substrates, MultiPolygon):
+        if isinstance(self.substrates, MultiPolygon) or isinstance(self.substrates, GeometryCollection):
             geoms = self.substrates.geoms
         elif isinstance(self.substrates, Polygon):
             geoms = [self.substrates]
