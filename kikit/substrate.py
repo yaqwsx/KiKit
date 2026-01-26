@@ -684,7 +684,7 @@ class Substrate:
         elif isinstance(self.substrates, Polygon):
             geoms = [self.substrates]
         else:
-            raise RuntimeError("Uknown type '{}' of substrate geometry".format(type(self.substrates)))
+            raise RuntimeError("Unknown type '{}' of substrate geometry".format(type(self.substrates)))
         items = []
         for polygon in geoms:
             simplified_polygon = shapely.simplify(polygon, SHP_EPSILON)
@@ -812,7 +812,7 @@ class Substrate:
         elif isinstance(self.substrates, Polygon):
             geoms = [self.substrates]
         else:
-            raise RuntimeError("Uknown type '{}' of substrate geometry".format(type(self.substrates)))
+            raise RuntimeError("Unknown type '{}' of substrate geometry".format(type(self.substrates)))
         polygons = [Polygon(p.exterior) for p in geoms]
         return unary_union(polygons)
 
