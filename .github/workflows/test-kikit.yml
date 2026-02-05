@@ -90,7 +90,7 @@ jobs:
             additional_packages: gcc-aarch64-linux-gnu libgeos-dev
             additional_python_packages: python3-dev
           - name: "x64 v9"
-            suffix: "-v8"
+            suffix: "-v9"
             platform: linux/amd64
             repo: ubuntu
             kicad_version: "9.0"
