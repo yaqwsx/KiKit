@@ -89,6 +89,20 @@ jobs:
             kicad_version: "8.0"
             additional_packages: gcc-aarch64-linux-gnu libgeos-dev
             additional_python_packages: python3-dev
+          - name: "x64 v9"
+            suffix: "-v8"
+            platform: linux/amd64
+            repo: ubuntu
+            kicad_version: "9.0"
+            additional_packages: ""
+            additional_python_packages: ""
+          - name: "m1 v9"
+            suffix: -m1-v9
+            platform: linux/arm64/v8
+            repo: arm64v8/ubuntu
+            kicad_version: "9.0"
+            additional_packages: gcc-aarch64-linux-gnu libgeos-dev
+            additional_python_packages: python3-dev
     steps:
       - uses: actions/checkout@v4 # Required for kikit version estimation
         with:
