@@ -946,7 +946,10 @@ class Panel:
             # inherit.
             return
 
-        conditionRegex = re.compile(r"((A|B)\.Net(Class|Name)\s*?(==|!=)\s*?)'(.*?)'")
+        # Beware: "A . HASnetCLASS ( 'foo' )" is a syntactically valid condition in DRU files.
+        # Therefore, we must be as tolerant to spaces and case as the KiCad DRU parser,
+        # so that we catch all rules that might be in use.
+        conditionRegex = re.compile(r"([AB]\s*\.\s*(?i:(?:NetClass|NetName)\s*[=!]=|(?:hasNetclass|inDiffPair)\s*\()\s*)'(.*?)'")
 
         for rule in rules:
             if isElement("version")(rule):
@@ -958,7 +961,7 @@ class Panel:
                     if isElement("condition")(clause):
                         # Rename net classes and names in the condition
                         clause.items[1].value = conditionRegex.sub(
-                            lambda m: f"{m.group(1)}'{netRenamer(m.group(5))}'", clause.items[1].value)
+                            lambda m: f"{m.group(1)}'{netRenamer(m.group(2))}'", clause.items[1].value)
                 self.customDRCRules.append(rule)
             else:
                 raise RuntimeError(f"Unkwnown custom DRC rule {rule}")
