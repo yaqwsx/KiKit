@@ -877,7 +877,7 @@ class Panel:
                 "pattern": netRenamer(pattern)
             })
 
-        for net, netclasses in project["net_settings"].get("netclass_assignments", {}).items():
+        for net, netclasses in (project["net_settings"].get("netclass_assignments") or {}).items():
             self.netClassAssignments[netRenamer(net)] = [netRenamer(nc) for nc in netclasses]
 
     def _inheriCustomDrcRules(self, board, netRenamer):
