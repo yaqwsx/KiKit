@@ -573,6 +573,7 @@ class Panel:
         # Therefore we have to handle them separately
         self.newNetClasses: Dict[str, Any] = {}
         self.netCLassPatterns: List[Dict[str, str]] = []
+        self.netClassAssignments: Dict[str, List[str]] = {}
         self.customDRCRules: List[SExpr] = []
 
         # KiCAD allows to keep text variables for project. We keep a set of
@@ -789,6 +790,7 @@ class Panel:
             currentPro["net_settings"]["classes"] = sourcePro["net_settings"]["classes"]
             currentPro["net_settings"]["classes"] += [x.serialize() for x in self.newNetClasses.values()]
             currentPro["net_settings"]["netclass_patterns"] = self.netCLassPatterns
+            currentPro["net_settings"]["netclass_assignments"] = self.netClassAssignments
 
             with open(self.getProFilepath(), "w", encoding="utf-8") as f:
                 json.dump(currentPro, f, indent=2)
@@ -874,6 +876,9 @@ class Panel:
                 "netclass": netRenamer(netclass),
                 "pattern": netRenamer(pattern)
             })
+
+        for net, netclasses in project["net_settings"].get("netclass_assignments", {}).items():
+            self.netClassAssignments[netRenamer(net)] = [netRenamer(nc) for nc in netclasses]
 
     def _inheriCustomDrcRules(self, board, netRenamer):
         """
