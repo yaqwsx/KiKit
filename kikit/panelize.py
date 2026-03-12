@@ -949,7 +949,7 @@ class Panel:
         # Beware: "A . HASnetCLASS ( 'foo' )" is a syntactically valid condition in DRU files.
         # Therefore, we must be as tolerant to spaces and case as the KiCad DRU parser,
         # so that we catch all rules that might be in use.
-        conditionRegex = re.compile(r"([AB]\s*\.\s*(?i:(?:NetClass|NetName)\s*[=!]=|(?:hasNetclass|inDiffPair)\s*\()\s*)'(.*?)'")
+        conditionRegex = re.compile(r"([AB]\s*\.\s*(?i:(?:NetClass|NetName)\s*[=!]=|(?:hasNetclass|hasExactNetclass|inDiffPair)\s*\()\s*)'(.*?)'")
 
         for rule in rules:
             if isElement("version")(rule):
