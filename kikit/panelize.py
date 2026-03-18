@@ -1599,11 +1599,14 @@ class Panel:
 
     def makeRailsTb(self, thickness: KiLength, minHeight: KiLength = 0,
                     maxHeight: Optional[KiLength] = None,
+                    minWidth: KiLength = 0,
+                    maxWidth: Optional[KiLength] = None,
                     vspace: Optional[KiLength] = None) -> None:
         """
         Adds a rail to top and bottom. You can specify minimal height the panel
         has to feature. You can also specify maximal height of the panel. If the
-        height would be exceeded, error is set.
+        height would be exceeded, error is set. You can also specify minimal and
+        maximal width to extend the rails beyond the board area.
 
         If vspace is specified, the rails are placed at exact vspace distance
         from the board bounding box (using boardsBBox). If vspace is None, the
@@ -1616,8 +1619,8 @@ class Panel:
                 self.reportError(toKiCADPoint((maxx, maxy)), f"Panel height {height / units.mm} mm exceeds the limit {maxHeight / units.mm} mm")
             if height < minHeight:
                 thickness = (minHeight - maxy + miny) // 2 - vspace
-            topRail = box(minx, maxy + vspace, maxx, maxy + vspace + thickness)
-            bottomRail = box(minx, miny - vspace, maxx, miny - vspace - thickness)
+            topYInner, topYOuter = maxy + vspace, maxy + vspace + thickness
+            botYInner, botYOuter = miny - vspace, miny - vspace - thickness
         else:
             minx, miny, maxx, maxy = self.panelBBox()
             height = maxy - miny + 2 * thickness
@@ -1625,17 +1628,29 @@ class Panel:
                 self.reportError(toKiCADPoint((maxx, maxy)), f"Panel height {height / units.mm} mm exceeds the limit {maxHeight / units.mm} mm")
             if height < minHeight:
                 thickness = (minHeight - maxy + miny) // 2
-            topRail = box(minx, maxy, maxx, maxy + thickness)
-            bottomRail = box(minx, miny, maxx, miny - thickness)
+            topYInner, topYOuter = maxy, maxy + thickness
+            botYInner, botYOuter = miny, miny - thickness
+        width = maxx - minx
+        if maxWidth is not None and width > maxWidth:
+            self.reportError(toKiCADPoint((maxx, maxy)), f"Panel width {width / units.mm} mm exceeds the limit {maxWidth / units.mm} mm")
+        if width < minWidth:
+            diff = minWidth - width
+            minx -= diff // 2
+            maxx += diff - diff // 2
+        topRail = box(minx, topYInner, maxx, topYOuter)
+        bottomRail = box(minx, botYInner, maxx, botYOuter)
         self.appendSubstrate(topRail)
         self.appendSubstrate(bottomRail)
 
     def makeRailsLr(self, thickness: KiLength, minWidth: KiLength = 0,
                     maxWidth: Optional[KiLength] = None,
+                    minHeight: KiLength = 0,
+                    maxHeight: Optional[KiLength] = None,
                     hspace: Optional[KiLength] = None) -> None:
         """
         Adds a rail to left and right. You can specify minimal width the panel
-        has to feature.
+        has to feature. You can also specify minimal and maximal height to
+        extend the rails beyond the board area.
 
         If hspace is specified, the rails are placed at exact hspace distance
         from the board bounding box (using boardsBBox). If hspace is None, the
@@ -1648,8 +1663,8 @@ class Panel:
                 self.reportError(toKiCADPoint((maxx, maxy)), f"Panel width {width / units.mm} mm exceeds the limit {maxWidth / units.mm} mm")
             if width < minWidth:
                 thickness = (minWidth - maxx + minx) // 2 - hspace
-            leftRail = box(minx - hspace - thickness, miny, minx - hspace, maxy)
-            rightRail = box(maxx + hspace, miny, maxx + hspace + thickness, maxy)
+            leftXOuter, leftXInner = minx - hspace - thickness, minx - hspace
+            rightXInner, rightXOuter = maxx + hspace, maxx + hspace + thickness
         else:
             minx, miny, maxx, maxy = self.panelBBox()
             width = maxx - minx + 2 * thickness
@@ -1657,8 +1672,17 @@ class Panel:
                 self.reportError(toKiCADPoint((maxx, maxy)), f"Panel width {width / units.mm} mm exceeds the limit {maxWidth / units.mm} mm")
             if width < minWidth:
                 thickness = (minWidth - maxx + minx) // 2
-            leftRail = box(minx - thickness, miny, minx, maxy)
-            rightRail = box(maxx, miny, maxx + thickness, maxy)
+            leftXOuter, leftXInner = minx - thickness, minx
+            rightXInner, rightXOuter = maxx, maxx + thickness
+        height = maxy - miny
+        if maxHeight is not None and height > maxHeight:
+            self.reportError(toKiCADPoint((maxx, maxy)), f"Panel height {height / units.mm} mm exceeds the limit {maxHeight / units.mm} mm")
+        if height < minHeight:
+            diff = minHeight - height
+            miny -= diff // 2
+            maxy += diff - diff // 2
+        leftRail = box(leftXOuter, miny, leftXInner, maxy)
+        rightRail = box(rightXInner, miny, rightXOuter, maxy)
         self.appendSubstrate(leftRail)
         self.appendSubstrate(rightRail)
 
