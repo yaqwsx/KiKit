@@ -44,7 +44,7 @@ class TabAnnotation(KiKitAnnotation):
         if "width" not in props:
             raise ValueError("Tab annotation must a KiKit annotation text with 'width' property defined")
         width = units.readLength(props["width"])
-        return TabAnnotation(footprint.GetReference(), origin, direction, width, props)
+        return TabAnnotation(footprint.GetReference(), origin, direction, width, props=props)
 
 class AnnotationReader:
     """
