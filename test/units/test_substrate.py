@@ -21,3 +21,51 @@ def test_biteBoundary():
 
     t5 = biteBoundary(l1, Point(1, 0.25), Point(1, 0.75), 0.1)
     assert t5 == LineString([(1, 0.25), (1, 0.75)])
+
+import math
+
+class DummyRect:
+    def __init__(self, corners, radius=None):
+        self._corners = corners
+        self._radius = radius
+
+    def GetRectCorners(self):
+        return self._corners
+
+    def GetCornerRadius(self):
+        if self._radius is None:
+            raise AttributeError("no corner radius in old KiCad")
+        return self._radius
+
+def test_approximateRect_pre_kicad10():
+    # Pre-KiCad 10 has no corner radius attribute
+    rect = DummyRect([(0,0), (10,0), (10,5), (0,5)], radius=None)
+    points = approximateRect(rect)
+    assert points == [(0,0), (10,0), (10,5), (0,5)]
+
+def test_approximateRect_kicad10_radius_zero():
+    # KiCad 10 with corner radius explicitly 0
+    rect = DummyRect([(0,0), (10,0), (10,5), (0,5)], radius=0)
+    points = approximateRect(rect)
+    assert points == [(0,0), (10,0), (10,5), (0,5)]
+
+def test_approximateRect_kicad10_rounded():
+    # KiCad 10 Native rounded rectangle with radius 1
+    rect = DummyRect([(0,0), (10,0), (10,5), (0,5)], radius=1)
+    points = approximateRect(rect)
+    
+    assert len(points) > 4
+    
+    # Verify shape bounds
+    poly = Polygon(points)
+    assert poly.is_valid
+    
+    minx, miny, maxx, maxy = poly.bounds
+    assert pytest.approx(minx, rel=1e-3) == 0
+    assert pytest.approx(miny, rel=1e-3) == 0
+    assert pytest.approx(maxx, rel=1e-3) == 10
+    assert pytest.approx(maxy, rel=1e-3) == 5
+    
+    expected_area = 50 - (4 - math.pi * 1 * 1)
+    assert pytest.approx(poly.area, rel=1e-2) == expected_area
+

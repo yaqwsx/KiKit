@@ -257,6 +257,50 @@ def shapePolyToShapely(p: pcbnew.SHAPE_POLY_SET) \
     return MultiPolygon(polygons=polygons)
 
 
+def approximateRect(rect):
+    """
+    Take DRAWINGITEM rect and approximate it using lines. If it has a corner
+    radius (added in KiCad 10.0.0), approximate rounded corners with arcs.
+    """
+    corners = rect.GetRectCorners()
+    try:
+        radius = rect.GetCornerRadius()
+    except AttributeError:
+        radius = 0
+
+    if radius == 0:
+        return [tuple(x) for x in corners]
+
+    pts = [list(c) for c in corners]
+    xs = [p[0] for p in pts]
+    ys = [p[1] for p in pts]
+    min_x, max_x = min(xs), max(xs)
+    min_y, max_y = min(ys), max(ys)
+
+    SEGMENTS_PER_FULL = 4 * 32
+    segments = max(SEGMENTS_PER_FULL // 4, 12)
+
+    theta_tr = np.linspace(-np.pi/2, 0, segments)
+    x_tr = (max_x - radius) + radius * np.cos(theta_tr)
+    y_tr = (min_y + radius) + radius * np.sin(theta_tr)
+
+    theta_br = np.linspace(0, np.pi/2, segments)
+    x_br = (max_x - radius) + radius * np.cos(theta_br)
+    y_br = (max_y - radius) + radius * np.sin(theta_br)
+
+    theta_bl = np.linspace(np.pi/2, np.pi, segments)
+    x_bl = (min_x + radius) + radius * np.cos(theta_bl)
+    y_bl = (max_y - radius) + radius * np.sin(theta_bl)
+
+    theta_tl = np.linspace(np.pi, 3*np.pi/2, segments)
+    x_tl = (min_x + radius) + radius * np.cos(theta_tl)
+    y_tl = (min_y + radius) + radius * np.sin(theta_tl)
+
+    return (list(np.column_stack([x_tr, y_tr])) +
+            list(np.column_stack([x_br, y_br])) +
+            list(np.column_stack([x_bl, y_bl])) +
+            list(np.column_stack([x_tl, y_tl])))
+
 def toShapely(ring, geometryList):
     """
     Take a list of indices representing a ring from PCB_SHAPE entities and
@@ -274,7 +318,7 @@ def toShapely(ring, geometryList):
                 commonEndPoint(geometryList[idxA], geometryList[idxB]))
         elif shape in [STROKE_T.S_RECT]:
             assert idxA == idxB
-            outline += geometryList[idxA].GetRectCorners()
+            outline += approximateRect(geometryList[idxA])
         elif shape in [STROKE_T.S_POLYGON]:
             # Polygons are always closed, so they should appear as stand-alone
             assert len(ring) in [1, 2]
