@@ -28,7 +28,7 @@ from dataclasses import dataclass
 from kikit import substrate
 from kikit import units
 from kikit.kicadUtil import getPageDimensionsFromAst
-from kikit.substrate import Substrate, linestringToKicad, extractRings, TabError
+from kikit.substrate import Substrate, linestringToKicad, extractRings, TabError, TabFilletError
 from kikit.defs import PAPER_DIMENSIONS, STROKE_T, Layer, EDA_TEXT_HJUSTIFY_T, EDA_TEXT_VJUSTIFY_T, PAPER_SIZES
 from kikit.common import *
 from kikit.sexpr import isElement, parseSexprF, SExpr, Atom, findNode, parseSexprListF
@@ -463,6 +463,45 @@ def buildTabs(panel: "Panel", substrate: Substrate,
             panel.reportError(toKiCADPoint(e.origin), str(e))
     return tabs, cuts
 
+def addFrameFillets(frameGeometry, boardSubstrates, fillet, panel=None):
+    """
+    Given frame geometry (before merging into the panel) and board substrates
+    carrying tab annotations, shoot reverse tabs toward the frame and fillet
+    them. Returns the modified frame geometry.
+
+    If panel is provided, stores debug geometry (reverse tabs, raw frame) on it.
+    """
+    if panel is not None:
+        panel.debugRawFrame.append(frameGeometry)
+
+    if fillet == 0:
+        return frameGeometry
+
+    frameSubstrate = Substrate([])
+    frameSubstrate.union(frameGeometry)
+
+    tabs = []
+    for s in boardSubstrates:
+        for annotation in s.annotations:
+            if not isinstance(annotation, TabAnnotation):
+                continue
+            try:
+                reverseDir = (-annotation.direction[0], -annotation.direction[1])
+                t, _ = frameSubstrate.tab(
+                    annotation.origin, reverseDir, annotation.width,
+                    partitionLine=None, fillet=fillet)
+                if t is not None:
+                    tabs.append(t)
+            except (TabError, TabFilletError):
+                pass  # Tab doesn't reach this frame piece (e.g. board-to-board tab)
+
+    if panel is not None:
+        panel.debugReverseTabs.extend(tabs)
+
+    if tabs:
+        frameSubstrate.union(tabs)
+    return frameSubstrate.substrates
+
 def normalizePartitionLineOrientation(line):
     """
     Given a LineString or MultiLineString, normalize orientation of the
@@ -566,6 +605,10 @@ class Panel:
         self.renderedMousebiteCounter = 0
         self.zonesToRefill = pcbnew.ZONES()
         self.pageSize: Union[None, str, Tuple[int, int]] = None
+        self.forwardTabs: List[Polygon] = []
+        self.backbonePieces: Optional[List[Polygon]] = None
+        self.debugReverseTabs: List[Polygon] = []
+        self.debugRawFrame: List[Union[Polygon, MultiPolygon]] = []
 
         self.annotationReader: AnnotationReader = AnnotationReader.getDefault()
         self.drcExclusions: List[DrcExclusion] = []
@@ -1843,6 +1886,7 @@ class Panel:
             t, c = buildTabs(self, s, s.partitionLine, s.annotations, fillet)
             tabs.extend(t)
             cuts.extend(c)
+        self.forwardTabs.extend(tabs)
         self.boardSubstrate.union(tabs)
         return cuts
 
@@ -2246,6 +2290,29 @@ class Panel:
         lines = [box(*s.bounds()).exterior for s in self.substrates]
         self._renderLines(lines, Layer.Cmts_User, fromMm(0.5))
 
+    def debugRenderTabFillet(self):
+        """
+        Render forward tabs, reverse tabs, and raw support geometry on
+        layers to help debug tab fillet issues.
+        - Margin: forward tabs (board-side)
+        - Eco1_User: reverse tabs (frame-side)
+        - Eco2_User: raw support geometry (before fillets)
+        """
+        lines = [t.exterior for t in self.forwardTabs]
+        self._renderLines(lines, Layer.Margin, fromMm(0.3))
+        lines = [t.exterior for t in self.debugReverseTabs]
+        self._renderLines(lines, Layer.Eco1_User, fromMm(0.3))
+        for geom in self.debugRawFrame:
+            outlines = [geom.exterior] if hasattr(geom, 'exterior') else \
+                [g.exterior for g in listGeometries(geom)]
+            self._renderLines(outlines, Layer.Eco2_User, fromMm(0.3))
+            if hasattr(geom, 'interiors'):
+                self._renderLines(list(geom.interiors), Layer.Eco2_User, fromMm(0.3))
+            else:
+                for g in listGeometries(geom):
+                    if hasattr(g, 'interiors'):
+                        self._renderLines(list(g.interiors), Layer.Eco2_User, fromMm(0.3))
+
     def renderBackbone(self, vthickness: KiLength, hthickness: KiLength,
             vcut: bool, hcut: bool, vskip: int=0, hskip: int=0,
             vfirst: int=0, hfirst: int=0):
@@ -2336,6 +2403,7 @@ class Panel:
                     (x[0] + c * vthickness // 2, x[1])])
                 cuts.append(cut)
 
+        self.backbonePieces = pieces
         self.appendSubstrate(pieces)
         return cuts
 
@@ -2393,6 +2461,15 @@ class Panel:
         self.boardSubstrate.translate(vec)
         self.backboneLines = [shapely.affinity.translate(bline, vec[0], vec[1])
                               for bline in self.backboneLines]
+        self.forwardTabs = [shapely.affinity.translate(t, vec[0], vec[1])
+                            for t in self.forwardTabs]
+        if self.backbonePieces is not None:
+            self.backbonePieces = [shapely.affinity.translate(p, vec[0], vec[1])
+                                   for p in self.backbonePieces]
+        self.debugReverseTabs = [shapely.affinity.translate(t, vec[0], vec[1])
+                                 for t in self.debugReverseTabs]
+        self.debugRawFrame = [shapely.affinity.translate(g, vec[0], vec[1])
+                              for g in self.debugRawFrame]
         self.hVCuts = [c + vec[1] for c in self.hVCuts]
         self.vVCuts = [c + vec[0] for c in self.vVCuts]
         for c in self.vVCuts:

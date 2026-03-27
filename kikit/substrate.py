@@ -593,6 +593,29 @@ def closestIntersectionPoint(origin, direction, outline, maxDistance):
             raise TypeError(f"intersection() returned an unsupported datatype: {geom.__class__.__name__}")
     return min([(g, origin.distance(g)) for g in geoms], key=lambda t: t[1])[0]
 
+def closestRing(geom, origin, direction, maxDistance):
+    """
+    Given a polygon geometry, find the ring (exterior or one of the
+    interiors) that has the closest intersection point from origin in the
+    given direction. This allows tab() to work with polygons that have
+    holes (e.g., frame geometry with milled slots).
+    """
+    bestRing = None
+    bestDist = float('inf')
+    originPoint = Point(origin[0], origin[1])
+    for ring in [geom.exterior] + list(geom.interiors):
+        try:
+            p = closestIntersectionPoint(origin, direction, ring, maxDistance)
+            d = originPoint.distance(p)
+            if d < bestDist:
+                bestDist = d
+                bestRing = ring
+        except NoIntersectionError:
+            continue
+    if bestRing is None:
+        raise NoIntersectionError("No intersection found within given distance", origin)
+    return bestRing
+
 def linestringToKicad(linestring):
     """
     Convert Shapely linestring to KiCAD's linechain
@@ -856,7 +879,7 @@ class Substrate:
             try:
                 sideOriginA = origin + makePerpendicular(direction) * width / 2
                 sideOriginB = origin - makePerpendicular(direction) * width / 2
-                boundary = geom.exterior
+                boundary = closestRing(geom, sideOriginA, direction, maxHeight)
                 splitPointA = closestIntersectionPoint(sideOriginA, direction,
                     boundary, maxHeight)
                 splitPointB = closestIntersectionPoint(sideOriginB, direction,
@@ -932,7 +955,7 @@ class Substrate:
         # to ensure there is an intersection
         candidate = candidates[0].buffer(SHP_EPSILON)
 
-        newFace = candidate.intersection(self.substrates.exterior)
+        newFace = candidate.intersection(self.substrates.boundary)
         if isinstance(newFace, GeometryCollection):
             newFace = MultiLineString([x for x in newFace.geoms if not isinstance(x, Polygon)])
         if isinstance(newFace, MultiLineString):

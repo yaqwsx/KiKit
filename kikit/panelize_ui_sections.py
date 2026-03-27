@@ -797,7 +797,10 @@ DEBUG_SECTION = {
     ),
     "deterministic": SBool(
         always(),
-        "Make KiCAD IDs deterministic")
+        "Make KiCAD IDs deterministic"),
+    "drawTabFillet": SBool(
+        always(),
+        "Draw forward tabs, reverse tabs, and raw frame geometry for fillet debugging")
 }
 
 def ppDebug(section):

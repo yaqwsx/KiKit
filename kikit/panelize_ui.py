@@ -278,9 +278,13 @@ def doPanelization(input, output, preset, plugins=[]):
 
     useHookPlugins(lambda x: x.afterTabs(panel, tabCuts, backboneCuts))
 
+    preFrameSubstrate = panel.boardSubstrate.substrates
+
     frameCuts = ki.buildFraming(preset, panel)
 
     useHookPlugins(lambda x: x.afterFraming(panel, frameCuts))
+
+    ki.buildTabFillets(preset, panel, preFrameSubstrate)
 
     ki.buildTooling(preset, panel)
     ki.buildFiducials(preset, panel)

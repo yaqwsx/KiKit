@@ -499,6 +499,34 @@ def buildFraming(preset, panel):
     except KeyError as e:
         raise PresetError(f"Missing parameter '{e}' in section 'framing'")
 
+def buildTabFillets(preset, panel, preFrameSubstrate):
+    """
+    Apply reverse tab fillets where tabs meet the support structure
+    (backbones + frame). The support structure is computed from:
+    - Frame geometry: diff of boardSubstrate before/after framing
+    - Backbone geometry: stored during renderBackbone
+    """
+    # Local imports to avoid circular dependency (panelize_ui_impl <-> panelize)
+    from kikit.panelize import addFrameFillets
+    import shapely.ops
+
+    fillet = preset["tabs"].get("fillet", 0)
+    if fillet == 0:
+        return
+
+    supportParts = []
+    frameGeometry = panel.boardSubstrate.substrates.difference(preFrameSubstrate)
+    if not frameGeometry.is_empty:
+        supportParts.append(frameGeometry)
+    if panel.backbonePieces:
+        supportParts.append(shapely.ops.unary_union(panel.backbonePieces))
+    if not supportParts:
+        return
+
+    support = shapely.ops.unary_union(supportParts)
+    filletedSupport = addFrameFillets(support, panel.substrates, fillet, panel)
+    panel.boardSubstrate.union(filletedSupport)
+
 def buildTooling(preset, panel):
     """
     Build tooling holes according to the preset
@@ -672,6 +700,8 @@ def buildDebugAnnotation(preset, panel):
             panel.debugRenderBackboneLines()
         if preset["drawboxes"]:
             panel.debugRenderBoundingBoxes()
+        if preset["drawTabFillet"]:
+            panel.debugRenderTabFillet()
     except KeyError as e:
         raise PresetError(f"Missing parameter '{e}' in section 'debug'")
 

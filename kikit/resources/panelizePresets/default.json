@@ -208,6 +208,7 @@
         "drawboxes": false,
         "trace": false,
         "deterministic": false,
-        "drawtabfail": false
+        "drawtabfail": false,
+        "drawTabFillet": false
     }
 }
