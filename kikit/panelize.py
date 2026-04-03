@@ -1240,7 +1240,9 @@ class Panel:
             exclusions = readBoardDrcExclusions(board)
             for drcE in exclusions:
                 try:
-                    newObjects = [self.board.GetItem(pcbnew.KIID(itemMapping[x.m_Uuid.AsString()])) for x in drcE.objects]
+                    # KiCad 10 renamed BOARD.GetItem() -> BOARD.ResolveItem(); shim supports both
+                    _get = (lambda k: self.board.ResolveItem(k, True)) if hasattr(self.board, 'ResolveItem') else self.board.GetItem
+                    newObjects = [_get(pcbnew.KIID(itemMapping[x.m_Uuid.AsString()])) for x in drcE.objects]
                     assert all(x is not None for x in newObjects)
                     newPosition = doTransformation(drcE.position, rotationAngle, originPoint, translation)
                     self.drcExclusions.append(DrcExclusion(

@@ -21,14 +21,13 @@ def roundCoord(x: int) -> int:
     return round(x - 50, -4)
 
 def getItemDescription(item: pcbnew.BOARD_ITEM, units: pcbnew.EDA_UNITS = pcbnew.EDA_UNITS_MM):
-    if isV9():
-        uProvider = pcbnew.UNITS_PROVIDER(pcbnew.pcbIUScale, units)
-        return item.GetItemDescription(uProvider, True)
     if isV7() or isV8():
         uProvider = pcbnew.UNITS_PROVIDER(pcbnew.pcbIUScale, units)
         return item.GetItemDescription(uProvider)
-    else:
-        return item.GetSelectMenuText(units)
+    if hasattr(pcbnew, 'pcbIUScale'):  # V9+ including V10+; GetSelectMenuText removed in V10
+        uProvider = pcbnew.UNITS_PROVIDER(pcbnew.pcbIUScale, units)
+        return item.GetItemDescription(uProvider, True)
+    return item.GetSelectMenuText(units)  # pre-V7 fallback only
 
 def getItemFingerprint(item: pcbnew.BOARD_ITEM):
     return (roundCoord(item.GetPosition()[0]), # Round down, since the output does the same
@@ -212,7 +211,9 @@ def runBoardDrc(board: pcbnew.BOARD, strict: bool) -> DrcReport:
 
 def deserializeExclusion(exclusionText: str, board: pcbnew.BOARD) -> DrcExclusion:
     items = exclusionText.split("|")
-    objects = [board.GetItem(pcbnew.KIID(x)) for x in items[3:]]
+    # KiCad 10 renamed BOARD.GetItem() -> BOARD.ResolveItem(); shim supports both
+    _get = (lambda k: board.ResolveItem(k, True)) if hasattr(board, 'ResolveItem') else board.GetItem
+    objects = [_get(pcbnew.KIID(x)) for x in items[3:]]
     objects = [x for x in objects if x is not None]
     return DrcExclusion(items[0],
                         pcbnew.VECTOR2I(int(items[1]), int(items[2])),
@@ -239,7 +240,7 @@ def readBoardDrcExclusions(board: pcbnew.BOARD) -> List[DrcExclusion]:
         exclusions = project["board"]["design_settings"]["drc_exclusions"]
     except KeyError:
         return [] # There are no exclusions
-    if isV9() and len(exclusions) > 0 and isinstance(exclusions[0], list):
+    if len(exclusions) > 0 and isinstance(exclusions[0], list):  # KiCad 9/10+ store exclusions as nested lists
         exclusions = [x[0] for x in exclusions]
     return [deserializeExclusion(e, board) for e in exclusions]
 
