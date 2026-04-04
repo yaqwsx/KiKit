@@ -63,6 +63,7 @@ nav:
     - Introduction: fabrication/intro.md
     - Fab houses:
       - JLC PCB: fabrication/jlcpcb.md
+      - Gatema: fabrication/gatema.md
       - Pcb Way: fabrication/pcbway.md
       - OSH Park: fabrication/oshpark.md
   - Multiboard workflow: multiboard.md

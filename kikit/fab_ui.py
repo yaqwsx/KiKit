@@ -43,6 +43,20 @@ def jlcpcb(**kwargs):
 
 @click.command()
 @fabCommand
+@click.option("--ignore", type=str, default="", help="Comma separated list of designators to exclude from SMT assembly")
+@click.option("--autoname/--no-autoname", is_flag=True, help="Automatically name the output files based on the board name")
+def gatema(**kwargs):
+    """
+    Prepare fabrication files for Gatema PCB
+    """
+    from kikit.fab import gatema
+    from kikit.common import fakeKiCADGui
+    app = fakeKiCADGui()
+    return execute_with_debug(gatema.exportGatema, kwargs)
+
+
+@click.command()
+@fabCommand
 @click.option("--assembly/--no-assembly", help="Generate files for SMT assembly (schematics is required)")
 @click.option("--schematic", type=click.Path(dir_okay=False), help="Board schematics (required for assembly files)")
 @click.option("--ignore", type=str, default="", help="Comma separated list of designators to exclude from SMT assembly")
@@ -120,6 +134,7 @@ def fab():
     pass
 
 fab.add_command(jlcpcb)
+fab.add_command(gatema)
 fab.add_command(pcbway)
 fab.add_command(oshpark)
 fab.add_command(neodenyy1)

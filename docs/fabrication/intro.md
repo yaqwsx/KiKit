@@ -35,6 +35,7 @@ See documentation for the individual manufacturer below:
 Note: click on the name of the manufacturer to see corresponding documentation:
 
 - [JLC PCB](jlcpcb.md): board manufacturing, SMD assembly. [https://jlcpcb.com/](https://jlcpcb.com/)
+- [Gatema](gatema.md): board manufacturing. [https://gatemapcb.cz/](https://gatemapcb.cz/)
 - [PCBWay](pcbway.md): board manufacturing, assembly. [https://www.pcbway.com/](https://www.pcbway.com/)
 - [OSH Park](oshpark.md): board manufacturing. [https://oshpark.com/](https://oshpark.com/)
 - [Neoden YY1](neodenyy1.md): desktop PCB assembly. [https://neodenusa.com/neoden-yy1-pick-place-machine](https://neodenusa.com/neoden-yy1-pick-place-machine)

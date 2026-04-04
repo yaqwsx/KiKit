@@ -1,7 +1,7 @@
 from __future__ import annotations
 import typing
 from typing import Any, Dict, List, Optional, Union, Tuple, Callable, Iterable
-from kikit.typing import Box, T, ComparableT
+from kikit.kityping import Box, T, ComparableT
 from itertools import islice, chain
 from math import isclose
 from copy import copy

@@ -32,6 +32,17 @@ exportSettingsJlcpcb = {
     "SubstractMaskFromSilk": True
 }
 
+exportSettingsGatema = {
+    "UseGerberProtelExtensions": True,
+    "UseAuxOrigin": True,
+    "ExcludeEdgeLayer": True,
+    "MinimalHeader": False,
+    "NoSuffix": False,
+    "MergeNPTH": False,
+    "MapFileFormat": PLOT_FORMAT_GERBER,
+    "ZerosFormat": GENDRILL_WRITER_BASE.DECIMAL_FORMAT,
+}
+
 exportSettingsPcbway = {
     "UseGerberProtelExtensions": True,
     "UseAuxOrigin": False,

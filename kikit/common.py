@@ -3,7 +3,7 @@ import sys
 import traceback
 from typing import List, Optional, Tuple, Union, Callable
 from kikit.defs import Layer
-from kikit.typing import Box
+from kikit.kityping import Box
 from pcbnewTransition import pcbnew, kicad_major
 from kikit.intervals import AxialLine
 from pcbnewTransition.pcbnew import BOX2I, VECTOR2I, EDA_ANGLE
