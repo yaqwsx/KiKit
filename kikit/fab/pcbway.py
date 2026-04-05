@@ -28,8 +28,7 @@ def addVirtualToRefsToIgnore(refsToIgnore, board):
             refsToIgnore.append(footprint.GetReference())
 
 def collectBom(components, manufacturerFields, partNumberFields,
-               descriptionFields, notesFields, typeFields, footprintFields,
-               ignore):
+               descriptionFields, notesFields, typeFields, footprintFields):
     bom = {}
 
     # Use KiCad footprint as fallback for footprint
@@ -38,17 +37,6 @@ def collectBom(components, manufacturerFields, partNumberFields,
     descriptionFields.append("Value")
 
     for c in components:
-        if getUnit(c) != 1:
-            continue
-        reference = getReference(c)
-        if reference.startswith("#PWR") or reference.startswith("#FL") or reference in ignore:
-            continue
-        if hasattr(c, "in_bom") and not c.in_bom:
-            continue
-        if hasattr(c, "on_board") and not c.on_board:
-            continue
-        if hasattr(c, "dnp") and c.dnp:
-            continue
         manufacturer = None
         for manufacturerName in manufacturerFields:
             manufacturer = getField(c, manufacturerName)
@@ -88,7 +76,7 @@ def collectBom(components, manufacturerFields, partNumberFields,
             notes,
             solderType
         )
-        bom[cType] = bom.get(cType, []) + [reference]
+        bom[cType] = bom.get(cType, []) + [getReference(c)]
     return bom
 
 def bomToCsv(bomData, filename, nBoards, types):
@@ -146,8 +134,7 @@ def exportPcbway(board, outputdir, assembly, schematic, ignore,
 
     ensureValidSch(schematic)
 
-
-    components = extractComponents(schematic)
+    components = extractComponents(schematic, refsToIgnore, "PCBWAY_IGNORE")
     correctionFields    = [x.strip() for x in corrections.split(",")]
     manufacturerFields  = [x.strip() for x in manufacturer.split(",")]
     partNumberFields    = [x.strip() for x in partnumber.split(",")]
@@ -158,7 +145,7 @@ def exportPcbway(board, outputdir, assembly, schematic, ignore,
     addVirtualToRefsToIgnore(refsToIgnore, loadedBoard)
     bom = collectBom(components, manufacturerFields, partNumberFields,
                      descriptionFields, notesFields, typeFields,
-                     footprintFields, refsToIgnore)
+                     footprintFields)
 
     missingFields = False
     for type, references in bom.items():
