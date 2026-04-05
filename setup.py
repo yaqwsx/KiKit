@@ -64,7 +64,8 @@ setuptools.setup(
         "markdown2>=2.4",
         "pybars3>=0.9",
         "solidpython>=1.1.2",
-        "commentjson>=0.9"
+        "commentjson>=0.9",
+        "voronoi-diagram-for-polygons>=0.1.9",
     ],
     setup_requires=[
         "versioneer"
