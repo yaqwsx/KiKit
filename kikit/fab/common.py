@@ -4,7 +4,7 @@ from enum import Enum
 import re
 from typing import OrderedDict
 from kikit.project import KiCADProject
-from pcbnewTransition import pcbnew, kicad_major
+import pcbnew
 from math import sin, cos, radians
 from kikit.common import *
 from kikit.defs import MODULE_ATTR_T
@@ -13,10 +13,6 @@ from kikit import drc
 from kikit import eeschema, eeschema_v6
 from kikit.text import kikitTextVars
 import sys
-
-if kicad_major() >= 6:
-    from kikit import eeschema_v6 # import getField, getUnit, getReference
-from kikit import eeschema #import getField, getUnit, getReference
 
 # A user can still supply v5 schematics even when we run v6, therefore,
 # we have to load the correct schematics and provide the right getters

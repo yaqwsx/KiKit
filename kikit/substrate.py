@@ -7,7 +7,7 @@ import shapely
 import json
 import numpy as np
 from kikit.intervals import Interval, BoxNeighbors, BoxPartitionLines
-from pcbnewTransition import pcbnew, kicad_major
+import pcbnew
 from enum import IntEnum
 from itertools import product
 
@@ -257,6 +257,20 @@ def shapePolyToShapely(p: pcbnew.SHAPE_POLY_SET) \
     return MultiPolygon(polygons=polygons)
 
 
+def rectToShapely(rect):
+    corners = [tuple(c) for c in rect.GetRectCorners()]
+    try:
+        radius = rect.GetCornerRadius()
+    except AttributeError:
+        # KiCad 9 has no corner radius on rects
+        radius = 0
+    poly = Polygon(corners)
+    if radius == 0:
+        return poly
+    # Shrink-then-grow rounds the corners; unlike manual arc math this
+    # works correctly even when the rect is rotated.
+    return poly.buffer(-radius, join_style='round').buffer(radius, join_style='round')
+
 def toShapely(ring, geometryList):
     """
     Take a list of indices representing a ring from PCB_SHAPE entities and
@@ -274,7 +288,7 @@ def toShapely(ring, geometryList):
                 commonEndPoint(geometryList[idxA], geometryList[idxB]))
         elif shape in [STROKE_T.S_RECT]:
             assert idxA == idxB
-            outline += geometryList[idxA].GetRectCorners()
+            return rectToShapely(geometryList[idxA])
         elif shape in [STROKE_T.S_POLYGON]:
             # Polygons are always closed, so they should appear as stand-alone
             assert len(ring) in [1, 2]
@@ -811,10 +825,7 @@ class Substrate:
         circle.SetShape(STROKE_T.S_CIRCLE)
         circle.SetLayer(Layer.Edge_Cuts)
         circle.SetCenter(toKiCADPoint(c))
-        if kicad_major() >= 8:
-            circle.SetRadius(int(r))
-        else:
-            circle.SetEnd(toKiCADPoint(c + np.array([r, 0])))
+        circle.SetRadius(int(r))
         return circle
 
     def boundingBox(self):

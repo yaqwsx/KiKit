@@ -6,7 +6,7 @@ Generate documentation in markdown format for examples
 
 import sys
 from kikit.doc import runBoardExample, runExampleJoin
-from pcbnewTransition import pcbnew
+import pcbnew
 
 counter = 0
 

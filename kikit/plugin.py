@@ -9,7 +9,7 @@ from typing import Any, Dict, Iterable
 
 from kikit.panelize import Panel
 from kikit.substrate import Substrate
-from pcbnewTransition import pcbnew
+import pcbnew
 from shapely.geometry import LineString
 
 Preset = Dict[str, Dict[str, Any]]

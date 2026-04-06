@@ -1,15 +1,15 @@
 from copy import deepcopy
 import itertools
 import textwrap
-from pcbnewTransition import pcbnew, isV6, kicad_major
+import pcbnew
+from pcbnew import LoadBoard, ToMM, VECTOR2I, BOX2I, EDA_ANGLE
 from kikit import sexpr
 from kikit.common import normalize
+from kikit.pcbnew_utils import resolveItem, setDoNotAllowZoneFills, DIM_UNITS_MODE_MM
 
 from pathlib import Path
 
 from typing import Any, Callable, Dict, Iterable, List, Set, Tuple, Union
-
-from pcbnewTransition.pcbnew import (LoadBoard, ToMM, VECTOR2I, BOX2I, EDA_ANGLE)
 from enum import Enum
 from shapely.geometry import (Polygon, MultiPolygon, Point, LineString, box,
                               GeometryCollection, MultiLineString)
@@ -185,10 +185,7 @@ class NetClass():
         self.nets.add(netname)
 
     def serialize(self) -> Any:
-        data = deepcopy(self.data)
-        if isV6():
-            data["nets"] = list(self.nets)
-        return data
+        return deepcopy(self.data)
 
 def getOriginCoord(origin, bBox):
     """Returns real coordinates (VECTOR2I) of the origin for given bounding box"""
@@ -547,10 +544,7 @@ def bakeTextVars(board: pcbnew.BOARD) -> None:
     for drawing in board.GetDrawings():
         if not isinstance(drawing, pcbnew.PCB_TEXT):
             continue
-        if kicad_major() >= 8:
-            drawing.SetText(drawing.GetShownText(True))
-        else:
-            drawing.SetText(drawing.GetShownText())
+        drawing.SetText(drawing.GetShownText(True))
 
 @dataclass
 class VCutSettings:
@@ -1195,7 +1189,7 @@ class Panel:
             # the attribute must be first removed without changing the
             # orientation of the text.
             for item in (*footprint.GraphicalItems(), footprint.Value(), footprint.Reference()):
-                if isinstance(item, pcbnew.FIELD_TYPE) and item.IsKeepUpright():
+                if isinstance(item, pcbnew.PCB_FIELD) and item.IsKeepUpright():
                     actualOrientation = item.GetDrawRotation()
                     item.SetKeepUpright(False)
                     alteredOrientation = item.GetDrawRotation()
@@ -1248,7 +1242,7 @@ class Panel:
             exclusions = readBoardDrcExclusions(board)
             for drcE in exclusions:
                 try:
-                    newObjects = [self.board.GetItem(pcbnew.KIID(itemMapping[x.m_Uuid.AsString()])) for x in drcE.objects]
+                    newObjects = [resolveItem(self.board, pcbnew.KIID(itemMapping[x.m_Uuid.AsString()])) for x in drcE.objects]
                     assert all(x is not None for x in newObjects)
                     newPosition = doTransformation(drcE.position, rotationAngle, originPoint, translation)
                     self.drcExclusions.append(DrcExclusion(
@@ -2163,7 +2157,7 @@ class Panel:
         zone.SetIsRuleArea(True)
         zone.SetDoNotAllowTracks(noTracks)
         zone.SetDoNotAllowVias(noVias)
-        zone.SetDoNotAllowCopperPour(noCopper)
+        setDoNotAllowZoneFills(zone, noCopper)
 
         zone.SetLayerSet(pcbnew.LSET.AllCuMask(self.copperLayerCount))
 
@@ -2501,7 +2495,7 @@ class Panel:
         hDim.SetStart(toKiCADPoint((minx, miny)))
         hDim.SetEnd(toKiCADPoint((maxx, miny)))
         hDim.SetLayer(layer)
-        hDim.SetUnitsMode(pcbnew.DIM_UNITS_MODE_MM)
+        hDim.SetUnitsMode(DIM_UNITS_MODE_MM)
         hDim.SetSuppressZeroes(True)
         if self.chamferHeight is not None:
             hDim.SetExtensionOffset(-self.chamferHeight)
@@ -2515,7 +2509,7 @@ class Panel:
         vDim.SetStart(toKiCADPoint((minx, miny)))
         vDim.SetEnd(toKiCADPoint((minx, maxy)))
         vDim.SetLayer(layer)
-        vDim.SetUnitsMode(pcbnew.DIM_UNITS_MODE_MM)
+        vDim.SetUnitsMode(DIM_UNITS_MODE_MM)
         vDim.SetSuppressZeroes(True)
         if self.chamferWidth is not None:
             vDim.SetExtensionOffset(-self.chamferWidth)

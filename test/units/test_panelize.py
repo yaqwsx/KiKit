@@ -1,5 +1,5 @@
 import pytest
-from pcbnewTransition.pcbnew import EDA_ANGLE, DEGREES_T
+from pcbnew import EDA_ANGLE, DEGREES_T
 from kikit.common import KiAngle
 from kikit.panelize import (
     GridPlacerBase, BasicGridPosition, OddEvenRowsPosition,

@@ -45,7 +45,7 @@ def run(boardfile, usemm, ignoreexcluded, strict, level):
     """
     from kikit.drc import runImpl
     import sys
-    from pcbnewTransition import pcbnew
+    import pcbnew
     from kikit.common import fakeKiCADGui
     app = fakeKiCADGui()
 

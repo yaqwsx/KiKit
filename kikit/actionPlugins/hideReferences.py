@@ -1,4 +1,4 @@
-from pcbnewTransition import pcbnew
+import pcbnew
 import wx
 import re
 import os

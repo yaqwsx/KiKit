@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Dict, List, Set, Union
 import numpy as np
-from pcbnewTransition import pcbnew
+import pcbnew
 from kikit import units # type: ignore
 
 from kikit.common import fromMm, readParameterList
@@ -16,7 +16,7 @@ def readKiKitProps(footprint):
     Returns a dictionary of key-value pairs.
     """
     for x in footprint.GraphicalItems():
-        if not isinstance(x, pcbnew.FIELD_TYPE) and not isinstance(x, pcbnew.PCB_TEXT):
+        if not isinstance(x, pcbnew.PCB_FIELD) and not isinstance(x, pcbnew.PCB_TEXT):
             continue
         text = x.GetText()
         if text.startswith("KIKIT:"):

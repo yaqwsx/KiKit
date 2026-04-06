@@ -4,9 +4,9 @@ import traceback
 from typing import List, Optional, Tuple, Union, Callable
 from kikit.defs import Layer
 from kikit.typing import Box
-from pcbnewTransition import pcbnew, kicad_major
+import pcbnew
+from pcbnew import BOX2I, VECTOR2I, EDA_ANGLE
 from kikit.intervals import AxialLine
-from pcbnewTransition.pcbnew import BOX2I, VECTOR2I, EDA_ANGLE
 import os
 from itertools import product, chain, islice
 import numpy as np
@@ -44,11 +44,8 @@ def fitsIn(what: Union[BOX2I, VECTOR2I], where: BOX2I) -> bool:
     Return true iff 'what' (BOX2I or VECTOR2I) is fully contained in 'where'
     (BOX2I)
     """
-    if kicad_major() >= 7:
-        assert isinstance(what, (BOX2I, VECTOR2I, pcbnew.wxPoint))
-    else:
-        assert isinstance(what, (BOX2I, VECTOR2I, pcbnew.wxPoint, pcbnew.EDA_RECT))
-    if isinstance(what, VECTOR2I) or isinstance(what, (VECTOR2I, pcbnew.wxPoint)):
+    assert isinstance(what, (BOX2I, VECTOR2I, pcbnew.wxPoint))
+    if isinstance(what, (VECTOR2I, pcbnew.wxPoint)):
         return (what[0] >= where.GetX() and
                 what[0] <= where.GetX() + where.GetWidth() and
                 what[1] >= where.GetY() and

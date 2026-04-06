@@ -2,7 +2,7 @@ from typing import Iterable
 from kikit.panelize import Panel
 from kikit.plugin import CutsPlugin, FiducialsPlugin, FramingPlugin, HookPlugin, LayoutPlugin, TabsPlugin, ToolingPlugin
 from kikit.substrate import Substrate
-from pcbnewTransition import pcbnew
+import pcbnew
 from shapely.geometry import LineString
 
 class MyPlugin(HookPlugin):

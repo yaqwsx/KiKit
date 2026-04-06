@@ -2,7 +2,7 @@ from typing import Union, Optional, Dict, Any
 from pathlib import Path
 from string import Template
 from functools import cached_property
-from pcbnewTransition import pcbnew
+import pcbnew
 import json
 
 

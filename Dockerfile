@@ -1,7 +1,7 @@
 ARG REPO=ubuntu
-FROM $REPO:22.04 AS base
+FROM $REPO:24.04 AS base
 
-ARG KICAD_VERSION="8.0"
+ARG KICAD_VERSION="9.0"
 ARG ADDITIONAL_PACKAGES
 ARG ADDITIONAL_PYTHON_PACKAGES
 
@@ -14,7 +14,7 @@ RUN apt-get update && \
 
 RUN add-apt-repository --yes ppa:kicad/kicad-$KICAD_VERSION-releases
 
-# Setup ENV variables for KiCAD 7 & 8
+# Setup ENV variables for KiCAD 9 & 10
 # See https://gitlab.com/kicad/packaging/kicad-ubuntu-builder/kicad-daily-package/-/issues/43
 ENV PYTHONPATH=/usr/lib/kicad/lib/python3/dist-packages:${PYTHONPATH} \
     LD_LIBRARY_PATH=/usr/lib/kicad/lib/x86_64-linux-gnu/:${LD_LIBRARY_PATH}
@@ -49,8 +49,8 @@ RUN python3 setup.py install
 # and ignores the src directories
 FROM base
 COPY --from=build \
-    /usr/local/lib/python3.10/dist-packages \
-    /usr/local/lib/python3.10/dist-packages
+    /usr/local/lib/python3.12/dist-packages \
+    /usr/local/lib/python3.12/dist-packages
 COPY --from=build \
     /usr/local/bin \
     /usr/local/bin

@@ -1,4 +1,4 @@
-from pcbnewTransition import pcbnew
+import pcbnew
 import numpy as np
 import json
 from collections import OrderedDict

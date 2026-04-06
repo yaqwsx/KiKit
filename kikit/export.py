@@ -1,8 +1,9 @@
 # Based on https://github.com/KiCad/kicad-source-mirror/blob/master/demos/python_scripts_examples/gen_gerber_and_drill_files_board.py
 import sys
 import os
-from pcbnewTransition import pcbnew
-from pcbnewTransition.pcbnew import *
+import pcbnew
+from pcbnew import *
+from kikit.pcbnew_utils import DXF_UNITS_MM
 
 from kikit.defs import Layer
 

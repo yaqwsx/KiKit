@@ -8,10 +8,10 @@ on:
 jobs:
   test:
     name: "Run KiKit tests"
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
-        kicad-version: [v8, v9, v9-testing]
+        kicad-version: [v9, v10, v10-testing]
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-kicad
@@ -38,7 +38,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-kicad
         with:
-          kicad-version: v8
+          kicad-version: v9
       - name: Build PCM package
         run: make pcm
       - name: Upload kikit-pcm package artifact
@@ -61,32 +61,32 @@ jobs:
     strategy:
       matrix:
         build-config:
-          - name: x64
-            suffix: "-v7"
+          - name: "x64 v9"
+            suffix: "-v9"
             platform: linux/amd64
             repo: ubuntu
-            kicad_version: "7.0"
+            kicad_version: "9.0"
             additional_packages: ""
             additional_python_packages: ""
-          - name: "m1"
-            suffix: -m1
+          - name: "m1 v9"
+            suffix: -m1-v9
             platform: linux/arm64/v8
             repo: arm64v8/ubuntu
-            kicad_version: "7.0"
+            kicad_version: "9.0"
             additional_packages: gcc-aarch64-linux-gnu libgeos-dev
             additional_python_packages: python3-dev
-          - name: "x64 v8"
-            suffix: "-v8"
+          - name: "x64 v10"
+            suffix: "-v10"
             platform: linux/amd64
             repo: ubuntu
-            kicad_version: "8.0"
+            kicad_version: "10.0"
             additional_packages: ""
             additional_python_packages: ""
-          - name: "m1 v8"
-            suffix: -m1-v8
+          - name: "m1 v10"
+            suffix: -m1-v10
             platform: linux/arm64/v8
             repo: arm64v8/ubuntu
-            kicad_version: "8.0"
+            kicad_version: "10.0"
             additional_packages: gcc-aarch64-linux-gnu libgeos-dev
             additional_python_packages: python3-dev
     steps:

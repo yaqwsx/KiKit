@@ -1,5 +1,5 @@
 
-from pcbnewTransition import KICAD_VERSION, kicad_major
+from kikit.pcbnew_utils import KICAD_VERSION
 from kikit.common import KIKIT_LIB
 import sys
 import click
@@ -16,10 +16,7 @@ def drcapi():
     """
     Return version of the DRC API
     """
-    if kicad_major() >= 6:
-        print("1")
-    else:
-        print("0")
+    print("1")
 
 @click.command()
 def lib():

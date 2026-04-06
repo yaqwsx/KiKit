@@ -1,6 +1,6 @@
 import re
 import math
-from pcbnewTransition import pcbnew
+import pcbnew
 from copy import deepcopy
 
 class UnitError(RuntimeError):

@@ -1,5 +1,5 @@
 import pytest
-from pcbnewTransition.pcbnew import FromMM, FromMils
+from pcbnew import FromMM, FromMils
 from kikit.units import readLength, readAngle, UnitError
 from copy import deepcopy
 

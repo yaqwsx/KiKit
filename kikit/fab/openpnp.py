@@ -1,7 +1,7 @@
 import datetime
 from pathlib import Path
 
-from pcbnewTransition import pcbnew
+import pcbnew
 
 import kikit
 

@@ -238,17 +238,17 @@ def doPanelization(input, output, preset, plugins=[]):
     """
     from kikit import panelize_ui_impl as ki
     from kikit.panelize import Panel, NonFatalErrors, PanelError
-    from pcbnewTransition.transition import pcbnew
-    from pcbnewTransition.pcbnew import LoadBoard
+    import pcbnew
+    from pcbnew import LoadBoard
     from itertools import chain
 
-    if preset["debug"]["deterministic"]:
-        pcbnew.KIID.SeedGenerator(42)
     if preset["debug"]["drawtabfail"]:
         import kikit.substrate
         kikit.substrate.TABFAIL_VISUAL = True
 
     board = LoadBoard(input)
+    if preset["debug"]["deterministic"]:
+        pcbnew.KIID.SeedGenerator(42)
     if board is None:
         raise PanelError(f"Cannot load board {input}. Check if the path is correct or if you have permissions to read it.")
     panel = Panel(output)
@@ -342,17 +342,16 @@ def separate(input, output, source, page, debug, keepannotations, preservearcs):
         from kikit import panelize_ui_impl as ki
         from kikit.panelize import Panel, NonFatalErrors
         from kikit.units import mm
-        from pcbnewTransition import pcbnew
-        from pcbnewTransition.pcbnew import LoadBoard, VECTOR2I
+        import pcbnew
+        from pcbnew import LoadBoard, VECTOR2I
         from kikit.common import fakeKiCADGui
         app = fakeKiCADGui()
 
         preset = ki.obtainPreset([], validate=False, source=source, page=page, debug=debug)
 
+        board = LoadBoard(input)
         if preset["debug"]["deterministic"]:
             pcbnew.KIID.SeedGenerator(42)
-
-        board = LoadBoard(input)
         sourceArea = ki.readSourceArea(preset["source"], board)
 
         panel = Panel(output)

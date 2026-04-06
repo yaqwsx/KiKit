@@ -1,4 +1,4 @@
-from pcbnewTransition import pcbnew
+import pcbnew
 import os
 import shutil
 from pathlib import Path
