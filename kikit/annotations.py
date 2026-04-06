@@ -27,12 +27,13 @@ class KiKitAnnotation:
     pass
 
 class TabAnnotation(KiKitAnnotation):
-    def __init__(self, ref, origin, direction, width, maxLength=fromMm(100)):
+    def __init__(self, ref, origin, direction, width, maxLength=fromMm(100), props={}):
         self.ref = ref
         self.origin = origin
         self.direction = direction
         self.width = width
         self.maxLength = maxLength
+        self.props = props
 
     @staticmethod
     def fromFootprint(footprint):
@@ -43,7 +44,7 @@ class TabAnnotation(KiKitAnnotation):
         if "width" not in props:
             raise ValueError("Tab annotation must a KiKit annotation text with 'width' property defined")
         width = units.readLength(props["width"])
-        return TabAnnotation(footprint.GetReference(), origin, direction, width)
+        return TabAnnotation(footprint.GetReference(), origin, direction, width, props=props)
 
 class AnnotationReader:
     """
