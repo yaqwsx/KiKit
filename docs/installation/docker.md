@@ -53,18 +53,15 @@ docker run -v $(pwd):/kikit yaqwsx/kikit:nightly --version
 
 We provide the following containers:
 
-- **latests**: The latest stable version of KiKit with the newest stable KiCAD.
+- **latest**: The latest stable version of KiKit with the newest stable KiCAD.
 - **vX.Y.Z-KiCADvA**: A container with particular version of KiKit backed by
   given version of KiCAD.
-- **nightly**, **nightly-m1**: Daily build of KiKit from the upstream version
-  with the newest KiCAD. The m1 flavour supports mac M1.
+- **nightly-v9**, **nightly-v10**: Daily build of KiKit from the upstream version
+  with the corresponding KiCAD version (v9 or v10).
+- **nightly-m1-v9**, **nightly-m1-v10**: Same as above, but for Mac M1 (ARM).
 
 A full list is available on
 [Dockerhub](https://hub.docker.com/r/yaqwsx/kikit/tags).
-
-## Mac M1 containers
-
-There are also nightly containers of Mac M1 available with tag `nightly-m1`.
 
 If you want to use Makefile for your projects, the preferable way is to invoke
 `make` inside the container. The Docker image contains several often used tools

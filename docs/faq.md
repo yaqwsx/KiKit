@@ -100,5 +100,4 @@ guide](installation/intro.md).
 ## How do I run KiKit with KiCAD nightly?
 
 See section "Choosing KiCAD version" in [the installation
-guide](installation/intro.md). However, at the moment KiKit is incompatible with KiCAD
-6.99.
+guide](installation/intro.md). KiKit requires KiCAD v9 or newer.
