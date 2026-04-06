@@ -91,6 +91,7 @@ def transplateBoard(source, target, update=lambda x: None):
     update(RENDER_MSG)
     d = target.GetDesignSettings()
     d.CloneFrom(source.GetDesignSettings())
+    target.SetEnabledLayers(source.GetEnabledLayers())
 
 
 
@@ -100,6 +101,10 @@ def drawTemporaryNotification(board, sourceFilename):
     except Exception:
         # If the output is empty...
         bbox = pcbnew.BOX2I(pcbnew.VECTOR2I(0, 0), pcbnew.VECTOR2I(0, 0))
+
+    lset = board.GetEnabledLayers()
+    lset.AddLayer(pcbnew.Margin)
+    board.SetEnabledLayers(lset)
 
     text = pcbnew.PCB_TEXT(board)
     text.SetLayer(pcbnew.Margin)

@@ -1149,6 +1149,7 @@ class Panel:
                                  f"thickness ({toMm(thickness)} mm) differs from " \
                                  f"thickness of the panel ({toMm(panelThickness)}) mm")
         self.inheritCopperLayers(board)
+        self.inheritEnabledLayers(board)
 
         if not sourceArea:
             sourceArea = findBoardBoundingBox(board)
@@ -1310,6 +1311,7 @@ class Panel:
 
     def _setVCutSegmentStyle(self, segment):
         segment.SetShape(STROKE_T.S_SEGMENT)
+        self._ensureLayerEnabled(self.vCutSettings.layer)
         segment.SetLayer(self.vCutSettings.layer)
         segment.SetWidth(self.vCutSettings.lineWidth)
 
@@ -1321,6 +1323,7 @@ class Panel:
             "pos_inv_inch": f"{(origin - position) / inch:.3f} mm",
         }
         label.SetText(self.vCutSettings.textTemplate.format(**variables))
+        self._ensureLayerEnabled(self.vCutSettings.layer)
         label.SetLayer(self.vCutSettings.layer)
         label.SetTextThickness(self.vCutSettings.textThickness)
         label.SetTextSize(toKiCADPoint((self.vCutSettings.textSize, self.vCutSettings.textSize)))
@@ -2066,6 +2069,27 @@ class Panel:
             name = board.GetLayerName(layer)
             self.board.SetLayerName(layer, name)
 
+    def inheritEnabledLayers(self, board):
+        """
+        Extend the panel's enabled layer set to include all layers enabled in
+        the given source board, so the panel never has fewer enabled layers
+        than any of its sources.
+        """
+        lset = self.board.GetEnabledLayers()
+        lset.addLayerSet(board.GetEnabledLayers())
+        self.board.SetEnabledLayers(lset)
+
+    def _ensureLayerEnabled(self, layer):
+        """
+        Enable the given layer on the panel board if it is not already enabled.
+        Called before placing any KiKit-generated item on a layer so that the
+        layer is always visible after save.
+        """
+        lset = self.board.GetEnabledLayers()
+        if not lset.Contains(layer):
+            lset.AddLayer(layer)
+            self.board.SetEnabledLayers(lset)
+
     def inheritCopperLayers(self, board):
         """
         Update the panel's layer count to match the design being panelized.
@@ -2125,8 +2149,7 @@ class Panel:
             zoneContainer.SetAssignedPriority(0)
 
             for l in layers:
-                if not self.board.GetEnabledLayers().Contains(l):
-                    continue
+                self._ensureLayerEnabled(l)
                 zoneContainer = zoneContainer.Duplicate()
                 zoneContainer.SetLayer(l)
                 self.board.Add(zoneContainer)
@@ -2182,6 +2205,7 @@ class Panel:
         textObject.SetHorizJustify(hJustify)
         textObject.SetVertJustify(vJustify)
         textObject.SetTextAngle(orientation)
+        self._ensureLayerEnabled(layer)
         textObject.SetLayer(layer)
         textObject.SetMirrored(isBottomLayer(layer))
         self.board.Add(textObject)
@@ -2260,6 +2284,7 @@ class Panel:
         """
         segment = pcbnew.PCB_SHAPE()
         segment.SetShape(STROKE_T.S_SEGMENT)
+        self._ensureLayerEnabled(layer)
         segment.SetLayer(layer)
         segment.SetWidth(thickness)
         segment.SetStart(toKiCADPoint((start[0], start[1])))
@@ -2488,6 +2513,8 @@ class Panel:
         Add vertial and horizontal dimensions to the panel
         """
         minx, miny, maxx, maxy = self.panelBBox()
+
+        self._ensureLayerEnabled(layer)
 
         hDim = pcbnew.PCB_DIM_ORTHOGONAL(self.board)
         hDim.SetOrientation(pcbnew.PCB_DIM_ORTHOGONAL.DIR_HORIZONTAL)
