@@ -23,7 +23,7 @@ except ImportError:
         message = "No Pcbnew Python module found.\n" + \
                   "Please make sure that you use KiCAD command prompt, " + \
                   "not the standard Command Prompt or Power Shell\n" + \
-                  "See https://github.com/yaqwsx/KiKit/blob/master/doc/installation.md#installation-on-windows"
+                  "See https://yaqwsx.github.io/KiKit/latest/installation/windows/."
     else:
         message = "No Pcbnew Python module found for the current Python interpreter.\n" + \
                   "First, make sure that KiCAD is actually installed\n." + \
@@ -33,8 +33,7 @@ except ImportError:
     sys.stderr.write(
         delimiter + f"** Cannot install KiKit**\n{message}\n" + delimiter)
     raise RuntimeError("Cannot install KiKit, see error message above") from None
-except AttributeError:
-    raise RuntimeError("KiCAD v5 is no longer supported for KiKit. Version v1.0.x is the last one that supports KiCAD 5.")
+
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
