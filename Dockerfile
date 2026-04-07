@@ -29,7 +29,7 @@ RUN export DEBIAN_FRONTEND="noninteractive" && apt-get -qq update && \
 # hack: manually install Python dependencies to speed up the build process
 # for repetitive builds
 
-RUN pip3 install \
+RUN pip3 install --break-system-packages \
     "Pcbdraw ~= 1.0" \
     "numpy ~= 1.21.5" \
     "shapely ~= 1.7" \
@@ -43,7 +43,7 @@ FROM base AS build
 
 COPY . /src/kikit
 WORKDIR /src/kikit
-RUN python3 setup.py install
+RUN pip3 install --break-system-packages .
 
 # the final stage only takes the installed packages from dist-packages
 # and ignores the src directories
