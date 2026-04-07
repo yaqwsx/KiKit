@@ -22,7 +22,8 @@ ENV PYTHONPATH=/usr/lib/kicad/lib/python3/dist-packages:${PYTHONPATH} \
 RUN export DEBIAN_FRONTEND="noninteractive" && apt-get -qq update && \
     apt-get -qq install -y --no-install-recommends \
       kicad kicad-libraries zip inkscape make git libmagickwand-dev \
-      python3 $ADDITIONAL_PYTHON_PACKAGES python3-pip python3-wheel python3-setuptools inkscape \
+      python3 $ADDITIONAL_PYTHON_PACKAGES python3-pip python3-wheel \
+      python3-setuptools python3-dev build-essential \
       libgraphicsmagick1-dev libmagickcore-dev openscad && \
       rm -rf /var/lib/apt/lists/*
 
@@ -30,7 +31,6 @@ RUN export DEBIAN_FRONTEND="noninteractive" && apt-get -qq update && \
 # for repetitive builds
 
 RUN pip3 install --break-system-packages \
-    "Pcbdraw ~= 1.0" \
     "numpy" \
     "shapely >= 2.0.3" \
     "click >= 7.1" \
