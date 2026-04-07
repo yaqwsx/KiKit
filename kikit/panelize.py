@@ -346,6 +346,8 @@ def renameNets(board, renamer):
     remapNets(board.GetPads(), newNetMapping)
     remapNets(board.GetTracks(), newNetMapping)
     remapNets(board.Zones(), newNetMapping)
+    remapNets((d for d in board.GetDrawings()
+               if hasattr(d, "GetNetname") and d.GetNetname() in newNetMapping), newNetMapping)
 
     for name in originalNetNames:
         if name != "" and name not in newNames:
