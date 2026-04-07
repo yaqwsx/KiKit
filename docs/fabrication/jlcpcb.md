@@ -43,9 +43,8 @@ board and the original schematics of a single board.
 
 ## Correction of the Footprint Position
 
-It is possible that orientation footprints in your SMD does not match the
-orientation of the components in the SMD assembly service. There are two
-solutions:
+It is possible that the orientation of footprints in your design does not match
+the orientation expected by the SMD assembly service. There are two solutions:
 
 - correct the orientation in the library or
 - apply KiKit's orientation corrections.
@@ -55,12 +54,26 @@ libraries or you are preparing a board for multiple fabrication houses and each
 of them uses a different orientation.
 
 KiKit allows you to specify the origin and orientation correction of the
-position. The correction is specified by `JLCPCB_CORRECTION` field. The field
-value is a semicolon separated tuple: `<X>; <Y>; <Rotation>` with values in
-millimeters and degrees. You can read the XY corrections by hovering cursor over
-the intended origin in footprint editor and mark the coordinates. Note that
-first the rotation correction is applied, then the translation. Usually, you
-will need only the rotation correction.
+position. Add `JLCPCB_CORRECTION` as a custom field on the **symbol in your
+schematic**. The value will be read from the BOM data that KiKit extracts via the
+`--schematic` option.
+
+The field value is a semicolon separated tuple: `<X>;<Y>;<Rotation>` with values
+in millimeters and degrees. **Rotation values are counterclockwise in degrees.**
+For example, to rotate a component 90° clockwise, use `270` (or equivalently
+`-90`). A value of `90` rotates 90° counterclockwise.
+
+The X and Y correction values are in the **footprint's local coordinate system**
+(relative to its current orientation on the board), not the board's global
+coordinates. KiKit rotates the correction vector by the footprint's placement
+angle before applying it. You can read the XY corrections by hovering cursor
+over the intended origin in footprint editor and mark the coordinates. Usually,
+you will need only the rotation correction.
+
+**Example:** A component appears rotated 90° clockwise from what it should be
+after JLCPCB assembly. To fix this, set `JLCPCB_CORRECTION` to `0;0;90`. This
+applies a 90° counterclockwise correction, cancelling out the error. If the
+component also needs a 1 mm X offset in its local frame, use `1;0;90`.
 
 ## Using Corrections to Configure Jumpers
 
