@@ -31,12 +31,13 @@ RUN export DEBIAN_FRONTEND="noninteractive" && apt-get -qq update && \
 
 RUN pip3 install --break-system-packages \
     "Pcbdraw ~= 1.0" \
-    "numpy ~= 1.21.5" \
-    "shapely ~= 1.7" \
-    "click ~= 7.1" \
-    "markdown2 ~= 2.4" \
-    "pybars3 ~= 0.9" \
-    "solidpython ~= 1.1"
+    "numpy" \
+    "shapely >= 2.0.3" \
+    "click >= 7.1" \
+    "markdown2 >= 2.4" \
+    "pybars3 >= 0.9" \
+    "solidpython >= 1.1.2" \
+    "commentjson >= 0.9"
 
 # create a new stage for building and installing KiKit
 FROM base AS build
