@@ -13,7 +13,7 @@ jobs:
       matrix:
         kicad-version: [v9, v10, v10-testing]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-kicad
         with:
           kicad-version: ${{ matrix.kicad-version }}
@@ -35,20 +35,20 @@ jobs:
     runs-on: ubuntu-24.04
     needs: test
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-kicad
         with:
           kicad-version: v9
       - name: Build PCM package
         run: make pcm
       - name: Upload kikit-pcm package artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: kikit-pcm
           path: build/pcm-kikit
           retention-days: 7
       - name: Upload kikit-lib-pcm package artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: kikit-lib-pcm
           path: build/pcm-kikit-lib
@@ -90,21 +90,21 @@ jobs:
             additional_packages: gcc-aarch64-linux-gnu libgeos-dev
             additional_python_packages: python3-dev
     steps:
-      - uses: actions/checkout@v4 # Required for kikit version estimation
+      - uses: actions/checkout@v6 # Required for kikit version estimation
         with:
           fetch-depth: 0 # = fetch all
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
       - name: Login to DockerHub
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build and push
         id: docker_build
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: . # We need path context, so .git gets included
           push: true
