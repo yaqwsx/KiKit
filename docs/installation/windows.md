@@ -20,7 +20,7 @@ Then you have to enter the following command to install it:
 pip install kikit
 ```
 
-Now you can test that it works:
+After closing and re-opening "KiCAD Command Prompt", now you can test that it works:
 
 ```.bash
 kikit --help
