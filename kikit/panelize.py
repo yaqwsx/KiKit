@@ -1157,7 +1157,10 @@ class Panel:
             sourceArea = findBoardBoundingBox(board)
         elif shrink:
             sourceArea = findBoardBoundingBox(board, sourceArea)
-        enlargedSourceArea = expandRect(sourceArea, tolerance)
+        edgeMaxWidth = max(
+            (e.GetWidth() for e in collectEdges(board, Layer.Edge_Cuts)),
+            default=0)
+        enlargedSourceArea = expandRect(sourceArea, tolerance + edgeMaxWidth)
         originPoint = getOriginCoord(origin, sourceArea)
         translation = VECTOR2I(destination[0] - originPoint[0],
                               destination[1] - originPoint[1])
@@ -1274,9 +1277,13 @@ class Panel:
 
     def appendSubstrate(self, substrate: ToPolygonGeometry) -> None:
         """
-        Append a piece of substrate or a list of pieces to the panel. Substrate
-        can be either BOX2I or Shapely polygon. Newly appended corners can be
-        rounded by specifying non-zero filletRadius.
+        Append a piece of substrate to the panel's merged boardSubstrate.
+        Substrate can be either BOX2I or Shapely polygon.
+
+        Note: this only adds material to boardSubstrate (the panel outline).
+        It does not add to the substrates list used for partition lines and
+        tab generation. To influence tab placement, pass the substrate as a
+        boundary substrate to buildPartitionLineFromBB instead.
         """
         polygon = toPolygon(substrate)
         self.boardSubstrate.union(polygon)
@@ -1591,37 +1598,67 @@ class Panel:
         self.appendSubstrate(frameBody)
 
     def makeRailsTb(self, thickness: KiLength, minHeight: KiLength = 0,
-                    maxHeight: Optional[KiLength] = None) -> None:
+                    maxHeight: Optional[KiLength] = None,
+                    vspace: Optional[KiLength] = None) -> None:
         """
         Adds a rail to top and bottom. You can specify minimal height the panel
         has to feature. You can also specify maximal height of the panel. If the
         height would be exceeded, error is set.
+
+        If vspace is specified, the rails are placed at exact vspace distance
+        from the board bounding box (using boardsBBox). If vspace is None, the
+        rails are placed flush against the panel bounding box (legacy behavior).
         """
-        minx, miny, maxx, maxy = self.panelBBox()
-        height = maxy - miny + 2 * thickness
-        if maxHeight is not None and height > maxHeight:
-            self.reportError(toKiCADPoint((maxx, maxy)), f"Panel height {height / units.mm} mm exceeds the limit {maxHeight / units.mm} mm")
-        if height < minHeight:
-            thickness = (minHeight - maxy + miny) // 2
-        topRail = box(minx, maxy, maxx, maxy + thickness)
-        bottomRail = box(minx, miny, maxx, miny - thickness)
+        if vspace is not None:
+            minx, miny, maxx, maxy = self.boardsBBox()
+            height = maxy - miny + 2 * (thickness + vspace)
+            if maxHeight is not None and height > maxHeight:
+                self.reportError(toKiCADPoint((maxx, maxy)), f"Panel height {height / units.mm} mm exceeds the limit {maxHeight / units.mm} mm")
+            if height < minHeight:
+                thickness = (minHeight - maxy + miny) // 2 - vspace
+            topRail = box(minx, maxy + vspace, maxx, maxy + vspace + thickness)
+            bottomRail = box(minx, miny - vspace, maxx, miny - vspace - thickness)
+        else:
+            minx, miny, maxx, maxy = self.panelBBox()
+            height = maxy - miny + 2 * thickness
+            if maxHeight is not None and height > maxHeight:
+                self.reportError(toKiCADPoint((maxx, maxy)), f"Panel height {height / units.mm} mm exceeds the limit {maxHeight / units.mm} mm")
+            if height < minHeight:
+                thickness = (minHeight - maxy + miny) // 2
+            topRail = box(minx, maxy, maxx, maxy + thickness)
+            bottomRail = box(minx, miny, maxx, miny - thickness)
         self.appendSubstrate(topRail)
         self.appendSubstrate(bottomRail)
 
     def makeRailsLr(self, thickness: KiLength, minWidth: KiLength = 0,
-                    maxWidth: Optional[KiLength] = None) -> None:
+                    maxWidth: Optional[KiLength] = None,
+                    hspace: Optional[KiLength] = None) -> None:
         """
         Adds a rail to left and right. You can specify minimal width the panel
         has to feature.
+
+        If hspace is specified, the rails are placed at exact hspace distance
+        from the board bounding box (using boardsBBox). If hspace is None, the
+        rails are placed flush against the panel bounding box (legacy behavior).
         """
-        minx, miny, maxx, maxy = self.panelBBox()
-        width = maxx - minx + 2 * thickness
-        if maxWidth is not None and width > maxWidth:
-            self.reportError(toKiCADPoint((maxx, maxy)), f"Panel width {width / units.mm} mm exceeds the limit {maxWidth / units.mm} mm")
-        if width < minWidth:
-            thickness = (minWidth - maxx + minx) // 2
-        leftRail = box(minx - thickness, miny, minx, maxy)
-        rightRail = box(maxx, miny, maxx + thickness, maxy)
+        if hspace is not None:
+            minx, miny, maxx, maxy = self.boardsBBox()
+            width = maxx - minx + 2 * (thickness + hspace)
+            if maxWidth is not None and width > maxWidth:
+                self.reportError(toKiCADPoint((maxx, maxy)), f"Panel width {width / units.mm} mm exceeds the limit {maxWidth / units.mm} mm")
+            if width < minWidth:
+                thickness = (minWidth - maxx + minx) // 2 - hspace
+            leftRail = box(minx - hspace - thickness, miny, minx - hspace, maxy)
+            rightRail = box(maxx + hspace, miny, maxx + hspace + thickness, maxy)
+        else:
+            minx, miny, maxx, maxy = self.panelBBox()
+            width = maxx - minx + 2 * thickness
+            if maxWidth is not None and width > maxWidth:
+                self.reportError(toKiCADPoint((maxx, maxy)), f"Panel width {width / units.mm} mm exceeds the limit {maxWidth / units.mm} mm")
+            if width < minWidth:
+                thickness = (minWidth - maxx + minx) // 2
+            leftRail = box(minx - thickness, miny, minx, maxy)
+            rightRail = box(maxx, miny, maxx + thickness, maxy)
         self.appendSubstrate(leftRail)
         self.appendSubstrate(rightRail)
 
@@ -2269,10 +2306,14 @@ class Panel:
 
     def buildPartitionLineFromBB(self, boundarySubstrates=[], safeMargin=0):
         """
-        Builds partition & backbone line from bounding boxes of the substrates.
-        You can optionally pass extra substrates (e.g., for frame). Without
-        these extra substrates no partition line would be generated on the side
-        where the boundary is, therefore, there won't be any tabs.
+        Builds partition & backbone line from bounding boxes of the individual
+        board substrates (self.substrates), not from boardSubstrate.
+
+        You can optionally pass extra boundarySubstrates — "ghost" substrates
+        representing future framing or rails. These are used only for partition
+        line computation and are not added to the panel. Without them, no
+        partition line is generated on the panel boundary sides, so no tabs
+        will be placed there.
         """
         partition = substrate.SubstratePartitionLines(
             self.substrates, boundarySubstrates,
