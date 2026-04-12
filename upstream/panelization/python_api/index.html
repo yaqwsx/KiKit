@@ -1170,6 +1170,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Basic Concepts">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#substrate-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Substrate Terminology
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2650,6 +2667,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Basic Concepts">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#substrate-terminology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Substrate Terminology
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -3714,6 +3748,34 @@ is <code>pcbnew.BOARD</code> without outlines. The outlines are held separately 
 <code>shapely.MultiPolygon</code> so we can easily merge pieces of a substrate, add cuts
 and export it back to <code>pcbnew.BOARD</code>. This is all handled by the class
 <code>kikit.substrate.Substrate</code>.</p>
+<h3 id="substrate-terminology">Substrate Terminology</h3>
+<p>KiKit uses the term "substrate" to mean a piece of PCB material. However, the
+<code>Panel</code> class tracks two different kinds of substrates that serve different
+purposes:</p>
+<ul>
+<li>
+<p><strong><code>boardSubstrate</code></strong> (<code>Substrate</code>): The single, merged substrate of the
+  <strong>entire panel</strong>. Every piece of material — boards, rails, frame, tabs — gets
+  merged into this one object. This is what becomes the final panel outline.
+  Methods like <code>appendSubstrate()</code>, <code>makeFrame()</code>, and <code>makeRailsTb()</code> all add
+  material here.</p>
+</li>
+<li>
+<p><strong><code>substrates</code></strong> (<code>list[Substrate]</code>): A list of substrates representing the
+  <strong>individual source boards</strong> placed via <code>appendBoard()</code>. These are used to
+  compute partition lines, generate tab annotations, and perform per-board
+  operations like copper filling. Rails, frames, and manually appended substrate
+  pieces are <strong>not</strong> included in this list.</p>
+</li>
+</ul>
+<p>This distinction matters when generating tabs. The partition line algorithm
+(<code>buildPartitionLineFromBB</code>) operates on the per-board <code>substrates</code> list, not on
+<code>boardSubstrate</code>. If you manually add a rail or frame via <code>appendSubstrate()</code>,
+it will appear in the panel material but will <strong>not</strong> affect partition line
+generation. To account for future framing when computing partition lines, pass
+boundary substrates (sometimes called "ghost substrates") to
+<code>buildPartitionLineFromBB</code> via its <code>boundarySubstrates</code> parameter. See
+<a href="../tabs/">understanding tabs</a> for more details.</p>
 <h2 id="tabs">Tabs</h2>
 <p>There are two ways to create tabs: generate a piece of a substrate by hand, or
 use tab generator.</p>
@@ -3755,10 +3817,12 @@ include components sticking out of the board outline, you can specify tolerance
 <h2 id="panel-class">Panel class</h2>
 <p>This class has the following relevant members:
 - <code>board</code> - <code>pcbnew.BOARD</code> of the panel. Does not contain any edges.
-- <code>substrates</code> - <code>kikit.substrate.Substrate</code> - individual substrates appended
-  via <code>None</code>. You can use them to get the
-  original outline (and e.g., generate tabs accroding to it).
-- <code>boardSubstrate</code> - <code>kikit.substrate.Substrate</code> of the whole panel.
+- <code>substrates</code> - <code>list[kikit.substrate.Substrate]</code> - individual substrates of
+  boards appended via <code>appendBoard()</code>. You can use them to get each board's
+  original outline (and e.g., generate tabs according to it). Note: substrates
+  added via <code>appendSubstrate()</code> are <strong>not</strong> included in this list.
+- <code>boardSubstrate</code> - <code>kikit.substrate.Substrate</code> - the merged substrate of the
+  whole panel, including all boards, rails, frame, and tabs.
 - <code>backboneLines</code> - a list of lines representing backbone candidates. Read more
   about it in <a href="../tabs/">understanding tabs</a>.</p>
 <h4 id="addcornerchamfers"><code>addCornerChamfers</code></h4>
@@ -3877,9 +3941,13 @@ destination and the extracted substrate of the board.</p>
 <h4 id="appendsubstrate"><code>appendSubstrate</code></h4>
 <p><div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>appendSubstrate(self, substrate)
 </code></pre></div>
-Append a piece of substrate or a list of pieces to the panel. Substrate
-can be either BOX2I or Shapely polygon. Newly appended corners can be
-rounded by specifying non-zero filletRadius.</p>
+Append a piece of substrate to the panel's merged <code>boardSubstrate</code>.
+Substrate can be either BOX2I or Shapely polygon.</p>
+<p><strong>Note:</strong> This method only adds material to the panel outline
+(<code>boardSubstrate</code>). It does <strong>not</strong> add to the <code>substrates</code> list used for
+partition lines and tab generation. If you need the added material to
+influence tab placement, pass it as a boundary substrate to
+<code>buildPartitionLineFromBB</code> instead.</p>
 <h4 id="apply"><code>apply</code></h4>
 <p><div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>apply(self, feature)
 </code></pre></div>
@@ -3899,10 +3967,17 @@ outline. Expects there is a valid partition line.</p>
 <h4 id="buildpartitionlinefrombb"><code>buildPartitionLineFromBB</code></h4>
 <p><div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>buildPartitionLineFromBB(self, boundarySubstrates=[], safeMargin=0)
 </code></pre></div>
-Builds partition &amp; backbone line from bounding boxes of the substrates.
-You can optionally pass extra substrates (e.g., for frame). Without
-these extra substrates no partition line would be generated on the side
-where the boundary is, therefore, there won't be any tabs.</p>
+Builds partition &amp; backbone line from bounding boxes of the individual
+board substrates (i.e., from <code>Panel.substrates</code>, not <code>boardSubstrate</code>).</p>
+<p>You can optionally pass extra <code>boundarySubstrates</code> — these are "ghost"
+substrates that represent future framing or rails that haven't been added
+yet. They are used only for partition line computation and are not added
+to the panel. Without these extra substrates, no partition line would be
+generated on the panel boundary sides, and therefore no tabs would be
+placed there.</p>
+<p>To create a boundary substrate, build a <code>Substrate</code> from a Shapely
+polygon (e.g., using <code>shapely.geometry.box()</code> and
+<code>kikit.substrate.Substrate.fromPolygon()</code>).</p>
 <h4 id="buildtabannotationscorners"><code>buildTabAnnotationsCorners</code></h4>
 <p><div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>buildTabAnnotationsCorners(self, width)
 </code></pre></div>
