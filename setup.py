@@ -8,7 +8,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="KiKit",
+    name="kikit",
     python_requires='>=3.7',
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass(),
