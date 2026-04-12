@@ -1,11 +1,11 @@
 # How are tabs in KiKit created?
 
-When you place multiple PCB into the panel, KiKit expects you to generate a
-so-called partition line for each individual PCB. Partition line is an oriented
-(poly)line that partitions the free space between the PCBs. It gives you the
-information "this part of the free space belongs to this PCB substrate and this
-PCB is responsible for placing tabs in that space". So for a regular input
-the partition line can look like this:
+When you place multiple PCBs into the panel via `appendBoard()`, KiKit expects
+you to generate a so-called partition line for each individual board. The
+partition line is an oriented (poly)line that partitions the free space between
+the boards. It gives you the information "this part of the free space belongs to
+this board and this board is responsible for placing tabs in that space". So for
+a regular input the partition line can look like this:
 
 ![partition1](../resources/partition1.svg)
 
@@ -17,12 +17,21 @@ Note several facts:
 - partition line is used for backbone generator
 - partition line is not generated automatically, it is up to the user to
   generate it. KiKit offers `Panel.buildPartitionLineFromBB` that builds the
-  partition line based on bounding boxes. If you need possibly a more
-  complicated lines, you have to implement them by yourself.
+  partition line based on bounding boxes of the individual boards (from
+  `Panel.substrates`). If you need possibly more complicated lines, you have to
+  implement them by yourself.
 - partition line is used for deciding if an annotation yields a tab or not - if
   the tab does not hit the partition line, it is not created.
 - when we create partition line from bounding boxes, we include "ghost
-  substrates" representing the framing, that will be added in the future.
+  substrates" (passed as `boundarySubstrates`) representing framing or rails
+  that will be added in the future. These ghost substrates simulate a
+  neighboring board at the panel boundary so that partition lines — and
+  therefore tabs — are generated on those edges too.
+- **Important:** Only boards added via `appendBoard()` are considered for
+  partition lines. Material added via `appendSubstrate()` (e.g., manually
+  created rails) is merged into the panel outline but does **not** affect
+  partition line generation. To account for such material, pass it as a
+  boundary substrate to `buildPartitionLineFromBB`.
 
 When KiKit generates a tab, it generates it based on tab origin, direction and
 optionally the partition line. When a tab is successfully generated, it consists
