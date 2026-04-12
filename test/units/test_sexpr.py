@@ -47,3 +47,67 @@ def test_readwhitespace_with_comments():
 
     stream = Stream(StringIO("  \n\n \t# Aloha\n("))
     assert readWhitespaceWithComments(stream) == "  \n\n \t# Aloha\n"
+
+def test_comment_inside_sexpr():
+    """Comments inside s-expressions should be skipped (issue #848)"""
+    # Exact reproduction case from the issue: commented line with unbalanced parens
+    source = '''(rule "Silkscreen overlap"
+  (constraint silk_clearance(min 0.15mm))
+  #(condition "((A.Type=='*Text') || (A.Type=='Graphic*')) && (( B.Type=='Via' ) || ( B.Type=='Pad' ))"))
+  (condition "((A.Type=='*Text') || (A.Type=='Graphic*')) && ( B.Type=='Pad' )")
+)'''
+    rules = parseSexprListF(StringIO(source))
+    assert len(rules) == 1
+    rule = rules[0]
+    assert rule[0] == "rule"
+    assert rule[1] == "Silkscreen overlap"
+    # Round-trip: output must exactly match input
+    assert ''.join(str(r) for r in rules) == source
+
+def test_comment_between_items():
+    """Comments between items inside an s-expression"""
+    source = '(a\n  #comment\n  b)'
+    rules = parseSexprListF(StringIO(source))
+    assert len(rules) == 1
+    assert rules[0][0] == "a"
+    assert rules[0][1] == "b"
+    assert ''.join(str(r) for r in rules) == source
+
+def test_comment_with_parens():
+    """Comments containing parentheses should not confuse the parser"""
+    source = '(a\n  # this has ) and ( in it\n  b)'
+    rules = parseSexprListF(StringIO(source))
+    assert len(rules) == 1
+    assert rules[0][0] == "a"
+    assert rules[0][1] == "b"
+    assert ''.join(str(r) for r in rules) == source
+
+def test_multiple_comments_in_dru():
+    """Multiple commented rules in a DRU-like file"""
+    source = '''(version 1)
+(rule "Active"
+  #(constraint clearance(min 0.2mm))
+  #(constraint clearance(min 0.1mm))
+  (constraint clearance(min 0.3mm))
+)'''
+    rules = parseSexprListF(StringIO(source))
+    assert len(rules) == 2
+    assert rules[0][0] == "version"
+    assert rules[1][0] == "rule"
+    assert ''.join(str(r) for r in rules) == source
+
+def test_comment_at_end_of_sexpr():
+    """Comment right before closing paren"""
+    source = '(a b\n  #trailing comment\n)'
+    rules = parseSexprListF(StringIO(source))
+    assert len(rules) == 1
+    assert rules[0][0] == "a"
+    assert rules[0][1] == "b"
+    assert ''.join(str(r) for r in rules) == source
+
+def test_comment_between_top_level_sexprs():
+    """Comments between top-level s-expressions are preserved"""
+    source = '(a)\n# between\n(b)'
+    rules = parseSexprListF(StringIO(source))
+    assert len(rules) == 2
+    assert ''.join(str(r) for r in rules) == source

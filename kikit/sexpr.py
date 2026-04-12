@@ -136,6 +136,25 @@ class Stream:
 
         return result
 
+    def readUntilEndOfLine(self):
+        """Read until end of line (inclusive of the newline). Used for comments."""
+        result = ""
+        while True:
+            pos = self.position
+            l = len(self.buffer)
+            while pos < l:
+                if self.buffer[pos] == "\n":
+                    pos += 1  # include the newline
+                    result += self.buffer[self.position:pos]
+                    self.position = pos
+                    return result
+                pos += 1
+            result += self.buffer[self.position:pos]
+            self.position = pos
+            if not self._fill_buffer():
+                return result
+        return result
+
     def readAtom(self):
         whitespace = self.readUntilEndOfWhitespace()
 
@@ -319,8 +338,14 @@ def readSexpr(stream, limit=None):
             expr.complete = False
             break
 
-        if c.isspace():
-            whitespace = stream.readUntilEndOfWhitespace()
+        if c == "#":
+            # Read comment (including the #) and treat it as whitespace
+            # so it is preserved in leadingWhitespace of the next node.
+            # The # was already put back by stream.back() above.
+            comment = stream.readUntilEndOfLine()
+            whitespace += comment
+        elif c.isspace():
+            whitespace += stream.readUntilEndOfWhitespace()
         elif c == "(":
             s = readSexpr(stream)
             s.leadingWhitespace = whitespace
