@@ -2101,6 +2101,13 @@ class Panel:
                     self.appendSubstrate(t)
                     cuts += c
 
+        # Fill any concavities between rounded-corner boards by unioning
+        # the convex hull of the substrate. This replaces the per-corner
+        # triangle patches which created spike artifacts when boards had
+        # rounded corners.
+        hull = self.boardSubstrate.substrates.convex_hull
+        self.boardSubstrate.union(hull)
+
         return cuts
 
     def inheritLayerNames(self, board):
