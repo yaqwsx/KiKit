@@ -2101,12 +2101,22 @@ class Panel:
                     self.appendSubstrate(t)
                     cuts += c
 
-        # Fill any concavities between rounded-corner boards by unioning
-        # the convex hull of the substrate. This replaces the per-corner
-        # triangle patches which created spike artifacts when boards had
-        # rounded corners.
+        # Fill any concavities between rounded-corner boards by adding
+        # filler substrate in the space between the boards and their
+        # convex hull. This replaces the per-corner triangle patches which
+        # created spike artifacts when boards had rounded corners. The
+        # original boards' interior holes (routed cutouts on Edge.Cuts) are
+        # subtracted back out so they are not inadvertently filled in.
         hull = self.boardSubstrate.substrates.convex_hull
-        self.boardSubstrate.union(hull)
+        filler = hull.difference(self.boardSubstrate.substrates)
+        boardInteriors = [
+            Polygon(ring)
+            for s in self.substrates
+            for ring in s.substrates.interiors
+        ]
+        if boardInteriors:
+            filler = filler.difference(shapely.ops.unary_union(boardInteriors))
+        self.appendSubstrate(filler)
 
         return cuts
 
