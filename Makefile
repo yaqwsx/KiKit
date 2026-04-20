@@ -92,3 +92,16 @@ docker-release:
 
 clean:
 	rm -rf dist build
+
+_empty :=
+_space := $(_empty) $(_empty)
+_STD_PATH := $(subst $(_space),:,$(filter-out $(CURDIR)/venv/bin,$(subst :,$(_space),$(PATH))))
+stdpython3 = PATH=$(_STD_PATH); unset VIRTUAL_ENV; python3
+venv: setup.py
+	python3 -m venv $@
+	ln -sf "$$($(stdpython3) -c 'import _pcbnew; print(_pcbnew.__file__)')"     $@/lib/python*/site-packages/
+	ln -sf "$$($(stdpython3) -c 'import pcbnew; print(pcbnew.__file__)')"       $@/lib/python*/site-packages/
+	ln -sf "$$($(stdpython3) -c 'import wx; print(wx.__path__[0])')"{,Python-*} $@/lib/python*/site-packages/
+	$@/bin/pip install setuptools
+	$@/bin/pip install -e '.[dev]'
+	touch --no-create $@
