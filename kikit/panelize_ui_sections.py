@@ -506,19 +506,19 @@ FRAMING_SECTION = {
         typeIn(["frame", "railstb", "railslr", "tightframe", "plugin"]),
         "Width of the framing"),
     "mintotalheight": SLength(
-        typeIn(["frame", "railstb", "tightframe", "plugin"]),
+        typeIn(["frame", "railstb", "railslr", "tightframe", "plugin"]),
         "Minimal height of the panel"
     ),
     "mintotalwidth": SLength(
-        typeIn(["frame", "raillr", "tightframe", "plugin"]),
+        typeIn(["frame", "railstb", "railslr", "tightframe", "plugin"]),
         "Minimal width of the panel"
     ),
     "maxtotalheight": SLength(
-        typeIn(["frame", "railstb", "tightframe", "plugin"]),
+        typeIn(["frame", "railstb", "railslr", "tightframe", "plugin"]),
         "Maximal height of the panel"
     ),
     "maxtotalwidth": SLength(
-        typeIn(["frame", "raillr", "tightframe", "plugin"]),
+        typeIn(["frame", "railstb", "railslr", "tightframe", "plugin"]),
         "Maximal width of the panel"
     ),
     "slotwidth": SLength(
