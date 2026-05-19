@@ -413,11 +413,15 @@ def polygonToZone(polygon, board):
         zone.Outline().AddHole(linestringToKicad(boundary))
     return zone
 
-def cropZoneByPolygon(zone: pcbnew.ZONE, polygon: Polygon) -> None:
+def cropZoneByPolygon(zone: pcbnew.ZONE, polygon: Polygon) -> List[pcbnew.ZONE]:
     """
-    Modify the zone so it is cropped by the polygon. If the zone is split into
-    multiple zones, return all of them. Handles holes in both the original zone
-    and the cropping polygon.
+    Crop zone by polygon. Returns the list of resulting zones.
+
+    If the intersection is a single polygon, modifies the zone in place and
+    returns [zone]. If the intersection produces multiple disconnected pieces
+    (MultiPolygon), returns a separate zone per piece — each is a duplicate of
+    the input zone with one piece's outline. Handles holes in both the original
+    zone and the cropping polygon.
     """
     zoneGeom = substrate.shapePolyToShapely(zone.Outline())
     if not zoneGeom.is_valid:
@@ -427,14 +431,29 @@ def cropZoneByPolygon(zone: pcbnew.ZONE, polygon: Polygon) -> None:
             raise PanelError("Zone geometry is invalid")
     intersection = zoneGeom.intersection(polygon)
 
-    zone.Outline().RemoveAllContours()
-    geoms = [intersection] if isinstance(intersection, Polygon) else intersection.geoms
+    geoms = ([intersection] if isinstance(intersection, Polygon)
+             else [g for g in intersection.geoms if hasattr(g, "exterior")])
+
+    if len(geoms) <= 1:
+        # Single piece (or empty) — modify zone outline in place.
+        zone.Outline().RemoveAllContours()
+        if geoms:
+            zone.Outline().AddOutline(linestringToKicad(geoms[0].exterior))
+            for hole in geoms[0].interiors:
+                zone.Outline().AddHole(linestringToKicad(hole))
+        return [zone]
+
+    # Multiple disconnected pieces — return one zone per piece so that each
+    # has a single outline with its centroid inside the board boundary.
+    result = []
     for geom in geoms:
-        if not hasattr(geom, "exterior"):
-            continue
-        zone.Outline().AddOutline(linestringToKicad(geom.exterior))
+        piece = zone.Duplicate()
+        piece.Outline().RemoveAllContours()
+        piece.Outline().AddOutline(linestringToKicad(geom.exterior))
         for hole in geom.interiors:
-            zone.Outline().AddHole(linestringToKicad(hole))
+            piece.Outline().AddHole(linestringToKicad(hole))
+        result.append(piece)
+    return result
 
 def buildTabs(panel: "Panel", substrate: Substrate,
               partitionLines: Union[GeometryCollection, LineString],
@@ -1241,8 +1260,8 @@ class Panel:
         for zone in zones:
             zone.Rotate(originPoint, rotationAngle)
             zone.Move(translation)
-            cropZoneByPolygon(zone, s.exterior())
-            appendItem(self.board, zone, yieldMapping)
+            for croppedZone in cropZoneByPolygon(zone, s.exterior()):
+                appendItem(self.board, croppedZone, yieldMapping)
 
         try:
             exclusions = readBoardDrcExclusions(board)
