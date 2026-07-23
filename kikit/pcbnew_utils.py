@@ -23,9 +23,10 @@ def duplicateZone(zone):
     earlier KiCad 10 releases expose only the zero-argument signature.
     """
     try:
-        return zone.Duplicate(False)
+        duplicate = zone.Duplicate(False)
     except TypeError:
         return zone.Duplicate()
+    return duplicate.Cast()
 
 def resolveItem(board, kiid):
     # KiCad 10 renamed GetItem to ResolveItem and added a mandatory bool arg
