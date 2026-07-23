@@ -15,6 +15,18 @@ EDA_UNITS_INCH = _attr('EDA_UNITS_INCH', 'EDA_UNITS_INCHES')
 DXF_UNITS_MM = _attr('DXF_UNITS_MM', 'DXF_UNITS_MILLIMETERS')
 DIM_UNITS_MODE_MM = _attr('DIM_UNITS_MODE_MM', 'DIM_UNITS_MODE_MILLIMETRES')
 
+def duplicateZone(zone):
+    """
+    Duplicate a zone without adding it to its parent group.
+
+    KiCad 10.0.5 requires the addToParentGroup argument, while KiCad 9 and
+    earlier KiCad 10 releases expose only the zero-argument signature.
+    """
+    try:
+        return zone.Duplicate(False)
+    except TypeError:
+        return zone.Duplicate()
+
 def resolveItem(board, kiid):
     # KiCad 10 renamed GetItem to ResolveItem and added a mandatory bool arg
     if hasattr(board, 'ResolveItem'):

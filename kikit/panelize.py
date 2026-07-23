@@ -35,7 +35,7 @@ from kikit.sexpr import isElement, parseSexprF, SExpr, Atom, findNode, parseSexp
 from kikit.annotations import AnnotationReader, TabAnnotation
 from kikit.drc import DrcExclusion, readBoardDrcExclusions, serializeExclusion
 from kikit.units import mm, deg, inch
-from kikit.pcbnew_utils import increaseZonePriorities
+from kikit.pcbnew_utils import duplicateZone, increaseZonePriorities
 
 class PanelError(RuntimeError):
     pass
@@ -2226,7 +2226,7 @@ class Panel:
 
             for l in layers:
                 self._ensureLayerEnabled(l)
-                zoneContainer = zoneContainer.Duplicate()
+                zoneContainer = duplicateZone(zoneContainer)
                 zoneContainer.SetLayer(l)
                 self.board.Add(zoneContainer)
                 self.zonesToRefill.append(zoneContainer)

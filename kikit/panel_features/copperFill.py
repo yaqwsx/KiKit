@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from ..substrate import linestringToKicad
 from ..defs import Layer
 from ..common import KiAngle, KiLength, fromDegrees, fromMm
-from ..pcbnew_utils import increaseZonePriorities
+from ..pcbnew_utils import duplicateZone, increaseZonePriorities
 import pcbnew
 from ..panelize import Panel
 from .baseFeature import PanelFeature
@@ -48,7 +48,7 @@ class KiCADCopperFillMixin(PanelFeature):
 
             for l in self.layers:
                 panel._ensureLayerEnabled(l)
-                zoneContainer = zoneContainer.Duplicate()
+                zoneContainer = duplicateZone(zoneContainer)
                 zoneContainer.SetLayer(l)
                 panel.board.Add(zoneContainer)
                 panel.zonesToRefill.append(zoneContainer)
@@ -151,7 +151,7 @@ class HexCopperFill(PanelFeature):
 
             for l in self.layers:
                 panel._ensureLayerEnabled(l)
-                zoneContainer = zoneContainer.Duplicate()
+                zoneContainer = duplicateZone(zoneContainer)
                 zoneContainer.SetLayer(l)
                 panel.board.Add(zoneContainer)
                 panel.zonesToRefill.append(zoneContainer)
