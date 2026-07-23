@@ -503,7 +503,14 @@ def addFrameFillets(frameGeometry, boardSubstrates, fillet, panel=None):
                 t, _ = frameSubstrate.tab(
                     annotation.origin, reverseDir, annotation.width,
                     partitionLine=None, fillet=fillet)
-                if t is not None:
+                if t is None:
+                    continue
+                crossesOtherBoard = any(
+                    other is not s and
+                    t.intersection(other.substrates).area > SHP_EPSILON ** 2
+                    for other in boardSubstrates
+                )
+                if not crossesOtherBoard:
                     tabs.append(t)
             except (TabError, TabFilletError):
                 pass  # Tab doesn't reach this frame piece (e.g. board-to-board tab)

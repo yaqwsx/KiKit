@@ -1,13 +1,17 @@
 import pytest
 from pcbnew import EDA_ANGLE, DEGREES_T
-from kikit.common import KiAngle
+from kikit.annotations import TabAnnotation
+from kikit.common import KiAngle, fromMm
 from kikit.panelize import (
-    GridPlacerBase, BasicGridPosition, OddEvenRowsPosition,
+    GridPlacerBase, BasicGridPosition, OddEvenRowsPosition, addFrameFillets,
     OddEvenColumnPosition, OddEvenRowsColumnsPosition, prolongCut,
     netClassesDefaultFirst
 )
-from shapely.geometry import LineString
+from kikit.substrate import Substrate
+from shapely.geometry import LineString, Point, box
+from shapely.ops import unary_union
 from math import sqrt
+from types import SimpleNamespace
 
 
 def test_grid_place_base_rotation():
@@ -91,3 +95,42 @@ def test_netClassesDefaultFirst():
         "Board_0-HV",
         "Board_1-HV",
     ]
+
+
+def test_addFrameFilletsDoesNotCrossOtherBoards():
+    boardWidth = fromMm(10)
+    boardHeight = fromMm(10)
+    boardSpacing = fromMm(2)
+    holeWidth = fromMm(3.5)
+    holeHeight = fromMm(3)
+    tabWidth = fromMm(3)
+    fillet = fromMm(1)
+
+    boards = []
+    holeCenters = []
+    for row in range(3):
+        miny = row * (boardHeight + boardSpacing)
+        maxy = miny + boardHeight
+        hole = box(
+            (boardWidth - holeWidth) / 2,
+            miny + fromMm(3),
+            (boardWidth + holeWidth) / 2,
+            miny + fromMm(3) + holeHeight
+        )
+        substrate = Substrate([])
+        substrate.union(box(0, miny, boardWidth, maxy).difference(hole))
+        substrate.annotations.append(
+            TabAnnotation(None, (boardWidth / 2, miny), (0, 1), tabWidth)
+        )
+        boards.append(substrate)
+        holeCenters.append(Point(boardWidth / 2, miny + fromMm(4.5)))
+
+    frame = box(0, -fromMm(4), boardWidth, -fromMm(2))
+    debugPanel = SimpleNamespace(debugRawFrame=[], debugReverseTabs=[])
+    filletedFrame = addFrameFillets(frame, boards, fillet, debugPanel)
+    panelGeometry = unary_union(
+        [filletedFrame] + [substrate.substrates for substrate in boards]
+    )
+
+    assert len(debugPanel.debugReverseTabs) == 1
+    assert all(not panelGeometry.contains(center) for center in holeCenters)
