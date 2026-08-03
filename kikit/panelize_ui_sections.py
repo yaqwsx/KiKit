@@ -684,7 +684,8 @@ COPPERFILL_SECTION = {
         typeIn(["solid", "hatched", "hex"]),
         "Specify which layer to fill with copper",
         {
-            "all": Layer.allCu()
+            # Resolve this shortcut once the panel's enabled layers are known.
+            "all": "all"
         }),
     "width": SLength(
         typeIn(["hatched"]),

@@ -616,6 +616,22 @@ def buildText(preset, panel):
     except KeyError as e:
         raise PresetError(f"Missing parameter '{e}' in section 'text'")
 
+def resolveCopperfillLayers(layers, panel):
+    """
+    Resolve copper-fill layer shortcuts against the panel's inherited layers.
+
+    Explicitly named layers are left untouched so the copper-fill feature can
+    enable them. The ``all`` shortcut, however, means all copper layers that
+    already belong to the panelized project, not every copper layer supported
+    by KiCad.
+    """
+    if layers != "all":
+        return layers
+
+    enabledLayers = panel.board.GetEnabledLayers()
+    return [layer for layer in Layer.allCu() if enabledLayers.Contains(layer)]
+
+
 def buildCopperfill(preset, panel):
     """
     Perform copperfill operation
@@ -624,17 +640,18 @@ def buildCopperfill(preset, panel):
         type = preset["type"]
         if type == "none":
             return
+        layers = resolveCopperfillLayers(preset["layers"], panel)
         if type == "solid":
             panel.apply(SolidCopperFill(
                 clearance=preset["clearance"],
                 edgeclearance=preset["edgeclearance"],
-                layers=preset["layers"],
+                layers=layers,
             ))
         if type == "hatched":
             panel.apply(HatchedCopperFill(
                 clearance=preset["clearance"],
                 edgeclearance=preset["edgeclearance"],
-                layers=preset["layers"],
+                layers=layers,
                 strokeWidth=preset["width"],
                 strokeSpacing=preset["spacing"],
                 orientation=preset["orientation"]
@@ -643,7 +660,7 @@ def buildCopperfill(preset, panel):
             panel.apply(HexCopperFill(
                 clearance=preset["clearance"],
                 edgeclearance=preset["edgeclearance"],
-                layers=preset["layers"],
+                layers=layers,
                 diameter=preset["diameter"],
                 space=preset["spacing"],
                 threshold=preset["threshold"]

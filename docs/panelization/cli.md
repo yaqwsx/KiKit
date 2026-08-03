@@ -548,7 +548,8 @@ Fill non-board areas of the panel with copper.
   for, e.g., not filling the tabs with copper.
 - `edgeclearance` - specifies clearance between the fill and panel perimeter.
 - `layers` - comma-separated list of layer to fill. Default top and bottom. You
-  can specify a shortcut `all` to fill all layers.
+  can specify a shortcut `all` to fill all copper layers enabled in the
+  panelized project.
 
 #### Solid
 
@@ -607,5 +608,4 @@ Finishing touches to the panel.
 - `dimensions` - `true` or `false`. Draw dimensions with the panel size.
 - `edgewidth` ­– width of the line for panel edges (that is the lines in the
   `Edge.Cuts` layer).
-
 
