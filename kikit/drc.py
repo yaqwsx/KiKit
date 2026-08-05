@@ -356,6 +356,12 @@ def deserializeExclusion(exclusionText: str, board: pcbnew.BOARD) -> DrcExclusio
 
 def serializeExclusion(exclusion: DrcExclusion) -> str:
     objIds = [x.m_Uuid.AsString() for x in exclusion.objects]
+    # KiCad checks courtyard overlaps in UUID order. Duplicating footprints
+    # assigns new UUIDs, so preserving the source violation's item order makes
+    # the copied exclusion match only when the new UUIDs happen to have the
+    # same relative order.
+    if exclusion.type == "courtyards_overlap":
+        objIds.sort()
     while len(objIds) < 2:
         objIds.append("00000000-0000-0000-0000-000000000000")
     return "|".join([
