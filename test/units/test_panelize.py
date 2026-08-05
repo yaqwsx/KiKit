@@ -3,7 +3,7 @@ from pcbnew import EDA_ANGLE, DEGREES_T
 from kikit.annotations import TabAnnotation
 from kikit.common import KiAngle, fromMm
 from kikit.panelize import (
-    GridPlacerBase, BasicGridPosition, OddEvenRowsPosition, addFrameFillets,
+    Panel, GridPlacerBase, BasicGridPosition, OddEvenRowsPosition, addFrameFillets,
     OddEvenColumnPosition, OddEvenRowsColumnsPosition, prolongCut,
     netClassesDefaultFirst
 )
@@ -75,6 +75,15 @@ def test_prolongCut():
 
     assert prolonged.coords[0] == pytest.approx((sqrt(2)/2 * -0.5, sqrt(2)/2 * -0.5))
     assert prolonged.coords[1] == pytest.approx((1 + sqrt(2)/2 * 0.5, 1 + sqrt(2)/2 * 0.5))
+
+
+def test_makeVCutsIgnoresEmptyGeometry(tmp_path):
+    panel = Panel(str(tmp_path / "panel.kicad_pcb"))
+
+    panel.makeVCuts([LineString([(0, 0), (0, 0)])])
+
+    assert panel.hVCuts == set()
+    assert panel.vVCuts == set()
 
 
 def test_netClassesDefaultFirst():
