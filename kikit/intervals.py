@@ -326,7 +326,21 @@ def collectHardStops(boxes: Iterable[Box]) -> Tuple[List[AxialLine], List[AxialL
 def defaultSeedFilter(boxIdA: object, boxIdB: object, vertical: bool, seedline: AxialLine) -> bool:
     return True
 
-def collectSeedLines(boxes: Dict[object, Box], seedFilter: Callable[[object, object, bool, AxialLine], bool]) \
+def getSeedLinePosition(a: float, b: float, isAGhost: bool, isBGhost: bool) -> float:
+    """
+    Given two points, and an indication if they belong to a "ghost" box,
+    return the point where to put the seed line.
+
+    If both are ghosts, or both are not ghosts, the seed is the midpoint,
+    otherwise it is the ghost point.
+    """
+    if isAGhost == isBGhost:
+        return (a + b) / 2
+    elif isAGhost:
+        return a
+    return b
+
+def collectSeedLines(boxes: Dict[object, Box], seedFilter: Callable[[object, object, bool, AxialLine], bool], ghosts: set[int]=set()) \
         -> Tuple[List[AxialLine], List[AxialLine]]:
     """
     Given a dictionary ident -> box return a list of all midlines between
@@ -336,6 +350,8 @@ def collectSeedLines(boxes: Dict[object, Box], seedFilter: Callable[[object, obj
     serves as a predicate that can filter unwanted seed lines - e.g., too far
     apart or comming from ghost boxes.
 
+    The ghosts parameter is a set containing the IDs of all "ghost" boxes.
+
     Returns (horlines, verlines), where the lines are tagged with ident
     """
     neighbors = BoxNeighbors(boxes)
@@ -343,25 +359,29 @@ def collectSeedLines(boxes: Dict[object, Box], seedFilter: Callable[[object, obj
     verlines: List[AxialLine] = []
     for identA, boxA in boxes.items():
         for identB, shadow in neighbors.leftC(identA):
-            mid = (boxA[0] + boxes[identB][2]) / 2
+            mid = getSeedLinePosition(boxA[0], boxes[identB][2],
+                identA in ghosts, identB in ghosts)
             candidates = [AxialLine(mid, e.min, e.max, identA)
                 for e in shadow.intervals]
             verlines.extend([x for x in candidates
                 if seedFilter(identA, identB, True, x)])
         for identB, shadow in neighbors.rightC(identA):
-            mid = (boxA[2] + boxes[identB][0]) / 2
+            mid = getSeedLinePosition(boxA[2], boxes[identB][0],
+                identA in ghosts, identB in ghosts)
             candidates = [AxialLine(mid, e.min, e.max, identA)
                 for e in shadow.intervals]
             verlines.extend([x for x in candidates
                 if seedFilter(identA, identB, True, x)])
         for identB, shadow in neighbors.topC(identA):
-            mid = (boxA[1] + boxes[identB][3]) / 2
+            mid = getSeedLinePosition(boxA[1], boxes[identB][3],
+                identA in ghosts, identB in ghosts)
             candidates = [AxialLine(mid, e.min, e.max, identA)
                 for e in shadow.intervals]
             horlines.extend([x for x in candidates
                 if seedFilter(identA, identB, False, x)])
         for identB, shadow in neighbors.bottomC(identA):
-            mid = (boxA[3] + boxes[identB][1]) / 2
+            mid = getSeedLinePosition(boxA[3], boxes[identB][1],
+                identA in ghosts, identB in ghosts)
             candidates = [AxialLine(mid, e.min, e.max, identA)
                 for e in shadow.intervals]
             horlines.extend([x for x in candidates
@@ -480,7 +500,7 @@ class BoxPartitionLines:
 
     def __init__(self, boxes: Dict[object, Box],
                  seedFilter: Callable[[object, object, bool, AxialLine], bool]=defaultSeedFilter,
-                 safeHorizontalMargin: float=0, safeVerticalMargin: float=0) -> None:
+                 safeHorizontalMargin: float=0, safeVerticalMargin: float=0, ghosts: set[int]=set()) -> None:
         """
         Given a dictionary id -> box initializes the structure.
 
@@ -488,13 +508,15 @@ class BoxPartitionLines:
 
         The margin guarantees there will be no partition line too close to edge
         (necessary to handle some pathological cases)
+
+        The ghosts parameter is a set containing the IDs of all "ghost" boxes.
         """
         from kikit.common import shpBBoxExpand
 
         hstops, vstops = collectHardStops(boxes.values())
         hSafeStops, vSafeStops = collectHardStops([
             shpBBoxExpand(x, safeVerticalMargin, safeHorizontalMargin) for x in boxes.values()])
-        hseeds, vseeds = collectSeedLines(boxes, seedFilter)
+        hseeds, vseeds = collectSeedLines(boxes, seedFilter, ghosts)
         hshadows = buildShadows(hseeds, chain(vstops, vSafeStops))
         vshadows = buildShadows(vseeds, chain(hstops, hSafeStops))
 
