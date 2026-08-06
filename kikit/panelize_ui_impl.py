@@ -464,12 +464,14 @@ def buildFraming(preset, panel):
         if type == "railstb":
             panel.makeRailsTb(framingPreset["width"],
                 framingPreset["mintotalheight"], framingPreset["maxtotalheight"],
+                framingPreset["mintotalwidth"], framingPreset["maxtotalwidth"],
                 vspace=framingPreset["vspace"])
             addFilletAndChamfer(framingPreset, panel)
             return []
         if type == "railslr":
             panel.makeRailsLr(framingPreset["width"],
                 framingPreset["mintotalwidth"], framingPreset["maxtotalwidth"],
+                framingPreset["mintotalheight"], framingPreset["maxtotalheight"],
                 hspace=framingPreset["hspace"])
             addFilletAndChamfer(framingPreset, panel)
             return []
