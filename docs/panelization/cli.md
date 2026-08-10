@@ -285,6 +285,11 @@ cut the bounding box of the PCB. There are no other options.
   PCB. If the PCB has sharp corners, you want to add patches of substrate to
   these corners. However, if the PCB has fillet or miter, you don't want to
   apply the patches.
+- `fillradius`: The largest gap between the boards that is filled with
+  substrate – e.g., the space left between the rounded corners of neighboring
+  boards. Board features that are wider than this – e.g., a notch milled into
+  the board outline – are preserved. The default is 2 mm; use 0 to disable the
+  filling completely.
 
 #### Corner
 
