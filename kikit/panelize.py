@@ -201,6 +201,18 @@ def reloadProject(projectPath: str) -> None:
         settingsManager.UnloadProject(project, False)
     settingsManager.LoadProject(projectPath)
 
+def unloadProject(projectPath: str) -> None:
+    """
+    Release a project loaded via reloadProject. Loading a project makes KiCAD
+    create a lock file next to it, so the project has to be unloaded once we are
+    done with it - otherwise a stale lock file is left behind.
+    """
+    projectPath = str(Path(projectPath).resolve())
+    settingsManager = pcbnew.GetSettingsManager()
+    project = settingsManager.GetProject(projectPath)
+    if project:
+        settingsManager.UnloadProject(project, False)
+
 def getOriginCoord(origin, bBox):
     """Returns real coordinates (VECTOR2I) of the origin for given bounding box"""
     if origin == Origin.Center:
@@ -756,6 +768,11 @@ class Panel:
         self.makeLayersVisible() # as they are not in KiCAD 6
         self.transferProjectSettings()
         self.writeCustomDrcRules()
+
+        # The project was loaded above to make the zone filler see the correct
+        # design rules. Release it, otherwise KiCAD keeps its lock file around
+        # even after we are long gone.
+        unloadProject(self.getProFilepath())
 
 
     def _getRefillEdges(self, reconstructArcs: bool):

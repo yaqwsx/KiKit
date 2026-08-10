@@ -86,6 +86,15 @@ def test_makeVCutsIgnoresEmptyGeometry(tmp_path):
     assert panel.vVCuts == set()
 
 
+def test_saveLeavesNoProjectLockFile(tmp_path):
+    panel = Panel(str(tmp_path / "panel.kicad_pcb"))
+    panel.appendSubstrate(box(0, 0, fromMm(20), fromMm(20)))
+
+    panel.save()
+
+    assert list(tmp_path.glob("*.lck")) == []
+
+
 def test_netClassesDefaultFirst():
     netClasses = [
         {"name": "Default"},
