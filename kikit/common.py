@@ -13,6 +13,16 @@ import numpy as np
 from shapely.geometry import LinearRing
 import shapely.geometry
 
+# Monkey patch to work around:
+# - https://gitlab.com/kicad/code/kicad/-/work_items/25423
+#
+# See:
+# - https://github.com/yaqwsx/KiKit/issues/938
+# - https://github.com/openscopeproject/InteractiveHtmlBom/issues/563
+
+if not hasattr(pcbnew.SwigPyIterator, 'next'):
+    setattr(pcbnew.SwigPyIterator, 'next', lambda o: next(o))
+
 PKG_BASE = os.path.dirname(__file__)
 KIKIT_LIB = os.path.join(PKG_BASE, "resources/kikit.pretty")
 SHP_EPSILON = pcbnew.FromMM(0.001) # Common factor of enlarging substrates to
