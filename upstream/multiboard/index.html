@@ -1768,7 +1768,7 @@ like this:</p>
 <p>Simply specify the top left and bottom right corner. Everything that fits fully
 inside it, will be included in the board. The command for separation of board A
 into a separate board file is:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>kikit separate --source &#39;rectangle; tlx: 89mm; tly: 89mm; brx: 111mm; bry: 111mm&#39; \
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>kikit separate --source 'rectangle; tlx: 89mm; tly: 89mm; brx: 111mm; bry: 111mm' \
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>        multiboard.kicad_pcb board_a.kicad_pcb
 </code></pre></div>
 <p>After that, <code>board_a.kicad_pcb</code> will contain only a board A. Note that the <code>\</code>
@@ -1778,7 +1778,7 @@ is there for shell as we split our command into two lines.</p>
 footprints <code>kikit:Board</code>. You can place them into your document so that the
 arrow points to the board edge. Than you can use the reference of the annotation
 symbol for separation of the board. To separate board A simply invoke:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>kikit separate --source &#39;annotation; ref: B1&#39; \
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>kikit separate --source 'annotation; ref: B1' \
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    multiboard.kicad_pcb board_a.kicad_pcb
 </code></pre></div>
 <p>After that, <code>board_a.kicad_pcb</code> will contain only a board A. Note that the <code>\</code>

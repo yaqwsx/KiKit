@@ -1746,8 +1746,8 @@ not, try to resolve the name as the name of the built-in template.</p>
 <p>A template is a directory containing template files. There is a single mandatory
 file common to all template types <code>template.json</code>. An example of such file follows:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>{
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    &quot;type&quot;: &quot;HtmlTemplate&quot;,
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    &quot;resources&quot;: [&quot;css/*.css&quot;]
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    "type": "HtmlTemplate",
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    "resources": ["css/*.css"]
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>}
 </code></pre></div>
 <p>The key <code>type</code> specifies what kind of template it is. Currently, only
@@ -1757,13 +1757,13 @@ to the output directory when rendering the template.</p>
 <h3 id="htmltemplate">HtmlTemplate</h3>
 <p>Expects an <code>index.html</code> file in the root of the template. This is Handlerbars
 template which receives the following dictionary on render:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>&quot;repo&quot;: self.repository,
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>&quot;gitRev&quot;: gitRev,
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>&quot;gitRevShort&quot;: gitRev[:7] if gitRev else None,
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>&quot;datetime&quot;: self.currentDateTime(),
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>&quot;name&quot;: self.name,
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>&quot;boards&quot;: self.boards,
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>&quot;description&quot;: self.description
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>"repo": self.repository,
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>"gitRev": gitRev,
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>"gitRevShort": gitRev[:7] if gitRev else None,
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>"datetime": self.currentDateTime(),
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>"name": self.name,
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>"boards": self.boards,
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>"description": self.description
 </code></pre></div>
 <p><code>boards</code> is a list of a dictionary with following keys:</p>
 <ul>

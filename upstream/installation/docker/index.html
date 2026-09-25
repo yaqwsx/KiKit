@@ -1696,7 +1696,7 @@ topic</a>).</p>
 <h2 id="creating-an-alias-to-kikit-in-docker-to-save-some-typing">Creating an alias to KiKit in Docker to save some typing</h2>
 <p>If you're on Linux or Mac and are going to run commands repeatedly within the same
 directory you can create an alias <em>within the current terminal session</em> via:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>alias kikit=&quot;docker run -v $(pwd):/kikit yaqwsx/kikit&quot;
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>alias kikit="docker run -v $(pwd):/kikit yaqwsx/kikit"
 </code></pre></div>
 <strong>Note</strong> that <code>alias</code> is a Linux/ Unix command so won't work on Windows, you'll need
 to call <code>docker run -v %cd%:/kikit yaqwsx/kikit</code> each time.
@@ -1726,7 +1726,7 @@ down and run that for you instead:</p>
 <code>make</code> inside the container. The Docker image contains several often used tools
 and you can even run KiCAD from it (if you supply it with X-server).  To call <code>make</code>
 within the container, override the container's entrypoint:</p>
-<p><div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>docker run -it -v $(pwd):/kikit --entrypoint &#39;/usr/bin/make&#39; --help
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>docker run -it -v $(pwd):/kikit --entrypoint '/usr/bin/make' --help
 </code></pre></div>
 (replacing <code>--help</code> with your make command, such as <code>build</code> or <code>test</code>).</p>
 
