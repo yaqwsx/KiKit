@@ -408,6 +408,12 @@ TABS_SECTION = {
         typeIn(["fixed", "full", "plugin"]),
         "Choose if to apply corner patches for the full tabs"
     ),
+    "fillradius": SLength(
+        typeIn(["full", "plugin"]),
+        "The largest gap between the boards that is filled with substrate "
+        "(e.g., between rounded corners). Larger board features, such as "
+        "notches in the board outline, are preserved. Use 0 to disable."
+    ),
     "tabfootprints": SFootprintList(
         typeIn(["annotation", "plugin"]),
         "Specify custom footprints that will be used for tab annotations."),

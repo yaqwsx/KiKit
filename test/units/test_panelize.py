@@ -86,6 +86,58 @@ def test_makeVCutsIgnoresEmptyGeometry(tmp_path):
     assert panel.vVCuts == set()
 
 
+def buildTwoBoardPanelWithNotch(tmp_path, notchSize):
+    """
+    Two 10x10 mm boards placed side by side. The left one has a square notch
+    milled into the corner that faces the right board.
+    """
+    size = fromMm(10)
+    notch = box(size - notchSize, size - notchSize, size, size)
+
+    left = Substrate([])
+    left.union(box(0, 0, size, size).difference(notch))
+    left.partitionLine = LineString([(size, 0), (size, size)])
+
+    right = Substrate([])
+    right.union(box(size, 0, 2 * size, size))
+    right.partitionLine = LineString([(size, 0), (size, size)])
+
+    panel = Panel(str(tmp_path / "panel.kicad_pcb"))
+    panel.substrates = [left, right]
+    panel.appendSubstrate(left.substrates)
+    panel.appendSubstrate(right.substrates)
+    return panel, notch
+
+
+def test_buildFullTabsKeepsNotchesInBoardOutline(tmp_path):
+    notchSize = fromMm(6)
+    panel, notch = buildTwoBoardPanelWithNotch(tmp_path, notchSize)
+
+    panel.buildFullTabs(fromMm(1), patchCorners=False, fillRadius=fromMm(2))
+
+    assert not panel.boardSubstrate.substrates.contains(notch.centroid)
+
+
+def test_buildFullTabsFillsNarrowGaps(tmp_path):
+    # A gap narrower than the fill radius is a manufacturing artifact (e.g.,
+    # the space between rounded corners), not an intentional board feature
+    notchSize = fromMm(1)
+    panel, notch = buildTwoBoardPanelWithNotch(tmp_path, notchSize)
+
+    panel.buildFullTabs(fromMm(1), patchCorners=False, fillRadius=fromMm(2))
+
+    assert panel.boardSubstrate.substrates.contains(notch.centroid)
+
+
+def test_buildFullTabsZeroFillRadiusFillsNothing(tmp_path):
+    notchSize = fromMm(1)
+    panel, notch = buildTwoBoardPanelWithNotch(tmp_path, notchSize)
+
+    panel.buildFullTabs(fromMm(1), patchCorners=False, fillRadius=0)
+
+    assert not panel.boardSubstrate.substrates.contains(notch.centroid)
+
+
 def test_netClassesDefaultFirst():
     netClasses = [
         {"name": "Default"},

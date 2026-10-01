@@ -47,7 +47,8 @@
         "code": "none",
         "arg": "",
         "cutout": "1mm",
-        "patchcorners": true
+        "patchcorners": true,
+        "fillradius": "2mm"
     },
     "cuts": {
         "type": "none",

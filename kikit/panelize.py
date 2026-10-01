@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any, Callable, Dict, Iterable, List, Set, Tuple, Union
 from enum import Enum
 from shapely.geometry import (Polygon, MultiPolygon, Point, LineString, box,
-                              GeometryCollection, MultiLineString)
+                              GeometryCollection, MultiLineString, JOIN_STYLE)
 from shapely.prepared import prep
 import shapely
 import shapely.affinity
@@ -2107,12 +2107,19 @@ class Panel:
         return cuts, tabs
 
 
-    def buildFullTabs(self, cutoutDepth: KiLength, patchCorners: bool = True) \
+    def buildFullTabs(self, cutoutDepth: KiLength, patchCorners: bool = True,
+                      fillRadius: KiLength = fromMm(2)) \
             -> List[shapely.geometry.LineString]:
         """
         Make full tabs. This strategy basically cuts the bounding boxes of the
         PCBs. Not suitable for mousebites or PCB that doesn't have a rectangular
         outline. Expects there is a valid partition line.
+
+        fillRadius specifies the largest gap between the boards that is filled
+        with substrate; e.g., the gaps left between rounded corners of
+        neighboring boards. Board features larger than that - such as a notch
+        milled into the board outline - are preserved. Pass 0 to disable the
+        filling.
 
         Return a list of cuts.
         """
@@ -2130,22 +2137,33 @@ class Panel:
                     self.appendSubstrate(t)
                     cuts += c
 
-        # Fill any concavities between rounded-corner boards by adding
-        # filler substrate in the space between the boards and their
-        # convex hull. This replaces the per-corner triangle patches which
-        # created spike artifacts when boards had rounded corners. The
-        # original boards' interior holes (routed cutouts on Edge.Cuts) are
-        # subtracted back out so they are not inadvertently filled in.
-        hull = self.boardSubstrate.substrates.convex_hull
-        filler = hull.difference(self.boardSubstrate.substrates)
-        boardInteriors = [
-            Polygon(ring)
-            for s in self.substrates
-            for ring in s.substrates.interiors
-        ]
-        if boardInteriors:
-            filler = filler.difference(shapely.ops.unary_union(boardInteriors))
-        self.appendSubstrate(filler)
+        # Fill the narrow gaps that are left between the boards - e.g., the
+        # space between rounded corners of neighboring boards. This replaces
+        # the per-corner triangle patches which created spike artifacts when
+        # boards had rounded corners.
+        #
+        # The gaps are found via morphological closing: dilating the substrate
+        # by fillRadius merges anything separated by less than 2 * fillRadius
+        # and the following erosion restores the original outline. Features
+        # that are wider than that - e.g., a notch milled into the board
+        # outline or a routed cutout inside of it - survive the closing and
+        # are therefore not filled in. Using the convex hull instead would
+        # swallow all of them.
+        #
+        # The buffers use mitred joins so that the closing preserves sharp
+        # corners of the outline; rounding the corners is the job of the
+        # post-processing mill radius, not of the gap filling.
+        if fillRadius > 0:
+            substrates = self.boardSubstrate.substrates
+            closed = substrates \
+                .buffer(fillRadius, join_style=JOIN_STYLE.mitre, mitre_limit=10) \
+                .buffer(-fillRadius, join_style=JOIN_STYLE.mitre, mitre_limit=10)
+            # The difference can also yield degenerate geometry - e.g., lines
+            # where the closing touches the substrate - so keep the areas only
+            filler = [x for x in listGeometries(closed.difference(substrates))
+                        if isinstance(x, (Polygon, MultiPolygon)) and not x.is_empty]
+            if len(filler) > 0:
+                self.appendSubstrate(shapely.ops.unary_union(filler))
 
         return cuts
 
