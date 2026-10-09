@@ -639,6 +639,7 @@ class Panel:
         # KiCAD allows to keep text variables for project. We keep a set of
         # dictionary of variables for each appended board.
         self.projectVars: List[Dict[str, str]] = []
+        self.variants = {}
 
         # We want to prolong dimensions of the panel by the size of fillet or
         # chamfer, thus, we have to remember them
@@ -831,6 +832,13 @@ class Panel:
         """
         if len(self.sourcePaths) > 1:
             raise RuntimeError("Merging of DRC rules of multiple boards is currently unsupported")
+        if self.variants:
+            with open(self.getProFilepath(), encoding="utf-8") as f:
+                project = json.load(f)
+            project.setdefault("schematic", {})["variants"] = list(self.variants.values())
+            with open(self.getProFilepath(), "w", encoding="utf-8") as f:
+                json.dump(project, f, indent=2)
+
         if len(self.sourcePaths) == 0:
             return # Nothing to merge
 
@@ -1163,6 +1171,24 @@ class Panel:
 
 
         board = LoadBoard(str(filename))
+        sourceVariants = [
+            {"name": name, "description": board.GetVariantDescription(name)}
+            for name in (board.GetVariantNamesForUI()[1:]
+                         if hasattr(board, "GetVariantNamesForUI") else [])
+        ]
+        sourceProject = self.getProFilepath(str(filename))
+        if os.path.exists(sourceProject):
+            with open(sourceProject, encoding="utf-8") as f:
+                projectVariants = json.load(f).get("schematic", {}).get("variants")
+            if projectVariants is not None and {
+                v["name"]: v.get("description", "") for v in projectVariants
+            } != {v["name"]: v["description"] for v in sourceVariants}:
+                raise PanelError(f"Variants in {filename} differ from {sourceProject}")
+        for variant in sourceVariants:
+            name = variant["name"]
+            previous = self.variants.get(name.casefold())
+            if previous is not None and previous != variant:
+                raise PanelError(f"Conflicting definitions of variant {name}")
         if inheritDrc:
             self.sourcePaths.add(filename)
         if bakeText:
@@ -1289,8 +1315,16 @@ class Panel:
             pass # Ignore boards without a project
 
         self.projectVars.append(self._readProjectVariables(board))
+        boardBounds = findBoundingBox(edges)
 
-        return findBoundingBox(edges)
+        for variant in sourceVariants:
+            name = variant["name"]
+            if name.casefold() not in self.variants:
+                self.variants[name.casefold()] = variant
+                self.board.AddVariant(name)
+                self.board.SetVariantDescription(name, variant["description"])
+
+        return boardBounds
 
     def _readProjectVariables(self, board: pcbnew.BOARD) -> Dict[str, str]:
         projectPath = self.getProFilepath(board.GetFileName())

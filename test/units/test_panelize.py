@@ -1,3 +1,6 @@
+import json
+from pathlib import Path
+import pcbnew
 import pytest
 from pcbnew import EDA_ANGLE, DEGREES_T
 from kikit.annotations import TabAnnotation
@@ -84,6 +87,97 @@ def test_makeVCutsIgnoresEmptyGeometry(tmp_path):
 
     assert panel.hVCuts == set()
     assert panel.vVCuts == set()
+
+
+@pytest.mark.skipif(not hasattr(pcbnew.BOARD, "AddVariant"), reason="requires KiCad 10")
+@pytest.mark.parametrize("inherit_drc", [True, False])
+def test_panel_preserves_variants(tmp_path, inherit_drc):
+    source = tmp_path / "source.kicad_pcb"
+    board = pcbnew.LoadBoard(str(Path(__file__).parents[1] / "resources/conn.kicad_pcb"))
+    board.AddVariant("Assembly A")
+    board.SetVariantDescription("Assembly A", "Without J3")
+    footprint = next(x for x in board.GetFootprints() if x.GetReference() == "J3")
+    variant = footprint.AddVariant("Assembly A")
+    variant.SetDNP(True)
+    variant.SetFieldValue("Value", "Variant value")
+    board.Save(str(source))
+    with open(source.with_suffix(".kicad_pro"), encoding="utf-8") as f:
+        source_project = json.load(f)
+    source_project["schematic"]["variants"] = [
+        {"name": "Assembly A", "description": "Without J3"}]
+    with open(source.with_suffix(".kicad_pro"), "w", encoding="utf-8") as f:
+        json.dump(source_project, f)
+
+    panel = Panel(str(tmp_path / "panel.kicad_pcb"))
+    panel.appendBoard(source, pcbnew.VECTOR2I(fromMm(50), fromMm(50)),
+                      inheritDrc=inherit_drc)
+    panel.appendBoard(source, pcbnew.VECTOR2I(fromMm(150), fromMm(50)),
+                      inheritDrc=inherit_drc)
+    panel.save()
+
+    output = pcbnew.LoadBoard(panel.filename)
+    assert output.HasVariant("Assembly A")
+    assert output.GetVariantDescription("Assembly A") == "Without J3"
+    copied = [x for x in output.GetFootprints() if x.GetReference() == "J3"]
+    assert len(copied) == 2
+    assert all(x.GetDNPForVariant("Assembly A") for x in copied)
+    assert all(x.GetFieldValueForVariant("Assembly A", "Value") == "Variant value"
+               for x in copied)
+    with open(panel.getProFilepath(), encoding="utf-8") as f:
+        assert json.load(f)["schematic"]["variants"] == [
+            {"name": "Assembly A", "description": "Without J3"}]
+
+
+@pytest.mark.skipif(not hasattr(pcbnew.BOARD, "AddVariant"), reason="requires KiCad 10")
+def test_panel_rejects_conflicting_variants(tmp_path):
+    panel = Panel(str(tmp_path / "panel.kicad_pcb"))
+    for description in ("First", "Second"):
+        source = tmp_path / f"{description}.kicad_pcb"
+        board = pcbnew.LoadBoard(str(Path(__file__).parents[1] / "resources/conn.kicad_pcb"))
+        board.AddVariant("Assembly A")
+        board.SetVariantDescription("Assembly A", description)
+        board.Save(str(source))
+    panel.appendBoard(tmp_path / "First.kicad_pcb",
+                      pcbnew.VECTOR2I(fromMm(50), fromMm(50)), inheritDrc=False)
+    with pytest.raises(RuntimeError, match="Conflicting definitions"):
+        panel.appendBoard(tmp_path / "Second.kicad_pcb",
+                          pcbnew.VECTOR2I(fromMm(150), fromMm(50)), inheritDrc=False)
+
+
+@pytest.mark.skipif(not hasattr(pcbnew.BOARD, "AddVariant"), reason="requires KiCad 10")
+def test_panel_rejects_project_variant_mismatch(tmp_path):
+    source = tmp_path / "source.kicad_pcb"
+    board = pcbnew.LoadBoard(str(Path(__file__).parents[1] / "resources/conn.kicad_pcb"))
+    board.AddVariant("Assembly A")
+    board.Save(str(source))
+    project_path = source.with_suffix(".kicad_pro")
+    with open(project_path, encoding="utf-8") as f:
+        project = json.load(f)
+    project["schematic"]["variants"] = [{"name": "Other", "description": ""}]
+    with open(project_path, "w", encoding="utf-8") as f:
+        json.dump(project, f)
+
+    panel = Panel(str(tmp_path / "panel.kicad_pcb"))
+    with pytest.raises(RuntimeError, match="differ"):
+        panel.appendBoard(source, pcbnew.VECTOR2I(fromMm(50), fromMm(50)))
+
+
+@pytest.mark.skipif(not hasattr(pcbnew.BOARD, "AddVariant"), reason="requires KiCad 10")
+def test_failed_append_does_not_add_variant(tmp_path):
+    source = tmp_path / "source.kicad_pcb"
+    incompatible = tmp_path / "incompatible.kicad_pcb"
+    board = pcbnew.LoadBoard(str(Path(__file__).parents[1] / "resources/conn.kicad_pcb"))
+    board.Save(str(source))
+    board.AddVariant("Unused")
+    board.GetDesignSettings().SetBoardThickness(fromMm(3))
+    board.Save(str(incompatible))
+
+    panel = Panel(str(tmp_path / "panel.kicad_pcb"))
+    panel.appendBoard(source, pcbnew.VECTOR2I(fromMm(50), fromMm(50)), inheritDrc=False)
+    with pytest.raises(RuntimeError, match="thickness"):
+        panel.appendBoard(incompatible, pcbnew.VECTOR2I(fromMm(150), fromMm(50)),
+                          inheritDrc=False)
+    assert not panel.board.HasVariant("Unused")
 
 
 def test_netClassesDefaultFirst():
