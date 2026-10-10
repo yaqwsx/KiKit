@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import json
 import os
 from typing import Any, List
 from kikit import plugin
@@ -488,22 +489,31 @@ CUTS_SECTION = {
 def ppCuts(section):
     section = validateSection("cuts", CUTS_SECTION, section)
 
+# Base rail/frame types that support adding a rail widener patch at chosen
+# outer corners (see WIDENER_TYPES / ppFraming below)
+WIDENER_BASE_TYPES = {"railstb": "railstb+widener", "railslr": "railslr+widener",
+                      "frame": "frame+widener", "tightframe": "tightframe+widener"}
+WIDENER_TYPES = list(WIDENER_BASE_TYPES.values())
+WIDENER_PLUGIN_CODE = "kibot.panelize_plugins.rail_widener.RailWidenerFramingPlugin"
+
 FRAMING_SECTION = {
     "type": SChoice(
-        ["none", "railstb", "railslr", "frame", "tightframe", "plugin"],
+        ["none", "railstb", "railslr", "frame", "tightframe", "plugin"] + WIDENER_TYPES,
         always(),
         "Framing type"),
     "hspace": SLength(
-        typeIn(["frame", "railslr", "tightframe", "plugin"]),
+        typeIn(["frame", "railslr", "tightframe", "plugin", "railslr+widener", "frame+widener",
+                "tightframe+widener"]),
         "Horizontal space between PCBs and the frame"),
     "vspace": SLength(
-        typeIn(["frame", "railstb", "tightframe", "plugin"]),
+        typeIn(["frame", "railstb", "tightframe", "plugin", "railstb+widener", "frame+widener",
+                "tightframe+widener"]),
         "Vertical space between PCBs and the frame"),
     "space": SLength(
         never(),
         "Space between frame/rails and PCBs"),
     "width": SLength(
-        typeIn(["frame", "railstb", "railslr", "tightframe", "plugin"]),
+        typeIn(["frame", "railstb", "railslr", "tightframe", "plugin"] + WIDENER_TYPES),
         "Width of the framing"),
     "mintotalheight": SLength(
         typeIn(["frame", "railstb", "tightframe", "plugin"]),
@@ -538,7 +548,7 @@ FRAMING_SECTION = {
         never(),
         "Add chamfer to the 4 corners of the panel. Specifies a 45° chamfer."),
     "fillet": SLength(
-        typeIn(["tightframe", "frame", "railslr", "railstb", "plugin"]),
+        typeIn(["tightframe", "frame", "railslr", "railstb", "plugin"] + WIDENER_TYPES),
         "Add fillet to the 4 corners of the panel. Specify fillet radius."),
     "code": SPlugin(
         plugin.FramingPlugin,
@@ -546,7 +556,19 @@ FRAMING_SECTION = {
         "Plugin specification as moduleName.pluginName"),
     "arg": SStr(
         typeIn(["plugin"]),
-        "String argument for the layout plugin")
+        "String argument for the layout plugin"),
+    "widenercorners": SList(
+        typeIn(WIDENER_TYPES),
+        "Outer corners to add a rail widener patch to, e.g. 'tl,tr'"),
+    "widenerwidth": SLength(
+        typeIn(WIDENER_TYPES),
+        "Depth of the rail widener patch, from the panel's outer edge towards the board"),
+    "widenerlength": SLength(
+        typeIn(WIDENER_TYPES),
+        "Length of the rail widener patch along the rail edge"),
+    "widenergap": SLength(
+        typeIn(WIDENER_TYPES),
+        "Minimum gap kept between the rail widener patch and the board(s)")
 }
 
 def ppFraming(section):
@@ -556,6 +578,20 @@ def ppFraming(section):
         section["hspace"] = section["vspace"] = section["space"]
     if "chamfer" in section:
         section["chamferwidth"] = section["chamferheight"] = section["chamfer"]
+    # A "<base>+widener" type is GUI sugar: it collapses to the real "plugin"
+    # type, with code/arg pointed at KiBot's rail widener plugin built from
+    # the widener* fields (those aren't real KiKit preset keys, so they never
+    # reach the actual panelization code)
+    baseType = {v: k for k, v in WIDENER_BASE_TYPES.items()}.get(section.get("type"))
+    if baseType is not None:
+        corners = section.pop("widenercorners", [])
+        width = section.pop("widenerwidth", 0)
+        length = section.pop("widenerlength", 0)
+        gap = section.pop("widenergap", 0)
+        section["type"] = "plugin"
+        section["code"] = FRAMING_SECTION["code"].validate(WIDENER_PLUGIN_CODE)
+        section["arg"] = json.dumps({"type": baseType, "corners": corners, "width": width,
+                                     "length": length, "gap": gap})
 
 TOOLING_SECTION = {
     "type": SChoice(
