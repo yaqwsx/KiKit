@@ -174,10 +174,10 @@ def jigMountingHoles(jigFrameSize, origin=toKiCADPoint((0, 0))):
     """ Get list of all mounting holes in a jig of given size """
     w, h = jigFrameSize
     holes = [
-        toKiCADPoint((0, (w + INNER_BORDER) / 2)),
-        toKiCADPoint((0, -(w + INNER_BORDER) / 2)),
-        toKiCADPoint(((h + INNER_BORDER) / 2, 0)),
-        toKiCADPoint((-(h + INNER_BORDER) / 2, 0)),
+        toKiCADPoint(((w + INNER_BORDER) / 2,0 )),
+        toKiCADPoint((-(w + INNER_BORDER) / 2,0 )),
+        toKiCADPoint((0,(h + INNER_BORDER) / 2)),
+        toKiCADPoint((0,-(h + INNER_BORDER) / 2)),
     ]
     return [x + origin for x in holes]
 
