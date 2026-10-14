@@ -87,7 +87,8 @@ class BasicGridPosition(GridPlacerBase):
                  hbonewidth: int = 0, vbonewidth: int = 0,
                  hboneskip: int = 0, vboneskip: int = 0,
                  hbonefirst: int = 0, vbonefirst: int = 0,
-                 hevendiff: int = 0, vevendiff: int = 0) -> None:
+                 hevendiff: int = 0, vevendiff: int = 0,
+                 hevenoffset: int = 0, vevenoffset: int = 0) -> None:
         self.horSpace = horSpace
         self.verSpace = verSpace
         self.hbonewidth = hbonewidth
@@ -98,6 +99,9 @@ class BasicGridPosition(GridPlacerBase):
         self.vbonefirst = vbonefirst
         self.hevendiff = hevendiff
         self.vevendiff = vevendiff
+        self.hevenoffset = hevenoffset
+        self.vevenoffset = vevenoffset
+
 
     def position(self, i: int, j: int, boardSize: Optional[BOX2I]) -> VECTOR2I:
         if boardSize is None:
@@ -115,12 +119,15 @@ class BasicGridPosition(GridPlacerBase):
         vbonecount = 0 if self.vbonewidth == 0 \
             else max((j + self.vbonefirst) // (self.vboneskip + 1), 0)
         x += vbonecount * (self.vbonewidth + self.horSpace)
+        x+= self.hevenoffset if i % 2 == 1 else 0
 
         # Accumulate vertical offset
         y = 0
         for row in range(i):
             delta = self.verSpace + (self.vevendiff if row % 2 == 1 else 0)
             y += h + delta
+
+        y += self.vevenoffset if j % 2 == 1 else 0
 
         hbonecount = 0 if self.hbonewidth == 0 \
             else max((i + self.hbonefirst) // (self.hboneskip + 1), 0)

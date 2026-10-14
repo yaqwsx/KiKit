@@ -7,6 +7,8 @@
         "vspace": "0mm",
         "hevendiff": "0mm",
         "vevendiff": "0mm",
+        "hevenoffset": "0mm",
+        "vevenoffset": "0mm",
         "rotation": "0deg",
         "alternation": "none",
         "renamenet": "Board_{n}-{orig}",
