@@ -720,7 +720,19 @@ class Substrate:
         if isinstance(other, list):
             self.substrates = shapely.union_all([self.substrates] + other, grid_size=1)
         elif isinstance(other, Substrate):
-            self.substrates = shapely.union(self.substrates, other.substrates, grid_size=1)
+            incoming = shapely.set_precision(other.substrates, 1)
+            if self.substrates.is_empty:
+                self.substrates = incoming
+            elif incoming.is_empty:
+                pass
+            elif (isinstance(self.substrates, (Polygon, MultiPolygon)) and
+                  isinstance(incoming, (Polygon, MultiPolygon)) and
+                  shapely.get_precision(self.substrates) == 1 and
+                  self.substrates.disjoint(incoming)):
+                parts = list(listGeometries(self.substrates)) + list(listGeometries(incoming))
+                self.substrates = shapely.set_precision(MultiPolygon(parts), 1, mode="pointwise")
+            else:
+                self.substrates = shapely.union(self.substrates, incoming, grid_size=1)
             self.circles.extend(other.circles)
         else:
             self.substrates = shapely.union(self.substrates, other, grid_size=1)

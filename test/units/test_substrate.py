@@ -380,3 +380,23 @@ def test_circleIndexPreservesSerialization():
                 tuple(shape.GetCenter()),
                 shape.GetRadius() if shape.GetShape() in [pcbnew.S_ARC, pcbnew.S_CIRCLE] else 0)
     assert [signature(s) for s in panel.serialize(True)] == [signature(s) for s in reference]
+
+
+@pytest.mark.parametrize("bounds", [(20, 0, 30, 10), (10, 0, 20, 10),
+                                   (5, 0, 15, 10), (0, 0, 0, 0)])
+@pytest.mark.parametrize("floating", [False, True])
+def test_substrateUnionPrecisionAndContact(bounds, floating):
+    from shapely.geometry import box
+    first, second = Substrate([]), Substrate([])
+    first.union(box(0, 0, 10, 10))
+    second.union(box(*bounds))
+    first.substrates = shapely.set_precision(first.substrates, 1)
+    second.substrates = shapely.set_precision(second.substrates, 1)
+    if floating:
+        first.substrates = shapely.set_precision(first.substrates, 0)
+        second.substrates = shapely.set_precision(second.substrates, 0)
+    expected = shapely.union(first.substrates, second.substrates, grid_size=1)
+    first.union(second)
+    assert first.substrates.is_valid
+    assert first.substrates.equals(expected)
+    assert shapely.get_precision(first.substrates) == shapely.get_precision(expected)
