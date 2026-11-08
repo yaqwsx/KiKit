@@ -1053,7 +1053,8 @@ class Substrate:
         contacts = centers - radius * normals[valid]
         along = np.sum((contacts - coords[:-1][valid]) * tangents[valid], axis=1)
         onSegment = (along >= 0) & (along <= segmentLengths[valid])
-        candidates = list(zip(centers[onSegment], contacts[onSegment]))
+        candidateCenters = [centers[onSegment]]
+        candidateContacts = [contacts[onSegment]]
 
         # Convex vertices also belong to the offset boundary of a polygon.
         projections = (coords[:-1] - base) @ direction
@@ -1062,8 +1063,16 @@ class Substrate:
         valid = discriminants >= 0
         for sign in [-1, 1]:
             distances = projections[valid] + sign * np.sqrt(discriminants[valid])
-            candidates.extend(zip(base + distances[:, None] * direction, coords[:-1][valid]))
+            candidateCenters.append(base + distances[:, None] * direction)
+            candidateContacts.append(coords[:-1][valid])
 
+        centers = np.concatenate(candidateCenters)
+        contacts = np.concatenate(candidateContacts)
+        along = np.sum((centers - radius * normal - vertex) * direction, axis=1)
+        along *= 1 if incomingBoard else -1
+        # Pad the prefilter for rounding; the exact contact check below is unchanged.
+        nearby = (along >= -2 * GEOMETRY_EPSILON) & (along <= available + 2 * GEOMETRY_EPSILON)
+        candidates = list(zip(centers[nearby], contacts[nearby]))
         candidates.sort(key=lambda c: np.linalg.norm(c[0] - vertex))
         boundary = self.substrates.boundary
         line = LineString(ring.coords)
@@ -1168,17 +1177,20 @@ class Substrate:
         for polygon in listGeometries(joined):
             for ring in [polygon.exterior, *polygon.interiors]:
                 coords = np.array(ring.coords[:-1])
-                for i, vertex in enumerate(coords):
-                    incoming = vertex - coords[i - 1]
-                    outgoing = coords[(i + 1) % len(coords)] - vertex
-                    lengths = np.linalg.norm(incoming), np.linalg.norm(outgoing)
-                    if min(lengths) <= GEOMETRY_EPSILON:
-                        continue
-                    u, v = incoming / lengths[0], outgoing / lengths[1]
-                    cross = u[0] * v[1] - u[1] * v[0]
-                    if cross < -1e-10:
-                        corners.append((vertex, u, v, lengths, cross,
-                                        coords[i - 1], coords[(i + 1) % len(coords)]))
+                incoming = coords - np.roll(coords, 1, axis=0)
+                outgoing = np.roll(coords, -1, axis=0) - coords
+                incomingLengths = np.linalg.norm(incoming, axis=1)
+                outgoingLengths = np.linalg.norm(outgoing, axis=1)
+                valid = np.minimum(incomingLengths, outgoingLengths) > GEOMETRY_EPSILON
+                indices = np.flatnonzero(valid)
+                us = incoming[valid] / incomingLengths[valid, None]
+                vs = outgoing[valid] / outgoingLengths[valid, None]
+                crosses = us[:, 0] * vs[:, 1] - us[:, 1] * vs[:, 0]
+                for j in np.flatnonzero(crosses < -1e-10):
+                    i = indices[j]
+                    corners.append((coords[i], us[j], vs[j],
+                                    (incomingLengths[i], outgoingLengths[i]), crosses[j],
+                                    coords[i - 1], coords[(i + 1) % len(coords)]))
 
         wedges, circles = [], []
         for endpoint in [tabFace.coords[0], tabFace.coords[-1]]:

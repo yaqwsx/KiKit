@@ -301,6 +301,39 @@ def test_circleFitRejectThenContinue():
     assert fit.addPoint(fromMm(10) * np.array([np.cos(0.105), np.sin(0.105)]))
 
 
+@pytest.mark.parametrize("incomingBoard", [False, True])
+@pytest.mark.parametrize("angle", [0, 13, 90, 137])
+@pytest.mark.parametrize("radius", [0.25, 1, 3])
+def test_boundaryFilletOnLongEdge(incomingBoard, angle, radius):
+    from shapely.affinity import rotate, translate
+    from shapely.geometry import box
+
+    theta = np.deg2rad(angle)
+    rotation = np.array([[np.cos(theta), -np.sin(theta)],
+                         [np.sin(theta), np.cos(theta)]])
+    vertex = np.array([fromMm(1000), -fromMm(1000)], dtype=float)
+    board = Substrate([])
+    board.union(translate(rotate(box(-fromMm(100), -fromMm(100), 0, fromMm(100)),
+                                 angle, origin=(0, 0)), *vertex))
+    board.orient()
+    if incomingBoard:
+        u, v = rotation @ [0, 1], rotation @ [1, 0]
+        lengths = (fromMm(100), fromMm(5))
+        start, end, center = (0, -radius), (radius, 0), (radius, -radius)
+    else:
+        u, v = rotation @ [-1, 0], rotation @ [0, 1]
+        lengths = (fromMm(5), fromMm(100))
+        start, end, center = (radius, 0), (0, radius), (radius, radius)
+    result = board._filletOnBoundary(vertex, u, v, lengths, fromMm(radius))
+    for actual, expected in zip(result[:3], [start, end, center]):
+        expected = vertex + rotation @ (np.array(expected) * fromMm(1))
+        assert np.max(np.abs(actual - expected)) < 1
+    assert result[-1] == incomingBoard
+    shortLengths = (lengths[0], fromMm(radius / 2)) if incomingBoard else (fromMm(radius / 2), lengths[1])
+    with pytest.raises(TabFilletError, match="does not fit"):
+        board._filletOnBoundary(vertex, u, v, shortLengths, fromMm(radius))
+
+
 @pytest.mark.parametrize("points", [
     [(i, 0) for i in range(5)],
     [(i, 2 * i + 1) for i in range(5)],
