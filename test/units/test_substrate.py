@@ -358,3 +358,25 @@ def test_circleFitSymmetricCircleWithZeroRootDerivative():
     center, actualRadius = fit.foundCircle
     assert np.array_equal(center, [0, 0])
     assert actualRadius == radius
+
+
+def test_circleIndexPreservesSerialization():
+    panel = Substrate([])
+    for x in [200, 0, 100]:
+        circle = pcbnew.PCB_SHAPE()
+        circle.SetShape(STROKE_T.S_CIRCLE)
+        circle.SetCenter(pcbnew.VECTOR2I(fromMm(x), 0))
+        circle.SetRadius(fromMm(10))
+        board = Substrate([circle])
+        tab, _ = board.tab((fromMm(x + 15), 0), (-1, 0), fromMm(1.5), fillet=fromMm(1))
+        board.union(tab)
+        panel.union(board)
+    reference = []
+    for polygon in listGeometries(panel.substrates):
+        ring = polygon.simplify(GEOMETRY_EPSILON).exterior
+        reference.extend(panel._serializeRing(ring, True))
+    def signature(shape):
+        return (shape.GetShape(), tuple(shape.GetStart()), tuple(shape.GetEnd()),
+                tuple(shape.GetCenter()),
+                shape.GetRadius() if shape.GetShape() in [pcbnew.S_ARC, pcbnew.S_CIRCLE] else 0)
+    assert [signature(s) for s in panel.serialize(True)] == [signature(s) for s in reference]

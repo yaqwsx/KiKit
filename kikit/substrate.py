@@ -748,15 +748,21 @@ class Substrate:
             geoms = [self.substrates]
         else:
             raise RuntimeError("Uknown type '{}' of substrate geometry".format(type(self.substrates)))
+        circleIndex = None
+        if reconstructArcs and self.circles:
+            circleIndex = shapely.STRtree([
+                geometry.box(center[0] - radius, center[1] - radius,
+                             center[0] + radius, center[1] + radius)
+                for center, radius, _, _, _ in self.circles])
         items = []
         for polygon in geoms:
             simplified_polygon = shapely.simplify(polygon, GEOMETRY_EPSILON)
-            items += self._serializeRing(simplified_polygon.exterior, reconstructArcs)
+            items += self._serializeRing(simplified_polygon.exterior, reconstructArcs, circleIndex)
             for interior in simplified_polygon.interiors:
-                items += self._serializeRing(interior, reconstructArcs)
+                items += self._serializeRing(interior, reconstructArcs, circleIndex)
         return items
 
-    def _serializeRing(self, ring, reconstructArcs):
+    def _serializeRing(self, ring, reconstructArcs, circleIndex=None):
         TOLERANCE = ARC_CHORD_ERROR + GEOMETRY_EPSILON
         coords = ring.coords
         if coords[0] != coords[-1]:
@@ -770,9 +776,19 @@ class Substrate:
         rearranged = np.roll(coords, -max_dist_index, axis=0)
         coords = np.vstack((rearranged, rearranged[0]))
 
+        candidates = []
+        if circleIndex is None and reconstructArcs:
+            candidates = list(enumerate(self.circles))
+        if circleIndex is not None:
+            minx, miny, maxx, maxy = ring.bounds
+            margin = ARC_CHORD_ERROR + GEOMETRY_EPSILON
+            nearby = circleIndex.query(geometry.box(minx - margin, miny - margin,
+                                                    maxx + margin, maxy + margin))
+            candidates = [(i, self.circles[i]) for i in sorted(nearby)]
+
         if reconstructArcs:
             # Boolean operations on chords can trim a tangent endpoint by a fraction of a micron.
-            for _, _, start, end, _ in self.circles:
+            for _, (_, _, start, end, _) in candidates:
                 for endpoint in [start, end]:
                     coords[np.linalg.norm(coords - endpoint, axis=1) <= ARC_CHORD_ERROR] = endpoint
             keep = np.r_[True, np.linalg.norm(np.diff(coords, axis=0), axis=1) > 1]
@@ -781,9 +797,9 @@ class Substrate:
         circleEdges = np.full(len(coords) - 1, -1, dtype=int)
         circleErrors = np.full(len(coords) - 1, np.inf)
         if reconstructArcs:
-            for index, (center, radius, start, end, sweep) in enumerate(self.circles):
+            midpoints = (coords[:-1] + coords[1:]) / 2
+            for index, (center, radius, start, end, sweep) in candidates:
                 errors = np.abs(np.linalg.norm(coords - center, axis=1) - radius)
-                midpoints = (coords[:-1] + coords[1:]) / 2
                 chordErrors = np.abs(np.linalg.norm(midpoints - center, axis=1) - radius)
                 edgeErrors = np.maximum(errors[:-1], errors[1:])
                 matches = ((edgeErrors <= ARC_CHORD_ERROR + GEOMETRY_EPSILON) &
