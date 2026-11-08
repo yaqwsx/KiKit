@@ -286,3 +286,61 @@ def test_circular_board_panel_precision(tmp_path, monkeypatch, split_outline):
     # Check the saved/reloaded geometry, including KiCad's arc rounding.
     assert max(abs(e.GetRadius() - fromMm(10)) for e in board_arcs) <= 100
     assert max(abs(e.GetRadius() - fromMm(1)) for e in fillets) <= 100
+
+
+@pytest.mark.parametrize("angle", [0, 13, 90])
+@pytest.mark.parametrize("curved", [False, True])
+def test_cachedSourceOutlineMatchesReconstruction(tmp_path, angle, curved):
+    import numpy as np
+    import shapely
+    source = tmp_path / "source.kicad_pcb"
+    board = pcbnew.NewBoard(str(source))
+    center = np.array([fromMm(20), fromMm(30)])
+    if curved:
+        shape = pcbnew.PCB_SHAPE(board)
+        shape.SetShape(pcbnew.S_CIRCLE)
+        shape.SetCenter(pcbnew.VECTOR2I(*map(int, center)))
+        shape.SetRadius(fromMm(10))
+        shape.SetLayer(pcbnew.Edge_Cuts)
+        board.Add(shape)
+    else:
+        angles = np.linspace(0, 2 * np.pi, 513)
+        radii = fromMm(10) + fromMm(2) * np.sin(5 * angles)
+        points = np.rint(center + radii[:, None] * np.column_stack((np.cos(angles), np.sin(angles)))).astype(int)
+        for a, b in zip(points, points[1:]):
+            shape = pcbnew.PCB_SHAPE(board)
+            shape.SetShape(pcbnew.S_SEGMENT)
+            shape.SetStart(pcbnew.VECTOR2I(*map(int, a)))
+            shape.SetEnd(pcbnew.VECTOR2I(*map(int, b)))
+            shape.SetLayer(pcbnew.Edge_Cuts)
+            board.Add(shape)
+    board.Save(str(source))
+    cached = Panel(str(tmp_path / "cached.kicad_pcb"))
+    reference = Panel(str(tmp_path / "reference.kicad_pcb"))
+    sourceArea = pcbnew.BOX2I(pcbnew.VECTOR2I(0, 0), pcbnew.VECTOR2I(fromMm(50), fromMm(50)))
+    for x, y in [(50, 50), (100, 100), (150, 75)]:
+        reference._sourceSubstrates.clear()
+        for panel in [cached, reference]:
+            panel.appendBoard(source, pcbnew.VECTOR2I(fromMm(x), fromMm(y)),
+                              sourceArea=sourceArea, rotationAngle=EDA_ANGLE(angle, DEGREES_T))
+        a, b = cached.substrates[-1], reference.substrates[-1]
+        assert a.substrates.equals_exact(b.substrates, 0)
+        assert shapely.get_precision(a.substrates) == shapely.get_precision(b.substrates)
+        assert len(a.circles) == len(b.circles)
+        for ca, cb in zip(a.circles, b.circles):
+            for va, vb in zip(ca, cb):
+                assert np.array_equal(va, vb)
+        probe = (fromMm(x), fromMm(y))
+        assert np.array_equal(a.backToSource(probe), b.backToSource(probe))
+
+    if curved:
+        import os
+        oldStat = source.stat()
+        shape.SetRadius(fromMm(8))
+        board.Save(str(source))
+        os.utime(source, ns=(oldStat.st_atime_ns, oldStat.st_mtime_ns))
+        reference._sourceSubstrates.clear()
+        for panel in [cached, reference]:
+            panel.appendBoard(source, pcbnew.VECTOR2I(fromMm(200), fromMm(125)),
+                              sourceArea=sourceArea, rotationAngle=EDA_ANGLE(angle, DEGREES_T))
+        assert cached.substrates[-1].substrates.equals_exact(reference.substrates[-1].substrates, 0)

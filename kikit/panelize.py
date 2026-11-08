@@ -616,6 +616,7 @@ class Panel:
         self.filename = panelFilename
         self.board = pcbnew.NewBoard(panelFilename)
         self.sourcePaths = set() # A set of all board files that were appended to the panel
+        self._sourceSubstrates = {}
         self.substrates = [] # Substrates of the individual boards; e.g. for masking
         self.boardSubstrate = Substrate([]) # Keep substrate in internal representation,
                                             # Draw it just before saving
@@ -1175,6 +1176,7 @@ class Panel:
             raise RuntimeError("Board rotation has to be passed as EDA_ANGLE, not a number")
 
 
+        sourceStat = os.stat(filename)
         board = LoadBoard(str(filename))
         sourceVariants = [
             {"name": name, "description": board.GetVariantDescription(name)}
@@ -1286,8 +1288,23 @@ class Panel:
 
         revertTransformation = makeRevertTransformation(rotationAngle, originPoint, translation)
         try:
-            s = Substrate(edges, 0,
-                revertTransformation=revertTransformation)
+            sourceKey = (os.path.realpath(filename), sourceStat.st_mtime_ns,
+                         sourceStat.st_ctime_ns, sourceStat.st_size,
+                         tuple(enlargedSourceArea.GetPosition()), tuple(enlargedSourceArea.GetSize()),
+                         tuple(originPoint), rotationAngle.AsDegrees(), bakeText, interpretAnnotations)
+            cached = self._sourceSubstrates.get(sourceKey)
+            if cached is None:
+                s = Substrate(edges, 0, revertTransformation=revertTransformation)
+                self._sourceSubstrates[sourceKey] = (s.substrates, tuple(s.circles), tuple(translation))
+            else:
+                polygon, circles, previousTranslation = cached
+                s = Substrate([])
+                s.substrates, s.circles = polygon, list(circles)
+                s.translate(np.array(translation) - previousTranslation)
+                # Integer translation preserves the grid and the original vertex order.
+                s.substrates = shapely.set_precision(s.substrates, 1, mode="pointwise")
+                s.oriented = True
+                s.revertTransformation = revertTransformation
             self.boardSubstrate.union(s)
             self.substrates.append(s)
             self.substrates[-1].annotations = annotations
