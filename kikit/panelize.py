@@ -682,7 +682,8 @@ class Panel:
         pro files.
         """
         panelEdges = self.boardSubstrate.serialize(reconstructArcs)
-        boardsEdges = self._getRefillEdges(reconstructArcs)
+        needsRefill = refillAllZones or len(self.zonesToRefill) > 0
+        boardsEdges = self._getRefillEdges(reconstructArcs) if needsRefill else panelEdges
 
         for e in panelEdges:
             e.SetWidth(edgeWidth)
@@ -724,7 +725,7 @@ class Panel:
         for keepout in keepouts:
             self.board.Remove(keepout)
         # Remove edges
-        for edge in panelEdges:
+        for edge in boardsEdges:
             self.board.Remove(edge)
 
         # Handle zone refilling in a separate board

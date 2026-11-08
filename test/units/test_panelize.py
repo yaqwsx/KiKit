@@ -344,3 +344,28 @@ def test_cachedSourceOutlineMatchesReconstruction(tmp_path, angle, curved):
             panel.appendBoard(source, pcbnew.VECTOR2I(fromMm(200), fromMm(125)),
                               sourceArea=sourceArea, rotationAngle=EDA_ANGLE(angle, DEGREES_T))
         assert cached.substrates[-1].substrates.equals_exact(reference.substrates[-1].substrates, 0)
+
+
+
+def test_saveWithoutRefillMatchesRefillPath(tmp_path):
+    from collections import Counter
+    source = Path(__file__).parents[1] / "resources/conn.kicad_pcb"
+    snapshots = []
+    for refill in [False, True]:
+        panel = Panel(str(tmp_path / f"panel-{refill}.kicad_pcb"))
+        for x in [50, 100]:
+            panel.appendBoard(source, pcbnew.VECTOR2I(fromMm(x), fromMm(50)))
+        panel.save(reconstructArcs=True, refillAllZones=refill)
+        result = pcbnew.LoadBoard(panel.filename)
+        edges = Counter((s.GetShape(), tuple(s.GetStart()), tuple(s.GetEnd()),
+                         tuple(s.GetCenter()),
+                         s.GetRadius() if s.GetShape() in [pcbnew.S_ARC, pcbnew.S_CIRCLE] else 0, s.GetWidth())
+                        for s in result.GetDrawings() if s.GetLayer() == pcbnew.Edge_Cuts)
+        footprints = sorted((f.GetReference(), tuple(f.GetPosition()), f.GetOrientation().AsDegrees())
+                            for f in result.GetFootprints())
+        nets = sorted(str(n) for n in result.GetNetInfo().NetsByName())
+        project = json.loads(Path(panel.getProFilepath()).read_text())
+        snapshots.append((edges, footprints, nets, project["net_settings"],
+                          project["board"]["design_settings"]))
+        assert not any(s.GetLayer() == pcbnew.Edge_Cuts for s in panel.board.GetDrawings())
+    assert snapshots[0] == snapshots[1]
