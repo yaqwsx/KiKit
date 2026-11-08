@@ -251,6 +251,15 @@ must lie on the PCB edge or slightly outside of it.
 Place tabs. To make some of the options clear, please see the [explanation of
 tab placement process](tabs.md).
 
+Use `fillet` to specify a radius at the tab contacts. Fillets follow the local
+board boundary, including curves and outlines made from many short segments;
+a radius that does not fit the available geometry is reported as an error.
+Enable `post: reconstructarcs` to export the constructed
+circles as arcs. Without arc reconstruction, curves are exported as line
+segments. Arcs and Bézier curves are sampled for polygon operations with a
+0.0001 mm chord-deviation budget. For imported polylines, accuracy and any
+corners at the contact are determined by the supplied outline.
+
 #### Fixed
 
 Place given number of tabs on the PCB edge. The tabs are spaced uniformly. If

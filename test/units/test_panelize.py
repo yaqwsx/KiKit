@@ -229,7 +229,7 @@ def test_addFrameFilletsDoesNotCrossOtherBoards():
         holeCenters.append(Point(boardWidth / 2, miny + fromMm(4.5)))
 
     frame = box(0, -fromMm(4), boardWidth, -fromMm(2))
-    debugPanel = SimpleNamespace(debugRawFrame=[], debugReverseTabs=[])
+    debugPanel = SimpleNamespace(debugRawFrame=[], debugReverseTabs=[], boardSubstrate=Substrate([]))
     filletedFrame = addFrameFillets(frame, boards, fillet, debugPanel)
     panelGeometry = unary_union(
         [filletedFrame] + [substrate.substrates for substrate in boards]
@@ -237,3 +237,52 @@ def test_addFrameFilletsDoesNotCrossOtherBoards():
 
     assert len(debugPanel.debugReverseTabs) == 1
     assert all(not panelGeometry.contains(center) for center in holeCenters)
+
+
+@pytest.mark.parametrize("split_outline", [False, True])
+def test_circular_board_panel_precision(tmp_path, monkeypatch, split_outline):
+    from collections import Counter
+    from click.testing import CliRunner
+    import numpy as np
+    from kikit.ui import cli
+
+    source = tmp_path / "circle.kicad_pcb"
+    output = tmp_path / "panel.kicad_pcb"
+    board = pcbnew.BOARD()
+    if split_outline:
+        angles = np.linspace(0, 2 * np.pi, 9)
+        points = np.array([fromMm(50), fromMm(50)]) + fromMm(10) * np.column_stack(
+            (np.cos(angles), np.sin(angles)))
+        factory = Substrate([])
+        edges = [factory._constructArc(*points[i:i+3]) for i in range(0, 8, 2)]
+    else:
+        circle = pcbnew.PCB_SHAPE()
+        circle.SetShape(pcbnew.S_CIRCLE)
+        circle.SetLayer(pcbnew.Edge_Cuts)
+        circle.SetCenter(pcbnew.VECTOR2I(fromMm(50), fromMm(50)))
+        circle.SetRadius(fromMm(10))
+        edges = [circle]
+    for edge in edges:
+        edge.SetWidth(fromMm(0.05))
+        board.Add(edge)
+    board.Save(str(source))
+    monkeypatch.setattr("kikit.common.fakeKiCADGui", lambda: None)
+    result = CliRunner().invoke(cli, [
+        "panelize", "--layout", "grid; rows: 2; cols: 3; space: 2mm",
+        "--tabs", "fixed; width: 1.5mm; fillet: 1mm",
+        "--framing", "frame; width: 5mm; space: 3mm",
+        "--post", "reconstructarcs: true; edgewidth: 0.05mm", str(source), str(output)
+    ])
+    assert result.exit_code == 0, result.output
+    panel = pcbnew.LoadBoard(str(output))
+    edges = [e for e in panel.GetDrawings() if e.GetLayer() == pcbnew.Edge_Cuts]
+    endpoints = Counter(tuple(p) for e in edges for p in [e.GetStart(), e.GetEnd()])
+    assert set(endpoints.values()) == {2}
+    arcs = [e for e in edges if e.GetShape() == pcbnew.S_ARC]
+    board_arcs = [e for e in arcs if e.GetRadius() > fromMm(5)]
+    fillets = [e for e in arcs if e.GetRadius() < fromMm(5)]
+    assert len(board_arcs) == 24
+    assert len(fillets) >= 48
+    # Check the saved/reloaded geometry, including KiCad's arc rounding.
+    assert max(abs(e.GetRadius() - fromMm(10)) for e in board_arcs) <= 100
+    assert max(abs(e.GetRadius() - fromMm(1)) for e in fillets) <= 100

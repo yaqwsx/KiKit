@@ -469,6 +469,7 @@ def buildTabs(panel: "Panel", substrate: Substrate,
             if t is not None:
                 tabs.append(t)
                 cuts.append(c)
+                panel.boardSubstrate.circles.extend(substrate.circles[-2:] if fillet else [])
         except TabError as e:
             panel._renderLines(
                 [constructArrow(annotation.origin, annotation.direction, fromMm(3), fromMm(1))],
@@ -482,7 +483,7 @@ def addFrameFillets(frameGeometry, boardSubstrates, fillet, panel=None):
     carrying tab annotations, shoot reverse tabs toward the frame and fillet
     them. Returns the modified frame geometry.
 
-    If panel is provided, stores debug geometry (reverse tabs, raw frame) on it.
+    If panel is provided, stores debug geometry and exact fillet arcs on it.
     """
     if panel is not None:
         panel.debugRawFrame.append(frameGeometry)
@@ -512,7 +513,11 @@ def addFrameFillets(frameGeometry, boardSubstrates, fillet, panel=None):
                 )
                 if not crossesOtherBoard:
                     tabs.append(t)
-            except (TabError, TabFilletError):
+                    if panel is not None:
+                        panel.boardSubstrate.circles.extend(frameSubstrate.circles[-2:])
+            except TabError as e:
+                if isinstance(e.__cause__, TabFilletError):
+                    raise
                 pass  # Tab doesn't reach this frame piece (e.g. board-to-board tab)
 
     if panel is not None:

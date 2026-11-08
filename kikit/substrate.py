@@ -2,7 +2,7 @@ from shapely import geometry
 from shapely.geometry import (Polygon, MultiPolygon, LineString,
     MultiLineString, LinearRing, Point)
 from shapely.geometry.collection import GeometryCollection
-from shapely.ops import orient, unary_union, split, nearest_points
+from shapely.ops import orient, unary_union, split, nearest_points, substring
 import shapely
 import json
 import numpy as np
@@ -18,6 +18,8 @@ from kikit.units import deg
 from kikit.defs import STROKE_T, Layer
 
 TABFAIL_VISUAL = False
+GEOMETRY_EPSILON = fromMm(0.00001)
+ARC_CHORD_ERROR = fromMm(0.0001)  # Bound chord sagitta during polygon operations to 0.1 um.
 
 class PositionError(RuntimeError):
     def __init__(self, message, point):
@@ -166,22 +168,25 @@ def approximateArc(arc, endWith):
     """
     Take DRAWINGITEM and approximate it using lines
     """
-    SEGMENTS_PER_FULL= 4 * 32 # To Be consistent with default shapely settings
-
     startAngle = EDA_ANGLE(0, pcbnew.DEGREES_T)
     endAngle = EDA_ANGLE(0, pcbnew.DEGREES_T)
     arc.CalcArcAngles(startAngle, endAngle)
     if arc.GetShape() == STROKE_T.S_CIRCLE:
         endAngle = startAngle + 360 * deg
-        segments = SEGMENTS_PER_FULL
-    else:
-        segments = abs(int((endAngle.AsDegrees() - startAngle.AsDegrees()) * SEGMENTS_PER_FULL // 360))
-    # Ensure a minimal number of segments for small angle section of arcs
-    segments = max(segments, 12)
+    step = 2 * np.arccos(max(-1, 1 - ARC_CHORD_ERROR / max(arc.GetRadius(), 1)))
+    segments = max(12, int(np.ceil(abs(endAngle.AsRadians() - startAngle.AsRadians()) / step)) + 1)
+    if arc.GetShape() == STROKE_T.S_CIRCLE:
+        # Include the four extrema so circular-board bounds and placement stay exact.
+        segments = 4 * int(np.ceil((segments - 1) / 4)) + 1
     theta = np.linspace(startAngle.AsRadians(), endAngle.AsRadians(), segments)
     x = arc.GetCenter()[0] + arc.GetRadius() * np.cos(theta)
     y = arc.GetCenter()[1] + arc.GetRadius() * np.sin(theta)
     outline = list(np.column_stack([x, y]))
+    if arc.GetShape() == STROKE_T.S_ARC:
+        endpoints = [np.array(arc.GetStart()), np.array(arc.GetEnd())]
+        if np.linalg.norm(outline[0] - endpoints[0]) > np.linalg.norm(outline[0] - endpoints[1]):
+            endpoints.reverse()
+        outline[0], outline[-1] = endpoints
 
     end = np.array(endWith)
     first = np.array([outline[0][0], outline[0][1]])
@@ -199,9 +204,6 @@ def approximateBezier(bezier, endWith):
     """
     assert bezier.GetShape() == STROKE_T.S_CURVE
 
-    CURVE_POINTS = 4 * 32 - 2
-    dt = 1.0 / CURVE_POINTS
-
     start = np.array(bezier.GetStart())
     if hasattr(bezier, "GetBezierC1"):
       bc1 = np.array(bezier.GetBezierC1())
@@ -211,20 +213,25 @@ def approximateBezier(bezier, endWith):
       bc2 = np.array(bezier.GetBezControl2())
     end = np.array(bezier.GetEnd())
 
-    degenerated = (start == bc1).all() and (bc2 == end).all()
-
     outline = [start]
-    if not degenerated:
-        for i in range(CURVE_POINTS):
-            t = dt * i
-            vertex = (1 - t) ** 3 * start + \
-                     3 * t * (1 - t) ** 2 * bc1 + \
-                     3 * t ** 2 * (1 - t) * bc2 + \
-                     t ** 3 * end
-            outline.append(vertex)
-    else:
-        outline += [start, end]
-    outline.append(end)
+    pending = [np.array([start, bc1, bc2, end], dtype=float)]
+    while pending:
+        curve = pending.pop()
+        chord = curve[3] - curve[0]
+        lengthSquared = np.dot(chord, chord)
+        if lengthSquared:
+            projections = np.clip((curve[1:3] - curve[0]) @ chord / lengthSquared, 0, 1)
+            errors = curve[1:3] - (curve[0] + projections[:, None] * chord)
+        else:
+            errors = curve[1:3] - curve[0]
+        if np.max(np.linalg.norm(errors, axis=1)) <= ARC_CHORD_ERROR:
+            outline.append(curve[3])
+            continue
+        a, b, c = (curve[:-1] + curve[1:]) / 2
+        d, e = (a + b) / 2, (b + c) / 2
+        middle = (d + e) / 2
+        pending.extend([np.array([middle, e, c, curve[3]]),
+                        np.array([curve[0], a, d, middle])])
 
     endWith = np.array(endWith)
     first = np.array([outline[0][0], outline[0][1]])
@@ -646,6 +653,10 @@ class Substrate:
     geometry
     """
     def __init__(self, geometryList, bufferDistance=0, revertTransformation=None):
+        # Retain exact circles and arc endpoints through polygon unions and translations.
+        self.circles = [(np.array(e.GetCenter(), dtype=float), float(e.GetRadius()),
+                         np.array(getStartPoint(e), dtype=float), np.array(getEndPoint(e), dtype=float), None)
+                        for e in geometryList if e.GetShape() in [STROKE_T.S_ARC, STROKE_T.S_CIRCLE]]
         polygons = [toShapely(ring, geometryList) for ring in extractRings(geometryList)]
         self.substrates = unary_union(substratesFrom(polygons))
         self.oriented = False
@@ -669,7 +680,7 @@ class Substrate:
         """
         if self.oriented:
             return
-        self.substrates = self.substrates.simplify(SHP_EPSILON)
+        self.substrates = shapely.set_precision(self.substrates, 1).simplify(GEOMETRY_EPSILON)
         self.substrates = shapely.ops.orient(self.substrates)
         self.oriented = True
 
@@ -699,11 +710,16 @@ class Substrate:
         substrate.
         """
         if isinstance(other, list):
-            self.substrates = unary_union([self.substrates] + other)
+            self.substrates = shapely.union_all([self.substrates] + other, grid_size=1)
         elif isinstance(other, Substrate):
-            self.substrates = unary_union([self.substrates, other.substrates])
+            self.substrates = shapely.union(self.substrates, other.substrates, grid_size=1)
+            self.circles.extend(other.circles)
         else:
-            self.substrates = unary_union([self.substrates, other])
+            self.substrates = shapely.union(self.substrates, other, grid_size=1)
+        if isinstance(self.substrates, GeometryCollection):
+            # Edges collapsed by nanometre quantization have no substrate area.
+            self.substrates = shapely.union_all(
+                [g for g in self.substrates.geoms if isinstance(g, (Polygon, MultiPolygon))], grid_size=1)
         self.oriented = False
 
     def cut(self, piece):
@@ -716,6 +732,8 @@ class Substrate:
         """
         Produces a list of PCB_SHAPE on the Edge.Cuts layer
         """
+        if self.substrates.is_empty:
+            return []
         if isinstance(self.substrates, MultiPolygon) or isinstance(self.substrates, GeometryCollection):
             geoms = self.substrates.geoms
         elif isinstance(self.substrates, Polygon):
@@ -724,14 +742,14 @@ class Substrate:
             raise RuntimeError("Uknown type '{}' of substrate geometry".format(type(self.substrates)))
         items = []
         for polygon in geoms:
-            simplified_polygon = shapely.simplify(polygon, SHP_EPSILON)
+            simplified_polygon = shapely.simplify(polygon, GEOMETRY_EPSILON)
             items += self._serializeRing(simplified_polygon.exterior, reconstructArcs)
             for interior in simplified_polygon.interiors:
                 items += self._serializeRing(interior, reconstructArcs)
         return items
 
     def _serializeRing(self, ring, reconstructArcs):
-        TOLERANCE = fromMm(0.01)
+        TOLERANCE = ARC_CHORD_ERROR + GEOMETRY_EPSILON
         coords = ring.coords
         if coords[0] != coords[-1]:
             raise RuntimeError("Ring is incomplete")
@@ -744,13 +762,62 @@ class Substrate:
         rearranged = np.roll(coords, -max_dist_index, axis=0)
         coords = np.vstack((rearranged, rearranged[0]))
 
+        if reconstructArcs:
+            # Boolean operations on chords can trim a tangent endpoint by a fraction of a micron.
+            for _, _, start, end, _ in self.circles:
+                for endpoint in [start, end]:
+                    coords[np.linalg.norm(coords - endpoint, axis=1) <= ARC_CHORD_ERROR] = endpoint
+            keep = np.r_[True, np.linalg.norm(np.diff(coords, axis=0), axis=1) > 1]
+            coords = coords[keep]
+
+        circleEdges = np.full(len(coords) - 1, -1, dtype=int)
+        circleErrors = np.full(len(coords) - 1, np.inf)
+        if reconstructArcs:
+            for index, (center, radius, start, end, sweep) in enumerate(self.circles):
+                errors = np.abs(np.linalg.norm(coords - center, axis=1) - radius)
+                midpoints = (coords[:-1] + coords[1:]) / 2
+                chordErrors = np.abs(np.linalg.norm(midpoints - center, axis=1) - radius)
+                edgeErrors = np.maximum(errors[:-1], errors[1:])
+                matches = ((edgeErrors <= ARC_CHORD_ERROR + GEOMETRY_EPSILON) &
+                           (chordErrors <= 4 * ARC_CHORD_ERROR + GEOMETRY_EPSILON) &
+                           (edgeErrors < circleErrors))
+                if sweep is not None:
+                    # Nearby non-circular edges can lie close to the circle past its tangency.
+                    angles = np.arctan2(coords[:, 1] - center[1], coords[:, 0] - center[0])
+                    firstAngle = np.arctan2(start[1] - center[1], start[0] - center[0])
+                    progress = ((angles - firstAngle) * np.sign(sweep)) % (2 * np.pi)
+                    tolerance = GEOMETRY_EPSILON / radius
+                    inside = ((progress <= abs(sweep) + tolerance) |
+                              (progress >= 2 * np.pi - tolerance))
+                    matches &= inside[:-1] & inside[1:]
+                circleEdges[matches] = index
+                circleErrors[matches] = edgeErrors[matches]
+
         segments = []
         i = 0
-        while i < len(coords):
+        while i < len(coords) - 1:
+            if circleEdges[i] >= 0:
+                j = i + 1
+                while j < len(circleEdges) and circleEdges[j] == circleEdges[i]:
+                    j += 1
+                center, radius, _, _, _ = self.circles[circleEdges[i]]
+                angles = np.unwrap(np.arctan2(coords[i:j+1, 1] - center[1],
+                                             coords[i:j+1, 0] - center[0]))
+                if (abs(angles[-1] - angles[0]) > np.pi and
+                        np.linalg.norm(coords[i] - coords[j]) <= GEOMETRY_EPSILON):
+                    segments.append(self._constructCircle(center, radius))
+                else:
+                    angle = (angles[0] + angles[-1]) / 2
+                    middle = center + radius * np.array([np.cos(angle), np.sin(angle)])
+                    segments.append(self._constructArc(coords[i], middle, coords[j]))
+                i = j
+                continue
             j = i # in the case the following cycle never happens
             candidateCircle = CircleFitCandidates(tolerance=TOLERANCE)
             if reconstructArcs:
                 for j in range(i, len(coords)):
+                    if j > i and circleEdges[j - 1] >= 0:
+                        break
                     # Just walk edge segments until there is an arc
                     if not candidateCircle.addPoint(coords[j]):
                         break
@@ -790,14 +857,14 @@ class Substrate:
                     middleCandidates = [center + centerToMidpoint * radius, center - centerToMidpoint * radius]
                     arcMiddle = min(middleCandidates, key=lambda c: np.linalg.norm(c - mid))
 
-                    segments.append(self._constructArc(toKiCADPoint(start), toKiCADPoint(arcMiddle), toKiCADPoint(end)))
+                    segments.append(self._constructArc(start, arcMiddle, end))
 
                 i += len(candidateCircle) - 1
             else:
                 # Yield a line
                 a = coords[i]
                 b = coords[(i + 1) % len(coords)]
-                if np.linalg.norm(np.array(a) - np.array(b)) > SHP_EPSILON:
+                if np.linalg.norm(np.array(a) - np.array(b)) > 1:
                     segments.append(self._constructEdgeSegment(a, b))
                 i += 1
         return segments
@@ -806,8 +873,8 @@ class Substrate:
         segment = pcbnew.PCB_SHAPE()
         segment.SetShape(STROKE_T.S_SEGMENT)
         segment.SetLayer(Layer.Edge_Cuts)
-        segment.SetStart(toKiCADPoint(a))
-        segment.SetEnd(toKiCADPoint(b))
+        segment.SetStart(toKiCADPoint(np.rint(a)))
+        segment.SetEnd(toKiCADPoint(np.rint(b)))
         return segment
 
     def _constructArc(self, a, b, c):
@@ -817,7 +884,7 @@ class Substrate:
         arc = pcbnew.PCB_SHAPE()
         arc.SetShape(STROKE_T.S_ARC)
         arc.SetLayer(Layer.Edge_Cuts)
-        arc.SetArcGeometry(toKiCADPoint(a), toKiCADPoint(b), toKiCADPoint(c))
+        arc.SetArcGeometry(toKiCADPoint(np.rint(a)), toKiCADPoint(np.rint(b)), toKiCADPoint(np.rint(c)))
         return arc
 
     def _constructCircle(self, c, r):
@@ -884,7 +951,7 @@ class Substrate:
             raise TabError(origin, direction, ["Tab annotation is placed inside the board. It has to be on edge or outside the board."])
 
         origin = np.array(origin, dtype=np.float64)
-        direction = np.around(normalize(direction), 4)
+        direction = normalize(direction)
         origin -= direction * float(SHP_EPSILON)
         for geom in listGeometries(self.substrates):
             try:
@@ -898,7 +965,8 @@ class Substrate:
                 tabFace = biteBoundary(boundary, splitPointB, splitPointA)
                 if partitionLine is None:
                     # There is nothing else to do, return the tab
-                    tab = Polygon(list(tabFace.coords) + [sideOriginA, sideOriginB])
+                    contact = [np.array(p) + direction if fillet else p for p in tabFace.coords]
+                    tab = Polygon(contact + [sideOriginA, sideOriginB])
                     return self._makeTabFillet(tab, tabFace, fillet)
                 # Span the tab towards the partition line
                 # There might be multiple geometries in the partition line, so try them
@@ -928,15 +996,16 @@ class Substrate:
                         # penetrate the board substrate. Otherwise, there is a
                         # numerical instability on small slopes that yields
                         # artifacts on substrate union
-                        offsetTabFace = [(p[0] - float(SHP_EPSILON) * direction[0], p[1] - float(SHP_EPSILON) * direction[1]) for p in tabFace.coords]
-                        partitionFaceCoord = [(p[0] + float(SHP_EPSILON) * direction[0], p[1] + float(SHP_EPSILON) * direction[1]) for p in partitionFaceCoord]
+                        overlap = 1 if fillet else SHP_EPSILON
+                        offsetTabFace = [(p[0] - float(overlap) * direction[0], p[1] - float(overlap) * direction[1]) for p in tabFace.coords]
+                        partitionFaceCoord = [(p[0] + float(overlap) * direction[0], p[1] + float(overlap) * direction[1]) for p in partitionFaceCoord]
                         tab = Polygon(offsetTabFace + partitionFaceCoord)
                         return self._makeTabFillet(tab, tabFace, fillet)
                 return None, None
             except NoIntersectionError as e:
                 continue
             except TabFilletError as e:
-                raise TabError(origin, direction, ["This is a bug. Please open an issue and provide the board on which the fillet failed."])
+                raise TabError(origin, direction, [str(e)]) from e
 
         raise TabError(origin, direction, [
             "too wide tab so it does not hit the board",
@@ -944,37 +1013,226 @@ class Substrate:
             "ray length is not sufficient"
         ])
 
+    def _circleForEdge(self, start, end):
+        tolerance = ARC_CHORD_ERROR + GEOMETRY_EPSILON
+        for center, radius, _, _, _ in self.circles:
+            points = np.array([start, end, (start + end) / 2])
+            if np.max(np.abs(np.linalg.norm(points - center, axis=1) - radius)) <= tolerance:
+                return center, radius
+        return None
+
+    def _filletOnBoundary(self, vertex, u, v, lengths, radius):
+        rings = [ring for polygon in listGeometries(self.substrates)
+                 for ring in [polygon.exterior, *polygon.interiors]]
+        ring = min(rings, key=lambda r: r.distance(Point(vertex)))
+        incomingBoard = ring.distance(Point(vertex - u * min(lengths[0] / 2, radius))) <= GEOMETRY_EPSILON
+        direction = v if incomingBoard else u
+        normal = np.array([direction[1], -direction[0]])
+        base = vertex + radius * normal
+        available = lengths[1] if incomingBoard else lengths[0]
+        coords = np.array(ring.coords)
+        segments = np.diff(coords, axis=0)
+        segmentLengths = np.linalg.norm(segments, axis=1)
+        tangents = segments / segmentLengths[:, None]
+        normals = np.column_stack((tangents[:, 1], -tangents[:, 0]))
+        offsets = coords[:-1] + radius * normals - base
+        cross = direction[0] * tangents[:, 1] - direction[1] * tangents[:, 0]
+        distances = np.full(len(segments), np.inf)
+        np.divide(offsets[:, 0] * tangents[:, 1] - offsets[:, 1] * tangents[:, 0],
+                  cross, out=distances, where=np.abs(cross) > 1e-12)
+        valid = np.isfinite(distances)
+        centers = base + distances[valid, None] * direction
+        contacts = centers - radius * normals[valid]
+        along = np.sum((contacts - coords[:-1][valid]) * tangents[valid], axis=1)
+        onSegment = (along >= 0) & (along <= segmentLengths[valid])
+        candidates = list(zip(centers[onSegment], contacts[onSegment]))
+
+        # Convex vertices also belong to the offset boundary of a polygon.
+        projections = (coords[:-1] - base) @ direction
+        perpendicular = coords[:-1] - base - projections[:, None] * direction
+        discriminants = radius ** 2 - np.sum(perpendicular ** 2, axis=1)
+        valid = discriminants >= 0
+        for sign in [-1, 1]:
+            distances = projections[valid] + sign * np.sqrt(discriminants[valid])
+            candidates.extend(zip(base + distances[:, None] * direction, coords[:-1][valid]))
+
+        candidates.sort(key=lambda c: np.linalg.norm(c[0] - vertex))
+        boundary = self.substrates.boundary
+        line = LineString(ring.coords)
+        firstDistance = line.project(Point(vertex))
+        for center, contact in candidates:
+            linePoint = center - radius * normal
+            along = np.dot(linePoint - vertex, direction) * (1 if incomingBoard else -1)
+            if not -GEOMETRY_EPSILON <= along <= available + GEOMETRY_EPSILON:
+                continue
+            if self.substrates.contains(Point(center)):
+                continue
+            if abs(boundary.distance(Point(center)) - radius) > GEOMETRY_EPSILON:
+                continue
+            start, end = (contact, linePoint) if incomingBoard else (linePoint, contact)
+            a, b = start - center, end - center
+            turn = np.arctan2(a[0] * b[1] - a[1] * b[0], np.dot(a, b))
+            if turn >= -1e-10:
+                continue
+            lastDistance = line.project(Point(contact))
+            walk = ((firstDistance - lastDistance) if incomingBoard else
+                    (lastDistance - firstDistance)) % line.length
+            if walk > line.length / 2:
+                continue
+            if incomingBoard and lastDistance > firstDistance:
+                path = list(substring(line, firstDistance, 0).coords) + list(substring(line, line.length, lastDistance).coords)
+            elif not incomingBoard and lastDistance < firstDistance:
+                path = list(substring(line, firstDistance, line.length).coords) + list(substring(line, 0, lastDistance).coords)
+            else:
+                path = list(substring(line, firstDistance, lastDistance).coords)
+            return start, end, center, turn, path[1:-1], incomingBoard
+        raise TabFilletError("Requested fillet does not fit the local board boundary")
+
+    def _filletOnCircle(self, vertex, u, v, lengths, circle, incomingCurve, radius):
+        circleCenter, circleRadius = circle
+        curveDirection = u if incomingCurve else v
+        lineDirection = v if incomingCurve else u
+        normal = np.array([lineDirection[1], -lineDirection[0]])
+        curveNormal = np.array([curveDirection[1], -curveDirection[0]])
+        outside = np.dot(curveNormal, vertex - circleCenter) > 0
+        offsetRadius = circleRadius + radius if outside else circleRadius - radius
+        if offsetRadius <= 0:
+            raise TabFilletError("Fillet radius is too large for the circular contact")
+        base = vertex + normal * radius
+        projection = np.dot(circleCenter - base, lineDirection)
+        perpendicular = base + projection * lineDirection - circleCenter
+        discriminant = offsetRadius ** 2 - np.dot(perpendicular, perpendicular)
+        if discriminant < 0:
+            raise TabFilletError("No tangent fillet fits the circular contact")
+
+        candidates = []
+        for sign in [-1, 1]:
+            center = base + (projection + sign * np.sqrt(discriminant)) * lineDirection
+            linePoint = center - normal * radius
+            distance = np.dot(linePoint - vertex, lineDirection)
+            available = lengths[1] if incomingCurve else lengths[0]
+            alongEdge = distance if incomingCurve else -distance
+            if not -GEOMETRY_EPSILON <= alongEdge <= available + GEOMETRY_EPSILON:
+                continue
+            curvePoint = circleCenter + (center - circleCenter) * circleRadius / offsetRadius
+            if self.substrates.boundary.distance(Point(curvePoint)) > ARC_CHORD_ERROR + GEOMETRY_EPSILON:
+                continue
+            candidates.append((center, linePoint, curvePoint))
+        if not candidates:
+            raise TabFilletError("Requested fillet does not fit the circular contact")
+        center, linePoint, curvePoint = min(candidates, key=lambda c: np.linalg.norm(c[0] - vertex))
+        start, end = (curvePoint, linePoint) if incomingCurve else (linePoint, curvePoint)
+        a, b = start - center, end - center
+        turn = np.arctan2(a[0] * b[1] - a[1] * b[0], np.dot(a, b))
+        if turn >= 0:
+            raise TabFilletError("Circular fillet would turn outside the tab contact")
+
+        # Follow the existing polygon chords so the wedge shares the board boundary.
+        points = np.array([p for polygon in listGeometries(self.substrates)
+                           for ring in [polygon.exterior, *polygon.interiors] for p in ring.coords[:-1]])
+        onCircle = np.abs(np.linalg.norm(points - circleCenter, axis=1) - circleRadius) <= ARC_CHORD_ERROR + GEOMETRY_EPSILON
+        points = points[onCircle]
+        angle = np.arctan2(vertex[1] - circleCenter[1], vertex[0] - circleCenter[0])
+        lastAngle = np.arctan2(curvePoint[1] - circleCenter[1], curvePoint[0] - circleCenter[0])
+        sweep = (lastAngle - angle + np.pi) % (2 * np.pi) - np.pi
+        angles = np.arctan2(points[:, 1] - circleCenter[1], points[:, 0] - circleCenter[0])
+        progress = ((angles - angle) * np.sign(sweep)) % (2 * np.pi)
+        indices = np.argsort(progress)
+        path = points[indices[progress[indices] < abs(sweep)]]
+        patch = None
+        if outside:
+            relative = (angles - lastAngle + np.pi) % (2 * np.pi) - np.pi
+            before = points[np.argmax(np.where(relative <= 0, relative, -np.inf))]
+            after = points[np.argmin(np.where(relative >= 0, relative, np.inf))]
+            # Split the original chord at the exact circle/fillet tangency.
+            patch = Polygon([before, curvePoint, after])
+        return start, end, center, turn, path, patch
+
     def _makeTabFillet(self, tab: Polygon, tabFace: LineString, fillet: KiLength) \
             -> Tuple[Polygon, LineString]:
+        """Add circular fillets tangent to the local board boundary and tab sides."""
         if fillet == 0:
             return tab, tabFace
-        joined = self.substrates.union(tab)
-        RESOLUTION = 64
-        rounded = joined.buffer(fillet, resolution=RESOLUTION).buffer(-fillet, resolution=RESOLUTION)
-        remainder = rounded.difference(self.substrates,)
+        if fillet < 0:
+            raise TabFilletError("Fillet radius must be positive")
+        joined = shapely.ops.orient(self.substrates.union(tab).simplify(GEOMETRY_EPSILON))
+        corners = []
+        for polygon in listGeometries(joined):
+            for ring in [polygon.exterior, *polygon.interiors]:
+                coords = np.array(ring.coords[:-1])
+                for i, vertex in enumerate(coords):
+                    incoming = vertex - coords[i - 1]
+                    outgoing = coords[(i + 1) % len(coords)] - vertex
+                    lengths = np.linalg.norm(incoming), np.linalg.norm(outgoing)
+                    if min(lengths) <= GEOMETRY_EPSILON:
+                        continue
+                    u, v = incoming / lengths[0], outgoing / lengths[1]
+                    cross = u[0] * v[1] - u[1] * v[0]
+                    if cross < -1e-10:
+                        corners.append((vertex, u, v, lengths, cross,
+                                        coords[i - 1], coords[(i + 1) % len(coords)]))
 
-        if isinstance(remainder, MultiPolygon) or isinstance(remainder, GeometryCollection):
-            geoms = remainder.geoms
-        elif isinstance(remainder, Polygon):
-            geoms = [remainder]
-        else:
-            raise RuntimeError("Uknown type '{}' of substrate geometry".format(type(remainder)))
-        candidates = [x for x in geoms if x.intersects(tab)]
-        if len(candidates) != 1:
-            raise TabFilletError(f"Unexpected number of fillet candidates: {len(candidates)}")
-        # Shapely is numerically unstable for this, bloat the polygon slighlty
-        # to ensure there is an intersection
-        candidate = candidates[0].buffer(SHP_EPSILON)
+        wedges, circles = [], []
+        for endpoint in [tabFace.coords[0], tabFace.coords[-1]]:
+            if not corners:
+                raise TabFilletError("No concave corner at the tab contact")
+            corner = min(corners, key=lambda c: np.linalg.norm(c[0] - endpoint))
+            vertex, u, v, lengths, cross, previous, following = corner
+            if np.linalg.norm(vertex - endpoint) > 4 * SHP_EPSILON:
+                raise TabFilletError("Cannot locate the tab contact corner")
+            incomingCircle = self._circleForEdge(previous, vertex)
+            outgoingCircle = self._circleForEdge(vertex, following)
+            prefix, suffix = [], []
+            if incomingCircle is not None or outgoingCircle is not None:
+                incomingCurve = incomingCircle is not None
+                start, end, center, turn, path, patch = self._filletOnCircle(
+                    vertex, u, v, lengths, incomingCircle if incomingCurve else outgoingCircle,
+                    incomingCurve, fillet)
+                if patch is not None:
+                    wedges.append(patch)
+                if incomingCurve:
+                    prefix = list(path)
+                else:
+                    suffix = list(reversed(path))
+            else:
+                turn = np.arctan2(cross, np.dot(u, v))
+                setback = fillet * np.tan(-turn / 2)
+                if setback > min(lengths) + GEOMETRY_EPSILON:
+                    start, end, center, turn, path, incomingBoard = self._filletOnBoundary(
+                        vertex, u, v, lengths, fillet)
+                    if incomingBoard:
+                        prefix = path
+                    else:
+                        suffix = list(reversed(path))
+                else:
+                    start, end = vertex - u * setback, vertex + v * setback
+                    center = start + fillet * np.array([u[1], -u[0]])
+            angle = np.arctan2(start[1] - center[1], start[0] - center[0])
+            step = 2 * np.arccos(max(-1, 1 - ARC_CHORD_ERROR / fillet))
+            count = max(2, int(np.ceil(-turn / step)) + 1)
+            angles = np.linspace(angle, angle + turn, count)
+            arc = center + fillet * np.column_stack((np.cos(angles), np.sin(angles)))
+            arc[0], arc[-1] = start, end
+            # One nanometre of overlap keeps rotated shared edges connected after quantization.
+            wedges.append(Polygon([vertex, *prefix, *arc, *suffix]).buffer(1, join_style="mitre"))
+            circles.append((center, float(fillet), start, end, turn))
 
-        newFace = candidate.intersection(self.substrates.boundary)
+        candidate = shapely.union_all([tab, *wedges], grid_size=1)
+        if isinstance(candidate, MultiPolygon) and len(candidate.geoms) == 1:
+            candidate = candidate.geoms[0]
+        if not isinstance(candidate, Polygon) or not candidate.is_valid:
+            raise TabFilletError("Fillets do not form a valid tab")
+        # The overlap is for locating the cut on the boundary, not for enlarging the tab.
+        newFace = candidate.buffer(1).intersection(self.substrates.boundary)
         if isinstance(newFace, GeometryCollection):
-            newFace = MultiLineString([x for x in newFace.geoms if not isinstance(x, Polygon)])
+            newFace = MultiLineString([x for x in newFace.geoms if isinstance(x, LineString)])
         if isinstance(newFace, MultiLineString):
             newFace = shapely.ops.linemerge(newFace)
-        if not isinstance(newFace, LineString):
-            raise TabFilletError(f"Unexpected result of filleted tab face: {type(newFace)}, {json.dumps(shapely.geometry.mapping(newFace), indent=4)}")
+        if not isinstance(newFace, LineString) or newFace.is_empty:
+            raise TabFilletError("Fillets do not form a continuous tab contact")
         if Point(tabFace.coords[0]).distance(Point(newFace.coords[0])) > Point(tabFace.coords[0]).distance(Point(newFace.coords[-1])):
             newFace = LineString(reversed(newFace.coords))
+        self.circles.extend(circles)
         return candidate, newFace
 
     def _strPosition(self, point):
@@ -1032,6 +1290,9 @@ class Substrate:
         """
         self.substrates = shapely.affinity.translate(self.substrates, vec[0], vec[1])
         self.partitionLine = shapely.affinity.translate(self.partitionLine, vec[0], vec[1])
+        offset = np.array(vec)
+        self.circles = [(center + offset, radius, start + offset, end + offset, sweep)
+                        for center, radius, start, end, sweep in self.circles]
         for annotation in self.annotations:
             o = annotation.origin
             annotation.origin = (o[0] + vec[0], o[1] + vec[1])
