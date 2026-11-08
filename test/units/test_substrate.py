@@ -237,3 +237,91 @@ def test_bezierApproximationAndFillet():
     assert board.substrates.is_valid
     assert len(board.circles) == 2
     assert len(extractRings(board.serialize(True))) == 1
+
+
+@pytest.mark.parametrize("start,end,tolerance,expected", [
+    ((10, 0), (0, 10), 1, False),  # Endpoints fit; chord interior does not.
+    ((8, -6), (8, 6), 2, True),   # Projection exactly on the inner tolerance.
+    ((8, -6), (8, 6), np.nextafter(2., 0.), False),
+    ((9, 0), (10, 0), 1, True),   # Projection is outside the segment.
+    ((10, 0), (9, 0), 1, True),
+    ((11, 0), (11, 0), 1, True),  # Zero length, exactly on outer tolerance.
+    ((np.nextafter(11., np.inf), 0), (11, 0), 1, False),
+    ((9, 0), (9, 0), 1, True),
+    ((np.nextafter(9., 0.), 0), (9, 0), 1, False),
+    ((12, 0), (12, 0), 1, False),
+])
+def test_linesFitCircleTolerance(start, end, tolerance, expected):
+    fit = CircleFitCandidates(tolerance=tolerance)
+    with np.errstate(all="raise"):
+        for a, b in [(start, end), (end, start)]:
+            assert fit._doLinesFitCircle(
+                [(np.array(a), np.array(b))], np.zeros(2), 10) == expected
+
+
+def test_linesFitCircleTranslatedAndDisconnected():
+    # KiCad coordinates can be large integers; segments need not be connected.
+    center = np.array([2_000_000_000, -2_000_000_000], dtype=np.int32)
+    lines = [(center + np.array(a, dtype=np.int32),
+              center + np.array(b, dtype=np.int32)) for a, b in [
+                  ((9, 0), (10, 0)), ((0, -10), (0, -9))]]
+    fit = CircleFitCandidates(tolerance=1)
+    assert fit._doLinesFitCircle(iter(lines), center, 10)
+    assert fit._doLinesFitCircle([], center, 10)
+    lines.append((center + (10, 0), center + (-10, 0)))
+    assert not fit._doLinesFitCircle(iter(lines), center, 10)
+
+
+@pytest.mark.parametrize("span", [0.01, 0.1, 1, 4])
+@pytest.mark.parametrize("radius", [0.25, 10, 1000])
+@pytest.mark.parametrize("offset", [0, 1000])
+def test_fitCircleShortArcsAtLargeCoordinates(span, radius, offset):
+    center = np.array([fromMm(offset), -fromMm(offset)], dtype=float)
+    angles = np.linspace(0.23, 0.23 + span, 33)
+    points = center + fromMm(radius) * np.column_stack((np.cos(angles), np.sin(angles)))
+    fit = CircleFitCandidates()
+    fit._xs, fit._ys = list(points[:, 0]), list(points[:, 1])
+    fit._xSum, fit._ySum = sum(fit._xs), sum(fit._ys)
+    actualCenter, actualRadius = fit._fitCircle()
+    assert np.max(np.abs(actualCenter - center)) < 0.1  # Nanometres.
+    assert abs(actualRadius - fromMm(radius)) < 0.1
+
+
+def test_circleFitRejectThenContinue():
+    fit = CircleFitCandidates()
+    angles = np.linspace(0, 0.1, 25)
+    for angle in angles:
+        assert fit.addPoint(fromMm(10) * np.array([np.cos(angle), np.sin(angle)]))
+    end = fit.end.copy()
+    circle = fit.foundCircle
+    assert not fit.addPoint((fromMm(11), 0))
+    assert len(fit) == len(angles)
+    assert np.array_equal(fit.end, end)
+    assert fit.foundCircle is circle
+    assert fit.addPoint(fromMm(10) * np.array([np.cos(0.105), np.sin(0.105)]))
+
+
+@pytest.mark.parametrize("points", [
+    [(i, 0) for i in range(5)],
+    [(i, 2 * i + 1) for i in range(5)],
+    [(5, 5)] * 5,
+])
+def test_circleFitRejectsDegeneratePoints(points):
+    fit = CircleFitCandidates()
+    with np.errstate(all="raise"):
+        for point in points[:4]:
+            assert fit.addPoint(point)
+        assert not fit.addPoint(points[-1])
+    assert len(fit) == 4
+    assert fit.foundCircle is None
+
+
+def test_circleFitSymmetricCircleWithZeroRootDerivative():
+    radius = fromMm(1)
+    fit = CircleFitCandidates(tolerance=radius)
+    with np.errstate(all="raise"):
+        for point in [(radius, 0), (0, radius), (-radius, 0), (0, -radius)] * 2:
+            assert fit.addPoint(point)
+    center, actualRadius = fit.foundCircle
+    assert np.array_equal(center, [0, 0])
+    assert actualRadius == radius

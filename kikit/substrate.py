@@ -5,6 +5,7 @@ from shapely.geometry.collection import GeometryCollection
 from shapely.ops import orient, unary_union, split, nearest_points, substring
 import shapely
 import json
+import math
 import numpy as np
 from kikit.intervals import Interval, BoxNeighbors, BoxPartitionLines
 import pcbnew
@@ -420,10 +421,11 @@ class CircleFitCandidates:
             needsRevalidation = np.linalg.norm(newCenter - c) > self.tolerance or np.abs(newRadius - r) > self.tolerance
 
         if needsRevalidation:
-            points = [np.array([x, y]) for x, y in zip(self._xs, self._ys)]
-            toRevalidate = list(zip(points, points[1:]))
+            toRevalidate = zip(zip(self._xs, self._ys),
+                               zip(self._xs[1:], self._ys[1:]))
         else:
-            toRevalidate = [(np.array([self._xs[-2], self._ys[-2]]), np.array([self._xs[-1], self._ys[-1]]))]
+            toRevalidate = [((self._xs[-2], self._ys[-2]),
+                             (self._xs[-1], self._ys[-1]))]
 
         if self._doLinesFitCircle(toRevalidate, newCenter, newRadius) and newRadius < self.radius_limit:
             self.foundCircle = newCenter, newRadius
@@ -434,28 +436,25 @@ class CircleFitCandidates:
 
     def _doLinesFitCircle(self, lines: Iterable[Tuple[np.array, np.array]],
                           c: np.array, r: float) -> bool:
+        # Scalar arithmetic avoids NumPy dispatch for these two-dimensional vectors.
+        cx, cy = map(float, c)
         for start, end in lines:
-            # We don't use list of candidates in this as it is in the hot path
-            # and constructing the list of candidates adds a significant
-            # overhead (both technically, and for early return)
-            #
-            # The extreme occurs either in one of the endpoints or in the
-            # projection of center of the circle to the line (if it lies on the
-            # segment).
-            if np.abs(np.linalg.norm(start - c) - r) > self.tolerance:
+            sx, sy = map(float, start)
+            ex, ey = map(float, end)
+            # Distance extrema are at the endpoints or the center's projection.
+            if abs(math.hypot(sx - cx, sy - cy) - r) > self.tolerance:
                 return False
-            if np.abs(np.linalg.norm(end - c) - r) > self.tolerance:
+            if abs(math.hypot(ex - cx, ey - cy) - r) > self.tolerance:
                 return False
 
-            # Project center to the line; if it doesn't fit line, continue
-            ap = c - start
-            ab = end - start
-            t = np.dot(ap, ab) / np.dot(ab, ab)
-            if t < 0 or t > 1:
+            dx, dy = ex - sx, ey - sy
+            lengthSquared = dx * dx + dy * dy
+            if lengthSquared == 0:
                 continue
-            projection = start + t * ab
-            if np.abs(np.linalg.norm(projection - c) - r) > self.tolerance:
-                return False
+            t = ((cx - sx) * dx + (cy - sy) * dy) / lengthSquared
+            if 0 <= t <= 1:
+                if abs(math.hypot(sx + t * dx - cx, sy + t * dy - cy) - r) > self.tolerance:
+                    return False
         return True
 
     @property
@@ -493,15 +492,20 @@ class CircleFitCandidates:
 
         Xi = np.array(self._xs) - xMean
         Yi = np.array(self._ys) - yMean
-        Zi = Xi * Xi + Yi * Yi
+        XiSquared = Xi * Xi
+        YiSquared = Yi * Yi
+        Zi = XiSquared + YiSquared
 
         # compute moments
         Mxy = (Xi * Yi).sum() / n
-        Mxx = (Xi * Xi).sum() / n
-        Myy = (Yi * Yi).sum() / n
+        Mxx = XiSquared.sum() / n
+        Myy = YiSquared.sum() / n
         Mxz = (Xi * Zi).sum() / n
         Myz = (Yi * Zi).sum() / n
         Mzz = (Zi * Zi).sum() / n
+
+        # Preserve the centered reductions; use scalar arithmetic in the root solver.
+        Mxy, Mxx, Myy, Mxz, Myz, Mzz = map(float, (Mxy, Mxx, Myy, Mxz, Myz, Mzz))
 
         # computing the coefficients of characteristic polynomial
         Mz = Mxx + Myy
@@ -518,6 +522,8 @@ class CircleFitCandidates:
         X = 0.0
         for i in range(maxIter):
             Dy = A1 + X * (A22 + 16. * (X ** 2))
+            if Dy == 0:
+                break
             xnew = X - Y / Dy
             if xnew == X or not np.isfinite(xnew):
                 break
@@ -527,6 +533,8 @@ class CircleFitCandidates:
             X, Y = xnew, ynew
 
         det = X ** 2 - X * Mz + Cov_xy
+        if det == 0:
+            return np.array([np.nan, np.nan]), np.nan
         Xcenter = (Mxz * (Myy - X) - Myz * Mxy) / det / 2.
         Ycenter = (Myz * (Mxx - X) - Mxz * Mxy) / det / 2.
 
