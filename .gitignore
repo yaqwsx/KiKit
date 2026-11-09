@@ -15,7 +15,7 @@ fp-info-cache
 # Ignore build
 build
 dist
-KiKit.egg-info
+kikit.egg-info
 *.eggs
 *.pyc
 

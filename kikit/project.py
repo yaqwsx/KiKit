@@ -71,7 +71,7 @@ class KiCADProject:
 
     @property
     def board(self) -> pcbnew.BOARD:
-        return pcbnew.LoadBoard(str(self.getBoard()))
+        return pcbnew.LoadBoard(str(self.boardPath))
 
     @cached_property
     def projectJson(self) -> Dict[str, Any]:

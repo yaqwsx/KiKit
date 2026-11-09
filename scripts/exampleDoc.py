@@ -58,7 +58,7 @@ visible in this example). This is ,however, essential – if we omitted tabs, no
 cuts between the boards would be performed. Note, that due to the rounded
 corners, this panel cannot be manufactured. We will fix it later.
 
-Note that the `\` in the input is there to make shell happy, so we can break our
+Note that the `\\` in the input is there to make shell happy, so we can break our
 command into multiple lines. Also note that there are single quotes around the
 key-value pair – again, to make shell happy and to interpret a string with
 spaces as a single option.

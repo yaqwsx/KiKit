@@ -1,4 +1,5 @@
 from enum import Enum, IntEnum
+from typing import List
 from .units import mm, inch
 
 class Layer(IntEnum):
@@ -67,25 +68,28 @@ class Layer(IntEnum):
     User_9 = 55
 
     @staticmethod
-    def allCu():
-        return list(range(Layer.F_Cu, Layer.In30_Cu + 2, 2))
+    def allCu() -> List["Layer"]:
+        return [Layer(n) for n in range(Layer.F_Cu, Layer.In30_Cu + 2, 2)]
 
     @staticmethod
-    def innerCu(layerCount):
-        return list(range(Layer.In1_Cu, Layer.In1_Cu + (layerCount - 2) * 2, 2))
+    def innerCu(layerCount: int) -> List["Layer"]:
+        return [
+            Layer(n)
+            for n in range(Layer.In1_Cu, Layer.In1_Cu + (layerCount - 2) * 2, 2)
+        ]
 
     @staticmethod
-    def all():
+    def all() -> List["Layer"]:
         return (
-            list(range(Layer.F_Cu, Layer.In30_Cu + 2, 2))
-            + list(range(Layer.F_Mask, Layer.B_Paste + 2, 2))
-            + list(range(Layer.Dwgs_User, Layer.Margin + 2, 2))
-            + list(range(Layer.B_CrtYd, Layer.F_Fab + 2, 2))
-            + list(range(Layer.User_1, Layer.User_9 + 2, 2))
+            [Layer(n) for n in range(Layer.F_Cu, Layer.In30_Cu + 2, 2)]
+            + [Layer(n) for n in range(Layer.F_Mask, Layer.B_Paste + 2, 2)]
+            + [Layer(n) for n in range(Layer.Dwgs_User, Layer.Margin + 2, 2)]
+            + [Layer(n) for n in range(Layer.B_CrtYd, Layer.F_Fab + 2, 2)]
+            + [Layer(n) for n in range(Layer.User_1, Layer.User_9 + 2, 2)]
         )
 
     @staticmethod
-    def allTech():
+    def allTech() -> List["Layer"]:
         return [
             Layer.Dwgs_User,
             Layer.Cmts_User,
@@ -96,8 +100,8 @@ class Layer(IntEnum):
             Layer.B_CrtYd,
             Layer.F_CrtYd,
             Layer.B_Fab,
-            Layer.F_Fab
-        ] + list(range(Layer.User_1, Layer.User_9 + 2, 2))
+            Layer.F_Fab,
+        ] + [Layer(n) for n in range(Layer.User_1, Layer.User_9 + 2, 2)]
 
 class STROKE_T(IntEnum):
     S_SEGMENT = 0
