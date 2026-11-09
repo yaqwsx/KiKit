@@ -45,7 +45,8 @@ class KiCADCopperFillMixin(PanelFeature):
             for hole in g.interiors:
                 zoneContainer.Outline().AddHole(linestringToKicad(hole))
             zoneContainer.SetAssignedPriority(0)
-
+            zoneContainer.SetIslandRemovalMode(1)
+            
             for l in self.layers:
                 panel._ensureLayerEnabled(l)
                 zoneContainer = duplicateZone(zoneContainer)
@@ -84,7 +85,8 @@ class HatchedCopperFill(KiCADCopperFillMixin):
         zoneContainer.SetHatchOrientation(self.orientation)
         zoneContainer.SetHatchGap(self.strokeSpacing)
         zoneContainer.SetHatchThickness(self.strokeWidth)
-
+        zoneContainer.SetIslandRemovalMode(1)
+        
 @dataclass
 class HexCopperFill(PanelFeature):
     """
@@ -148,7 +150,8 @@ class HexCopperFill(PanelFeature):
             for hole in g.interiors:
                 zoneContainer.Outline().AddHole(linestringToKicad(hole))
             zoneContainer.SetAssignedPriority(0)
-
+            zoneContainer.SetIslandRemovalMode(1)
+            
             for l in self.layers:
                 panel._ensureLayerEnabled(l)
                 zoneContainer = duplicateZone(zoneContainer)
