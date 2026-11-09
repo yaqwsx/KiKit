@@ -2,7 +2,8 @@ import time
 import traceback
 from kikit.defs import EDA_TEXT_HJUSTIFY_T, EDA_TEXT_VJUSTIFY_T
 import pcbnew
-from kikit.panelize_ui_impl import loadPresetChain, obtainPreset, mergePresets
+from kikit.panelize_ui_impl import (loadPresetChain, obtainPreset, mergePresets,
+                                    dumpPreset)
 from kikit import panelize_ui
 from kikit.panelize import NonFatalErrors, appendItem
 from kikit.common import PKG_BASE, findBoardBoundingBox, fromMm
@@ -10,6 +11,8 @@ from .common import initDialog, destroyDialog
 import kikit.panelize_ui_sections
 import wx
 import json
+import subprocess
+import sys
 import tempfile
 import shutil
 import os
@@ -32,6 +35,50 @@ def replaceExt(file, ext):
 
 def pcbnewPythonPath():
     return os.path.dirname(pcbnew.__file__)
+
+def pythonInterpreter():
+    """
+    Locate a standalone Python interpreter that can import pcbnew. Returns None
+    when there is none - sys.executable is of no use here, as it points to the
+    KiCAD executable that hosts us.
+    """
+    candidates = []
+    if os.name == "nt":
+        candidates.append(os.path.join(sys.prefix, "python.exe"))
+    else:
+        candidates += [os.path.join(sys.prefix, "bin", "python3"),
+                       os.path.join(sys.prefix, "bin", "python")]
+    candidates += [shutil.which("python3"), shutil.which("python")]
+    for candidate in candidates:
+        if candidate is not None and os.path.exists(candidate):
+            return candidate
+    return None
+
+def panelizeInSubprocess(interpreter, input, panelFile, preset, tempdir):
+    """
+    Run the panelization in a separate process. KiCAD's Python bindings are not
+    robust enough to perform it within the running pcbnew - the second board we
+    load while saving the panel can take the whole application down. A crash of
+    a child process, on the other hand, is just a non-zero return code.
+    """
+    presetFile = os.path.join(tempdir, "preset.json")
+    with open(presetFile, "w", encoding="utf-8") as f:
+        f.write(dumpPreset(preset))
+
+    command = [interpreter, "-c", "from kikit.ui import cli; cli()", "panelize",
+               "--preset", presetFile, input, panelFile]
+    invocation = {"capture_output": True, "text": True}
+    if os.name == "nt":
+        invocation["creationflags"] = subprocess.CREATE_NO_WINDOW
+
+    result = subprocess.run(command, **invocation)
+    if result.returncode != 0:
+        message = (result.stderr or "").strip()
+        if len(message) == 0:
+            message = f"The panelization process ended with code {result.returncode}"
+        raise RuntimeError(message)
+    if not os.path.exists(panelFile) or os.path.getsize(panelFile) == 0:
+        raise RuntimeError("The panelization process produced no output")
 
 def presetDifferential(source, target):
     result = {}
@@ -463,7 +510,11 @@ class PanelizeDialog(wx.Dialog):
             wx.GetApp().Yield()
 
     def _panelizationRoutine(self, tempdir, input, panelFile, preset):
-        panelize_ui.doPanelization(input, panelFile, preset)
+        interpreter = pythonInterpreter()
+        if interpreter is None:
+            panelize_ui.doPanelization(input, panelFile, preset)
+        else:
+            panelizeInSubprocess(interpreter, input, panelFile, preset, tempdir)
 
         # KiCAD 6 does something strange here, so we will load an empty
         # file if we read it directly, but we can always make a copy and
