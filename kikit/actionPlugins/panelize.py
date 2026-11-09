@@ -519,6 +519,19 @@ class PanelizeDialog(wx.Dialog):
                     dlg.ShowModal()
                     dlg.Destroy()
                     return
+                if os.path.realpath(panelFile) == os.path.realpath(pcbnew.GetBoard().GetFileName()):
+                    # The panel is written in two passes and reloaded in between,
+                    # while the items of the opened board are replaced by the
+                    # result afterwards. Doing that to the very file that pcbnew
+                    # currently has open crashes pcbnew and truncates the panel.
+                    dlg = wx.MessageDialog(
+                        None,
+                        f"The output file {panelFile} is the same as currently opened board. Cannot continue.\n\n" + \
+                         "Please, run the panelization tool when no board is opened in pcbnew.",
+                        "Error", wx.OK)
+                    dlg.ShowModal()
+                    dlg.Destroy()
+                    return
 
                 # We run as much as possible in a separate thread to not stall
                 # the UI...
