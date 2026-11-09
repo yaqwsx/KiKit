@@ -653,6 +653,15 @@ class Panel:
         self.chamferWidth: Optional[KiLength] = None
         self.chamferHeight: Optional[KiLength] = None
 
+        # Remember placed panel features so they can be dimensioned later.
+        # Tooling holes are (position, diameter), fiducials are (position,
+        # copper diameter, opening diameter). The frame inner edges are stored
+        # per side ("minx", "maxx", "miny", "maxy") as a coordinate of the
+        # inner edge of the frame/rail on that side.
+        self.toolingHoles: List[Tuple[VECTOR2I, KiLength]] = []
+        self.fiducials: List[Tuple[VECTOR2I, KiLength, KiLength]] = []
+        self.frameInnerEdges: Dict[str, KiLength] = {}
+
     def reportError(self, position: KiPoint, message: str) -> None:
         """
         Reports a non-fatal error. The error is marked and rendered to the panel
@@ -1638,6 +1647,12 @@ class Panel:
         innerRing = rectToRing(frameInnerRect)
         polygon = Polygon(outerRing, [innerRing])
         self.appendSubstrate(polygon)
+        self.frameInnerEdges.update({
+            "minx": frameInnerRect.GetLeft(),
+            "maxx": frameInnerRect.GetRight(),
+            "miny": frameInnerRect.GetTop(),
+            "maxy": frameInnerRect.GetBottom()
+        })
 
         innerArea = self.substrates[0].boundingBox()
         for s in self.substrates:
@@ -1713,6 +1728,10 @@ class Panel:
             bottomRail = box(minx, miny, maxx, miny - thickness)
         self.appendSubstrate(topRail)
         self.appendSubstrate(bottomRail)
+        self.frameInnerEdges.update({
+            "miny": int(round(bottomRail.bounds[3])),
+            "maxy": int(round(topRail.bounds[1]))
+        })
 
     def makeRailsLr(self, thickness: KiLength, minWidth: KiLength = 0,
                     maxWidth: Optional[KiLength] = None,
@@ -1745,6 +1764,10 @@ class Panel:
             rightRail = box(maxx, miny, maxx + thickness, maxy)
         self.appendSubstrate(leftRail)
         self.appendSubstrate(rightRail)
+        self.frameInnerEdges.update({
+            "minx": int(round(leftRail.bounds[2])),
+            "maxx": int(round(rightRail.bounds[0]))
+        })
 
     def makeFrameCutsV(self, innerArea, frameInnerArea, outerArea):
         """
@@ -1960,6 +1983,7 @@ class Panel:
                              paste, ref = f"KiKit_FID_T_{i+1}")
             self.addFiducial(pos, copperDiameter, openingDiameter, True,
                              paste, ref = f"KiKit_FID_B_{i+1}")
+            self.fiducials.append((pos, copperDiameter, openingDiameter))
 
     def addCornerTooling(self, holeCount, horizontalOffset, verticalOffset,
                          diameter, paste=False, solderMaskMargin: Optional[KiLength]=None):
@@ -1975,6 +1999,7 @@ class Panel:
         for i, pos in enumerate(self.panelCorners(horizontalOffset, verticalOffset)[:holeCount]):
             self.addNPTHole(pos, diameter, paste, ref=f"KiKit_TO_{i+1}", excludedFromPos=False,
                             solderMaskMargin=solderMaskMargin)
+            self.toolingHoles.append((pos, diameter))
 
     def addMillFillets(self, millRadius):
         """
@@ -2643,6 +2668,12 @@ class Panel:
                                  for t in self.debugReverseTabs]
         self.debugRawFrame = [shapely.affinity.translate(g, vec[0], vec[1])
                               for g in self.debugRawFrame]
+        self.toolingHoles = [(pos + vec, d) for pos, d in self.toolingHoles]
+        self.fiducials = [(pos + vec, c, o) for pos, c, o in self.fiducials]
+        self.frameInnerEdges = {
+            side: value + (vec[0] if side.endswith("x") else vec[1])
+            for side, value in self.frameInnerEdges.items()
+        }
         self.hVCuts = [c + vec[1] for c in self.hVCuts]
         self.vVCuts = [c + vec[0] for c in self.vVCuts]
         for c in self.vVCuts:
@@ -2654,9 +2685,11 @@ class Panel:
         for drcE in self.drcExclusions:
             drcE.position += vec
 
-    def addPanelDimensions(self, layer: Layer, offset: KiLength) -> None:
+    def addPanelDimensions(self, layer: Layer, offset: KiLength) \
+            -> Tuple[pcbnew.PCB_DIM_ORTHOGONAL, pcbnew.PCB_DIM_ORTHOGONAL]:
         """
-        Add vertial and horizontal dimensions to the panel
+        Add vertial and horizontal dimensions to the panel. Returns the
+        horizontal and vertical dimension objects.
         """
         minx, miny, maxx, maxy = self.panelBBox()
 
@@ -2689,6 +2722,7 @@ class Panel:
         if self.filletSize is not None:
             vDim.SetExtensionOffset(-self.filletSize)
         self.board.Add(vDim)
+        return hDim, vDim
 
     def apply(self, feature: Any) -> None:
         """

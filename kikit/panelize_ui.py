@@ -184,6 +184,9 @@ def completeSection(section):
 @click.option("--copperfill", "-u", type=Section(),
     help="Override copper fill settings.",
     **addCompatibleShellCompletion(completeSection(COPPERFILL_SECTION)))
+@click.option("--dimensions", type=Section(),
+    help="Override dimensions settings.",
+    **addCompatibleShellCompletion(completeSection(DIMENSIONS_SECTION)))
 @click.option("--page", "-P", type=Section(),
     help="Override page settings.",
     **addCompatibleShellCompletion(completeSection(POST_SECTION)))
@@ -196,8 +199,8 @@ def completeSection(section):
 @click.option("--dump", "-d", type=click.Path(file_okay=True, dir_okay=False),
     help="Dump constructured preset into a JSON file.")
 def panelize(input, output, preset, plugin, layout, source, tabs, cuts, framing,
-             tooling, fiducials, text, text2, text3, text4, copperfill, page,
-             post, debug, dump):
+             tooling, fiducials, text, text2, text3, text4, copperfill,
+             dimensions, page, post, debug, dump):
     """
     Panelize boards
     """
@@ -211,8 +214,8 @@ def panelize(input, output, preset, plugin, layout, source, tabs, cuts, framing,
         preset = ki.obtainPreset(preset,
             layout=layout, source=source, tabs=tabs, cuts=cuts, framing=framing,
             tooling=tooling, fiducials=fiducials, text=text,text2=text2,
-            text3=text3, text4=text4, copperfill=copperfill, page=page,
-            post=post, debug=debug)
+            text3=text3, text4=text4, copperfill=copperfill,
+            dimensions=dimensions, page=page, post=post, debug=debug)
 
         doPanelization(input, output, preset, plugin)
 
@@ -296,6 +299,8 @@ def doPanelization(input, output, preset, plugins=[]):
     ki.makeOtherCuts(preset, panel, chain(backboneCuts, frameCuts))
 
     useHookPlugins(lambda x: x.afterCuts(panel))
+
+    ki.buildDimensions(preset, panel)
 
     ki.buildCopperfill(preset["copperfill"], panel)
 

@@ -709,6 +709,54 @@ COPPERFILL_SECTION = {
 def ppCopper(section):
     section = validateSection("copperfill", COPPERFILL_SECTION, section)
 
+class SDimensionGroups(SList):
+    GROUPS = ["overall", "frame", "boards", "tooling", "fiducials"]
+
+    def validate(self, x: str) -> Any:
+        if isinstance(x, list):
+            groups = [str(v).strip() for v in x]
+        elif x.strip() in ["all", ""]:
+            return list(self.GROUPS) if x.strip() == "all" else []
+        else:
+            groups = super().validate(x)
+        for g in groups:
+            if g not in self.GROUPS:
+                raise PresetError(f"Unknown dimension group '{g}'. Use any of {', '.join(self.GROUPS)} or 'all'.")
+        return groups
+
+DIMENSIONS_SECTION = {
+    "type": SChoice(
+        ["none", "auto"],
+        always(),
+        "Add dimensions of the panel features"),
+    "include": SDimensionGroups(
+        typeIn(["auto"]),
+        "Comma separated list of groups to dimension: overall, frame, boards, tooling, fiducials or all"),
+    "coverage": SChoice(
+        ["representative", "all"],
+        typeIn(["auto"]),
+        "Dimension only a single instance of repeated features or all of them"),
+    "layer": SLayer(
+        typeIn(["auto"]),
+        "Layer for the dimensions"),
+    "units": SChoice(
+        ["mm", "inch", "mils"],
+        typeIn(["auto"]),
+        "Units of the dimensions"),
+    "precision": SNaturalNum(
+        typeIn(["auto"]),
+        "Number of decimal places"),
+    "offset": SLength(
+        typeIn(["auto"]),
+        "Distance of dimension lines from the panel edge and between them"),
+    "textsize": SLength(
+        typeIn(["auto"]),
+        "Size of the dimension text")
+}
+
+def ppDimensions(section):
+    section = validateSection("dimensions", DIMENSIONS_SECTION, section)
+
 POST_SECTION = {
     "type": SChoice(
         ["auto"],
@@ -741,7 +789,7 @@ POST_SECTION = {
         "Place auxiliary origin"),
     "dimensions": SBool(
         always(),
-        "Add dimensions markings to the finished panel"
+        "Add overall panel size dimensions. See section dimensions for more options"
     ),
     "edgewidth": SLength(
         always(),
@@ -823,6 +871,7 @@ availableSections = {
     "Text3": TEXT_SECTION,
     "Text4": TEXT_SECTION,
     "Copperfill": COPPERFILL_SECTION,
+    "Dimensions": DIMENSIONS_SECTION,
     "Page": PAGE_SECTION,
     "Post": POST_SECTION,
     "Debug": DEBUG_SECTION,

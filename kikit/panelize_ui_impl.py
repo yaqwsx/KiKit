@@ -97,6 +97,7 @@ def postProcessPreset(preset):
         "text3": ppText,
         "text4": ppText,
         "copperfill": ppCopper,
+        "dimensions": ppDimensions,
         "post": ppPost,
         "page": ppPage,
         "debug": ppDebug
@@ -153,7 +154,7 @@ def validateSections(preset):
     """
     VALID_SECTIONS = ["layout", "source", "tabs", "cuts", "framing", "tooling",
         "fiducials", "text", "text2", "text3", "text4", "page", "copperfill",
-        "post", "debug"]
+        "dimensions", "post", "debug"]
     extraSections = set(preset.keys()).difference(VALID_SECTIONS)
     if len(extraSections) != 0:
         raise PresetError(f"Extra sections {', '.join(extraSections)} in preset")
@@ -689,10 +690,34 @@ def buildPostprocessing(preset, panel):
             origin = resolveAnchor(preset["origin"])(bBox)
             panel.setAuxiliaryOrigin(origin)
             panel.setGridOrigin(origin)
-        if preset["dimensions"]:
-            panel.addPanelDimensions(Layer.Dwgs_User, fromMm(5))
     except KeyError as e:
         raise PresetError(f"Missing parameter '{e}' in section 'postprocessing'")
+
+def buildDimensions(preset, panel):
+    """
+    Add dimensions to the panel. The legacy option post.dimensions adds only
+    the overall size of the panel.
+    """
+    from kikit.panel_features.dimensions import PanelDimensions
+    try:
+        dimPreset = preset["dimensions"]
+        type = dimPreset["type"]
+        if type == "auto":
+            panel.apply(PanelDimensions(
+                include=dimPreset["include"],
+                coverage=dimPreset["coverage"],
+                layer=dimPreset["layer"],
+                units=dimPreset["units"],
+                precision=dimPreset["precision"],
+                offset=dimPreset["offset"],
+                textSize=dimPreset["textsize"]))
+        elif type != "none":
+            raise PresetError(f"Unknown type '{type}' of dimensions specification.")
+        if preset["post"]["dimensions"] and \
+                not (type == "auto" and "overall" in dimPreset["include"]):
+            panel.addPanelDimensions(Layer.Dwgs_User, fromMm(5))
+    except KeyError as e:
+        raise PresetError(f"Missing parameter '{e}' in section 'dimensions'")
 
 def runUserScript(preset, panel):
     """

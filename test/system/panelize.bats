@@ -216,6 +216,19 @@ load common
         $RES/conn.kicad_pcb panel_t19.kicad_pcb
 }
 
+@test "Dimensions" {
+    kikit panelize \
+        --layout 'grid; rows: 2; cols: 2; space: 2mm' \
+        --tabs 'fixed; width: 3mm' \
+        --cuts mousebites \
+        --framing 'frame; width: 5mm; space: 3mm;' \
+        --tooling '4hole; hoffset: 2.5mm; voffset: 2.5mm; size: 1.5mm' \
+        --fiducials '3fid; hoffset: 2.5mm; voffset: 10mm; coppersize: 1mm; opening: 2mm' \
+        --dimensions 'auto; include: all; coverage: all' \
+        --debug 'trace: true; deterministic: true' \
+        $RES/conn.kicad_pcb panel_t21.kicad_pcb
+}
+
 @test "Set page" {
     if [ $(kikit-info drcapi) -lt 1 ]; then
         skip "KiCAD $(kikit-info kicadversion) doesn't support page size."

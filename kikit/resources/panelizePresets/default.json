@@ -180,6 +180,16 @@
         "orientation": "45deg",
         "threshold": "15%"
     },
+    "dimensions": {
+        "type": "none",
+        "include": "all",
+        "coverage": "representative",
+        "layer": "Dwgs.User",
+        "units": "mm",
+        "precision": "2",
+        "offset": "5mm",
+        "textsize": "1.5mm"
+    },
     "post": {
         "type": "auto",
         "copperfill": false,

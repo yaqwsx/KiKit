@@ -581,6 +581,44 @@ Use hexagon pattern for the fill.
 - `threshold` – a percentage value that will discard fragments smaller than
   given threshold
 
+### Dimensions
+
+Annotate the panel with dimensions of its features, e.g., for the fabrication
+or assembly drawing. The dimensions are native KiCAD dimension objects, so you
+can further edit them in Pcbnew.
+
+The frame and board dimensions are drawn as a chain along the top and the left
+edge of the panel, the overall size is drawn as the outermost dimension.
+Tooling holes and fiducials are dimensioned from the nearest panel edges and
+their size is described by a leader. Only the overall dimensions carry the units
+suffix.
+
+**Types**: none, auto
+
+**Common options**:
+
+- `include` – comma-separated list of feature groups to dimension or `all`.
+  The groups are:
+    - `overall` – total width and height of the panel
+    - `frame` – width of the frame or rails and the space between the frame and
+      the boards
+    - `boards` – size of the board and the space between the boards
+    - `tooling` – position of the tooling holes and their diameter
+    - `fiducials` – position of the fiducials and their copper and mask opening
+      diameter
+- `coverage` – `representative` (default) dimensions only a single instance of
+  repeated features (e.g., a single board, a single gap, a single tooling
+  hole). `all` dimensions every instance.
+- `layer` – layer for the dimensions. Default `Dwgs.User`.
+- `units` – `mm`, `inch` or `mils`.
+- `precision` – number of decimal places. Trailing zeros are suppressed.
+- `offset` – distance of the first dimension line from the panel edge and the
+  distance between the stacked dimension lines.
+- `textsize` – size of the dimension text.
+
+Note that the dimensions of tooling holes and fiducials are available only for
+the built-in tooling and fiducial types.
+
 ### Post
 
 Finishing touches to the panel.
@@ -614,7 +652,8 @@ Finishing touches to the panel.
 - `origin` - specify if the auxilary origin an grid origin should be placed. Can
   be one of `tl`, `tr`, `bl`, `br` (corners), `mt`, `mb`, `ml`, `mr` (middle of
   sides), `c` (center). Empty string does not changes the origin.
-- `dimensions` - `true` or `false`. Draw dimensions with the panel size.
+- `dimensions` - `true` or `false`. Draw dimensions with the panel size. See
+  section [Dimensions](#dimensions) for more options.
 - `edgewidth` ­– width of the line for panel edges (that is the lines in the
   `Edge.Cuts` layer).
 
