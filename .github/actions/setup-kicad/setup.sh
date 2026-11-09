@@ -7,29 +7,25 @@ case $1 in
     sudo add-apt-repository --yes ppa:kicad/kicad-9.0-releases
     sudo apt-get update
     sudo apt-get install --yes --no-install-recommends kicad
-    echo "PYTHONPATH=/usr/lib/kicad/lib/python3/dist-packages/:/usr/lib/kicad/local/lib/python3.10/dist-packages:/usr/lib/kicad/local/lib/python3.11/dist-packages:/usr/lib/kicad/local/lib/python3.12/dist-packages" >> $GITHUB_ENV
-    echo "LD_LIBRARY_PATH=/usr/lib/kicad/lib/x86_64-linux-gnu:/usr/lib/kicad/lib/" >> $GITHUB_ENV
+    kicad_PYTHONPATH=/usr/lib/python3/dist-packages
     ;;
   'v9-testing')
     sudo add-apt-repository --yes ppa:kicad/kicad-9.0-nightly
     sudo apt-get update
     sudo apt-get install --yes --no-install-recommends kicad
-    echo "PYTHONPATH=/usr/lib/kicad/lib/python3/dist-packages/:/usr/lib/kicad/local/lib/python3.10/dist-packages:/usr/lib/kicad/local/lib/python3.11/dist-packages:/usr/lib/kicad/local/lib/python3.12/dist-packages" >> $GITHUB_ENV
-    echo "LD_LIBRARY_PATH=/usr/lib/kicad/lib/x86_64-linux-gnu:/usr/lib/kicad/lib/" >> $GITHUB_ENV
+    kicad_PYTHONPATH=/usr/lib/python3/dist-packages
     ;;
   'v10')
     sudo add-apt-repository --yes ppa:kicad/kicad-10.0-releases
     sudo apt-get update
     sudo apt-get install --yes --no-install-recommends kicad
-    echo "PYTHONPATH=/usr/lib/kicad/lib/python3/dist-packages/:/usr/lib/kicad/local/lib/python3.10/dist-packages:/usr/lib/kicad/local/lib/python3.11/dist-packages:/usr/lib/kicad/local/lib/python3.12/dist-packages" >> $GITHUB_ENV
-    echo "LD_LIBRARY_PATH=/usr/lib/kicad/lib/x86_64-linux-gnu:/usr/lib/kicad/lib/" >> $GITHUB_ENV
+    kicad_PYTHONPATH=/usr/lib/python3/dist-packages
     ;;
   'v10-testing')
     sudo add-apt-repository --yes ppa:kicad/kicad-10.0-nightly
     sudo apt-get update
     sudo apt-get install --yes --no-install-recommends kicad
-    echo "PYTHONPATH=/usr/lib/kicad/lib/python3/dist-packages/:/usr/lib/kicad/local/lib/python3.10/dist-packages:/usr/lib/kicad/local/lib/python3.11/dist-packages:/usr/lib/kicad/local/lib/python3.12/dist-packages" >> $GITHUB_ENV
-    echo "LD_LIBRARY_PATH=/usr/lib/kicad/lib/x86_64-linux-gnu:/usr/lib/kicad/lib/" >> $GITHUB_ENV
+    kicad_PYTHONPATH=/usr/lib/python3/dist-packages
     ;;
 
   *)
@@ -37,3 +33,90 @@ case $1 in
     exit 1
     ;;
 esac
+
+if ! [[ -f "$kicad_PYTHONPATH/pcbnew.py" && -f "$kicad_PYTHONPATH/_pcbnew.so" ]]; then
+    echo "setup-kicad/setup.sh seems to have the wrong location for where KiCad installs pcbnew.py or _pcbnew.so, and needs updated" >&2
+    find /usr /opt \( -name pcbnew.py -o -name _pcbnew.so \) -print >&2
+    exit 1
+fi
+if sudo python3 -c 'import sys; sys.exit(1 if sys.argv[1] in sys.path else 0)' "$kicad_PYTHONPATH"; then
+    sys_PYTHONPATH=$(sudo python3 -c 'import sys; print(next(p for p in sys.path if "site-packages" in p))')
+    sudo ln -sfv "$kicad_PYTHONPATH/pcbnew.py" "$kicad_PYTHONPATH/_pcbnew.so" "$sys_PYTHONPATH"
+fi
+if python3 -c 'import sys; sys.exit(1 if sys.argv[1] in sys.path else 0)' "$kicad_PYTHONPATH"; then
+    user_PYTHONPATH=$(python3 -c 'import sys; print(next(p for p in sys.path if "site-packages" in p))')
+    ln -sfv "$kicad_PYTHONPATH/pcbnew.py" "$kicad_PYTHONPATH/_pcbnew.so" "$user_PYTHONPATH"
+fi
+
+# KiCad pulled in wxPython for the APT Python, but if that's not what
+# `python3` is (probably because it's from `actions/setup-python`)
+# then we need to install wxPython for that Python (but built against
+# the APT wx!) ourselves.
+if ! python3 -c 'import wx'; then
+    sudo sed -i '/^Types:/s/$/ deb-src/' /etc/apt/sources.list.d/ubuntu.sources
+    sudo apt-get update
+    mkdir ~/wx
+    pushd ~/wx
+
+    # Source.
+    apt-get source wxpython4.0
+    cd wxpython4.0-*
+
+    # Deps.
+    sudo apt-get build-dep wxpython4.0
+    apt-have() {
+        local name=$1
+        local minver=$2
+        local curver="$(dpkg-query -W -f='${Version}' "$name")"
+        dpkg --compare-versions "$curver" ge "$minver"
+    }
+    # SIP 6.8.0 added ABI 12.14
+    # SIP 6.8.4 added support for Python 3.13, and made a breaking change to sipbuild (dropped bool.cpp)
+    # SIP 6.10 bumped the minimum ABI to 12.9
+    use_apt_sip=true
+    if python3 -c 'import sys; sys.exit(0 if sys.version_info >= (3, 13) else 1)' && ! apt-have sip-tools 6.8.4; then
+        use_apt_sip=false
+    fi
+    # wxPython 4.2.2 bumped SIP_ABI from 12.8 to 12.9, and fixed the build for SIP 6.8.4's lack of bool.cpp
+    # wxPython 4.2.3 bumped SIP_ABI from 12.9 to 12.14
+    # wxPython 4.2.4 stopped including pre-generating Cython outputs
+    # wxPython 4.2.5 added support for setuptools>=81
+    if apt-have python3-wxgtk4.0 4.2.5; then
+        python3 -m pip install setuptools cython
+        "$use_apt_sip" || python3 -m pip install 'sip<7'
+    elif apt-have python3-wxgtk4.0 4.2.4; then # need older setuptools...
+        python3 -m pip install 'setuptools<81' cython
+        "$use_apt_sip" || python3 -m pip install 'sip<7'
+    elif apt-have python3-wxgtk4.0 4.2.3; then # don't need cython...
+        python3 -m pip install 'setuptools<81'
+        "$use_apt_sip" || python3 -m pip install 'sip<7'
+    elif apt-have python3-wxgtk4.0 4.2.1; then # need older sip...
+        python3 -m pip install 'setuptools<81'
+        if ! "$use_apt_sip"; then
+            # https://github.com/wxWidgets/Phoenix/commit/fd8781c97a8a74c6e4bc6a91a25b40f0a8f2728d
+            sed -i '/bool\.cpp/d' wscript
+            # _nanosvg.c (generated by Cython) needs to be different for Python<3.13 vs Python>=3.13.
+            rm wx/svg/_nanosvg.c
+            # https://github.com/wxWidgets/Phoenix/commit/aeb557d01e7cd37176ebbf0f1ae6d0b53c115378
+            sed -i '/^cimport cython\.object$/d' wx/svg/_nanosvg.pyx
+            python3 -m pip install cython 'sip==6.8.5'
+        fi
+    else
+        echo "wxPython $(dpkg-query -W -f='${Version}' python-wxgtk4.0) is too old for setup.sh" >&2
+        exit 1
+    fi
+    export DOXYGEN=/usr/bin/doxygen
+
+    # Generate.
+    # `sip` needs the `etg` output, and `etg` needs the `dox` output`.
+    python3 build.py --jobs=$(nproc) --use_syswx --nodoc --release dox
+    python3 build.py --jobs=$(nproc) --use_syswx --nodoc --release etg
+    python3 build.py --jobs=$(nproc) --use_syswx --nodoc --release sip
+
+    # Build.
+    python3 build.py --jobs=$(nproc) --use_syswx --nodoc --release build_py
+
+    # Install.
+    python3 build.py --jobs=$(nproc) --use_syswx --nodoc --release install_py
+    popd
+fi

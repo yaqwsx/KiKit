@@ -8,27 +8,52 @@ on:
 jobs:
   test:
     name: "Run KiKit tests"
-    runs-on: ubuntu-24.04
     strategy:
       matrix:
         kicad-version: [v9, v10, v10-testing]
+        # setup.py says `python_requires='>=3.8'`
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
+        include:
+          - { python-version: "3.8", runner: ubuntu-24.04 }
+          - { python-version: "3.9", runner: ubuntu-24.04 }
+          - { python-version: "3.10", runner: ubuntu-24.04 }
+          - { python-version: "3.11", runner: ubuntu-24.04 }
+          - { python-version: "3.12", runner: ubuntu-24.04 }
+          - { python-version: "3.13", runner: ubuntu-24.04 }
+          - { python-version: "3.14", runner: ubuntu-26.04 }
+      fail-fast: false
+    runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v6
-      - uses: ./.github/actions/setup-kicad
+      - name: Install Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: setup.py
+      - name: Install KiCad
+        uses: ./.github/actions/setup-kicad
         with:
           kicad-version: ${{ matrix.kicad-version }}
-      - name: KiCAD version
-        run: python3 -c 'import pcbnew; print(pcbnew.GetBuildVersion())'
-      - name: Install dependencies and KiKit
+      - name: Show Python/wxPython/KiCad versions
+        run: |
+          python3 -c '
+          import sys; print("Python "+sys.version)
+          import wx; print("wxPython "+wx.version())
+          import pcbnew; print("KiCad "+pcbnew.GetBuildVersion())
+          '
+      - name: Install other dependencies
         run: |
           sudo apt-get -qq install --yes --no-install-recommends \
             zip inkscape make git libmagickwand-dev \
             libgraphicsmagick1-dev libmagickcore-dev \
             openscad bats
-          sudo env PYTHONPATH=$PYTHONPATH LD_LIBRARY_PATH=$LD_LIBRARY_PATH \
-            python -m pip install --break-system-packages -e .\[dev\]
+          python3 -m pip install PcbDraw
+      - name: Install KiKit
+        run: |
+          python3 -m pip install -e .\[dev\]
       - run: make test
-      - run: sudo env PYTHONPATH=$PYTHONPATH LD_LIBRARY_PATH=$LD_LIBRARY_PATH make package
+      - run: make package
   build-pcm:
     name: Build PCM packages
     runs-on: ubuntu-24.04

@@ -9,7 +9,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="kikit",
-    python_requires='>=3.7',
+    python_requires='>=3.8',  # if you bump this, be sure to also adjust the matrix in .github/workflows/test-kikit.yml
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass(),
     author="Jan Mrázek",
@@ -37,7 +37,10 @@ setuptools.setup(
         "versioneer"
     ],
     extras_require={
-        "dev": ["pytest"],
+        "dev": [
+            "pytest",
+            "wheel",
+        ],
     },
     zip_safe=False,
     include_package_data=True,

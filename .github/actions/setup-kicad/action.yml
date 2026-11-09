@@ -8,5 +8,28 @@ inputs:
 runs:
   using: 'composite'
   steps:
+    - name: Get cache info
+      id: cacheinfo
+      shell: bash
+      run: |
+        set -x
+        pydir=$(python -c 'import sysconfig; print(sysconfig.get_path("platlib"))')
+        # On Python 3.8 and 3.9, .pyc files are not stable.
+        pyhash=$(find "$pydir" -type f -not -name '*.pyc' -print0 | sort -z | xargs -0 sha256sum | sha256sum | cut -d' ' -f1)
+        setuphash=$(sha256sum .github/actions/setup-kicad/setup.sh | cut -d' ' -f1)
+        os='${{ runner.os }}'
+        set +x
+        echo "pydir=${pydir}" >> "$GITHUB_OUTPUT"
+        echo "key=${os}-${pydir}-${pyhash}-${setuphash}" >> "$GITHUB_OUTPUT"
+    - uses: actions/cache/restore@v6
+      with:
+        path: ${{ steps.cacheinfo.outputs.pydir }}
+        key:  ${{ steps.cacheinfo.outputs.key }}
+
     - run: '.github/actions/setup-kicad/setup.sh ${{ inputs.kicad-version }}'
       shell: bash
+
+    - uses: actions/cache/save@v6
+      with:
+        path: ${{ steps.cacheinfo.outputs.pydir }}
+        key:  ${{ steps.cacheinfo.outputs.key }}
