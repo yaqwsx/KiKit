@@ -95,14 +95,49 @@ class Template:
             "source": boardfile
         })
 
-    def _renderBoards(self, outputDirectory):
+    @staticmethod
+    def _renderBoardImagesPcbDraw(outputDirectory, boardDesc):
+        """Render front and back board images for a board using PcbDraw."""
+
+        pcbdraw = shutil.which("pcbdraw")
+        if not pcbdraw:
+            raise RuntimeError("PcbDraw needs to be installed in order to render boards")
+
+        frontPath = os.path.join(outputDirectory, boardDesc["front"])
+        backPath = os.path.join(outputDirectory, boardDesc["back"])
+        subprocess.check_call([pcbdraw, "plot", "--vcuts=Cmts.User", "--silent", "--side=front", boardDesc["source"], frontPath])
+        subprocess.check_call([pcbdraw, "plot", "--vcuts=Cmts.User", "--silent", "--side=back", boardDesc["source"], backPath])
+
+    @staticmethod
+    def _renderBoardImagesKicadCli(outputDirectory, boardDesc):
+        """Render front and back board images for a board using kicad-cli."""
+
+        kicadCli = shutil.which("kicad-cli")
+        if not kicadCli:
+            raise RuntimeError("kicad-cli needs to be installed in order to render boards")
+
+        convert = shutil.which("convert")
+        if not convert:
+            raise RuntimeError("ImageMagick needs to be installed in order to render boards")
+
+        frontPath = os.path.join(outputDirectory, boardDesc["front"])
+        backPath = os.path.join(outputDirectory, boardDesc["back"])
+
+
+        # render an image with transparent background using the KiCad cli
+        subprocess.check_call([kicadCli, "pcb", "render", "--side", "top", "--width", "2048", "--height", "2048", boardDesc["source"], "--output", frontPath])
+        subprocess.check_call([kicadCli, "pcb", "render", "--side", "bottom", "--width", "2048", "--height", "2048", boardDesc["source"], "--output", backPath])
+
+        # crop rendered images to the actual rendered board size
+        resizeArgs = ["-trim", "-bordercolor", "transparent", "-border", "25", "+repage"]
+        subprocess.check_call([convert, frontPath, *resizeArgs, frontPath])
+        subprocess.check_call([convert, backPath, *resizeArgs, backPath])
+
+    def _renderBoards(self, outputDirectory, renderer):
         """
         Convert all boards to images and gerber exports. Enrich self.boards
         with paths of generated files
         """
-        pcbdraw = shutil.which("pcbdraw")
-        if not pcbdraw:
-            raise RuntimeError("PcbDraw needs to be installed in order to render boards")
 
         dirPrefix = "boards"
         boardDir = os.path.join(outputDirectory, dirPrefix)
@@ -114,10 +149,12 @@ class Template:
             boardDesc["gerbers"] = os.path.join(dirPrefix, boardName + "-gerbers.zip")
             boardDesc["file"] = os.path.join(dirPrefix, boardName + ".kicad_pcb")
 
-            subprocess.check_call([pcbdraw, "plot", "--vcuts=Cmts.User", "--silent", "--side=front", boardDesc["source"],
-                os.path.join(outputDirectory, boardDesc["front"])])
-            subprocess.check_call([pcbdraw, "plot", "--vcuts=Cmts.User", "--silent", "--side=back", boardDesc["source"],
-                os.path.join(outputDirectory, boardDesc["back"])])
+            if renderer.lower() == 'pcbdraw':
+                self._renderBoardImagesPcbDraw(outputDirectory, boardDesc)
+            elif renderer.lower() == "kicad-cli":
+                self._renderBoardImagesKicadCli(outputDirectory, boardDesc)
+            else:
+                raise RuntimeError(f"Unknown renderer '{renderer}'.")
 
             tmp = tempfile.mkdtemp()
             export.gerberImpl(boardDesc["source"], tmp)
@@ -126,9 +163,9 @@ class Template:
 
             shutil.copy(boardDesc["source"], os.path.join(outputDirectory, boardDesc["file"]))
 
-    def render(self, outputDirectory):
+    def render(self, outputDirectory, renderer):
         self._copyResources(outputDirectory)
-        self._renderBoards(outputDirectory)
+        self._renderBoards(outputDirectory, renderer)
         self._renderPage(outputDirectory)
 
     def gitRevision(self):
@@ -175,7 +212,7 @@ class HtmlTemplate(Template):
         with open(os.path.join(outputDirectory, "index.html"),"w", encoding="utf-8") as outFile:
             outFile.write(content)
 
-def boardpage(outdir, description, board, resource, template, repository, name):
+def boardpage(outdir, description, board, resource, template, repository, name, renderer):
     try:
         Path(outdir).mkdir(parents=True, exist_ok=True)
         template = readTemplate(template)
@@ -186,7 +223,7 @@ def boardpage(outdir, description, board, resource, template, repository, name):
             template.addResource(r)
         for name, comment, file in board:
             template.addBoard(name, comment, file)
-        template.render(outdir)
+        template.render(outdir, renderer)
     except Exception as e:
         sys.stderr.write("An error occurred: " + str(e) + "\n")
         sys.exit(1)
